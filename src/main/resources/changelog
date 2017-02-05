@@ -1,0 +1,342 @@
+Version 2.7:
+
+	* Fix bug in disconnected signal/exception handling (Spotted by Serkan Kaba
+			<serkan_kaba -at- yahoo -dot- com>)
+	* Fix bug in empty signals (Spotted by Daniel Wagner <Daniel -dot- Wagner
+			-at- bmw-carit -dot- de>)
+	* Fix bug in maps containing complex types (Spotted by Tim Court <tim -dot- 
+			court -at- venture3systems -dot- com>)
+	* Fix signal handling bug in DBusDaemon (Spotted by Markus Gaebelein 
+			<Markus -dot- Gaebelein -at- fiducia -dot- de>)
+	* Make MessageReader/Writer use Buffered streams to try and improve
+			performance
+	* Support reading session bus address from file in $HOME
+	* Fix TCP cookie timestamp problems (Report/fix from Johannes Felten
+			<johannesfelten -at- googlemail -dot- com>)
+	* Add handleError() method to callbacks (breaks backwards source compatibility)
+
+Version 2.6:
+
+	* Add DBusConnection.releaseBusName API
+	* Add DBusConnection.PeerSet for tracking peer lifetimes
+	* Fix bug where DBusDaemon never sends NameOwnerChanged/NameLost
+	  signals
+	* Patches from Omair Majid <omajid -at- redhat -dot- com> to fix
+	  DBusCall manpage and allow alternative docbook-to-man implementations.
+	* Fix dependency on unix.jar even in tcp mode
+	* Fix Path/ObjectPath cast issues (reported by Greg DeAngelis
+	  <gdeangel -at- gmail -dot- com>)
+	* Fix behavior when disconnected (spotted by Christopher 
+	  Armstrong <carmstrong -at- fastmail -dot- com -dot- au>)
+
+Version 2.5.1:
+
+	* Fix for possible NPex in DBusDaemon
+	* Add hexdump.jar to Class-Path for libdbus-java.jar
+	* Add GetAll to properties interface (Patch from
+	  Sveinung Kvilhaugsvik <sveinung84 -at- users -dot- sourceforge -dot- net>)
+	* Make signals with renamed interfaces and member names work
+	  if they are explicitly listened for (Partially fixes: #18257).
+	  Also make the error reporting better when it doesn't work.
+	* Add test for signal with renamed interface.
+	* Fix clearing of string buffer during marshalling (Fixes: #17362)
+	* Fix array marshalling bug (Fixes: #13291)
+
+Version 2.5:
+
+	* Patch from  Omair Majid <omajid -at- redhat -dot- com> to
+	  have seperate javadoc installation directory
+	* Patch from  Omair Majid <omajid -at- redhat -dot- com> to
+	  have make all build the manpages.
+	* ... but as serkan_kaba requested, also provide a bin target which doesn't
+	* Fix returning DBusSerializables (Spotted by Johannes Felten
+	  <johannesfelten -at- googlemail -dot- com>)
+	* Fix CreateInterface (Spotted by Tom Walsh <walshtc -at- gmail -dot- com>)
+	* Fix serial assignment race condition (Spotted by Ed Wei
+	  <Edward.Wei.03 -at- alum -dot- dartmouth -dot- org>)
+	* Fix dynamic introspection of objects which export the same
+	  interface multiple times (Patch from	Sveinung Kvilhaugsvik
+	  <sveinung84 -at- users -dot- sourceforge -dot- net>)
+	* Fix CreateInterface to mangle names which are reserved words
+	  (Spotted by Sveinung Kvilhaugsvik <sveinung84 -at- users -dot-
+		sourceforge -dot- net>)
+	* Fix DBusDaemon to not crash on bad tcp connections (Patch from
+	  Hugues Moreau <hmoreau -at- gmail -dot- com>)
+	* Relicence to LGPL or AFL.
+
+Version 2.4:
+
+	* Add DBusMemberName to force method names or signal names to something
+	  other than the Java name (suggested by Viktar Vauchkevich <vctr -at-
+	  yandex -dot- ru>)
+	* Don't respond to Introspect/Ping except on the right interface 
+	  (pointed out by Serkan Kaba <serkan_kaba -at- yahoo -dot- com>)
+	* Automatically unexport objects which go out of scope in the 
+	  parent program (don't hold a strong reference). This is now
+	  optional and not the default for 1. sanity and 2. a possible
+	  bug in the WeakReference workings in Sun.
+	* Add fallback objects---a single object can be called for any
+	  object under a given path prefix.
+	* Add support for localization of strings via gettext.
+	* Throw a nicer error when signals are not declared as part of an
+	  interface.
+	* .viewerclasses needs to depend on .binclasses
+	* Use libunixsocket-java support for writing multiple byte arrays at 
+	  once to write message vectors
+	* check that the unix-socket-received uid matches for connections to 
+	  DBusDaemon
+	* Update to use libunixsocket-java syntax which works on BSDs
+	* Fix utf-8 characters used in test to actually be the same character...
+	* Add code to preallocate the buffer array array (Suggested by Adam
+	  Bennett <cruxic -at- gmail -dot- com>)
+	* Fix warnings when building with gcj (fixes a bug in Peer handling and
+	  DBusSerializable handling)
+
+Version 2.3.2:
+
+	* Fix empty array/map bug (reported by	Jan Kümmel
+	  <freedesktop -at- snorc -dot- org>)
+	* Add licence headers to files missing them
+	* Fix minor bug in AbstractConnection.java (reported by Frank Benoit
+	  <benoit -at- tionex -dot- de>)
+	* Make Marshalling more verbose and descriptive in the presence of
+	  mismatched parameter lists (suggested by Anibal Sanchez
+	  <anibal -dot- sanchez -at- sunya -dot- com -dot- ar>)
+	* Fix struct type parsing error (spotted by Gunnar Aastrand Grimnes
+	  <gunnar -dot- grimnes -at- dfki -dot- de> and Frank Benoit 
+	  <keinfarbton -at- googlemail -dot- com>)
+	* Fix parsing of serializable classes
+	* Anonymous SASL (needs testing)
+
+Version 2.3.1:
+	
+	* Fix regression in normal array handling (spotted by Anibal Sanchez
+	  <anibal -dot- sanchez -at- sunya -dot- com -dot- ar>)
+
+Version 2.3:
+
+	* Apply recursive-path patch for DBusViewer (written by Zsombor Gegesy
+	  <gzsombor -at- gmail -dot- com>)
+	* Add Class-Path to jar manifests
+	* Update documentation for nested classes
+	* Documentation build fix
+	* Add test for arrays-of-structs
+	* Fix arrays-of-structs bug (spotted by Daniel Machado
+	  <cdanielmachado -at- gmail -dot- com>)
+	* Fix bashism in Makefile
+	* add DBusInterfaceName annotation to override the Java interface name as
+	  the name exported on the bus.
+
+Version 2.2:
+
+	* Fix cross-test to pass.
+	* Fix DBusViewer.sh *again* (Spotted by Serkan Kaba <serkan_kaba
+			-at- yahoo -dot- com>)
+	* Add DBusCall
+	* fix CreateInterface to put DBusException in the right package in import
+		statements. Spotted by Steve Crane <Steve -dot- Crane -at- rococosoft
+		-dot- com>
+	* Update Cross-test to new spec
+	* Change casting and return types for get{Peer,}RemoteObject calls to 
+	  use generics so you don't need explicit casts on return types.
+	  Suggested by Philippe Marschall <philippe -dot- marschall -at- gmail
+	  -dot- com>.
+	* Test with multiple requested (same actual) connection
+	* Add async-with-callback API.
+
+Version 2.1:
+
+	* make scripts with $JAVA
+	* fix DBusViewer.sh (Spotted by Luigi Paioro <luigi -at- lambrate -dot-
+			inaf -dot- it>
+
+Version 2.0:
+	
+	* Remove libdbus-1 dependency and talk the wire protocol directly
+	* Add dependency on http://www.matthew.ath.cx/projects/java/ unix, debug
+     and hexdump libraries
+	* API changes:
+		* Exceptions (including DBusException and DBusExecutionException) moved
+	 	  to the org.freedesktop.dbus.exceptions package.
+		* Convert/deserialize and dbus<->java type conversion code moved from
+		  org.freedesktop.dbus.DBusConnection to org.freedesktop.dbus.Marshalling.
+		* Types moved to the org.freedesktop.dbus.types package.
+		* All message metadata methods have been moved to the superclass and
+		  getObjectPath() has been renamed to getPath().
+		* Deprecated method registerService has been removed.
+		* getUniqueName() and getNames() methods added to get the bus names
+		  associated with this connection.
+		* Access to the low-level API added.
+	* Change all documentation to refer to 'implementation' not 'binding'
+	* Add peer 2 peer support with DirectConnection class
+	* add peer to peer test
+	* split some code from DBusConnection into common super-class
+	  AbstractConnection
+	* Support float ('f') type with tests
+	* Degrade floats to doubles when DBUS_JAVA_FLOATS is not set
+	* add DBus.Peer interface to standard introspection data
+	* Document peer to peer and low level.
+	* Fix TCP and SHA-1 auth
+	* fix wrapper scripts with new depends
+	* add a DBusDaemon
+	* Make daemon multithreaded; performance improvements
+	* Add sending thread to library, move to blocking IO
+	* Ensure key directory exists when serving cookie auth
+	* Add TCP support to daemon
+	* Remove dependency on dbus-daemon for tests
+	* add --version support for other programs
+	* Add windows wrapper scripts
+	* Test working on Windows
+	* Add makefile target to build zip file for windows
+	* Add windows compile script
+	* DBusDaemon can generate random TCP ports to listen on
+
+Version 1.13:
+
+	* add AccessDenied signal
+	* fix deadlock issue when sending objectpaths in signals, spotted by Mathis
+	* add Path type which can be used for non-auto OBJECT_PATH handling, spotted by Mathis
+	* fix some freebsd build issues:
+		* remove explicit recursive make calls
+		* parameterize /usr/lib as DBUSLIBDIR
+	  Spotted by Roberto Francisco Arroyo Moreno <robfram -at- ugr -dot- es>
+	* rejig build system to replace variables in wrapper in make stage and
+	  use DESTDIR properly, hence removing the RUNPREFIX stuff.
+	* add checks and documentation for DBusInterfaces not being in a package.
+	  Spotted by Henrik Petander <henrik -dot- petander -at- iki -dot- fi>
+
+Version 1.12:
+
+	* fix internal-cross-test bugs and increase error verbosity
+	* add org.freedesktop.DBus.Error.NoReply, change to that from my own
+	* add -pedantic -std=c99 flags to GCC
+	* remove supplied Hal classes as they are out of date
+	* change to using tex4ht rather than latex2html
+
+Version 1.11:
+
+	* fix script replacement directories to be different to install directories
+	* split install-doc and install-man to allow easy split -doc package
+
+Version 1.10:
+
+	* fix URLs to point to fdo 
+	* check for signal path validity in Java
+	* fix NameAcquired spelling
+	* check array lengths and name lengths
+	* support method calls with empty interfaces
+	* support for non-activating remote objects
+	* remove errant debug statemant left in 1.9
+	* Fix List<List<Integer>> bug spotted by Remi Emonet
+	  <remi.emonet -at- inrialpes -dot- fr>
+	* Fix OBJECT_PATH handling; bug spotted by Remi Emonet
+	  <remi.emonet -at- inrialpes -dot- fr>
+	* added getRemoteObject and getPeerRemoteObject methods with
+	  introspection support to guess interfaces.
+	* changed introspection to recurse over the exported object tree
+	  and show sub-objects.
+	* compare maps unordered in tests; spotted by Simon McVittie 
+	  <simon -dot- mcvittie -at- collabora -dot- co -dot- uk>
+	* implement UInt64 with BigInteger to allow full-range UInt64s
+	* fix $ in introspection data for nested interfaces
+	* fix the required dbus version in the docs
+	* can now send DBUS_TYPE_SIGNATURE as Type[]
+	* rewrite Variant handling to work with complex types
+	* add $JAVA_HOME/include and $JAVA_HOME/include/linux to CFLAGS
+	  (Fix from Joshua Nichols <nichoj -at- gentoo -dot- org>)
+	* remove unneccessary build warnings
+	  (Fix from Joshua Nichols <nichoj -at- gentoo -dot- org>)
+	* seperate install and install-doc targets
+	  (Suggested by Ralf Kistner <ralf.kistner -at- gmail -dot- com>)
+	* add -fno-stack-protector flag (only for gcc 4.1 or later)
+	  (Suggested by Ralf Kistner <ralf.kistner -at- gmail -dot- com>)
+	* Revamp tuples
+	* Build without DBUS_API_SUBJECT_TO_CHANGE set
+	* fix LDFLAGS to work properly with --as-needed
+	  (Suggested by TFKyle)
+	* Update CreateInterface to new API
+	* More speed fixes with type introspection
+	* Add README and INSTALL files
+	* Change wrappers to point to installed locations
+
+Version 1.9:
+
+	* Map and List handling optimisations 
+	* Struct optimisations
+	* Canonicalise D-Bus spelling in documentation
+	* Update documentation
+	* Implement cross-bindings test suite
+	* add getPeerRemoteObject method
+	* add addSigHandler methods which filter on sender and path
+	* Signal handling optimisations
+	* deprecating service in favour of bus name. Deprecated registerService in
+	  favour of requestBusName
+
+Version 1.8:
+
+	* stop dvips printing on wierd systems
+	* Doc patches from Dick Hollenbeck <dick -at- softplc -dot- com>
+	* reduce TIMEOUT to 1ms and check for outbound messages in the JNI; reduces
+	  RTT from 100ms to ~1ms
+	* Remove two java collections which were doing a lot of allocation and
+	  deallocation and replace with data structures based on arrays.
+	* add removeSigHandler method
+	* add profiling application
+	* handle incoming & outgoing native array types natively (biiiig savings
+			here)
+
+Version 1.7:
+	
+	* compiles with -Xlint:all
+	* fixed struct/nested struct creation
+	* compile with -Os -O -Wall -Werror -g:none and strip
+	* allow overloading methods by argument type
+	* getJavaType bugfix from Antoine Perdaens
+	* nulls in Variant fix from Antoine Perdaens
+	* Variant parameter checking in <init>
+	* CreateInterface now maintains order of parameters to signals
+
+Version 1.6:
+
+	* Custom serializable objects
+	* Thread pool model
+	* CreateInterfaces updated to handle new Structs, annotations, Signals etc
+
+Version 1.5:
+	
+	* Remove static library dependency
+
+Version 1.4:
+
+	* provide call info to called methods
+	* check for disconnections and throw
+	* complete rewrite of Structs
+	* add message send/receive debugging
+
+Version 1.3:
+
+	* Annotation and throws support
+	* proper noreply support
+	* asynchronous method call support
+	* strip InternalErrorMessage reference from JNI
+
+Version 1.2:
+
+	* Make sure pending messages are sent on disconnect
+	* Import of viewer application (Peter Cox <petercox -at- gawab -dot- com>)
+	* Make CreateInterface usable in other apps.
+	* Import extra functions that weren't documented into DBus.java
+	* Implement throwing and catching of specific exception types
+
+Version 1.1:
+
+	* Fix connections to multiple busses
+	* Allow connections by bus address
+	* Stricter error checking in looking up connection object
+
+Version 1.0:
+
+	* 1.x is a java 1.5 version, 0.x is a java 1.4 version 
+	* introspect on the root object
+	* support for nested nodes in CreateInterface
+

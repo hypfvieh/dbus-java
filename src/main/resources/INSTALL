@@ -1,0 +1,101 @@
+D-Bus Java installation guide
+-----------------------------
+
+Prerequisites
+-------------
+
+To compile and install the library you will need:
+
+   A Java 1.5-compliant VM and Compiler (at time of writing
+         only the Sun VM and Compiler is known to work).
+   The unix socket, debug and hexdump libraries from http://www.matthew.ath.cx/projects/java/ (version 0.6 or later)
+   GNU gettext
+
+To build and install the documentation you will also need:
+
+   A LaTeX environment
+   tex4ht
+   docbook
+
+Compiling the Library
+---------------------
+
+Simply invoke `make' in the top level directory to compile the library.
+Depending on your JDK installation you may need to export JAVA_HOME
+appropriately. The location of the unix-socket library can be set with
+JAVAUNIXLIBDIR and JAVAUNIXJARDIR. Explicit paths to the javac, jar, java and
+javadoc binaries can be set with the JAVAC, JAR, JAVA and JAVADOC variables.
+
+The library will be installed into /usr/local by invoking `make install'.  If
+you wish to install them anywhere else then run make with the PREFIX variable
+set to another location. More fine grained control of the installation
+directories can be achieved using the BINDIR etc variables. For more detail
+read the Makefile. DESTDIR can be used for packaging to install with the
+correct hierarchy into a temporary folder.
+
+NOTE: if you set PREFIX in `make install' you should also set it when invoking
+just `make'. PREFIX is to create the binary wrappers with the correct paths to
+the installed library.
+
+Documentation for the library can be built with `make doc' and installed with
+`make install-doc install-man', with the same provisos for installation paths.
+
+Using the Library
+-----------------
+
+The documentation which is by default installed into
+/usr/local/share/doc/libdbus-java/ gives detailed instructions on how to call
+D-Bus programs using the Java implementation and a full API reference.
+
+To run a Java program using D-Bus you need to have the libdbus-java,
+libunix-java and libdebug jar files in your classpath and the libunix-java
+shared library in your library path. With the default install paths you may
+have to do something like:
+
+java -cp /usr/local/share/java/dbus.jar:/usr/local/share/java/unix.jar:/usr/local/share/java/debug-disable.jar -Djava.library.path=/usr/local/lib/jni
+
+Windows
+-------
+
+The Java D-Bus implementation can be used under Windows with TCP Sockets. There
+are several windows batch scripts provided to ease use on Windows.
+
+If the library is being compiled in a unix environment (including cygwin) the
+normal Makefile can be used to create batch files under win/ with `make win'.
+These batch files are wrapper scripts to run the included programs (DBusDaemon,
+CreateInterface, ...) under windows. There is also a make target which creates
+a zip file containing all the jars, wrapper scripts and dependency jars.
+
+If you are compiling on windows there is a script, compile.bat, which will
+create all the jars. You may have to alter the variables defined in it
+depending where you have installed the dependencies and your Java compiler.
+The other .bat files are the wrapper scripts which will need variables setting
+appropriately before use.
+
+Debugging
+---------
+
+It is possible to enable debugging during the build. This will be a lot slower,
+but can print a lot of useful information for debugging your program.
+
+To enable a debug build compile with DEBUG=enable. This will then need to be
+enabled at runtime by using the debug jar with debugging enabled (usually
+installed as debug-enable.jar alongside the normal jar).
+
+Running a program which uses this library will print some informative messages.
+More verbose debug information can be got by supplying a custom debug
+configuration file. This should be placed in the file `debug.conf' and has the
+format:
+
+classname = LEVEL
+
+Where classname is either the special word `ALL' or a full class name like
+`org.freedesktop.dbus' and LEVEL is one of NONE, CRIT, ERR, WARN, INFO, DEBUG,
+VERBOSE, YES, ALL or TRUE. This will set the debug level for a particular
+class. Any messages from that class at that level or higher will be printed.
+Verbose debugging is extremely verbose.
+
+In addition, the environment variable DBUS_JAVA_EXCEPTION_DEBUG will cause all
+exceptions which are handled internally to have their stack trace printed when
+they are handled. This will happen unless debugging has been disabled for that
+class.

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>jar</packaging>
+
+	<groupId>org.caseof</groupId>
+	<artifactId>dbus-java</artifactId>
+	<version>2.7</version>
+
+	<name>${project.artifactId}}</name>
+
+	<description>
+		Slightly improved version of the Java DBus library
+		provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
+
+		Changes:
+		 - Fixed lot's of Java warnings
+		 - Fixed broken 'Gettext' feature (Exceptions on unsupported languages, usage of "_" as method name).
+		 - Renamed some classes/methods/variables to comply with Java naming scheme.
+		 - Removed usage of proprietary logger and replaced it with sl4fj.
+	</description>
+
+ 	<licenses>
+		<license>
+			<name>GNU Lesser/Library General Public License version 2</name>
+			<url>https://www.gnu.org/licenses/lgpl.html</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
+		<developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
+		<url>https://github.com/hypfvieh/dbus-java.git</url>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.bdeneuter</groupId>
+			<artifactId>cx.ath.matthew</artifactId>
+			<version>0.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.21</version>
+		</dependency>
+	</dependencies>
+</project>
