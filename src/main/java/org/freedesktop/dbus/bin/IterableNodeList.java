@@ -18,8 +18,8 @@ import org.w3c.dom.NodeList;
 class IterableNodeList implements Iterable<Node> {
     private NodeList nl;
 
-    public IterableNodeList(NodeList nl) {
-        this.nl = nl;
+    IterableNodeList(NodeList _nl) {
+        this.nl = _nl;
     }
 
     @Override

@@ -87,7 +87,7 @@ public abstract class AbstractConnection {
         public void run() {
             try {
                 Message m = null;
-                while (_run) {
+                while (run) {
                     m = null;
 
                     // read from the wire
@@ -136,12 +136,12 @@ public abstract class AbstractConnection {
     private class GlobalHandler implements org.freedesktop.DBus.Peer, org.freedesktop.DBus.Introspectable {
         private String objectpath;
 
-        public GlobalHandler() {
+        GlobalHandler() {
             this.objectpath = null;
         }
 
-        public GlobalHandler(String objectpath) {
-            this.objectpath = objectpath;
+        GlobalHandler(String _objectpath) {
+            this.objectpath = _objectpath;
         }
 
         @Override
@@ -186,7 +186,7 @@ public abstract class AbstractConnection {
                     while (runnables.size() == 0 && running) {
                         try {
                             runnables.wait();
-                        } catch (InterruptedException Ie) {
+                        } catch (InterruptedException ex) {
                         }
                     }
                     if (runnables.size() > 0) {
@@ -203,7 +203,7 @@ public abstract class AbstractConnection {
     private class SenderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
-        public SenderThread() {
+        SenderThread() {
             setName("Sender");
         }
 
@@ -213,14 +213,14 @@ public abstract class AbstractConnection {
 
             logger.info("Monitoring outbound queue");
             // block on the outbound queue and send from it
-            while (_run) {
+            while (run) {
                 if (null != outgoing) {
                     synchronized (outgoing) {
                         logger.trace("Blocking");
-                        while (outgoing.size() == 0 && _run) {
+                        while (outgoing.size() == 0 && run) {
                             try {
                                 outgoing.wait();
-                            } catch (InterruptedException Ie) {
+                            } catch (InterruptedException ex) {
                             }
                         }
                         logger.trace("Notified");
@@ -269,9 +269,11 @@ public abstract class AbstractConnection {
     static final byte                                                        THREADCOUNT              = 4;
     static final int                                                         MAX_ARRAY_LENGTH         = 67108864;
     static final int                                                         MAX_NAME_LENGTH          = 255;
-    protected Map<String, ExportedObject>                                    exportedObjects;
+
     private ObjectTree                                                       objectTree;
-    private GlobalHandler                                                    _globalhandlerreference;
+    private GlobalHandler                                                    globalHandlerReference;
+    // CHECKSTYLE:OFF
+    protected Map<String, ExportedObject>                                    exportedObjects;
     protected Map<DBusInterface, RemoteObject>                               importedObjects;
     protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
     protected EfficientMap                                                   pendingCalls;
@@ -280,19 +282,23 @@ public abstract class AbstractConnection {
     protected LinkedList<Runnable>                                           runnables;
     protected LinkedList<WorkerThread>                                       workers;
     protected FallbackContainer                                              fallbackcontainer;
-    protected boolean                                                        _run;
+    protected boolean                                                        run;
     EfficientQueue                                                           outgoing;
     LinkedList<Error>                                                        pendingErrors;
-    private static final Map<Thread, DBusCallInfo>                           infomap                  = new HashMap<Thread, DBusCallInfo>();
+
     protected ConnThread                                                     thread;
     protected SenderThread                                                   sender;
     protected Transport                                                      transport;
     protected String                                                         addr;
     protected boolean                                                        weakreferences           = false;
-    static final Pattern                                                     dollar_pattern           = Pattern.compile("[$]");
-    public static final boolean                                              EXCEPTION_DEBUG;
-    static final boolean                                                     FLOAT_SUPPORT;
     protected boolean                                                        connected                = false;
+    // CHECKSTYLE:ON
+    static final Pattern                                                     DOLLAR_PATTERN           = Pattern.compile("[$]");
+    public static final boolean                                              EXCEPTION_DEBUG;
+    private static final Map<Thread, DBusCallInfo>                           INFOMAP                  = new HashMap<Thread, DBusCallInfo>();
+    static final boolean                                                     FLOAT_SUPPORT;
+
+
     static {
         FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
         EXCEPTION_DEBUG = (null != System.getenv("DBUS_JAVA_EXCEPTION_DEBUG"));
@@ -304,9 +310,9 @@ public abstract class AbstractConnection {
     protected AbstractConnection(String address) throws DBusException {
         exportedObjects = new HashMap<String, ExportedObject>();
         importedObjects = new HashMap<DBusInterface, RemoteObject>();
-        _globalhandlerreference = new GlobalHandler();
+        globalHandlerReference = new GlobalHandler();
         synchronized (exportedObjects) {
-            exportedObjects.put(null, new ExportedObject(_globalhandlerreference, weakreferences));
+            exportedObjects.put(null, new ExportedObject(globalHandlerReference, weakreferences));
         }
         handledSignals = new HashMap<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>>();
         pendingCalls = new EfficientMap(PENDING_MAP_INITIAL_SIZE);
@@ -325,7 +331,7 @@ public abstract class AbstractConnection {
                 workers.add(t);
             }
         }
-        _run = true;
+        run = true;
         addr = address;
     }
 
@@ -393,8 +399,8 @@ public abstract class AbstractConnection {
     */
     public static DBusCallInfo getCallInfo() {
         DBusCallInfo info;
-        synchronized (infomap) {
-            info = infomap.get(Thread.currentThread());
+        synchronized (INFOMAP) {
+            info = INFOMAP.get(Thread.currentThread());
         }
         return info;
     }
@@ -405,8 +411,8 @@ public abstract class AbstractConnection {
     * The default is to hold a strong reference, which means objects must be
     * explicitly unexported before they will be garbage collected.
     */
-    public void setWeakReferences(boolean weakreferences) {
-        this.weakreferences = weakreferences;
+    public void setWeakReferences(boolean _weakreferences) {
+        this.weakreferences = _weakreferences;
     }
 
     /**
@@ -602,9 +608,9 @@ public abstract class AbstractConnection {
         logger.info("Sending disconnected signal");
         try {
             handleMessage(new org.freedesktop.DBus.Local.Disconnected("/"));
-        } catch (Exception ee) {
+        } catch (Exception ex) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", ee);
+                logger.error("", ex);
             }
         }
 
@@ -617,7 +623,7 @@ public abstract class AbstractConnection {
         }
 
         // stop the main thread
-        _run = false;
+        run = false;
 
         // unblock the sending thread.
         synchronized (outgoing) {
@@ -630,9 +636,9 @@ public abstract class AbstractConnection {
                 transport.disconnect();
                 transport = null;
             }
-        } catch (IOException IOe) {
+        } catch (IOException exIo) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", IOe);
+                logger.error("", exIo);
             }
         }
 
@@ -692,11 +698,11 @@ public abstract class AbstractConnection {
                 me = ro.iface.getMethod(m, types);
             }
             RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_CALLBACK, callback, parameters);
-        } catch (DBusExecutionException DBEe) {
+        } catch (DBusExecutionException exEe) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", DBEe);
+                logger.error("", exEe);
             }
-            throw DBEe;
+            throw exEe;
         } catch (Exception e) {
             if (EXCEPTION_DEBUG) {
                 logger.error("", e);
@@ -727,11 +733,11 @@ public abstract class AbstractConnection {
                 me = ro.iface.getMethod(m, types);
             }
             return (DBusAsyncReply<?>) RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_ASYNC, null, parameters);
-        } catch (DBusExecutionException DBEe) {
+        } catch (DBusExecutionException exDee) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", DBEe);
+                logger.error("", exDee);
             }
-            throw DBEe;
+            throw exDee;
         } catch (Exception e) {
             if (EXCEPTION_DEBUG) {
                 logger.error("", e);
@@ -783,7 +789,7 @@ public abstract class AbstractConnection {
             if (null == eo) {
                 try {
                     queueOutgoing(new Error(m, new DBus.Error.UnknownObject(m.getPath() + t(" is not an object provided by this process."))));
-                } catch (DBusException DBe) {
+                } catch (DBusException exDe) {
                 }
                 return;
             }
@@ -800,7 +806,7 @@ public abstract class AbstractConnection {
                     queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(MessageFormat.format(t("The method `{0}.{1}' does not exist on this object."), new Object[] {
                             m.getInterface(), m.getName()
                     }))));
-                } catch (DBusException DBe) {
+                } catch (DBusException exDe) {
                 }
                 return;
             }
@@ -836,14 +842,14 @@ public abstract class AbstractConnection {
                     }
                     try {
                         conn.queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(t("Failure in de-serializing message: ") + e)));
-                    } catch (DBusException DBe) {
+                    } catch (DBusException exDe) {
                     }
                     return;
                 }
 
                 try {
-                    synchronized (infomap) {
-                        infomap.put(Thread.currentThread(), info);
+                    synchronized (INFOMAP) {
+                        INFOMAP.put(Thread.currentThread(), info);
                     }
                     Object result;
                     try {
@@ -855,8 +861,8 @@ public abstract class AbstractConnection {
                         }
                         throw ite.getCause();
                     }
-                    synchronized (infomap) {
-                        infomap.remove(Thread.currentThread());
+                    synchronized (INFOMAP) {
+                        INFOMAP.remove(Thread.currentThread());
                     }
                     if (!noreply) {
                         MethodReturn reply;
@@ -877,13 +883,13 @@ public abstract class AbstractConnection {
                         }
                         conn.queueOutgoing(reply);
                     }
-                } catch (DBusExecutionException DBEe) {
+                } catch (DBusExecutionException exDee) {
                     if (EXCEPTION_DEBUG) {
-                        logger.error("", DBEe);
+                        logger.error("", exDee);
                     }
                     try {
-                        conn.queueOutgoing(new Error(m, DBEe));
-                    } catch (DBusException DBe) {
+                        conn.queueOutgoing(new Error(m, exDee));
+                    } catch (DBusException exDe) {
                     }
                 } catch (Throwable e) {
                     if (EXCEPTION_DEBUG) {
@@ -893,7 +899,7 @@ public abstract class AbstractConnection {
                         conn.queueOutgoing(new Error(m, new DBusExecutionException(MessageFormat.format(t("Error Executing Method {0}.{1}: {2}"), new Object[] {
                                 m.getInterface(), m.getName(), e.getMessage()
                         }))));
-                    } catch (DBusException DBe) {
+                    } catch (DBusException exDe) {
                     }
                 }
             }
@@ -948,13 +954,13 @@ public abstract class AbstractConnection {
                             rs = s;
                         }
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
-                    } catch (DBusException dbe) {
+                    } catch (DBusException exDe) {
                         if (EXCEPTION_DEBUG) {
-                            logger.error("", dbe);
+                            logger.error("", exDe);
                         }
                         try {
-                            conn.queueOutgoing(new Error(s, new DBusExecutionException("Error handling signal " + s.getInterface() + "." + s.getName() + ": " + dbe.getMessage())));
-                        } catch (DBusException dbe2) {
+                            conn.queueOutgoing(new Error(s, new DBusExecutionException("Error handling signal " + s.getInterface() + "." + s.getName() + ": " + exDe.getMessage())));
+                        } catch (DBusException exDe2) {
                         }
                     }
                 }
@@ -997,13 +1003,13 @@ public abstract class AbstractConnection {
                         try {
                             logger.trace("Running Error Callback for " + err);
                             DBusCallInfo info = new DBusCallInfo(err);
-                            synchronized (infomap) {
-                                infomap.put(Thread.currentThread(), info);
+                            synchronized (INFOMAP) {
+                                INFOMAP.put(Thread.currentThread(), info);
                             }
 
                             fcbh.handleError(err.getException());
-                            synchronized (infomap) {
-                                infomap.remove(Thread.currentThread());
+                            synchronized (INFOMAP) {
+                                INFOMAP.remove(Thread.currentThread());
                             }
 
                         } catch (Exception e) {
@@ -1057,13 +1063,13 @@ public abstract class AbstractConnection {
                    try {
                       logger.trace("Running Callback for "+mr);
                       DBusCallInfo info = new DBusCallInfo(mr);
-                      synchronized (infomap) {
-                         infomap.put(Thread.currentThread(), info);
+                      synchronized (INFOMAP) {
+                         INFOMAP.put(Thread.currentThread(), info);
                       }
                       Object convertRV = RemoteInvocationHandler.convertRV(mr.getSig(), mr.getParameters(), fasr.getMethod(), fasr.getConnection());
                       fcbh.handle(convertRV);
-                      synchronized (infomap) {
-                         infomap.remove(Thread.currentThread());
+                      synchronized (INFOMAP) {
+                         INFOMAP.remove(Thread.currentThread());
                       }
 
                    } catch (Exception e) {
@@ -1076,7 +1082,7 @@ public abstract class AbstractConnection {
        } else
           try {
              queueOutgoing(new Error(mr, new DBusExecutionException(t("Spurious reply. No message with the given serial id was awaiting a reply."))));
-          } catch (DBusException DBe) {}
+          } catch (DBusException exDe) {}
     }
 
     protected void sendMessage(Message m) {
@@ -1113,30 +1119,30 @@ public abstract class AbstractConnection {
                     ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", new Object[] {
                             t("Disconnected")
                     }));
-                } catch (DBusException DBe) {
+                } catch (DBusException exDe) {
                 }
             }
             if (m instanceof MethodCall && e instanceof DBusExecutionException) {
                 try {
                     ((MethodCall) m).setReply(new Error(m, e));
-                } catch (DBusException DBe) {
+                } catch (DBusException exDe) {
                 }
             } else if (m instanceof MethodCall) {
                 try {
                     logger.info("Setting reply to " + m + " as an error");
                     ((MethodCall) m).setReply(new Error(m, new DBusExecutionException(t("Message Failed to Send: ") + e.getMessage())));
-                } catch (DBusException DBe) {
+                } catch (DBusException exDe) {
                 }
             } else if (m instanceof MethodReturn) {
                 try {
                     transport.mout.writeMessage(new Error(m, e));
-                } catch (IOException ioe) {
+                } catch (IOException exIo) {
                     if (EXCEPTION_DEBUG) {
-                        logger.error("", ioe);
+                        logger.error("", exIo);
                     }
-                } catch (DBusException ioe) {
+                } catch (DBusException exDe) {
                     if (EXCEPTION_DEBUG) {
-                        logger.error("", ioe);
+                        logger.error("", exDe);
                     }
                 }
             }
@@ -1153,8 +1159,8 @@ public abstract class AbstractConnection {
         Message m = null;
         try {
             m = transport.min.readMessage();
-        } catch (IOException IOe) {
-            throw new FatalDBusException(IOe.getMessage());
+        } catch (IOException exIo) {
+            throw new FatalDBusException(exIo.getMessage());
         }
         return m;
     }

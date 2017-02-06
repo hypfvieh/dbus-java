@@ -33,13 +33,13 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
-import org.freedesktop.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.unix.UnixServerSocket;
 import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
+import cx.ath.matthew.utils.Hexdump;
 
 public class Transport {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -145,26 +145,26 @@ public class Transport {
             File f = new File(homedir + "/.dbus-keyrings/" + context);
             BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
             String s = null;
-            String cookie = null;
+            String lCookie = null;
             long now = System.currentTimeMillis() / 1000;
             while (null != (s = r.readLine())) {
                 String[] line = s.split(" ");
                 long timestamp = Long.parseLong(line[1]);
                 if (line[0].equals(ID) && (!(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || (now - EXPIRE_KEYS_TIMEOUT_SECONDS) > timestamp))) {
-                    cookie = line[2];
+                    lCookie = line[2];
                     break;
                 }
             }
             r.close();
-            return cookie;
+            return lCookie;
         }
 
-        private void addCookie(String context, String ID, long timestamp, String cookie) throws IOException {
+        private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
             String homedir = System.getProperty("user.home");
             File keydir = new File(homedir + "/.dbus-keyrings/");
-            File cookiefile = new File(homedir + "/.dbus-keyrings/" + context);
-            File lock = new File(homedir + "/.dbus-keyrings/" + context + ".lock");
-            File temp = new File(homedir + "/.dbus-keyrings/" + context + ".temp");
+            File cookiefile = new File(homedir + "/.dbus-keyrings/" + _context);
+            File lock = new File(homedir + "/.dbus-keyrings/" + _context + ".lock");
+            File temp = new File(homedir + "/.dbus-keyrings/" + _context + ".temp");
 
             // ensure directory exists
             if (!keydir.exists()) {
@@ -186,7 +186,7 @@ public class Transport {
                     String[] line = s.split(" ");
                     long time = Long.parseLong(line[1]);
                     // expire stale cookies
-                    if ((timestamp - time) < COOKIE_TIMEOUT) {
+                    if ((_timestamp - time) < COOKIE_TIMEOUT) {
                         lines.add(s);
                     }
                 }
@@ -194,7 +194,7 @@ public class Transport {
             }
 
             // add cookie
-            lines.add(ID + " " + timestamp + " " + cookie);
+            lines.add(_id + " " + _timestamp + " " + _cookie);
 
             // write temp file
             PrintWriter w = new PrintWriter(new FileOutputStream(temp));
@@ -363,9 +363,10 @@ public class Transport {
             logger.trace("sending: " + sb);
             out.write(sb.toString().getBytes());
         }
-
-        public int do_challenge(int auth, Command c) throws IOException {
-            switch (auth) {
+        // CHECKSTYLE:OFF
+        public int do_challenge(int _auth, Command c) throws IOException {
+         // CHECKSTYLE:ON
+            switch (_auth) {
             case AUTH_SHA:
                 String[] reply = stupidlyDecode(c.getData()).split(" ");
                 logger.trace(Arrays.toString(reply));
@@ -374,7 +375,7 @@ public class Transport {
                     return ERROR;
                 }
                 String context = reply[0];
-                String ID = reply[1];
+                String id = reply[1];
                 String serverchallenge = reply[2];
                 MessageDigest md = null;
                 try {
@@ -390,15 +391,15 @@ public class Transport {
                 String clientchallenge = stupidlyEncode(md.digest(buf));
                 md.reset();
                 long start = System.currentTimeMillis();
-                String cookie = null;
-                while (null == cookie && (System.currentTimeMillis() - start) < LOCK_TIMEOUT) {
-                    cookie = findCookie(context, ID);
+                String lCookie = null;
+                while (null == lCookie && (System.currentTimeMillis() - start) < LOCK_TIMEOUT) {
+                    lCookie = findCookie(context, id);
                 }
-                if (null == cookie) {
-                    logger.debug("Did not find a cookie in context " + context + " with ID " + ID);
+                if (null == lCookie) {
+                    logger.debug("Did not find a cookie in context " + context + " with ID " + id);
                     return ERROR;
                 }
-                String response = serverchallenge + ":" + clientchallenge + ":" + cookie;
+                String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
                 buf = md.digest(response.getBytes());
 
                 logger.trace("Response: " + response + " hash: " + Hexdump.format(buf));
@@ -412,10 +413,12 @@ public class Transport {
             }
         }
 
+        // CHECKSTYLE:OFF
         public String challenge = "";
         public String cookie    = "";
 
-        public int do_response(int auth, String Uid, String kernelUid, Command c) {
+        public int do_response(int _auth, String _uid, String _kernelUid, Command _c) {
+        // CHECKSTYLE:ON
             MessageDigest md = null;
             try {
                 md = MessageDigest.getInstance("SHA");
@@ -425,13 +428,13 @@ public class Transport {
                 }
                 return ERROR;
             }
-            switch (auth) {
+            switch (_auth) {
             case AUTH_NONE:
-                switch (c.getMechs()) {
+                switch (_c.getMechs()) {
                 case AUTH_ANON:
                     return OK;
                 case AUTH_EXTERNAL:
-                    if (0 == col.compare(Uid, c.getData()) && (null == kernelUid || 0 == col.compare(Uid, kernelUid))) {
+                    if (0 == col.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == col.compare(_uid, _kernelUid))) {
                         return OK;
                     } else {
                         return ERROR;
@@ -455,13 +458,13 @@ public class Transport {
 
                     logger.debug("Sending challenge: " + context + ' ' + id + ' ' + challenge);
 
-                    c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
+                    _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
                     return CONTINUE;
                 default:
                     return ERROR;
                 }
             case AUTH_SHA:
-                String[] response = stupidlyDecode(c.getData()).split(" ");
+                String[] response = stupidlyDecode(_c.getData()).split(" ");
                 if (response.length < 2) {
                     return ERROR;
                 }
@@ -524,16 +527,16 @@ public class Transport {
          */
         public boolean auth(int mode, int types, String guid, OutputStream out, InputStream in, UnixSocket us) throws IOException {
             String username = System.getProperty("user.name");
-            String Uid = null;
+            String luid = null;
             String kernelUid = null;
             try {
                 Class<?> c = Class.forName("com.sun.security.auth.module.UnixSystem");
                 Method m = c.getMethod("getUid");
                 Object o = c.newInstance();
                 long uid = (Long) m.invoke(o);
-                Uid = stupidlyEncode("" + uid);
+                luid = stupidlyEncode("" + uid);
             } catch (Exception e) {
-                Uid = stupidlyEncode(username);
+                luid = stupidlyEncode(username);
             }
             Command c;
             int failed = 0;
@@ -579,10 +582,10 @@ public class Transport {
                             failed |= current;
                             int available = c.getMechs() & (~failed);
                             if (0 != (available & AUTH_EXTERNAL)) {
-                                send(out, COMMAND_AUTH, "EXTERNAL", Uid);
+                                send(out, COMMAND_AUTH, "EXTERNAL", luid);
                                 current = AUTH_EXTERNAL;
                             } else if (0 != (available & AUTH_SHA)) {
-                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", Uid);
+                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", luid);
                                 current = AUTH_SHA;
                             } else if (0 != (available & AUTH_ANON)) {
                                 send(out, COMMAND_AUTH, "ANONYMOUS");
@@ -621,10 +624,10 @@ public class Transport {
                             int available = c.getMechs() & (~failed);
                             state = WAIT_DATA;
                             if (0 != (available & AUTH_EXTERNAL)) {
-                                send(out, COMMAND_AUTH, "EXTERNAL", Uid);
+                                send(out, COMMAND_AUTH, "EXTERNAL", luid);
                                 current = AUTH_EXTERNAL;
                             } else if (0 != (available & AUTH_SHA)) {
-                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", Uid);
+                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", luid);
                                 current = AUTH_SHA;
                             } else if (0 != (available & AUTH_ANON)) {
                                 send(out, COMMAND_AUTH, "ANONYMOUS");
@@ -645,10 +648,10 @@ public class Transport {
                             failed |= current;
                             int available = c.getMechs() & (~failed);
                             if (0 != (available & AUTH_EXTERNAL)) {
-                                send(out, COMMAND_AUTH, "EXTERNAL", Uid);
+                                send(out, COMMAND_AUTH, "EXTERNAL", luid);
                                 current = AUTH_EXTERNAL;
                             } else if (0 != (available & AUTH_SHA)) {
-                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", Uid);
+                                send(out, COMMAND_AUTH, "DBUS_COOKIE_SHA1", luid);
                                 current = AUTH_SHA;
                             } else if (0 != (available & AUTH_ANON)) {
                                 send(out, COMMAND_AUTH, "ANONYMOUS");
@@ -692,7 +695,7 @@ public class Transport {
                             if (null == c.getData()) {
                                 send(out, COMMAND_REJECTED, getTypes(types));
                             } else {
-                                switch (do_response(current, Uid, kernelUid, c)) {
+                                switch (do_response(current, luid, kernelUid, c)) {
                                 case CONTINUE:
                                     send(out, COMMAND_DATA, c.getResponse());
                                     current = c.getMechs();
@@ -725,7 +728,7 @@ public class Transport {
                         c = receive(in);
                         switch (c.getCommand()) {
                         case COMMAND_DATA:
-                            switch (do_response(current, Uid, kernelUid, c)) {
+                            switch (do_response(current, luid, kernelUid, c)) {
                             case CONTINUE:
                                 send(out, COMMAND_DATA, c.getResponse());
                                 state = WAIT_DATA;
@@ -783,8 +786,10 @@ public class Transport {
         }
     }
 
+    // CHECKSTYLE:OFF
     public MessageReader min;
     public MessageWriter mout;
+    // CHECKSTYLE:ON
 
     public Transport() {
     }

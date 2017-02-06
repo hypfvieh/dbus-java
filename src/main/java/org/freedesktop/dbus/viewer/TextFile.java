@@ -17,17 +17,17 @@ package org.freedesktop.dbus.viewer;
  * @since 10/02/2006
  */
 class TextFile {
-    final String fileName;
-    final String contents;
+    private final String fileName;
+    private final String contents;
 
     /** Create the TextFile
      *
-     * @param fileName The file name
-     * @param contents The contents
+     * @param _fileName The file name
+     * @param _contents The contents
      */
-    public TextFile(String fileName, String contents) {
-        this.fileName = fileName;
-        this.contents = contents;
+    TextFile(String _fileName, String _contents) {
+        this.fileName = _fileName;
+        this.contents = _contents;
     }
 
     /** Retrieve the fileName

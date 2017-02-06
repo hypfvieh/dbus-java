@@ -27,7 +27,7 @@ class DBusTableModel extends AbstractTableModel {
 
     private static final String PATH           = "path";
 
-    final String[]              columns        = {
+    private final String[]       columns        = {
             NAME, PATH, USER, OWNER, INTROSPECTABLE
     };
 

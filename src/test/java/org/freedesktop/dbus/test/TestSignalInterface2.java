@@ -24,17 +24,18 @@ import org.freedesktop.dbus.exceptions.DBusException;
 @DBusInterfaceName("some.other.interface.Name")
 public interface TestSignalInterface2 extends DBusInterface {
     @Description("Test basic signal")
-    public static class TestRenamedSignal extends DBusSignal {
+    class TestRenamedSignal extends DBusSignal {
+        //CHECKSTYLE:OFF
         public final String value;
         public final UInt32 number;
-
+        //CHECKSTYLE:ON
         /**
          * Create a signal.
          */
-        public TestRenamedSignal(String path, String value, UInt32 number) throws DBusException {
-            super(path, value, number);
-            this.value = value;
-            this.number = number;
+        public TestRenamedSignal(String _path, String _value, UInt32 _number) throws DBusException {
+            super(_path, _value, _number);
+            this.value = _value;
+            this.number = _number;
         }
     }
 }

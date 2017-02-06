@@ -37,12 +37,12 @@ class ExportedObject {
             try {
                 Method m = t.getMethod("value");
                 value = m.invoke(a).toString();
-            } catch (NoSuchMethodException NSMe) {
-            } catch (InvocationTargetException ITe) {
-            } catch (IllegalAccessException IAe) {
+            } catch (NoSuchMethodException exNsm) {
+            } catch (InvocationTargetException exIt) {
+            } catch (IllegalAccessException exIa) {
             }
 
-            ans += "  <annotation name=\"" + AbstractConnection.dollar_pattern.matcher(t.getName()).replaceAll(".") + "\" value=\"" + value + "\" />\n";
+            ans += "  <annotation name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(t.getName()).replaceAll(".") + "\" value=\"" + value + "\" />\n";
         }
         return ans;
     }
@@ -68,7 +68,7 @@ class ExportedObject {
                     if (c.getName().length() > AbstractConnection.MAX_NAME_LENGTH) {
                         throw new DBusException(t("Introspected interface name exceeds 255 characters. Cannot export objects of type ") + c.getName());
                     } else {
-                        introspectiondata += " <interface name=\"" + AbstractConnection.dollar_pattern.matcher(c.getName()).replaceAll(".") + "\">\n";
+                        introspectiondata += " <interface name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".") + "\">\n";
                     }
                 }
                 introspectiondata += getAnnotations(c);
@@ -88,7 +88,7 @@ class ExportedObject {
                         introspectiondata += getAnnotations(meth);
                         for (Class<?> ex : meth.getExceptionTypes()) {
                             if (DBusExecutionException.class.isAssignableFrom(ex)) {
-                                introspectiondata += "   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\"" + AbstractConnection.dollar_pattern.matcher(ex.getName()).replaceAll(".") + "\" />\n";
+                                introspectiondata += "   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(ex.getName()).replaceAll(".") + "\" />\n";
                             }
                         }
                         for (Type pt : meth.getGenericParameterTypes()) {
@@ -154,19 +154,20 @@ class ExportedObject {
         }
         return m;
     }
-
+    // CHECKSTYLE:OFF
     Map<MethodTuple, Method> methods;
     Reference<DBusInterface> object;
     String                   introspectiondata;
+    // CHECKSTYLE:ON
 
-    public ExportedObject(DBusInterface object, boolean weakreferences) throws DBusException {
-        if (weakreferences) {
-            this.object = new WeakReference<DBusInterface>(object);
+    ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
+        if (_weakreferences) {
+            this.object = new WeakReference<DBusInterface>(_object);
         } else {
-            this.object = new StrongReference<DBusInterface>(object);
+            this.object = new StrongReference<DBusInterface>(_object);
         }
         introspectiondata = "";
-        methods = getExportedMethods(object.getClass());
+        methods = getExportedMethods(_object.getClass());
         introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n" + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
         introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n" + "  </method>\n" + " </interface>\n";
     }

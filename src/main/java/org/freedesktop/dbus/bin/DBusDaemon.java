@@ -61,20 +61,21 @@ public class DBusDaemon extends Thread {
     private static final Logger LOGGER          = LoggerFactory.getLogger(DBusDaemon.class);
 
     static class Connstruct {
-
+        // CHECKSTYLE:OFF
         public UnixSocket    usock;
         public Socket        tsock;
         public MessageReader min;
         public MessageWriter mout;
         public String        unique;
+        // CHECKSTYLE:ON
 
-        public Connstruct(UnixSocket sock) {
+        Connstruct(UnixSocket sock) {
             this.usock = sock;
             min = new MessageReader(sock.getInputStream());
             mout = new MessageWriter(sock.getOutputStream());
         }
 
-        public Connstruct(Socket sock) throws IOException {
+        Connstruct(Socket sock) throws IOException {
             this.tsock = sock;
             min = new MessageReader(sock.getInputStream());
             mout = new MessageWriter(sock.getOutputStream());
@@ -93,10 +94,10 @@ public class DBusDaemon extends Thread {
         private LinkedList<A>         q;
         private String                name;
 
-        public MagicMap(String name) {
+        MagicMap(String _name) {
             m = new HashMap<A, LinkedList<B>>();
             q = new LinkedList<A>();
-            this.name = name;
+            this.name = _name;
         }
 
         public A head() {
@@ -148,8 +149,10 @@ public class DBusDaemon extends Thread {
             setName("Server");
         }
 
+        // CHECKSTYLE:OFF
         public Connstruct c;
         public Message    m;
+        // CHECKSTYLE:ON
 
         @Override
         public boolean isRemote() {
@@ -165,8 +168,8 @@ public class DBusDaemon extends Thread {
                 if (null != c.unique) {
                     throw new org.freedesktop.DBus.Error.AccessDenied(t("Connection has already sent a Hello message"));
                 }
-                synchronized (unique_lock) {
-                    c.unique = ":1." + (++next_unique);
+                synchronized (uniqueLock) {
+                    c.unique = ":1." + (++nextUnique);
                 }
             }
             synchronized (names) {
@@ -388,16 +391,16 @@ public class DBusDaemon extends Thread {
         }
 
         @SuppressWarnings("unchecked")
-        private void handleMessage(Connstruct c, Message m) throws DBusException {
+        private void handleMessage(Connstruct _c, Message _m) throws DBusException {
 
             LOGGER.debug("enter");
 
-            LOGGER.trace("Handling message " + m + " from " + c.unique);
+            LOGGER.trace("Handling message " + _m + " from " + _c.unique);
 
-            if (!(m instanceof MethodCall)) {
+            if (!(_m instanceof MethodCall)) {
                 return;
             }
-            Object[] args = m.getParameters();
+            Object[] args = _m.getParameters();
 
             Class<? extends Object>[] cs = new Class[args.length];
 
@@ -409,35 +412,35 @@ public class DBusDaemon extends Thread {
             Object rv = null;
 
             try {
-                meth = DBusServer.class.getMethod(m.getName(), cs);
+                meth = DBusServer.class.getMethod(_m.getName(), cs);
                 try {
-                    this.c = c;
-                    this.m = m;
-                    rv = meth.invoke(dbus_server, args);
+                    this.c = _c;
+                    this.m = _m;
+                    rv = meth.invoke(dbusServer, args);
                     if (null == rv) {
-                        send(c, new MethodReturn("org.freedesktop.DBus", (MethodCall) m, null), true);
+                        send(_c, new MethodReturn("org.freedesktop.DBus", (MethodCall) _m, null), true);
                     } else {
                         String sig = Marshalling.getDBusType(meth.getGenericReturnType())[0];
-                        send(c, new MethodReturn("org.freedesktop.DBus", (MethodCall) m, sig, rv), true);
+                        send(_c, new MethodReturn("org.freedesktop.DBus", (MethodCall) _m, sig, rv), true);
                     }
                 } catch (InvocationTargetException ite) {
                     if (AbstractConnection.EXCEPTION_DEBUG) {
                         LOGGER.error("", ite);
                     }
-                    send(c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", m, ite.getCause()));
+                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, ite.getCause()));
                 } catch (DBusExecutionException dbee) {
                     if (AbstractConnection.EXCEPTION_DEBUG) {
                         LOGGER.error("", dbee);
                     }
-                    send(c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", m, dbee));
+                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, dbee));
                 } catch (Exception e) {
                     if (AbstractConnection.EXCEPTION_DEBUG) {
                         LOGGER.error("", e);
                     }
-                    send(c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", c.unique, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", t("An error occurred while calling ") + m.getName()));
+                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", t("An error occurred while calling ") + _m.getName()));
                 }
-            } catch (NoSuchMethodException NSMe) {
-                send(c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", c.unique, "org.freedesktop.DBus.Error.UnknownMethod", m.getSerial(), "s", t("This service does not support ") + m.getName()));
+            } catch (NoSuchMethodException exNsm) {
+                send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", t("This service does not support ") + _m.getName()));
             }
 
             LOGGER.debug("exit");
@@ -468,29 +471,29 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            while (_run) {
-                Message m;
+            while (run) {
+                Message msg;
                 List<WeakReference<Connstruct>> wcs;
                 // block on outqueue
                 synchronized (localqueue) {
                     while (localqueue.size() == 0) {
                         try {
                             localqueue.wait();
-                        } catch (InterruptedException Ie) {
+                        } catch (InterruptedException ex) {
                         }
                     }
-                    m = localqueue.head();
-                    wcs = localqueue.remove(m);
+                    msg = localqueue.head();
+                    wcs = localqueue.remove(msg);
                 }
                 if (null != wcs) {
                     try {
                         for (WeakReference<Connstruct> wc : wcs) {
-                            Connstruct c = wc.get();
-                            if (null != c) {
+                            Connstruct constructor = wc.get();
+                            if (null != constructor) {
 
-                                LOGGER.trace("<localqueue> Got message " + m + " from " + c);
+                                LOGGER.trace("<localqueue> Got message " + msg + " from " + constructor);
 
-                                handleMessage(c, m);
+                                handleMessage(constructor, msg);
                             }
                         }
                     } catch (DBusException dbe) {
@@ -499,7 +502,7 @@ public class DBusDaemon extends Thread {
                         }
                     }
                 } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("Discarding " + m + " connection reaped");
+                    LOGGER.info("Discarding " + msg + " connection reaped");
                 }
             }
 
@@ -520,7 +523,7 @@ public class DBusDaemon extends Thread {
 
             logger.debug("enter");
 
-            while (_run) {
+            while (run) {
 
                 logger.trace("Acquiring lock on outqueue and blocking for data");
 
@@ -531,7 +534,7 @@ public class DBusDaemon extends Thread {
                     while (outqueue.size() == 0) {
                         try {
                             outqueue.wait();
-                        } catch (InterruptedException Ie) {
+                        } catch (InterruptedException ex) {
                         }
                     }
 
@@ -569,16 +572,16 @@ public class DBusDaemon extends Thread {
     public class Reader extends Thread {
         private Connstruct                conn;
         private WeakReference<Connstruct> weakconn;
-        private boolean                   _lrun = true;
+        private boolean                   lrun = true;
 
-        public Reader(Connstruct conn) {
-            this.conn = conn;
-            weakconn = new WeakReference<Connstruct>(conn);
+        public Reader(Connstruct _conn) {
+            this.conn = _conn;
+            weakconn = new WeakReference<Connstruct>(_conn);
             setName("Reader");
         }
 
         public void stopRunning() {
-            _lrun = false;
+            lrun = false;
         }
 
         @Override
@@ -586,7 +589,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            while (_run && _lrun) {
+            while (run && lrun) {
 
                 Message m = null;
                 try {
@@ -627,11 +630,13 @@ public class DBusDaemon extends Thread {
     private MagicMap<Message, WeakReference<Connstruct>> inqueue     = new MagicMap<Message, WeakReference<Connstruct>>("in");
     private MagicMap<Message, WeakReference<Connstruct>> localqueue  = new MagicMap<Message, WeakReference<Connstruct>>("local");
     private List<Connstruct>                             sigrecips   = new Vector<Connstruct>();
-    private boolean                                      _run        = true;
-    private int                                          next_unique = 0;
-    private Object                                       unique_lock = new Object();
-    DBusServer                                           dbus_server = new DBusServer();
+    private boolean                                      run        = true;
+    private int                                          nextUnique = 0;
+    private Object                                       uniqueLock = new Object();
+    //CHECKSTYLE:OFF
+    DBusServer                                           dbusServer = new DBusServer();
     Sender                                               sender      = new Sender();
+    //CHECKSTYLE:ON
 
     public DBusDaemon() {
         setName("Daemon");
@@ -701,7 +706,7 @@ public class DBusDaemon extends Thread {
 
         LOGGER.debug("enter");
 
-        while (_run) {
+        while (run) {
             try {
                 Message m;
                 List<WeakReference<Connstruct>> wcs;
@@ -709,7 +714,7 @@ public class DBusDaemon extends Thread {
                     while (0 == inqueue.size()) {
                         try {
                             inqueue.wait();
-                        } catch (InterruptedException Ie) {
+                        } catch (InterruptedException ex) {
                         }
                     }
 
@@ -794,7 +799,7 @@ public class DBusDaemon extends Thread {
                 if (null != c.tsock) {
                     c.tsock.close();
                 }
-            } catch (IOException IOe) {
+            } catch (IOException exIo) {
             }
             synchronized (names) {
                 List<String> toRemove = new Vector<String>();
@@ -869,7 +874,7 @@ public class DBusDaemon extends Thread {
         w.close();
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         if (AbstractConnection.EXCEPTION_DEBUG) {
             LOGGER.debug("enter");
         }
@@ -905,7 +910,7 @@ public class DBusDaemon extends Thread {
                     syntax();
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException AIOOBe) {
+        } catch (ArrayIndexOutOfBoundsException exAioob) {
             syntax();
         }
 
@@ -960,10 +965,10 @@ public class DBusDaemon extends Thread {
         DBusDaemon d = new DBusDaemon();
         d.start();
         d.sender.start();
-        d.dbus_server.start();
+        d.dbusServer.start();
 
         // accept new connections
-        while (d._run) {
+        while (d.run) {
             UnixSocket s = uss.accept();
             if ((new Transport.SASL()).auth(Transport.SASL.MODE_SERVER, Transport.SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), s)) {
                 // s.setBlocking(false);
@@ -972,7 +977,7 @@ public class DBusDaemon extends Thread {
                 s.close();
             }
         }
-
+        uss.close();
         LOGGER.debug("exit");
 
     }
@@ -985,10 +990,10 @@ public class DBusDaemon extends Thread {
             DBusDaemon d = new DBusDaemon();
             d.start();
             d.sender.start();
-            d.dbus_server.start();
+            d.dbusServer.start();
 
             // accept new connections
-            while (d._run) {
+            while (d.run) {
                 Socket s = ss.accept();
                 boolean authOK = false;
                 try {

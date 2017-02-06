@@ -30,10 +30,10 @@ public class DBusMatchRule {
         return signalTypeMap.get(type);
     }
 
-    public DBusMatchRule(String type, String iface, String member) {
-        this.type = type;
-        this.iface = iface;
-        this.member = member;
+    public DBusMatchRule(String _type, String _iface, String _member) {
+        this.type = _type;
+        this.iface = _iface;
+        this.member = _member;
     }
 
     public DBusMatchRule(DBusExecutionException e) throws DBusException {
@@ -63,10 +63,10 @@ public class DBusMatchRule {
         type = "method_call";
     }
 
-    public DBusMatchRule(Class<? extends Object> c, String source, String object) throws DBusException {
-        this(c);
-        this.source = source;
-        this.object = object;
+    public DBusMatchRule(Class<? extends Object> _c, String _source, String _object) throws DBusException {
+        this(_c);
+        this.source = _source;
+        this.object = _object;
     }
 
     @SuppressWarnings("unchecked")
@@ -75,7 +75,7 @@ public class DBusMatchRule {
             if (null != c.getAnnotation(DBusInterfaceName.class)) {
                 iface = c.getAnnotation(DBusInterfaceName.class).value();
             } else {
-                iface = AbstractConnection.dollar_pattern.matcher(c.getName()).replaceAll(".");
+                iface = AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".");
             }
             if (!iface.matches(".*\\..*")) {
                 throw new DBusException(t("DBusInterfaces must be defined in a package."));
@@ -88,7 +88,7 @@ public class DBusMatchRule {
             } else if (null != c.getEnclosingClass().getAnnotation(DBusInterfaceName.class)) {
                 iface = c.getEnclosingClass().getAnnotation(DBusInterfaceName.class).value();
             } else {
-                iface = AbstractConnection.dollar_pattern.matcher(c.getEnclosingClass().getName()).replaceAll(".");
+                iface = AbstractConnection.DOLLAR_PATTERN.matcher(c.getEnclosingClass().getName()).replaceAll(".");
             }
             // Don't export things which are invalid D-Bus interfaces
             if (!iface.matches(".*\\..*")) {
@@ -105,7 +105,7 @@ public class DBusMatchRule {
             if (null != c.getAnnotation(DBusInterfaceName.class)) {
                 iface = c.getAnnotation(DBusInterfaceName.class).value();
             } else {
-                iface = AbstractConnection.dollar_pattern.matcher(c.getName()).replaceAll(".");
+                iface = AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".");
             }
             if (!iface.matches(".*\\..*")) {
                 throw new DBusException(t("DBusInterfaces must be defined in a package."));
@@ -116,7 +116,7 @@ public class DBusMatchRule {
             if (null != c.getClass().getAnnotation(DBusInterfaceName.class)) {
                 iface = c.getClass().getAnnotation(DBusInterfaceName.class).value();
             } else {
-                iface = AbstractConnection.dollar_pattern.matcher(c.getClass().getName()).replaceAll(".");
+                iface = AbstractConnection.DOLLAR_PATTERN.matcher(c.getClass().getName()).replaceAll(".");
             }
             if (!iface.matches(".*\\..*")) {
                 throw new DBusException(t("DBusInterfaces must be defined in a package."));

@@ -24,10 +24,10 @@ public class DBusStructType implements ParameterizedType {
 
     /**
     * Create a struct type.
-    * @param contents The types contained in this struct.
+    * @param _contents The types contained in this struct.
     */
-    public DBusStructType(Type... contents) {
-        this.contents = contents;
+    public DBusStructType(Type... _contents) {
+        this.contents = _contents;
     }
 
     @Override

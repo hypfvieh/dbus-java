@@ -21,20 +21,26 @@ import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.UInt32;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
-    public int c = 0;
+    private int count = 0;
 
     @Override
     public void handle(Profiler.ProfileSignal s) {
-        if (0 == (c++ % profile.SIGNAL_INNER)) {
+        if (0 == (count++ % Profile.SIGNAL_INNER)) {
             System.out.print("-");
         }
     }
+
+    public int getCount() {
+        return count;
+    }
+
+
 }
 
 /**
  * Profiling tests.
  */
-public class profile {
+public final class Profile {
     public static final int SIGNAL_INNER        = 100;
     public static final int SIGNAL_OUTER        = 100;
     public static final int PING_INNER          = 100;
@@ -56,6 +62,10 @@ public class profile {
     public static final int STRING_ARRAY_OUTER  = 10;
     public static final int STRING_ARRAY_INNER  = 1;
     public static final int STRING_ARRAY_LENGTH = 20000;
+
+    private Profile() {
+
+    }
 
     public static class Log {
         private long  last;
@@ -383,10 +393,10 @@ public class profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-                while (ph.c < count) {
+                while (ph.getCount() < count) {
                     try {
                         Thread.sleep(100);
-                    } catch (InterruptedException Ie) {
+                    } catch (InterruptedException exI) {
                     }
                 }
                 ;

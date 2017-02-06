@@ -16,7 +16,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
  * Interface for callbacks in async mode
  */
 public interface CallbackHandler<T> {
-    public void handle(T r);
+    void handle(T r);
 
-    public void handleError(DBusExecutionException e);
+    void handleError(DBusExecutionException e);
 }

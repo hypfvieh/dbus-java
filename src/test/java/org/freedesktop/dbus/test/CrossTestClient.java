@@ -39,25 +39,26 @@ import org.freedesktop.dbus.types.DBusMapType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandler<DBus.Binding.TestSignals.Triggered> {
+public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<DBus.Binding.TestSignals.Triggered> {
 
-    private static final Logger              LOGGER = LoggerFactory.getLogger(cross_test_client.class);
+    private static final Logger              LOGGER = LoggerFactory.getLogger(CrossTestClient.class);
 
     private DBusConnection                   conn;
-    private static Set<String>               passed = new TreeSet<String>();
-    private static Map<String, List<String>> failed = new HashMap<String, List<String>>();
-    private static cross_test_client         ctc;
+    public static final Set<String>               PASSED = new TreeSet<String>();
+    public static final Map<String, List<String>> FAILED = new HashMap<String, List<String>>();
+
+    private static CrossTestClient         CROSS_TEST_CLIENT_INSTANCE;
     static {
         List<String> l = new Vector<String>();
         l.add("Signal never arrived");
-        failed.put("org.freedesktop.DBus.Binding.TestSignals.Triggered", l);
+        FAILED.put("org.freedesktop.DBus.Binding.TestSignals.Triggered", l);
         l = new Vector<String>();
         l.add("Method never called");
-        failed.put("org.freedesktop.DBus.Binding.TestClient.Response", l);
+        FAILED.put("org.freedesktop.DBus.Binding.TestClient.Response", l);
     }
 
-    public cross_test_client(DBusConnection conn) {
-        this.conn = conn;
+    public CrossTestClient(DBusConnection _conn) {
+        this.conn = _conn;
     }
 
     @Override
@@ -67,7 +68,7 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
 
     @Override
     public void handle(DBus.Binding.TestSignals.Triggered t) {
-        failed.remove("org.freedesktop.DBus.Binding.TestSignals.Triggered");
+        FAILED.remove("org.freedesktop.DBus.Binding.TestSignals.Triggered");
         if (new UInt64(21389479283L).equals(t.a) && "/Test".equals(t.getPath())) {
             pass("org.freedesktop.DBus.Binding.TestSignals.Triggered");
         } else if (!new UInt64(21389479283L).equals(t.a)) {
@@ -79,7 +80,7 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
 
     @Override
     public void Response(UInt16 a, double b) {
-        failed.remove("org.freedesktop.DBus.Binding.TestClient.Response");
+        FAILED.remove("org.freedesktop.DBus.Binding.TestClient.Response");
         if (a.equals(new UInt16(15)) && (b == 12.5)) {
             pass("org.freedesktop.DBus.Binding.TestClient.Response");
         } else {
@@ -88,15 +89,15 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
     }
 
     public static void pass(String test) {
-        passed.add(test.replaceAll("[$]", "."));
+        PASSED.add(test.replaceAll("[$]", "."));
     }
 
     public static void fail(String test, String reason) {
         test = test.replaceAll("[$]", ".");
-        List<String> reasons = failed.get(test);
+        List<String> reasons = FAILED.get(test);
         if (null == reasons) {
             reasons = new Vector<String>();
-            failed.put(test, reasons);
+            FAILED.put(test, reasons);
         }
         reasons.add(reason);
     }
@@ -161,12 +162,12 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
                     fail(iface.getName() + "." + method, msg);
                 }
             }
-        } catch (DBusExecutionException DBEe) {
-            DBEe.printStackTrace();
-            fail(iface.getName() + "." + method, "Error occurred during execution: " + DBEe.getClass().getName() + " " + DBEe.getMessage());
-        } catch (InvocationTargetException ITe) {
-            ITe.printStackTrace();
-            fail(iface.getName() + "." + method, "Error occurred during execution: " + ITe.getCause().getClass().getName() + " " + ITe.getCause().getMessage());
+        } catch (DBusExecutionException exDbe) {
+            exDbe.printStackTrace();
+            fail(iface.getName() + "." + method, "Error occurred during execution: " + exDbe.getClass().getName() + " " + exDbe.getMessage());
+        } catch (InvocationTargetException exIt) {
+            exIt.printStackTrace();
+            fail(iface.getName() + "." + method, "Error occurred during execution: " + exIt.getCause().getClass().getName() + " " + exIt.getCause().getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             fail(iface.getName() + "." + method, "Error occurred during execution: " + e.getClass().getName() + " " + e.getMessage());
@@ -217,7 +218,7 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
     }
 
     @SuppressWarnings("unchecked")
-    public static List<Variant<Object>> PrimitizeRecurse(Object a, Type t) {
+    public static List<Variant<Object>> primitizeRecurse(Object a, Type t) {
         List<Variant<Object>> vs = new Vector<Variant<Object>>();
         if (t instanceof ParameterizedType) {
             Class<Object> c = (Class<Object>) ((ParameterizedType) t).getRawType();
@@ -230,34 +231,34 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
                 }
                 Type[] ts = ((ParameterizedType) t).getActualTypeArguments();
                 for (int i = 0; i < Array.getLength(os); i++) {
-                    vs.addAll(PrimitizeRecurse(Array.get(os, i), ts[0]));
+                    vs.addAll(primitizeRecurse(Array.get(os, i), ts[0]));
                 }
             } else if (Map.class.isAssignableFrom(c)) {
                 Object[] os = ((Map<?, ?>) a).keySet().toArray();
                 Object[] ks = ((Map<?, ?>) a).values().toArray();
                 Type[] ts = ((ParameterizedType) t).getActualTypeArguments();
                 for (Object element : ks) {
-                    vs.addAll(PrimitizeRecurse(element, ts[0]));
+                    vs.addAll(primitizeRecurse(element, ts[0]));
                 }
                 for (Object element : os) {
-                    vs.addAll(PrimitizeRecurse(element, ts[1]));
+                    vs.addAll(primitizeRecurse(element, ts[1]));
                 }
             } else if (Struct.class.isAssignableFrom(c)) {
                 Object[] os = ((Struct) a).getParameters();
                 Type[] ts = ((ParameterizedType) t).getActualTypeArguments();
                 for (int i = 0; i < os.length; i++) {
-                    vs.addAll(PrimitizeRecurse(os[i], ts[i]));
+                    vs.addAll(primitizeRecurse(os[i], ts[i]));
                 }
 
             } else if (Variant.class.isAssignableFrom(c)) {
-                vs.addAll(PrimitizeRecurse(((Variant<?>) a).getValue(), ((Variant<?>) a).getType()));
+                vs.addAll(primitizeRecurse(((Variant<?>) a).getValue(), ((Variant<?>) a).getType()));
             }
         } else if (Variant.class.isAssignableFrom((Class<?>) t)) {
-            vs.addAll(PrimitizeRecurse(((Variant<?>) a).getValue(), ((Variant<?>) a).getType()));
+            vs.addAll(primitizeRecurse(((Variant<?>) a).getValue(), ((Variant<?>) a).getType()));
         } else if (t instanceof Class && ((Class<?>) t).isArray()) {
             Type t2 = ((Class<?>) t).getComponentType();
             for (int i = 0; i < Array.getLength(a); i++) {
-                vs.addAll(PrimitizeRecurse(Array.get(a, i), t2));
+                vs.addAll(primitizeRecurse(Array.get(a, i), t2));
             }
         } else {
             vs.add(new Variant<>(a));
@@ -266,13 +267,13 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
         return vs;
     }
 
-    public static List<Variant<Object>> Primitize(Variant<Object> a) {
-        return PrimitizeRecurse(a.getValue(), a.getType());
+    public static List<Variant<Object>> primitize(Variant<Object> a) {
+        return primitizeRecurse(a.getValue(), a.getType());
     }
 
     public static void primitizeTest(DBus.Binding.Tests tests, Object input) {
         Variant<Object> in = new Variant<Object>(input);
-        List<Variant<Object>> vs = Primitize(in);
+        List<Variant<Object>> vs = primitize(in);
         List<Variant<Object>> res;
 
         try {
@@ -466,7 +467,7 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
         test(DBus.Binding.Tests.class, tests, "Trigger", null, "/Test", new UInt64(21389479283L));
 
         try {
-            ctc.conn.sendSignal(new DBus.Binding.TestClient.Trigger("/Test", new UInt16(15), 12.5));
+            CROSS_TEST_CLIENT_INSTANCE.conn.sendSignal(new DBus.Binding.TestClient.Trigger("/Test", new UInt16(15), 12.5));
         } catch (DBusException dbe) {
 
             LOGGER.debug("", dbe);
@@ -476,7 +477,7 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
 
         try {
             Thread.sleep(10000);
-        } catch (InterruptedException Ie) {
+        } catch (InterruptedException ex) {
         }
 
         test(DBus.Binding.Tests.class, tests, "Exit", null);
@@ -532,9 +533,9 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
         try {
             /* init */
             DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
-            ctc = new cross_test_client(conn);
-            conn.exportObject("/Test", ctc);
-            conn.addSigHandler(DBus.Binding.TestSignals.Triggered.class, ctc);
+            CROSS_TEST_CLIENT_INSTANCE = new CrossTestClient(conn);
+            conn.exportObject("/Test", CROSS_TEST_CLIENT_INSTANCE);
+            conn.addSigHandler(DBus.Binding.TestSignals.Triggered.class, CROSS_TEST_CLIENT_INSTANCE);
             DBus.Binding.Tests tests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", DBus.Binding.Tests.class);
             DBus.Binding.SingleTests singletests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", DBus.Binding.SingleTests.class);
             DBus.Peer peer = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", DBus.Peer.class);
@@ -545,12 +546,12 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
             doTests(peer, intro, rootintro, tests, singletests);
 
             /* report results */
-            for (String s : passed) {
+            for (String s : PASSED) {
                 System.out.println(s + " pass");
             }
             int i = 1;
-            for (String s : failed.keySet()) {
-                for (String r : failed.get(s)) {
+            for (String s : FAILED.keySet()) {
+                for (String r : FAILED.get(s)) {
                     System.out.println(s + " fail " + i);
                     System.out.println("report " + i + ": " + r);
                     i++;
@@ -558,8 +559,8 @@ public class cross_test_client implements DBus.Binding.TestClient, DBusSigHandle
             }
 
             conn.disconnect();
-        } catch (DBusException DBe) {
-            DBe.printStackTrace();
+        } catch (DBusException exDbe) {
+            exDbe.printStackTrace();
             System.exit(1);
         }
     }

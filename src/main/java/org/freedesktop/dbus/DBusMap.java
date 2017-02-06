@@ -19,16 +19,17 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 class DBusMap<K, V> implements Map<K, V> {
+    // CHECKSTYLE:OFF
     Object[][] entries;
-
-    public DBusMap(Object[][] entries) {
-        this.entries = entries;
+    // CHECKSTYLE:ON
+    DBusMap(Object[][] _entries) {
+        this.entries = _entries;
     }
 
     class Entry implements Map.Entry<K, V>, Comparable<Entry> {
         private int entry;
 
-        public Entry(int i) {
+        Entry(int i) {
             this.entry = i;
         }
 

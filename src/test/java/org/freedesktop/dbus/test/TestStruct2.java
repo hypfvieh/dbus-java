@@ -16,15 +16,16 @@ import org.freedesktop.dbus.Position;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
-
+//CHECKSTYLE:OFF
 public final class TestStruct2 extends Struct {
     @Position(0)
     public final List<String>              a;
     @Position(1)
     public final Variant<? extends Object> b;
 
-    public TestStruct2(List<String> a, Variant<? extends Object> b) throws DBusException {
-        this.a = a;
-        this.b = b;
+    public TestStruct2(List<String> _a, Variant<? extends Object> _b) throws DBusException {
+        this.a = _a;
+        this.b = _b;
     }
 }
+//CHECKSTYLE:ON

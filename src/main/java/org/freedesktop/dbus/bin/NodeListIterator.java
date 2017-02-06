@@ -16,11 +16,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 class NodeListIterator implements Iterator<Node> {
+    // CHECKSTYLE:OFF
     NodeList nl;
     int      i;
+    // CHECKSTYLE:ON
 
-    NodeListIterator(NodeList nl) {
-        this.nl = nl;
+    NodeListIterator(NodeList _nl) {
+        this.nl = _nl;
         i = 0;
     }
 

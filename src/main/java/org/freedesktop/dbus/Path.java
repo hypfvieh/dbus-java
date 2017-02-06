@@ -11,10 +11,12 @@
 package org.freedesktop.dbus;
 
 public class Path implements Comparable<Path> {
+    // CHECKSTYLE:OFF
     protected String path;
+    // CHECKSTYLE:ON
 
-    public Path(String path) {
-        this.path = path;
+    public Path(String _path) {
+        this.path = _path;
     }
 
     public String getPath() {

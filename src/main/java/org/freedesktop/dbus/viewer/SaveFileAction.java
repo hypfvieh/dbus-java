@@ -23,7 +23,9 @@ import javax.swing.event.ChangeListener;
 @SuppressWarnings("serial")
 class SaveFileAction extends TabbedSaveAction implements ChangeListener {
     private class SelectedTabIterator implements Iterator<TextFile> {
+        // CHECKSTYLE:OFF
         boolean iterated = false;
+        // CHECKSTYLE:ON
 
         /** {@inheritDoc} */
         @Override

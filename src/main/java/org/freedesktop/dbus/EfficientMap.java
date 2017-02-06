@@ -18,10 +18,10 @@ class EfficientMap {
     private MethodCall[] vv;
     private int          start;
     private int          end;
-    private int          init_size;
+    private int          initSize;
 
-    public EfficientMap(int initial_size) {
-        init_size = initial_size;
+    EfficientMap(int initialSize) {
+        initSize = initialSize;
         shrink();
     }
 
@@ -68,12 +68,12 @@ class EfficientMap {
     }
 
     private void shrink() {
-        if (null != kv && kv.length == init_size) {
+        if (null != kv && kv.length == initSize) {
             return;
         }
         // reset to original size
-        kv = new long[init_size];
-        vv = new MethodCall[init_size];
+        kv = new long[initSize];
+        vv = new MethodCall[initSize];
         start = 0;
         end = 0;
     }

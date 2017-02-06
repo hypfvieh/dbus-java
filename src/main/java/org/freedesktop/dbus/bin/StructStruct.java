@@ -27,16 +27,17 @@ class StructStruct {
         return newmap;
     }
 
+    // CHECKSTYLE:OFF
     public String name;
     public String pack;
-
-    public StructStruct(String name) {
-        this.name = name;
+    // CHECKSTYLE:ON
+    StructStruct(String _name) {
+        this.name = _name;
     }
 
-    public StructStruct(String name, String pack) {
-        this.name = name;
-        this.pack = pack;
+    StructStruct(String _name, String _pack) {
+        this.name = _name;
+        this.pack = _pack;
     }
 
     @Override

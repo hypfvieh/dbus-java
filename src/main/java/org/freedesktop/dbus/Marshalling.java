@@ -37,10 +37,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Contains static methods for marshalling values.
  */
-public class Marshalling {
+public final class Marshalling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Marshalling.class);
 
     private static Map<Type, String[]> typeCache = new HashMap<Type, String[]>();
+
+    private Marshalling() {
+
+    }
 
     /**
     * Will return the DBus type corresponding to the given Java type.
@@ -512,7 +516,7 @@ public class Marshalling {
                 try {
                     parameter = con.newInstance((Object[]) parameter);
                     break;
-                } catch (IllegalArgumentException IAe) {
+                } catch (IllegalArgumentException exIa) {
                 }
             }
         }

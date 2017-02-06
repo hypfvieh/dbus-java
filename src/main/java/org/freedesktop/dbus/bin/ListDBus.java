@@ -17,10 +17,14 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 /**
  * This class lists all the names currently connected on the bus
  */
-public class ListDBus {
+public final class ListDBus {
     public static void syntax() {
         System.out.println("Syntax: ListDBus [--version] [-v] [--help] [-h] [--owners] [-o] [--uids] [-u] [--session] [-s] [--system] [-y]");
         System.exit(1);
+    }
+
+    private ListDBus() {
+
     }
 
     public static void version() {
@@ -28,7 +32,7 @@ public class ListDBus {
         System.exit(1);
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         boolean owners = false;
         boolean users = false;
         int connection = DBusConnection.SESSION;
@@ -70,7 +74,7 @@ public class ListDBus {
             if (users) {
                 try {
                     System.out.print(dbus.GetConnectionUnixUser(s) + "\t");
-                } catch (DBusExecutionException DBEe) {
+                } catch (DBusExecutionException exDe) {
                     System.out.print("\t");
                 }
             }
@@ -78,7 +82,7 @@ public class ListDBus {
             if (!s.startsWith(":") && owners) {
                 try {
                     System.out.print("\t" + dbus.GetNameOwner(s));
-                } catch (DBusExecutionException DBEe) {
+                } catch (DBusExecutionException exDe) {
                 }
             }
             System.out.println();

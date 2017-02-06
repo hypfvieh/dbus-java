@@ -83,13 +83,15 @@ public class MethodReturn extends Message {
         this.call = mc;
     }
 
+    // CHECKSTYLE:OFF
     MethodCall call;
+    // CHECKSTYLE:ON
 
     public MethodCall getCall() {
         return call;
     }
 
-    protected void setCall(MethodCall call) {
-        this.call = call;
+    protected void setCall(MethodCall _call) {
+        this.call = _call;
     }
 }

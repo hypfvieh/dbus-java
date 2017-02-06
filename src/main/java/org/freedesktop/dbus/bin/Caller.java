@@ -22,7 +22,11 @@ import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.MethodCall;
 import org.freedesktop.dbus.Transport;
 
-public class Caller {
+public final class Caller {
+
+    private Caller() {
+
+    }
 
     public static void main(String[] args) {
         try {

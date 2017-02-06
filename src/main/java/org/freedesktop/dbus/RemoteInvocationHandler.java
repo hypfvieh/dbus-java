@@ -34,7 +34,7 @@ class RemoteInvocationHandler implements InvocationHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInvocationHandler.class);
 
-    
+
 
     public static Object convertRV(String sig, Object[] rp, Method m, AbstractConnection conn) throws DBusException {
         Class<? extends Object> c = m.getReturnType();
@@ -96,8 +96,8 @@ class RemoteInvocationHandler implements InvocationHandler {
             try {
                 sig = Marshalling.getDBusType(ts);
                 args = Marshalling.convertParameters(args, ts, conn);
-            } catch (DBusException DBe) {
-                throw new DBusExecutionException(t("Failed to construct D-Bus type: ") + DBe.getMessage());
+            } catch (DBusException exDbe) {
+                throw new DBusExecutionException(t("Failed to construct D-Bus type: ") + exDbe.getMessage());
             }
         }
         MethodCall call;
@@ -124,7 +124,7 @@ class RemoteInvocationHandler implements InvocationHandler {
                 if (null != ro.iface.getAnnotation(DBusInterfaceName.class)) {
                     call = new MethodCall(ro.busname, ro.objectpath, ro.iface.getAnnotation(DBusInterfaceName.class).value(), name, flags, sig, args);
                 } else {
-                    call = new MethodCall(ro.busname, ro.objectpath, AbstractConnection.dollar_pattern.matcher(ro.iface.getName()).replaceAll("."), name, flags, sig, args);
+                    call = new MethodCall(ro.busname, ro.objectpath, AbstractConnection.DOLLAR_PATTERN.matcher(ro.iface.getName()).replaceAll("."), name, flags, sig, args);
                 }
             }
         } catch (DBusException dbe) {
@@ -178,12 +178,14 @@ class RemoteInvocationHandler implements InvocationHandler {
         }
     }
 
+    // CHECKSTYLE:OFF
     AbstractConnection conn;
     RemoteObject       remote;
+    // CHECKSTYLE:ON
 
-    public RemoteInvocationHandler(AbstractConnection conn, RemoteObject remote) {
-        this.remote = remote;
-        this.conn = conn;
+    RemoteInvocationHandler(AbstractConnection _conn, RemoteObject _remote) {
+        this.remote = _remote;
+        this.conn = _conn;
     }
 
     @Override
@@ -197,7 +199,7 @@ class RemoteInvocationHandler implements InvocationHandler {
                 if (1 == args.length) {
                     return new Boolean(remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(args[0])).remote));
                 }
-            } catch (IllegalArgumentException IAe) {
+            } catch (IllegalArgumentException exIa) {
                 return Boolean.FALSE;
             }
         } else if (method.getName().equals("finalize")) {

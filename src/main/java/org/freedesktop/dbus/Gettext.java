@@ -20,8 +20,12 @@ package org.freedesktop.dbus;
 
 import java.util.ResourceBundle;
 
-public class Gettext {
+public final class Gettext {
     private static ResourceBundle myResources;
+
+    private Gettext() {
+
+    }
 
     static {
         try {

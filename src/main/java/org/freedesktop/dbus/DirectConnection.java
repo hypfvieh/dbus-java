@@ -43,16 +43,16 @@ public class DirectConnection extends AbstractConnection {
         try {
             transport = new Transport(addr, AbstractConnection.TIMEOUT);
             connected = true;
-        } catch (IOException ioe) {
+        } catch (IOException exIo) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", ioe);
+                logger.error("", exIo);
             }
-            throw new DBusException(t("Failed to connect to bus ") + ioe.getMessage());
-        } catch (ParseException pe) {
+            throw new DBusException(t("Failed to connect to bus ") + exIo.getMessage());
+        } catch (ParseException exP) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", pe);
+                logger.error("", exP);
             }
-            throw new DBusException(t("Failed to connect to bus ") + pe.getMessage());
+            throw new DBusException(t("Failed to connect to bus ") + exP.getMessage());
         }
 
         listen();

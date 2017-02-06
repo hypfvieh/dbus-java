@@ -28,16 +28,18 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
      * Make static so that previous save location is stored
      */
     private static JFileChooser chooser;
+    // CHECKSTYLE:OFF
     protected final JTabbedPane tabbedPane;
+    // CHECKSTYLE:ON
 
-    protected TabbedSaveAction(JTabbedPane tabbedPane) {
+    protected TabbedSaveAction(JTabbedPane _tabbedPane) {
         super();
-        this.tabbedPane = tabbedPane;
+        this.tabbedPane = _tabbedPane;
     }
 
-    protected TabbedSaveAction(JTabbedPane tabbedPane, String name) {
-        super(name);
-        this.tabbedPane = tabbedPane;
+    protected TabbedSaveAction(JTabbedPane _tabbedPane, String _name) {
+        super(_name);
+        this.tabbedPane = _tabbedPane;
     }
 
     /** Get the text file object associated with the supplied index

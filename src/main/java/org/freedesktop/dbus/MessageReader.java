@@ -19,12 +19,13 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
 import org.freedesktop.dbus.exceptions.MessageTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cx.ath.matthew.utils.Hexdump;
 
 public class MessageReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -36,8 +37,8 @@ public class MessageReader {
     private byte[]      body   = null;
     private int[]       len    = new int[4];
 
-    public MessageReader(InputStream in) {
-        this.in = new BufferedInputStream(in);
+    public MessageReader(InputStream _in) {
+        this.in = new BufferedInputStream(_in);
     }
 
     public Message readMessage() throws IOException, DBusException {
@@ -50,7 +51,7 @@ public class MessageReader {
         if (len[0] < 12) {
             try {
                 rv = in.read(buf, len[0], 12 - len[0]);
-            } catch (SocketTimeoutException STe) {
+            } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
@@ -85,7 +86,7 @@ public class MessageReader {
         if (len[1] < 4) {
             try {
                 rv = in.read(tbuf, len[1], 4 - len[1]);
-            } catch (SocketTimeoutException STe) {
+            } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
@@ -118,7 +119,7 @@ public class MessageReader {
         if (len[2] < headerlen) {
             try {
                 rv = in.read(header, 8 + len[2], headerlen - len[2]);
-            } catch (SocketTimeoutException STe) {
+            } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
@@ -143,7 +144,7 @@ public class MessageReader {
         if (len[3] < body.length) {
             try {
                 rv = in.read(body, len[3], body.length - len[3]);
-            } catch (SocketTimeoutException STe) {
+            } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
@@ -192,15 +193,15 @@ public class MessageReader {
             body = null;
             header = null;
             throw dbe;
-        } catch (RuntimeException re) {
+        } catch (RuntimeException exRe) {
             if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", re);
+                logger.error("", exRe);
             }
             buf = null;
             tbuf = null;
             body = null;
             header = null;
-            throw re;
+            throw exRe;
         }
         logger.debug("=> " + m);
         buf = null;

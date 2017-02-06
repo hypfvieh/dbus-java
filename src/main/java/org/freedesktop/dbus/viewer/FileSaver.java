@@ -38,10 +38,10 @@ final class FileSaver implements Runnable {
 
     private final Iterable<TextFile> textFiles;
 
-    FileSaver(Component parentComponent, File parentDirectory, Iterable<TextFile> files) {
-        this.parentComponent = parentComponent;
-        this.parentDirectory = parentDirectory;
-        this.textFiles = files;
+    FileSaver(Component _parentComponent, File _parentDirectory, Iterable<TextFile> _files) {
+        this.parentComponent = _parentComponent;
+        this.parentDirectory = _parentDirectory;
+        this.textFiles = _files;
     }
 
     /** {@inheritDoc} */
@@ -130,7 +130,7 @@ final class FileSaver implements Runnable {
             if (fileWriter != null) {
                 try {
                     fileWriter.close();
-                } catch (IOException e1) {
+                } catch (IOException ex) {
                 }
             }
         }

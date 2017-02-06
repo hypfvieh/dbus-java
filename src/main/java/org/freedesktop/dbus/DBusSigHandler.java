@@ -21,5 +21,5 @@ public interface DBusSigHandler<T extends DBusSignal> {
     * signal will be an instance of the class with the correct type signature.
     * Otherwise it will be an instance of DBusSignal
     */
-    public void handle(T s);
+    void handle(T s);
 }

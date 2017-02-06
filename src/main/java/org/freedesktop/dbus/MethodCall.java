@@ -14,11 +14,12 @@ import static org.freedesktop.dbus.Gettext.t;
 
 import java.util.Vector;
 
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cx.ath.matthew.utils.Hexdump;
 
 public class MethodCall extends Message {
 
@@ -117,7 +118,9 @@ public class MethodCall extends Message {
         REPLY_WAIT_TIMEOUT = timeout;
     }
 
+    // CHECKSTYLE:OFF
     Message reply = null;
+    // CHECKSTYLE:ON
 
     public synchronized boolean hasReply() {
         return null != reply;
@@ -136,7 +139,7 @@ public class MethodCall extends Message {
         try {
             wait(timeout);
             return reply;
-        } catch (InterruptedException Ie) {
+        } catch (InterruptedException exI) {
             return reply;
         }
     }
@@ -155,14 +158,14 @@ public class MethodCall extends Message {
         try {
             wait(REPLY_WAIT_TIMEOUT);
             return reply;
-        } catch (InterruptedException Ie) {
+        } catch (InterruptedException exI) {
             return reply;
         }
     }
 
-    protected synchronized void setReply(Message reply) {
-        logger.trace("Setting reply to " + this + " to " + reply);
-        this.reply = reply;
+    protected synchronized void setReply(Message _reply) {
+        logger.trace("Setting reply to " + this + " to " + _reply);
+        this.reply = _reply;
         notifyAll();
     }
 

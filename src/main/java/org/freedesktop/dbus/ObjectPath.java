@@ -11,12 +11,12 @@
 package org.freedesktop.dbus;
 
 class ObjectPath extends Path {
+    // CHECKSTYLE:OFF
     public String source;
+    // CHECKSTYLE:ON
 
-    // public DBusConnection conn;
-    public ObjectPath(String source, String path/*, DBusConnection conn*/) {
-        super(path);
-        this.source = source;
-        // this.conn = conn;
+    ObjectPath(String _source, String _path) {
+        super(_path);
+        this.source = _source;
     }
 }

@@ -11,16 +11,18 @@
 package org.freedesktop.dbus;
 
 class RemoteObject {
+    // CHECKSTYLE:OFF
     String                         busname;
     String                         objectpath;
     Class<? extends DBusInterface> iface;
     boolean                        autostart;
+    // CHECKSTYLE:ON
 
-    public RemoteObject(String busname, String objectpath, Class<? extends DBusInterface> iface, boolean autostart) {
-        this.busname = busname;
-        this.objectpath = objectpath;
-        this.iface = iface;
-        this.autostart = autostart;
+    RemoteObject(String _busname, String _objectpath, Class<? extends DBusInterface> _iface, boolean _autostart) {
+        this.busname = _busname;
+        this.objectpath = _objectpath;
+        this.iface = _iface;
+        this.autostart = _autostart;
     }
 
     @Override

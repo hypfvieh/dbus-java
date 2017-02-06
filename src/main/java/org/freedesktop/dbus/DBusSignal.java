@@ -83,19 +83,21 @@ public class DBusSignal extends Message {
         append("ua(yv)", ++serial, hargs.toArray());
         pad((byte) 8);
 
-        long c = bytecounter;
+        long counter = bytecounter;
         if (null != sig) {
             append(sig, args);
         }
-        marshallint(bytecounter - c, blen, 0, 4);
+        marshallint(bytecounter - counter, blen, 0, 4);
         bodydone = true;
     }
 
+    // CHECKSTYLE:OFF
     static class internalsig extends DBusSignal {
-        public internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
+        internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
             super(source, objectpath, type, name, sig, parameters, serial);
         }
     }
+    // CHECKSTYLE:ON
 
     private static Map<Class<? extends DBusSignal>, Type[]>                            typeCache  = new HashMap<Class<? extends DBusSignal>, Type[]>();
     private static Map<String, Class<? extends DBusSignal>>                            classCache = new HashMap<String, Class<? extends DBusSignal>>();
@@ -120,7 +122,7 @@ public class DBusSignal extends Message {
             if (null != c.getEnclosingClass().getAnnotation(DBusInterfaceName.class)) {
                 type = c.getEnclosingClass().getAnnotation(DBusInterfaceName.class).value();
             } else {
-                type = AbstractConnection.dollar_pattern.matcher(c.getEnclosingClass().getName()).replaceAll(".");
+                type = AbstractConnection.DOLLAR_PATTERN.matcher(c.getEnclosingClass().getName()).replaceAll(".");
             }
 
         } else {
@@ -144,7 +146,7 @@ public class DBusSignal extends Message {
         do {
             try {
                 c = (Class<? extends DBusSignal>) Class.forName(name);
-            } catch (ClassNotFoundException CNFe) {
+            } catch (ClassNotFoundException exCnf) {
             }
             name = name.replaceAll("\\.([^\\.]*)$", "\\$$1");
         } while (null == c && name.matches(".*\\..*"));
@@ -243,7 +245,7 @@ public class DBusSignal extends Message {
         } else if (null != enc.getAnnotation(DBusInterfaceName.class)) {
             iface = enc.getAnnotation(DBusInterfaceName.class).value();
         } else {
-            iface = AbstractConnection.dollar_pattern.matcher(enc.getName()).replaceAll(".");
+            iface = AbstractConnection.DOLLAR_PATTERN.matcher(enc.getName()).replaceAll(".");
         }
 
         headers.put(Message.HeaderField.PATH, objectpath);
@@ -317,11 +319,11 @@ public class DBusSignal extends Message {
         setArgs(args);
         String sig = getSig();
 
-        long c = bytecounter;
+        long counter = bytecounter;
         if (null != args && 0 < args.length) {
             append(sig, args);
         }
-        marshallint(bytecounter - c, blen, 0, 4);
+        marshallint(bytecounter - counter, blen, 0, 4);
         bodydone = true;
     }
 }

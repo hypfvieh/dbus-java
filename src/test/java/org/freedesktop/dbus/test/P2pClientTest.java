@@ -17,7 +17,12 @@ import java.io.InputStreamReader;
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DirectConnection;
 
-public class test_p2p_client {
+public final class P2pClientTest {
+
+    private P2pClientTest() {
+
+    }
+
     public static void main(String[] args) throws Exception {
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream("address")));) {
 
@@ -32,7 +37,7 @@ public class test_p2p_client {
 
             try {
                 tri.throwme();
-            } catch (TestException Te) {
+            } catch (TestException ex) {
                 System.out.println("Caught TestException");
             }
             ((DBus.Peer) tri).Ping();

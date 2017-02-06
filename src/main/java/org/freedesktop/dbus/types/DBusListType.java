@@ -23,10 +23,10 @@ public class DBusListType implements ParameterizedType {
 
     /**
     * Create a List type.
-    * @param v Type of the list contents.
+    * @param _v Type of the list contents.
     */
-    public DBusListType(Type v) {
-        this.v = v;
+    public DBusListType(Type _v) {
+        this.v = _v;
     }
 
     @Override

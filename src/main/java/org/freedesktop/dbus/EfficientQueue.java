@@ -22,10 +22,10 @@ class EfficientQueue {
     private Message[] mv;
     private int       start;
     private int       end;
-    private int       init_size;
+    private int       initSize;
 
-    public EfficientQueue(int initial_size) {
-        init_size = initial_size;
+    EfficientQueue(int _initialSize) {
+        initSize = _initialSize;
         shrink();
     }
 
@@ -67,11 +67,11 @@ class EfficientQueue {
 
     private void shrink() {
         logger.debug("Shrinking");
-        if (null != mv && mv.length == init_size) {
+        if (null != mv && mv.length == initSize) {
             return;
         }
         // reset to original size
-        mv = new Message[init_size];
+        mv = new Message[initSize];
         start = 0;
         end = 0;
     }

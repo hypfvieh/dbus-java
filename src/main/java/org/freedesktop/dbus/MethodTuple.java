@@ -15,13 +15,15 @@ import org.slf4j.LoggerFactory;
 
 class MethodTuple {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    // CHECKSTYLE:OFF
     String name;
     String sig;
+    // CHECKSTYLE:ON
 
-    public MethodTuple(String name, String sig) {
-        this.name = name;
-        if (null != sig) {
-            this.sig = sig;
+    MethodTuple(String _name, String _sig) {
+        this.name = _name;
+        if (null != _sig) {
+            this.sig = _sig;
         } else {
             this.sig = "";
         }

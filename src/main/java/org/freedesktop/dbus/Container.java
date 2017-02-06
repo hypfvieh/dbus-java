@@ -35,7 +35,7 @@ abstract class Container {
 
     private Object[] parameters = null;
 
-    public Container() {
+    Container() {
     }
 
     private void setup() {
@@ -51,7 +51,7 @@ abstract class Container {
             }
             try {
                 args[p.value()] = f.get(this);
-            } catch (IllegalAccessException IAe) {
+            } catch (IllegalAccessException exIa) {
             }
         }
 

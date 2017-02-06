@@ -21,27 +21,30 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-class ArrayFrob {
-    static Hashtable<Class<? extends Object>, Class<? extends Object>> primitiveToWrapper = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
-    static Hashtable<Class<? extends Object>, Class<? extends Object>> wrapperToPrimitive = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+final class ArrayFrob {
+    private static Hashtable<Class<? extends Object>, Class<? extends Object>> PRIMITIVE_TO_WRAPPER = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+    private static Hashtable<Class<? extends Object>, Class<? extends Object>> WRAPPER_TO_PRIMITIVE = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
     static {
-        primitiveToWrapper.put(Boolean.TYPE, Boolean.class);
-        primitiveToWrapper.put(Byte.TYPE, Byte.class);
-        primitiveToWrapper.put(Short.TYPE, Short.class);
-        primitiveToWrapper.put(Character.TYPE, Character.class);
-        primitiveToWrapper.put(Integer.TYPE, Integer.class);
-        primitiveToWrapper.put(Long.TYPE, Long.class);
-        primitiveToWrapper.put(Float.TYPE, Float.class);
-        primitiveToWrapper.put(Double.TYPE, Double.class);
-        wrapperToPrimitive.put(Boolean.class, Boolean.TYPE);
-        wrapperToPrimitive.put(Byte.class, Byte.TYPE);
-        wrapperToPrimitive.put(Short.class, Short.TYPE);
-        wrapperToPrimitive.put(Character.class, Character.TYPE);
-        wrapperToPrimitive.put(Integer.class, Integer.TYPE);
-        wrapperToPrimitive.put(Long.class, Long.TYPE);
-        wrapperToPrimitive.put(Float.class, Float.TYPE);
-        wrapperToPrimitive.put(Double.class, Double.TYPE);
+        PRIMITIVE_TO_WRAPPER.put(Boolean.TYPE, Boolean.class);
+        PRIMITIVE_TO_WRAPPER.put(Byte.TYPE, Byte.class);
+        PRIMITIVE_TO_WRAPPER.put(Short.TYPE, Short.class);
+        PRIMITIVE_TO_WRAPPER.put(Character.TYPE, Character.class);
+        PRIMITIVE_TO_WRAPPER.put(Integer.TYPE, Integer.class);
+        PRIMITIVE_TO_WRAPPER.put(Long.TYPE, Long.class);
+        PRIMITIVE_TO_WRAPPER.put(Float.TYPE, Float.class);
+        PRIMITIVE_TO_WRAPPER.put(Double.TYPE, Double.class);
+        WRAPPER_TO_PRIMITIVE.put(Boolean.class, Boolean.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Byte.class, Byte.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Short.class, Short.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Character.class, Character.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Integer.class, Integer.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Long.class, Long.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Float.class, Float.TYPE);
+        WRAPPER_TO_PRIMITIVE.put(Double.class, Double.TYPE);
 
+    }
+
+    private ArrayFrob() {
     }
 
     @SuppressWarnings("unchecked")
@@ -51,7 +54,7 @@ class ArrayFrob {
             throw new IllegalArgumentException(t("Not an array"));
         }
         Class<? extends Object> cc = ac.getComponentType();
-        Class<? extends Object> ncc = primitiveToWrapper.get(cc);
+        Class<? extends Object> ncc = PRIMITIVE_TO_WRAPPER.get(cc);
         if (null == ncc) {
             throw new IllegalArgumentException(t("Not a primitive type"));
         }
@@ -66,7 +69,7 @@ class ArrayFrob {
     public static <T> Object unwrap(T[] ns) throws IllegalArgumentException {
         Class<? extends T[]> ac = (Class<? extends T[]>) ns.getClass();
         Class<T> cc = (Class<T>) ac.getComponentType();
-        Class<? extends Object> ncc = wrapperToPrimitive.get(cc);
+        Class<? extends Object> ncc = WRAPPER_TO_PRIMITIVE.get(cc);
         if (null == ncc) {
             throw new IllegalArgumentException(t("Not a wrapper type"));
         }

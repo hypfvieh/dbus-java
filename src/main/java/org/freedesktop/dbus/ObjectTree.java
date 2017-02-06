@@ -22,30 +22,32 @@ class ObjectTree {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     class TreeNode {
+        // CHECKSTYLE:OFF
         String         name;
         ExportedObject object;
         String         data;
         TreeNode       right;
         TreeNode       down;
+        // CHECKSTYLE:ON
 
-        public TreeNode(String name) {
-            this.name = name;
+        TreeNode(String _name) {
+            this.name = _name;
         }
 
-        public TreeNode(String name, ExportedObject object, String data) {
-            this.name = name;
-            this.object = object;
-            this.data = data;
+        TreeNode(String _name, ExportedObject _object, String _data) {
+            this.name = _name;
+            this.object = _object;
+            this.data = _data;
         }
     }
 
     private TreeNode root;
 
-    public ObjectTree() {
+    ObjectTree() {
         root = new TreeNode("");
     }
 
-    public static final Pattern slashpattern = Pattern.compile("/");
+    public static final Pattern SLASH_PATTERN = Pattern.compile("/");
 
     private TreeNode recursiveFind(TreeNode current, String path) {
         if ("/".equals(path)) {
@@ -78,7 +80,7 @@ class ObjectTree {
     }
 
     private TreeNode recursiveAdd(TreeNode current, String path, ExportedObject object, String data) {
-        String[] elements = slashpattern.split(path, 2);
+        String[] elements = SLASH_PATTERN.split(path, 2);
         // this is us or a parent node
         if (path.startsWith(current.name)) {
             // this is us
@@ -126,14 +128,16 @@ class ObjectTree {
         t.data = null;
     }
 
-    public String Introspect(String path) {
-        TreeNode t = recursiveFind(root, path);
+    // CHECKSTYLE:OFF
+    public String Introspect(String _path) {
+    // CHECKSTYLE:ON
+        TreeNode t = recursiveFind(root, _path);
         if (null == t) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
         sb.append("<node name=\"");
-        sb.append(path);
+        sb.append(_path);
         sb.append("\">\n");
         if (null != t.data) {
             sb.append(t.data);

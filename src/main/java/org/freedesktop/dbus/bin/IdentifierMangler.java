@@ -15,7 +15,7 @@ import java.util.Arrays;
 /**
  * Checks identifiers for keywords etc and mangles them if so.
  */
-public class IdentifierMangler {
+public final class IdentifierMangler {
     private static String[] keywords;
     static {
         keywords = new String[] {
@@ -30,5 +30,9 @@ public class IdentifierMangler {
             name = "_" + name;
         }
         return name;
+    }
+
+    private IdentifierMangler() {
+
     }
 }

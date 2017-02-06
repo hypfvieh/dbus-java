@@ -52,10 +52,10 @@ public class DBusAsyncReply<ReturnType> {
     private Method                 me;
     private AbstractConnection     conn;
 
-    DBusAsyncReply(MethodCall mc, Method me, AbstractConnection conn) {
-        this.mc = mc;
-        this.me = me;
-        this.conn = conn;
+    DBusAsyncReply(MethodCall _mc, Method _me, AbstractConnection _conn) {
+        this.mc = _mc;
+        this.me = _me;
+        this.conn = _conn;
     }
 
     @SuppressWarnings("unchecked")
@@ -67,8 +67,8 @@ public class DBusAsyncReply<ReturnType> {
             } else if (m instanceof MethodReturn) {
                 try {
                     rval = (ReturnType) RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);
-                } catch (DBusExecutionException DBEe) {
-                    error = DBEe;
+                } catch (DBusExecutionException exDee) {
+                    error = exDee;
                 } catch (DBusException dbe) {
                     if (AbstractConnection.EXCEPTION_DEBUG) {
                         logger.error("", dbe);

@@ -27,9 +27,9 @@ import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
-public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.SingleTests, DBusSigHandler<DBus.Binding.TestClient.Trigger> {
+public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleTests, DBusSigHandler<DBus.Binding.TestClient.Trigger> {
     private DBusConnection conn;
-    boolean                run     = true;
+    private boolean                run     = true;
     private Set<String>    done    = new TreeSet<String>();
     private Set<String>    notdone = new TreeSet<String>();
     {
@@ -66,13 +66,37 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
         notdone.add("org.freedesktop.DBus.Binding.TestClient.Trigger");
     }
 
-    public cross_test_server(DBusConnection conn) {
-        this.conn = conn;
+    public CrossTestServer(DBusConnection _conn) {
+        this.conn = _conn;
     }
 
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    public boolean isRun() {
+        return run;
+    }
+
+    public void setRun(boolean _run) {
+        run = _run;
+    }
+
+    public Set<String> getDone() {
+        return done;
+    }
+
+    public void setDone(Set<String> _done) {
+        done = _done;
+    }
+
+    public Set<String> getNotdone() {
+        return notdone;
+    }
+
+    public void setNotdone(Set<String> _notdone) {
+        notdone = _notdone;
     }
 
     @Override
@@ -306,7 +330,7 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
     public List<Variant<Object>> Primitize(Variant<Object> a) {
         done.add("org.freedesktop.DBus.Binding.Tests.Primitize");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Primitize");
-        return cross_test_client.PrimitizeRecurse(a.getValue(), a.getType());
+        return CrossTestClient.primitizeRecurse(a.getValue(), a.getType());
     }
 
     @Override
@@ -324,8 +348,8 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Trigger");
         try {
             conn.sendSignal(new DBus.Binding.TestSignals.Triggered(a, b));
-        } catch (DBusException DBe) {
-            throw new DBusExecutionException(DBe.getMessage());
+        } catch (DBusException exD) {
+            throw new DBusExecutionException(exD.getMessage());
         }
     }
 
@@ -346,8 +370,8 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
         try {
             DBus.Binding.TestClient cb = conn.getRemoteObject(t.getSource(), "/Test", DBus.Binding.TestClient.class);
             cb.Response(t.a, t.b);
-        } catch (DBusException DBe) {
-            throw new DBusExecutionException(DBe.getMessage());
+        } catch (DBusException exD) {
+            throw new DBusExecutionException(exD.getMessage());
         }
     }
 
@@ -355,14 +379,14 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
         try {
             DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
             conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
-            cross_test_server cts = new cross_test_server(conn);
+            CrossTestServer cts = new CrossTestServer(conn);
             conn.addSigHandler(DBus.Binding.TestClient.Trigger.class, cts);
             conn.exportObject("/Test", cts);
             synchronized (cts) {
                 while (cts.run) {
                     try {
                         cts.wait();
-                    } catch (InterruptedException Ie) {
+                    } catch (InterruptedException exIe) {
                     }
                 }
             }
@@ -374,8 +398,8 @@ public class cross_test_server implements DBus.Binding.Tests, DBus.Binding.Singl
             }
             conn.disconnect();
             System.exit(0);
-        } catch (DBusException DBe) {
-            DBe.printStackTrace();
+        } catch (DBusException exDe) {
+            exDe.printStackTrace();
             System.exit(1);
         }
     }

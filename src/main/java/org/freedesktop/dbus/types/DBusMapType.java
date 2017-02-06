@@ -24,12 +24,12 @@ public class DBusMapType implements ParameterizedType {
 
     /**
     * Create a map type.
-    * @param k The type of the keys.
-    * @param v The type of the values.
+    * @param _k The type of the keys.
+    * @param _v The type of the values.
     */
-    public DBusMapType(Type k, Type v) {
-        this.k = k;
-        this.v = v;
+    public DBusMapType(Type _k, Type _v) {
+        this.k = _k;
+        this.v = _v;
     }
 
     @Override

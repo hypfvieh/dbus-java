@@ -15,10 +15,11 @@ import java.lang.reflect.Type;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 public class TypeSignature {
+    // CHECKSTYLE:OFF
     String sig;
-
-    public TypeSignature(String sig) {
-        this.sig = sig;
+    // CHECKSTYLE:ON
+    public TypeSignature(String _sig) {
+        this.sig = _sig;
     }
 
     public TypeSignature(Type[] types) throws DBusException {

@@ -13,8 +13,8 @@ package org.freedesktop.dbus.test;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusSigHandler;
 
-public class two_part_test_server implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
-    public class two_part_test_object implements TwoPartObject {
+public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
+    public class TwoPartTestObject implements TwoPartObject {
         @Override
         public boolean isRemote() {
             return false;
@@ -29,8 +29,8 @@ public class two_part_test_server implements TwoPartInterface, DBusSigHandler<Tw
 
     private DBusConnection conn;
 
-    public two_part_test_server(DBusConnection conn) {
-        this.conn = conn;
+    public TwoPartTestServer(DBusConnection _conn) {
+        this.conn = _conn;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class two_part_test_server implements TwoPartInterface, DBusSigHandler<Tw
 
     @Override
     public TwoPartObject getNew() {
-        TwoPartObject o = new two_part_test_object();
+        TwoPartObject o = new TwoPartTestObject();
         System.out.println("export new");
         try {
             conn.exportObject("/12345", o);
@@ -58,13 +58,13 @@ public class two_part_test_server implements TwoPartInterface, DBusSigHandler<Tw
     public static void main(String[] args) throws Exception {
         DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
         conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
-        two_part_test_server server = new two_part_test_server(conn);
+        TwoPartTestServer server = new TwoPartTestServer(conn);
         conn.exportObject("/", server);
         conn.addSigHandler(TwoPartInterface.TwoPartSignal.class, server);
         while (true) {
             try {
                 Thread.sleep(10000);
-            } catch (InterruptedException Ie) {
+            } catch (InterruptedException ex) {
             }
         }
     }

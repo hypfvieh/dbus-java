@@ -196,10 +196,8 @@ public class DBusViewer {
             } catch (DBusExecutionException e) {
                 e.printStackTrace();
             } catch (SAXException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             results = p.getResult();
@@ -212,7 +210,7 @@ public class DBusViewer {
                         for (DBusEntry entry : results) {
                             entry.setUser(user);
                         }
-                    } catch (DBusExecutionException DBEe) {
+                    } catch (DBusExecutionException exDbe) {
                     }
                 }
                 if (!name.startsWith(":") && owners) {
@@ -221,7 +219,7 @@ public class DBusViewer {
                         for (DBusEntry entry : results) {
                             entry.setOwner(owner);
                         }
-                    } catch (DBusExecutionException DBEe) {
+                    } catch (DBusExecutionException exDbe) {
                     }
                 }
                 for (DBusEntry entry : results) {
@@ -232,21 +230,21 @@ public class DBusViewer {
         return model;
     }
 
-    private final static String DOC_TYPE = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
+    private static final String DOC_TYPE = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
 
     class ParsingContext {
         private DBusConnection  conn;
         private DocumentBuilder builder;
         private List<DBusEntry> result;
 
-        ParsingContext(DBusConnection conn) {
-            this.conn = conn;
+        ParsingContext(DBusConnection _conn) {
+            this.conn = _conn;
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             try {
                 builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException e1) {
+            } catch (ParserConfigurationException exPc) {
                 // TODO Auto-generated catch block
-                throw new RuntimeException(t("Error during parser init: ") + e1.getMessage(), e1);
+                throw new RuntimeException(t("Error during parser init: ") + exPc.getMessage(), exPc);
             }
             reset();
 

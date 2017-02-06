@@ -26,24 +26,24 @@ public class UInt32 extends Number implements Comparable<UInt32> {
     private long             value;
 
     /** Create a UInt32 from a long.
-    * @param value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
+    * @param _value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
     * @throws NumberFormatException if value is not between MIN_VALUE and MAX_VALUE
     */
-    public UInt32(long value) {
-        if (value < MIN_VALUE || value > MAX_VALUE) {
+    public UInt32(long _value) {
+        if (_value < MIN_VALUE || _value > MAX_VALUE) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_VALUE
+                    _value, MIN_VALUE, MAX_VALUE
             }));
         }
-        this.value = value;
+        this.value = _value;
     }
 
     /** Create a UInt32 from a String.
-    * @param value Must parse to a valid integer within MIN_VALUE&ndash;MAX_VALUE
+    * @param _value Must parse to a valid integer within MIN_VALUE&ndash;MAX_VALUE
     * @throws NumberFormatException if value is not an integer between MIN_VALUE and MAX_VALUE
     */
-    public UInt32(String value) {
-        this(Long.parseLong(value));
+    public UInt32(String _value) {
+        this(Long.parseLong(_value));
     }
 
     /** The value of this as a byte. */

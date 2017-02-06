@@ -21,19 +21,19 @@ public class TestSerializable<A> implements DBusSerializable {
     private String          b;
     private Vector<Integer> c;
 
-    public TestSerializable(int a, A b, Vector<Integer> c) {
-        this.a = a;
-        this.b = b.toString();
-        this.c = c;
+    public TestSerializable(int _a, A _b, Vector<Integer> _c) {
+        this.a = _a;
+        this.b = _b.toString();
+        this.c = _c;
     }
 
     public TestSerializable() {
     }
 
-    public void deserialize(int a, String b, List<Integer> c) {
-        this.a = a;
-        this.b = b;
-        this.c = new Vector<Integer>(c);
+    public void deserialize(int _a, String _b, List<Integer> _c) {
+        this.a = _a;
+        this.b = _b;
+        this.c = new Vector<Integer>(_c);
     }
 
     @Override

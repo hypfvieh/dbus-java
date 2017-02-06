@@ -97,11 +97,11 @@ public class Error extends Message {
     }
 
     public Error(String source, Message m, Throwable e) throws DBusException {
-        this(source, m.getSource(), AbstractConnection.dollar_pattern.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
+        this(source, m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
     }
 
     public Error(Message m, Throwable e) throws DBusException {
-        this(m.getSource(), AbstractConnection.dollar_pattern.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
+        this(m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
     }
 
     @SuppressWarnings("unchecked")
@@ -113,7 +113,7 @@ public class Error extends Message {
         do {
             try {
                 c = (Class<? extends org.freedesktop.dbus.exceptions.DBusExecutionException>) Class.forName(name);
-            } catch (ClassNotFoundException CNFe) {
+            } catch (ClassNotFoundException exCnf) {
             }
             name = name.replaceAll("\\.([^\\.]*)$", "\\$$1");
         } while (null == c && name.matches(".*\\..*"));
@@ -143,15 +143,15 @@ public class Error extends Message {
             }
             ex.setType(getName());
             return ex;
-        } catch (Exception e) {
+        } catch (Exception ex1) {
             if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", e);
+                logger.error("", ex1);
             }
             DBusExecutionException ex;
             Object[] args = null;
             try {
                 args = getParameters();
-            } catch (Exception ee) {
+            } catch (Exception ex2) {
             }
             if (null == args || 0 == args.length) {
                 ex = new DBusExecutionException("");

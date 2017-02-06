@@ -12,8 +12,13 @@ package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.DBusConnection;
 
-public class two_part_test_client {
-    public static class two_part_test_object implements TwoPartObject {
+public final class TwoPartTestClient {
+
+    private TwoPartTestClient() {
+
+    }
+
+    public static class TwoPartTestObject implements TwoPartObject {
         @Override
         public boolean isRemote() {
             return false;
@@ -35,12 +40,12 @@ public class two_part_test_client {
         TwoPartObject o = remote.getNew();
         System.out.println("get name");
         System.out.println(o.getName());
-        two_part_test_object tpto = new two_part_test_object();
+        TwoPartTestObject tpto = new TwoPartTestObject();
         conn.exportObject("/TestObject", tpto);
         conn.sendSignal(new TwoPartInterface.TwoPartSignal("/FromObject", tpto));
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException Ie) {
+        } catch (InterruptedException ex) {
         }
         conn.disconnect();
     }

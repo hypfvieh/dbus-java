@@ -26,7 +26,9 @@ import org.freedesktop.dbus.bin.CreateInterface.PrintStreamFactory;
  * @since 10/02/2006
  */
 final class StringStreamFactory extends PrintStreamFactory {
+    // CHECKSTYLE:OFF
     Map<String, ByteArrayOutputStream> streamMap = new HashMap<String, ByteArrayOutputStream>();
+    // CHECKSTYLE:ON
 
     /** {@inheritDoc} */
     @Override

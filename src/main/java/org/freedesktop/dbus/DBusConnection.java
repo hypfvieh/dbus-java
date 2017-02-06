@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * Signal Handlers and method calls from remote objects are run in their own threads, you MUST handle the concurrency issues.
  * </p>
  */
-public class DBusConnection extends AbstractConnection {
+public final class DBusConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /**
      * Add addresses of peers to a set which will watch for them to
@@ -66,8 +66,8 @@ public class DBusConnection extends AbstractConnection {
 
         @Override
         public void handle(DBus.NameOwnerChanged noc) {
-            logger.debug("Received NameOwnerChanged(" + noc.name + "," + noc.old_owner + "," + noc.new_owner + ")");
-            if ("".equals(noc.new_owner) && addresses.contains(noc.name)) {
+            logger.debug("Received NameOwnerChanged(" + noc.name + "," + noc.oldOwner + "," + noc.newOwner + ")");
+            if ("".equals(noc.newOwner) && addresses.contains(noc.name)) {
                 remove(noc.name);
             }
         }
@@ -81,9 +81,9 @@ public class DBusConnection extends AbstractConnection {
         }
 
         @Override
-        public boolean addAll(Collection<? extends String> addresses) {
+        public boolean addAll(Collection<? extends String> _addresses) {
             synchronized (this.addresses) {
-                return this.addresses.addAll(addresses);
+                return this.addresses.addAll(_addresses);
             }
         }
 
@@ -195,7 +195,7 @@ public class DBusConnection extends AbstractConnection {
                     synchronized (pendingErrors) {
                         pendingErrors.add(err);
                     }
-                } catch (DBusException DBe) {
+                } catch (DBusException exDb) {
                 }
             } else if (s instanceof org.freedesktop.DBus.NameAcquired) {
                 busnames.add(((org.freedesktop.DBus.NameAcquired) s).name);
@@ -216,7 +216,7 @@ public class DBusConnection extends AbstractConnection {
 
     private List<String>                             busnames;
 
-    private static final Map<Object, DBusConnection> conn                       = new HashMap<Object, DBusConnection>();
+    private static final Map<Object, DBusConnection> CONN                       = new HashMap<Object, DBusConnection>();
     private int                                      refcount                  = 0;
     private Object                                   reflock                   = new Object();
     private DBus                                     dbus;
@@ -227,8 +227,8 @@ public class DBusConnection extends AbstractConnection {
     * @throws DBusException  If there is a problem connecting to the Bus.
     */
     public static DBusConnection getConnection(String address) throws DBusException {
-        synchronized (conn) {
-            DBusConnection c = conn.get(address);
+        synchronized (CONN) {
+            DBusConnection c = CONN.get(address);
             if (null != c) {
                 synchronized (c.reflock) {
                     c.refcount++;
@@ -236,7 +236,7 @@ public class DBusConnection extends AbstractConnection {
                 return c;
             } else {
                 c = new DBusConnection(address);
-                conn.put(address, c);
+                CONN.put(address, c);
                 return c;
             }
         }
@@ -250,7 +250,7 @@ public class DBusConnection extends AbstractConnection {
     * @throws DBusException  If there is a problem connecting to the Bus.
     */
     public static DBusConnection getConnection(int bustype) throws DBusException {
-        synchronized (conn) {
+        synchronized (CONN) {
             Logger logger = LoggerFactory.getLogger(DBusConnection.class);
             String s = null;
             switch (bustype) {
@@ -268,6 +268,10 @@ public class DBusConnection extends AbstractConnection {
                     if (null == display) {
                         throw new DBusException(t("Cannot Resolve Session Bus Address"));
                     }
+                    if (!display.startsWith(":") && display.contains(":")) { // display seems to be a remote display (e.g. X forward through SSH)
+                        display = display.substring(display.indexOf(':'));
+                    }
+
                     File uuidfile = new File("/var/lib/dbus/machine-id");
                     if (!uuidfile.exists()) {
                         throw new DBusException(t("Cannot Resolve Session Bus Address"));
@@ -305,7 +309,7 @@ public class DBusConnection extends AbstractConnection {
             default:
                 throw new DBusException(t("Invalid Bus Type: ") + bustype);
             }
-            DBusConnection c = conn.get(s);
+            DBusConnection c = CONN.get(s);
             logger.trace("Getting bus connection for " + s + ": " + c);
             if (null != c) {
                 synchronized (c.reflock) {
@@ -315,7 +319,7 @@ public class DBusConnection extends AbstractConnection {
             } else {
                 logger.debug("Creating new bus connection to: " + s);
                 c = new DBusConnection(s);
-                conn.put(s, c);
+                CONN.put(s, c);
                 return c;
             }
         }
@@ -338,12 +342,12 @@ public class DBusConnection extends AbstractConnection {
             }
             disconnect();
             throw new DBusException(t("Failed to connect to bus ") + ioe.getMessage());
-        } catch (ParseException pe) {
+        } catch (ParseException exP) {
             if (EXCEPTION_DEBUG) {
-                logger.error("", pe);
+                logger.error("", exP);
             }
             disconnect();
-            throw new DBusException(t("Failed to connect to bus ") + pe.getMessage());
+            throw new DBusException(t("Failed to connect to bus ") + exP.getMessage());
         }
 
         // start listening for calls
@@ -757,9 +761,9 @@ public class DBusConnection extends AbstractConnection {
                     handledSignals.remove(key);
                     try {
                         dbus.RemoveMatch(rule.toString());
-                    } catch (NotConnected nc) {
+                    } catch (NotConnected exNc) {
                         if (EXCEPTION_DEBUG) {
-                            logger.error("", nc);
+                            logger.error("", exNc);
                         }
                     } catch (DBusExecutionException dbee) {
                         if (EXCEPTION_DEBUG) {
@@ -851,7 +855,7 @@ public class DBusConnection extends AbstractConnection {
     */
     @Override
     public void disconnect() {
-        synchronized (conn) {
+        synchronized (CONN) {
             synchronized (reflock) {
                 if (0 == --refcount) {
                     logger.info("Disconnecting DBusConnection");
@@ -878,7 +882,7 @@ public class DBusConnection extends AbstractConnection {
                     } catch (DBusException dbe) {
                     }
 
-                    conn.remove(addr);
+                    CONN.remove(addr);
                     super.disconnect();
                 }
             }

@@ -14,7 +14,7 @@ import org.freedesktop.dbus.Position;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.Variant;
-
+//CHECKSTYLE:OFF
 public final class TestStruct extends Struct {
     @Position(0)
     public final String                    a;
@@ -23,9 +23,10 @@ public final class TestStruct extends Struct {
     @Position(2)
     public final Variant<? extends Object> c;
 
-    public TestStruct(String a, UInt32 b, Variant<? extends Object> c) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+    public TestStruct(String _a, UInt32 _b, Variant<? extends Object> _c) {
+        this.a = _a;
+        this.b = _b;
+        this.c = _c;
     }
+    //CHECKSTYLE:ON
 }

@@ -26,24 +26,24 @@ public class UInt16 extends Number implements Comparable<UInt16> {
     private int             value;
 
     /** Create a UInt16 from an int.
-    * @param value Must be within MIN_VALUE&ndash;MAX_VALUE
+    * @param _value Must be within MIN_VALUE&ndash;MAX_VALUE
     * @throws NumberFormatException if value is not between MIN_VALUE and MAX_VALUE
     */
-    public UInt16(int value) {
-        if (value < MIN_VALUE || value > MAX_VALUE) {
+    public UInt16(int _value) {
+        if (_value < MIN_VALUE || _value > MAX_VALUE) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_VALUE
+                    _value, MIN_VALUE, MAX_VALUE
             }));
         }
-        this.value = value;
+        this.value = _value;
     }
 
     /** Create a UInt16 from a String.
-    * @param value Must parse to a valid integer within MIN_VALUE&ndash;MAX_VALUE
+    * @param _value Must parse to a valid integer within MIN_VALUE&ndash;MAX_VALUE
     * @throws NumberFormatException if value is not an integer between MIN_VALUE and MAX_VALUE
     */
-    public UInt16(String value) {
-        this(Integer.parseInt(value));
+    public UInt16(String _value) {
+        this(Integer.parseInt(_value));
     }
 
     /** The value of this as a byte. */

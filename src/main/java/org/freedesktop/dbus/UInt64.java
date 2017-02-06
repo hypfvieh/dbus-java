@@ -35,29 +35,29 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     private long                   bottom;
 
     /** Create a UInt64 from a long.
-    * @param value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
+    * @param _value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
     * @throws NumberFormatException if value is not between MIN_VALUE and MAX_VALUE
     */
-    public UInt64(long value) {
-        if (value < MIN_VALUE || value > MAX_LONG_VALUE) {
+    public UInt64(long _value) {
+        if (_value < MIN_VALUE || _value > MAX_LONG_VALUE) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_LONG_VALUE
+                    _value, MIN_VALUE, MAX_LONG_VALUE
             }));
         }
-        this.value = new BigInteger("" + value);
+        this.value = new BigInteger("" + _value);
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
         this.bottom = this.value.and(new BigInteger("4294967295")).longValue();
     }
 
     /**
     * Create a UInt64 from two longs.
-    * @param top Most significant 4 bytes.
-    * @param bottom Least significant 4 bytes.
+    * @param _top Most significant 4 bytes.
+    * @param _bottom Least significant 4 bytes.
     */
-    public UInt64(long top, long bottom) {
-        BigInteger a = new BigInteger("" + top);
+    public UInt64(long _top, long _bottom) {
+        BigInteger a = new BigInteger("" + _top);
         a = a.shiftLeft(32);
-        a = a.add(new BigInteger("" + bottom));
+        a = a.add(new BigInteger("" + _bottom));
         if (0 > a.compareTo(BigInteger.ZERO)) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
                     a, MIN_VALUE, MAX_BIG_VALUE
@@ -69,54 +69,54 @@ public class UInt64 extends Number implements Comparable<UInt64> {
             }));
         }
         this.value = a;
-        this.top = top;
-        this.bottom = bottom;
+        this.top = _top;
+        this.bottom = _bottom;
     }
 
     /** Create a UInt64 from a BigInteger
-    * @param value Must be a valid BigInteger between MIN_VALUE&ndash;MAX_BIG_VALUE
+    * @param _value Must be a valid BigInteger between MIN_VALUE&ndash;MAX_BIG_VALUE
     * @throws NumberFormatException if value is not an integer between MIN_VALUE and MAX_BIG_VALUE
     */
-    public UInt64(BigInteger value) {
-        if (null == value) {
+    public UInt64(BigInteger _value) {
+        if (null == _value) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
-        if (0 > value.compareTo(BigInteger.ZERO)) {
+        if (0 > _value.compareTo(BigInteger.ZERO)) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
-        if (0 < value.compareTo(MAX_BIG_VALUE)) {
+        if (0 < _value.compareTo(MAX_BIG_VALUE)) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
-        this.value = value;
+        this.value = _value;
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
         this.bottom = this.value.and(new BigInteger("4294967295")).longValue();
     }
 
     /** Create a UInt64 from a String.
-    * @param value Must parse to a valid integer within MIN_VALUE&ndash;MAX_BIG_VALUE
+    * @param _value Must parse to a valid integer within MIN_VALUE&ndash;MAX_BIG_VALUE
     * @throws NumberFormatException if value is not an integer between MIN_VALUE and MAX_BIG_VALUE
     */
-    public UInt64(String value) {
-        if (null == value) {
+    public UInt64(String _value) {
+        if (null == _value) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
-        BigInteger a = new BigInteger(value);
+        BigInteger a = new BigInteger(_value);
         if (0 > a.compareTo(BigInteger.ZERO)) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
         if (0 < a.compareTo(MAX_BIG_VALUE)) {
             throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), new Object[] {
-                    value, MIN_VALUE, MAX_BIG_VALUE
+                    _value, MIN_VALUE, MAX_BIG_VALUE
             }));
         }
         this.value = a;

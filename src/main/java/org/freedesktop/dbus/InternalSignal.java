@@ -13,8 +13,8 @@ package org.freedesktop.dbus;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 class InternalSignal extends DBusSignal {
-    public InternalSignal(String source, String objectpath, String name, String iface, String sig, long serial, Object... parameters) throws DBusException {
-        super(objectpath, iface, name, sig, parameters);
-        this.serial = serial;
+    InternalSignal(String _source, String _objectpath, String _name, String _iface, String _sig, long _serial, Object... _parameters) throws DBusException {
+        super(_objectpath, _iface, _name, _sig, _parameters);
+        this.serial = _serial;
     }
 }

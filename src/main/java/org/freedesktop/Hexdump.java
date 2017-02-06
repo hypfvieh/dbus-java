@@ -29,10 +29,14 @@ package org.freedesktop;
 
 import java.io.PrintStream;
 
-public class Hexdump {
-    public static final char[] hexchars = new char[] {
+public final class Hexdump {
+    public static final char[] HEX_CHARS = new char[] {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
+
+    private Hexdump() {
+
+    }
 
     public static String toHex(byte[] buf) {
         return toHex(buf, 0, buf.length);
@@ -43,8 +47,8 @@ public class Hexdump {
         int j = ofs + len;
         for (int i = ofs; i < j; i++) {
             if (i < buf.length) {
-                sb.append(hexchars[(buf[i] & 0xF0) >> 4]);
-                sb.append(hexchars[buf[i] & 0x0F]);
+                sb.append(HEX_CHARS[(buf[i] & 0xF0) >> 4]);
+                sb.append(HEX_CHARS[buf[i] & 0x0F]);
                 sb.append(' ');
             } else {
                 sb.append(' ');
@@ -86,7 +90,7 @@ public class Hexdump {
         StringBuffer sb = new StringBuffer();
         do {
             for (int j = 0; j < 6; j++) {
-                sb.append(hexchars[(i << (j * 4) & 0xF00000) >> 20]);
+                sb.append(HEX_CHARS[(i << (j * 4) & 0xF00000) >> 20]);
             }
             sb.append('\t');
             sb.append(toHex(buf, i, bs));
@@ -141,8 +145,8 @@ public class Hexdump {
         for (int i = ofs; i < len && i < buf.length; i++) {
             sb.append('0');
             sb.append('x');
-            sb.append(hexchars[(buf[i] & 0xF0) >> 4]);
-            sb.append(hexchars[buf[i] & 0x0F]);
+            sb.append(HEX_CHARS[(buf[i] & 0xF0) >> 4]);
+            sb.append(HEX_CHARS[buf[i] & 0x0F]);
             if ((i + 1) < len && (i + 1) < buf.length) {
                 sb.append(',');
             }

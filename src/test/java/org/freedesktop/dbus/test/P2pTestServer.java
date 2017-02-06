@@ -21,7 +21,7 @@ import org.freedesktop.dbus.DirectConnection;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.UInt16;
 
-public class test_p2p_server implements TestRemoteInterface {
+public class P2pTestServer implements TestRemoteInterface {
     @Override
     public int[][] teststructstruct(TestStruct3 in) {
         List<List<Integer>> lli = in.b;
@@ -114,6 +114,6 @@ public class test_p2p_server implements TestRemoteInterface {
         w.close();
         DirectConnection dc = new DirectConnection(address + ",listen=true");
         System.out.println("Connected");
-        dc.exportObject("/Test", new test_p2p_server());
+        dc.exportObject("/Test", new P2pTestServer());
     }
 }

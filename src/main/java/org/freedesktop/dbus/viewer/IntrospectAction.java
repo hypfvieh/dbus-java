@@ -36,12 +36,12 @@ import org.freedesktop.dbus.bin.CreateInterface;
 final class IntrospectAction extends AbstractAction implements ListSelectionListener {
     private final JTable table;
 
-    IntrospectAction(JTable table) {
+    IntrospectAction(JTable _table) {
         super("Introspect");
         setEnabled(false);
-        this.table = table;
+        this.table = _table;
 
-        ListSelectionModel selectionModel = table.getSelectionModel();
+        ListSelectionModel selectionModel = _table.getSelectionModel();
         selectionModel.addListSelectionListener(this);
         selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }

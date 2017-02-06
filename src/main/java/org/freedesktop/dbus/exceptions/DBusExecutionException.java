@@ -24,9 +24,9 @@ public class DBusExecutionException extends RuntimeException
    {
       super(message);
    }
-   public void setType(String type)
+   public void setType(String _type)
    {
-      this.type = type;
+      this.type = _type;
    }
    /**
     * Get the DBus type of this exception. Use if this

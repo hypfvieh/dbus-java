@@ -31,10 +31,10 @@ public class DBusEntry {
 
     /** Assign the name
      *
-     * @param name The name.
+     * @param _name The name.
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String _name) {
+        this.name = _name;
     }
 
     /** Retrieve the name
@@ -47,10 +47,10 @@ public class DBusEntry {
 
     /** Assign the user
      *
-     * @param user The user.
+     * @param _user The user.
      */
-    public void setUser(UInt32 user) {
-        this.user = user;
+    public void setUser(UInt32 _user) {
+        this.user = _user;
     }
 
     /** Retrieve the user
@@ -63,10 +63,10 @@ public class DBusEntry {
 
     /** Assign the owner
      *
-     * @param owner The owner.
+     * @param _owner The owner.
      */
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwner(String _owner) {
+        this.owner = _owner;
     }
 
     /** Retrieve the owner
@@ -79,10 +79,10 @@ public class DBusEntry {
 
     /** Assign the introspectable
      *
-     * @param introspectable The introspectable.
+     * @param _introspectable The introspectable.
      */
-    public void setIntrospectable(Introspectable introspectable) {
-        this.introspectable = introspectable;
+    public void setIntrospectable(Introspectable _introspectable) {
+        this.introspectable = _introspectable;
     }
 
     /** Retrieve the introspectable
@@ -105,10 +105,10 @@ public class DBusEntry {
     /**
      * set the path parameter
      *
-     * @param path
+     * @param _path
      */
-    public void setPath(String path) {
-        this.path = path;
+    public void setPath(String _path) {
+        this.path = _path;
     }
 
 }

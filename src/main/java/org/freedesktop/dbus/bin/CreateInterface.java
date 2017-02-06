@@ -122,12 +122,14 @@ public class CreateInterface {
         return collapseType(t, imports, structs, container, fullnames);
     }
 
+    // CHECKSTYLE:OFF
     public String comment = "";
     boolean       builtin;
+    // CHECKSTYLE:ON
 
-    public CreateInterface(PrintStreamFactory factory, boolean builtin) {
-        this.factory = factory;
-        this.builtin = builtin;
+    public CreateInterface(PrintStreamFactory _factory, boolean _builtin) {
+        this.factory = _factory;
+        this.builtin = _builtin;
     }
 
     @SuppressWarnings("fallthrough")
@@ -534,7 +536,7 @@ public class CreateInterface {
         }
     }
 
-    public static abstract class PrintStreamFactory {
+    public abstract static class PrintStreamFactory {
 
         public abstract void init(String file, String path);
 
@@ -612,6 +614,7 @@ public class CreateInterface {
     private final PrintStreamFactory factory;
 
     static class Config {
+        // CHECKSTYLE:OFF
         int     bus       = DBusConnection.SESSION;
         String  busname   = null;
         String  object    = null;
@@ -619,6 +622,7 @@ public class CreateInterface {
         boolean printtree = false;
         boolean fileout   = false;
         boolean builtin   = false;
+        // CHECKSTYLE:ON
     }
 
     static void printSyntax() {
@@ -695,19 +699,19 @@ public class CreateInterface {
                 }
                 introspectdata = new StringReader(id);
                 conn.disconnect();
-            } catch (DBusException DBe) {
-                System.err.println(t("ERROR: Failure in DBus Communications: ") + DBe.getMessage());
+            } catch (DBusException exD) {
+                System.err.println(t("ERROR: Failure in DBus Communications: ") + exD.getMessage());
                 System.exit(1);
-            } catch (DBusExecutionException DEe) {
-                System.err.println(t("ERROR: Failure in DBus Communications: ") + DEe.getMessage());
+            } catch (DBusExecutionException exDee) {
+                System.err.println(t("ERROR: Failure in DBus Communications: ") + exDee.getMessage());
                 System.exit(1);
 
             }
         } else if (null != config.datafile) {
             try {
                 introspectdata = new InputStreamReader(new FileInputStream(config.datafile));
-            } catch (FileNotFoundException FNFe) {
-                System.err.println(t("ERROR: Could not find introspection file: ") + FNFe.getMessage());
+            } catch (FileNotFoundException exFnf) {
+                System.err.println(t("ERROR: Could not find introspection file: ") + exFnf.getMessage());
                 System.exit(1);
             }
         }
@@ -715,8 +719,8 @@ public class CreateInterface {
             PrintStreamFactory factory = config.fileout ? new FileStreamFactory() : new ConsoleStreamFactory();
             CreateInterface createInterface = new CreateInterface(factory, config.builtin);
             createInterface.createInterface(introspectdata);
-        } catch (DBusException DBe) {
-            System.err.println("ERROR: " + DBe.getMessage());
+        } catch (DBusException exD) {
+            System.err.println("ERROR: " + exD.getMessage());
             System.exit(1);
         }
     }
@@ -729,8 +733,8 @@ public class CreateInterface {
     * @throws DBusException If the dbus related error occurs
     */
     public void createInterface(Reader introspectdata) throws ParserConfigurationException, SAXException, IOException, DBusException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilderFactory lfactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = lfactory.newDocumentBuilder();
         Document document = builder.parse(new InputSource(introspectdata));
 
         Element root = document.getDocumentElement();

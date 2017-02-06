@@ -14,11 +14,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.freedesktop.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.unix.USOutputStream;
+import cx.ath.matthew.utils.Hexdump;
 
 public class MessageWriter {
 
@@ -27,11 +27,11 @@ public class MessageWriter {
     private OutputStream out;
     private boolean      isunix;
 
-    public MessageWriter(OutputStream out) {
-        this.out = out;
+    public MessageWriter(OutputStream _out) {
+        this.out = _out;
         this.isunix = false;
         try {
-            if (out instanceof USOutputStream) {
+            if (_out instanceof USOutputStream) {
                 this.isunix = true;
             }
         } catch (Throwable t) {

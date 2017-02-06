@@ -27,5 +27,5 @@ public interface DBusInterface {
     * Returns true on remote objects.
     * Local objects implementing this interface MUST return false.
     */
-    public boolean isRemote();
+    boolean isRemote();
 }
