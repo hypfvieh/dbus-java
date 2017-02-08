@@ -143,13 +143,15 @@ public abstract class AbstractBluetoothObject {
         if (_vector.isEmpty()) {
             return new byte[] {};
         }
+
         if (!ClassUtils.isAssignable(byte.class, _vector.get(0).getClass())) {
             return null;
         }
 
         byte[] result = new byte[_vector.size()];
         for (int i = 0; i < _vector.size(); i++) {
-            result[i] = (byte) _vector.get(i);
+            Object x = _vector.get(i);
+            result[i] = (byte) x;
         }
 
         return result;
