@@ -1,6 +1,7 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.Map;
+import java.util.Vector;
 
 import org.bluez.GattDescriptor1;
 import org.bluez.exceptions.BluezFailedException;
@@ -14,7 +15,7 @@ import org.freedesktop.dbus.DBusInterface;
 /**
  * Wrapper class which represents a GATT descriptor on a remote device.
  *
- * @author maniac
+ * @author hypfvieh
  *
  */
 public class BluetoothGattDescriptor extends AbstractBluetoothObject {
@@ -23,7 +24,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
     private final BluetoothGattCharacteristic characteristicWrapper;
 
     public BluetoothGattDescriptor(GattDescriptor1 _descriptor, BluetoothGattCharacteristic _characteristicWrapper, String _dbusPath, DBusConnection _dbusConnection) {
-        super(BluetoothType.GATT_DESCRIPTOR, _dbusConnection, _dbusPath);
+        super(BluetoothDeviceType.GATT_DESCRIPTOR, _dbusConnection, _dbusPath);
         characteristicWrapper = _characteristicWrapper;
         descriptor = _descriptor;
     }
@@ -109,7 +110,11 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * </p>
      */
     public byte[] getValue() {
-        return getTyped("Value", byte[].class);
+        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        if (typed != null) {
+            return byteVectorToByteArray(typed);
+        }
+        return null;
     }
 
     /**

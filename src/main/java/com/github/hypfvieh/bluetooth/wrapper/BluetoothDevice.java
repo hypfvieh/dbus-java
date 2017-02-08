@@ -1,4 +1,4 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 
 import org.bluez.Device1;
 import org.bluez.GattService1;
@@ -19,16 +20,17 @@ import org.bluez.exceptions.BluezInvalidArgumentException;
 import org.bluez.exceptions.BluezNotConnectedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.caseof.DbusHelper;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
+import com.github.hypfvieh.DbusHelper;
+
 /**
  * Wrapper class which represents a remote bluetooth device.
- * @author maniac
+ * @author hypfvieh
  *
  */
 public class BluetoothDevice extends AbstractBluetoothObject {
@@ -39,7 +41,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
     private final Map<String, BluetoothGattService> servicesByUuid = new LinkedHashMap<>();
 
     public BluetoothDevice(Device1 _device, BluetoothAdapter _adapter, String _dbusPath, DBusConnection _dbusConnection) {
-        super(BluetoothType.DEVICE, _dbusConnection, _dbusPath);
+        super(BluetoothDeviceType.DEVICE, _dbusConnection, _dbusPath);
         rawdevice = _device;
         adapter = _adapter;
     }
@@ -111,7 +113,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * True if incoming connections are rejected, false otherwise.
-     * @return
+     * @return maybe null if feature is not supported
      */
     public Boolean isBlocked() {
         return getTyped("Blocked", Boolean.class);
@@ -132,9 +134,9 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * True if the remote device is trusted, false otherwise.
-     * @return
+     * @return maybe null if feature is not supported
      */
-    public boolean isTrusted() {
+    public Boolean isTrusted() {
         return getTyped("Trusted", Boolean.class);
     }
 
@@ -176,7 +178,11 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * @return
      */
     public byte[] getAdvertisingFlags() {
-        return getTyped("AdvertisingFlags", byte[].class);
+        Vector<?> typed = getTyped("AdvertisingFlags", Vector.class);
+        if (typed != null) {
+            return byteVectorToByteArray(typed);
+        }
+        return null;
     }
 
     /**
@@ -187,12 +193,16 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * </p>
      */
     public String[] getUuids() {
-        return getTyped("UUIDs", String[].class);
+        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        if (typed != null) {
+            return typed.toArray(new String[]{});
+        }
+        return null;
     }
 
     /**
      * True if device is connected, false otherwise.
-     * @return
+     * @return maybe null if feature is not supported
      */
     public Boolean isConnected() {
         return getTyped("Connected", Boolean.class);
@@ -209,6 +219,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * in the case of Bluetooth 2.1 (or newer) devices that<br>
      * have disabled Extended Inquiry Response support.
      * </p>
+     * @return maybe null if feature is not supported
      */
     public Boolean isLegacyPairing() {
         return getTyped("LegacyPairing", Boolean.class);
@@ -228,6 +239,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Indicate whether or not service discovery has been
      * resolved.
      * </p>
+     * @return maybe null if feature is not supported
      */
     public Boolean isServiceResolved() {
         return getTyped("ServiceResolved", Boolean.class);
@@ -346,7 +358,8 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * </p>
      */
     public Integer getAppearance() {
-        return getTyped("Appearance", UInt16.class).intValue();
+        UInt16 typed = getTyped("Appearance", UInt16.class);
+        return typed != null ? typed.intValue() : null;
     }
 
     /**
@@ -356,7 +369,8 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * </p>
      */
     public Integer getBluetoothClass() {
-        return getTyped("Class", UInt32.class).intValue();
+        UInt32 typed = getTyped("Class", UInt32.class);
+        return typed != null ? typed.intValue() : null;
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Vector;
 
 import org.bluez.GattCharacteristic1;
 import org.bluez.GattDescriptor1;
@@ -14,14 +15,15 @@ import org.bluez.exceptions.BluezInProgressException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.caseof.DbusHelper;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
+
+import com.github.hypfvieh.DbusHelper;
 
 /**
  * Wrapper class which represents a GATT characteristic on a remote device.
  *
- * @author maniac
+ * @author hypfvieh
  *
  */
 public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
@@ -32,7 +34,7 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
     private final Map<String, BluetoothGattDescriptor> descriptorByUuid = new LinkedHashMap<>();
 
     public BluetoothGattCharacteristic(GattCharacteristic1 _gattCharacteristic, BluetoothGattService _service, String _dbusPath, DBusConnection _dbusConnection) {
-        super(BluetoothType.GATT_CHARACTERISTIC, _dbusConnection, _dbusPath);
+        super(BluetoothDeviceType.GATT_CHARACTERISTIC, _dbusConnection, _dbusPath);
 
         gattCharacteristic = _gattCharacteristic;
         gattService = _service;
@@ -157,19 +159,23 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * when a notification or indication is received, upon<br>
      * which a PropertiesChanged signal will be emitted.
      * </p>
-     * @return
+     * @return cached characteristics value, maybe null
      */
     public byte[] getValue() {
-        return getTyped("Value", byte[].class);
+        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        if (typed != null) {
+            return byteVectorToByteArray(typed);
+        }
+        return null;
     }
 
     /**
      * From bluez Documentation:<br>
      * True, if notifications or indications on this characteristic are currently enabled.
-     * @return
+     * @return maybe null if feature is not supported
      */
-    public boolean isNotifying() {
-        return getTyped("Notifying", boolean.class);
+    public Boolean isNotifying() {
+        return getTyped("Notifying", Boolean.class);
     }
 
     /**

@@ -1,6 +1,5 @@
-package org.caseof.bluetooth;
+package com.github.hypfvieh.bluetooth;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,14 +8,20 @@ import java.util.Set;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
-import org.caseof.DbusHelper;
-import org.caseof.bluetooth.wrapper.BluetoothAdapter;
-import org.caseof.bluetooth.wrapper.BluetoothDevice;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
-import cz.adamh.utils.NativeUtils;
+import com.github.hypfvieh.DbusHelper;
+import com.github.hypfvieh.bluetooth.wrapper.BluetoothAdapter;
+import com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice;
+import com.github.hypfvieh.system.NativeLibraryLoader;
 
+/**
+ * The 'main' class to get access to all DBus/bluez related objects.
+ *
+ * @author hypfvieh
+ *
+ */
 public class DeviceManager {
 
     private static DeviceManager INSTANCE;
@@ -31,22 +36,19 @@ public class DeviceManager {
 
     private static boolean libraryLoaded = false;
 
+
+    static {
+        // disable automatic loading of unix-socket library, we will load it if we need it
+        NativeLibraryLoader.setEnabled(false);
+    }
+
+    /**
+     * Load native library is necessary.
+     */
     private static void loadLibrary() {
         if (!libraryLoaded) {
-            try {
-                System.loadLibrary("libunix-java"); // look for globally installed
-            } catch (UnsatisfiedLinkError _ex) {
-                try {
-                    String sysArch = System.getProperty("os.arch");
-                    if (sysArch != null) {
-                        if (sysArch.equalsIgnoreCase("x86_64") || sysArch.equalsIgnoreCase("amd64")) {
-                            NativeUtils.loadLibraryFromJar("/lib/libunix-java_amd64.so");
-                        }
-                    }
-                } catch (IOException _ex2) {
-                    throw new RuntimeException(_ex2);
-                }
-            }
+            NativeLibraryLoader.setEnabled(true);
+            NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "lib/");
             libraryLoaded = true;
         }
     }
@@ -259,23 +261,5 @@ public class DeviceManager {
             return new ArrayList<>();
         }
         return list;
-    }
-
-    public static void main(String[] args) {
-//        List<BluetoothAdapter> scanForBluetoothAdapters = BleDeviceManager.getInstance().scanForBluetoothAdapters();
-//        System.out.println(scanForBluetoothAdapters);
-//        System.out.println(scanForBluetoothAdapters.size());
-        try {
-            DeviceManager.createInstance(false);
-            List<BluetoothDevice> scanForBluetoothDevices = DeviceManager.getInstance().scanForBluetoothDevices(3);
-            System.out.println(scanForBluetoothDevices);
-            System.out.println(scanForBluetoothDevices.size());
-
-        } catch (DBusException _ex) {
-            // TODO Auto-generated catch block
-            _ex.printStackTrace();
-        } finally {
-            DeviceManager.getInstance().closeConnection();
-        }
     }
 }

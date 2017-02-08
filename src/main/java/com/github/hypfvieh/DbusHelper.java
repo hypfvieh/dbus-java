@@ -1,24 +1,28 @@
-package org.caseof;
+package com.github.hypfvieh;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.freedesktop.DBus.Introspectable;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * Various DBUS related helper methods.
- * @author maniac
+ * @author hypfvieh
  *
  */
 public final class DbusHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbusHelper.class);
 
     private DbusHelper() {
 
@@ -47,21 +51,25 @@ public final class DbusHelper {
             }
             return foundNodes;
         } catch (DBusException _ex) {
-            // TODO Auto-generated catch block
-            _ex.printStackTrace();
+            LOGGER.info("Exception while search DBus.", _ex);
         } catch (IOException _ex) {
-            // TODO Auto-generated catch block
-            _ex.printStackTrace();
+            LOGGER.error("Exception while applying Xpath to introspection result", _ex);
         }
         return foundNodes;
     }
 
+    /**
+     * Creates an java object from a bluez dbus response.
+     * @param _connection Dbus connection to use
+     * @param _path dbus request path
+     * @param _objClass interface class to use
+     * @return the created object or null on error
+     */
     public static <T extends DBusInterface> T getRemoteObject(DBusConnection _connection, String _path, Class<T> _objClass) {
         try {
             return _connection.getRemoteObject("org.bluez", _path, _objClass);
         } catch (DBusException _ex) {
-            // TODO Auto-generated catch block
-            _ex.printStackTrace();
+            LOGGER.warn("Error while converting dbus response to object.", _ex);
         }
         return null;
     }

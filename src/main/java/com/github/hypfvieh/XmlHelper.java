@@ -1,4 +1,4 @@
-package org.caseof;
+package com.github.hypfvieh;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,7 +19,7 @@ import org.w3c.dom.NodeList;
 /**
  * Utility for various XML operations.
  *
- * @author maniac
+ * @author hypfvieh
  *
  */
 public final class XmlHelper {

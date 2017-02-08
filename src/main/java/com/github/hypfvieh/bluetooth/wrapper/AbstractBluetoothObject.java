@@ -1,32 +1,34 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Vector;
 
-import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang.ClassUtils;
 import org.bluez.Adapter1;
-import org.caseof.DbusHelper;
 import org.freedesktop.DBus.Properties;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 
+import com.github.hypfvieh.DbusHelper;
+
 /**
  * Base class of all bluetooth wrapper object classes.
  *
- * @author maniac
+ * @author hypfvieh
  *
  */
 public abstract class AbstractBluetoothObject {
 
-    private final BluetoothType bluetoothType;
+    private final BluetoothDeviceType bluetoothType;
     private DBusConnection dbusConnection;
     private final String dbusPath;
 
-    public AbstractBluetoothObject(BluetoothType _bluetoothType, DBusConnection _dbusConnection, String _dbusPath) {
+    public AbstractBluetoothObject(BluetoothDeviceType _bluetoothType, DBusConnection _dbusConnection, String _dbusPath) {
         bluetoothType = _bluetoothType;
         dbusConnection = _dbusConnection;
         dbusPath = _dbusPath;
@@ -38,7 +40,7 @@ public abstract class AbstractBluetoothObject {
      */
     protected abstract Class<? extends DBusInterface> getInterfaceClass();
 
-    public BluetoothType getBluetoothType() {
+    public BluetoothDeviceType getBluetoothType() {
         return bluetoothType;
     }
 
@@ -131,5 +133,40 @@ public abstract class AbstractBluetoothObject {
             }
         }
         return optionMap;
+    }
+
+
+    protected byte[] byteVectorToByteArray(Vector<?> _vector) {
+        if (_vector == null) {
+            return null;
+        }
+        if (_vector.isEmpty()) {
+            return new byte[] {};
+        }
+        if (!ClassUtils.isAssignable(byte.class, _vector.get(0).getClass())) {
+            return null;
+        }
+
+        byte[] result = new byte[_vector.size()];
+        for (int i = 0; i < _vector.size(); i++) {
+            result[i] = (byte) _vector.get(i);
+        }
+
+        return result;
+    }
+
+    /**
+     * Convert Byte[] to byte[] array.
+     * @param oBytes
+     * @return
+     */
+    protected byte[] toPrimitives(Byte[] oBytes) {
+        byte[] bytes = new byte[oBytes.length];
+
+        for (int i = 0; i < oBytes.length; i++) {
+            bytes[i] = oBytes[i];
+        }
+
+        return bytes;
     }
 }

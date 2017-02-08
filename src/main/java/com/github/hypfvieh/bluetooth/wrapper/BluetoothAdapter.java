@@ -1,9 +1,10 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
@@ -20,7 +21,7 @@ import org.freedesktop.dbus.UInt32;
 /**
  * Wrapper class which represents an bluetooth adapter.
  *
- * @author maniac
+ * @author hypfvieh
  *
  */
 public class BluetoothAdapter extends AbstractBluetoothObject {
@@ -34,7 +35,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     private boolean internalDiscover;
 
     public BluetoothAdapter(Adapter1 _adapter, String _dbusPath, DBusConnection _dbusConnection) {
-        super(BluetoothType.ADAPTER, _dbusConnection, _dbusPath);
+        super(BluetoothDeviceType.ADAPTER, _dbusConnection, _dbusPath);
         adapter = _adapter;
 
         supportedFilterOptions.put("UUIDs", String[].class);
@@ -93,9 +94,9 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * True if device is discoverable (= visible for others), false otherwise.
-     * @return
+     * @return maybe null if feature is not supported
      */
-    public boolean isDiscoverable() {
+    public Boolean isDiscoverable() {
         return getTyped("Discoverable", Boolean.class);
     }
 
@@ -113,7 +114,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * @return
      */
     public Integer getDiscoverableTimeout() {
-        return getTyped("DiscoverableTimeout", UInt32.class).intValue();
+        UInt32 typed = getTyped("DiscoverableTimeout", UInt32.class);
+        return typed != null ? typed.intValue() : null;
     }
 
     /**
@@ -126,9 +128,9 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * True if pairing with this adapter is allowed for others.
-     * @return
+     * @return maybe null if feature is not supported
      */
-    public boolean isPairable() {
+    public Boolean isPairable() {
         return getTyped("Pairable", Boolean.class);
     }
 
@@ -147,7 +149,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * @return
      */
     public Integer getPairableTimeout() {
-        return getTyped("PairableTimeout", UInt32.class).intValue();
+        UInt32 typed = getTyped("PairableTimeout", UInt32.class);
+        return typed != null ? typed.intValue() : null;
     }
 
     /**
@@ -192,14 +195,15 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * @return
      */
     public Integer getDeviceClass() {
-        return getTyped("Class", UInt32.class).intValue();
+        UInt32 typed = getTyped("Class", UInt32.class);
+        return typed != null ? typed.intValue() : null;
     }
 
     /**
      * True if discovery procedure is active, false otherwise.
      * @return
      */
-    public boolean isDiscovering() {
+    public Boolean isDiscovering() {
         return internalDiscover || getTyped("Discovering", Boolean.class);
     }
 
@@ -212,7 +216,11 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * @return String[], maybe null
      */
     public String[] getUuids() {
-        return getTyped("UUIDs", String[].class);
+        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        if (typed != null) {
+            return typed.toArray(new String[]{});
+        }
+        return null;
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.caseof.bluetooth.wrapper;
+package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,13 +10,14 @@ import java.util.Map.Entry;
 import org.bluez.GattCharacteristic1;
 import org.bluez.GattService1;
 import org.bluez.exceptions.BluezNotImplementedException;
-import org.caseof.DbusHelper;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
 
+import com.github.hypfvieh.DbusHelper;
+
 /**
  * Wrapper class which represents a GATT service provided by a remote device.
- * @author maniac
+ * @author hypfvieh
  *
  */
 public class BluetoothGattService extends AbstractBluetoothObject {
@@ -27,7 +28,7 @@ public class BluetoothGattService extends AbstractBluetoothObject {
     private final Map<String, BluetoothGattCharacteristic> characteristicByUuid = new LinkedHashMap<>();
 
     public BluetoothGattService(GattService1 _service, BluetoothDevice _device, String _dbusPath, DBusConnection _dbusConnection) {
-        super(BluetoothType.GATT_SERVICE, _dbusConnection, _dbusPath);
+        super(BluetoothDeviceType.GATT_SERVICE, _dbusConnection, _dbusPath);
         service = _service;
         device = _device;
     }
@@ -95,10 +96,10 @@ public class BluetoothGattService extends AbstractBluetoothObject {
      * Indicates whether or not this GATT service is a<br>
      * primary service. If false, the service is secondary.
      * </p>
-     * @return
+     * @return maybe null if feature is not supported
      */
-    public boolean isPrimary() {
-        return getTyped("Primary", boolean.class);
+    public Boolean isPrimary() {
+        return getTyped("Primary", Boolean.class);
     }
 
     /**
