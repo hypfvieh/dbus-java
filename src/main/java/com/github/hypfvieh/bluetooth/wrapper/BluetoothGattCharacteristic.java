@@ -211,6 +211,36 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
         return getTyped("Flags", String.class);
     }
 
+    /**
+     * <b>From bluez Documentation:</b>
+     * <p>
+     * Starts a notification session from this characteristic
+     * if it supports value notifications or indications.
+     * <br>
+     * </p>
+     * @throws BluezFailedException
+     * @throws BluezInProgressException
+     * @throws BluezNotSupportedException
+     */
+    public void startNotify() throws BluezFailedException, BluezInProgressException, BluezNotSupportedException {
+        gattCharacteristic.StartNotify();
+    }
+
+    /**
+     * <b>From bluez Documentation:</b>
+     * <p>
+     * This method will cancel any previous StartNotify
+     * transaction. Note that notifications from a
+     * characteristic are shared between sessions thus
+     * calling StopNotify will release a single session.
+     * <br>
+     * </p>
+     * @throws BluezFailedException
+     */
+    public void stopNotify() throws BluezFailedException {
+        gattCharacteristic.StopNotify();
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [gattCharacteristic=" + gattCharacteristic

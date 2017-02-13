@@ -9,6 +9,8 @@ import java.util.Set;
 import org.bluez.Adapter1;
 import org.bluez.Device1;
 import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.AbstractPropertiesHandler;
+import org.freedesktop.dbus.SignalAwareProperties;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 import com.github.hypfvieh.DbusHelper;
@@ -261,5 +263,15 @@ public class DeviceManager {
             return new ArrayList<>();
         }
         return list;
+    }
+
+    /**
+     * Register a PropertiesChanged callback handler on the DBusConnection.
+     *
+     * @param _handler callback class instance
+     * @throws DBusException
+     */
+    public void registerPropertyHandler(AbstractPropertiesHandler _handler) throws DBusException {
+        dbusConnection.addSigHandler(SignalAwareProperties.PropertiesChanged.class, _handler);
     }
 }

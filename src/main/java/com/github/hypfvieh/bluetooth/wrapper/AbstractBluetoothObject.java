@@ -8,9 +8,9 @@ import java.util.Vector;
 
 import org.apache.commons.lang.ClassUtils;
 import org.bluez.Adapter1;
-import org.freedesktop.DBus.Properties;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.SignalAwareProperties;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 
@@ -83,7 +83,7 @@ public abstract class AbstractBluetoothObject {
     @SuppressWarnings("unchecked")
     protected <T> T getTyped(String _field, Class<T> _type) {
         try {
-            Properties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, Properties.class);
+            SignalAwareProperties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, SignalAwareProperties.class);
             Object obj = remoteObject.Get(getInterfaceClass().getName(), _field);
             if (ClassUtils.isAssignable(_type, obj.getClass())) {
                 return (T) obj;
@@ -102,7 +102,7 @@ public abstract class AbstractBluetoothObject {
      */
     protected void setTyped(String _field, Object _value) {
         try {
-            Properties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, Properties.class);
+            SignalAwareProperties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, SignalAwareProperties.class);
             remoteObject.Set(Adapter1.class.getName(), _field, _value);
         } catch (DBusException _ex) {
         }
