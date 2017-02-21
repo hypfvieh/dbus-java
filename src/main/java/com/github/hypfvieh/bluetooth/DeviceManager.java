@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
+import org.bluez.exceptions.BluezDoesNotExistsException;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.AbstractPropertiesHandler;
 import org.freedesktop.dbus.SignalAwareProperties;
@@ -29,9 +30,12 @@ public class DeviceManager {
     private static DeviceManager INSTANCE;
     private DBusConnection dbusConnection;
 
+    /** MacAddress of BT-adapter <-> adapter object */
     private final Map<String, BluetoothAdapter> bluetoothAdaptersByMac = new LinkedHashMap<>();
+    /** BT-adapter name <-> adapter object */
     private final Map<String, BluetoothAdapter> bluetoothAdaptersByAdapterName = new LinkedHashMap<>();
 
+    /** MacAddress of BT-adapter <-> List of connected bluetooth device objects */
     private final Map<String, List<BluetoothDevice>> bluetoothDeviceByAdapterMac = new LinkedHashMap<>();
 
     private String defaultAdapterMac;
@@ -111,7 +115,7 @@ public class DeviceManager {
 
     /**
      * Search for all bluetooth adapters connected to this machine.
-     * Will set the defaultAdapter to the first find adapter if no defaultAdapter was specified before.
+     * Will set the defaultAdapter to the first adapter found if no defaultAdapter was specified before.
      *
      * @return List of adapters, maybe empty, never null
      */
@@ -263,6 +267,37 @@ public class DeviceManager {
             return new ArrayList<>();
         }
         return list;
+    }
+
+    /**
+     * Setup the default bluetooth adapter to use by giving the adapters MAC address.
+     *
+     * @param _adapterMac MAC address of the bluetooth adapter
+     * @throws BluezDoesNotExistsException if there is no bluetooth adapter with the given MAC
+     */
+    public void setDefaultAdapter(String _adapterMac) throws BluezDoesNotExistsException {
+        if (bluetoothAdaptersByMac.isEmpty()) {
+            scanForBluetoothAdapters();
+        }
+        if (bluetoothAdaptersByMac.containsKey(_adapterMac)) {
+            defaultAdapterMac = _adapterMac;
+        } else {
+            throw new BluezDoesNotExistsException("Could not find bluetooth adapter with MAC address: " + _adapterMac);
+        }
+    }
+
+    /**
+     * Setup the default bluetooth adapter to use by giving an adapter object.
+     *
+     * @param _adapter bluetooth adapter object
+     * @throws BluezDoesNotExistsException if there is no bluetooth adapter with the given MAC or adapter object was null
+     */
+    public void setDefaultAdapter(BluetoothAdapter _adapter) throws BluezDoesNotExistsException {
+        if (_adapter != null) {
+            setDefaultAdapter(_adapter.getAddress());
+        } else {
+            throw new BluezDoesNotExistsException("Null is not a valid bluetooth adapter");
+        }
     }
 
     /**
