@@ -7,7 +7,7 @@ Java 1.7 compatible!
   - Fixed lot's of Java warnings (Generics, unclosed resources)
   - Fixed broken 'Gettext' feature used for exception messages
     - Instead of throwing NullPointerExceptions the method will use the english message text if no translation was available
-    - Renamed the method "_" to "t" as "_" is a reserved word since Java 8
+    - Renamed the method "\_" to "t" as "\_" is a reserved word since Java 8
   - Renamed some classes/methods/variables to comply with Java naming scheme.
   - Removed usage of proprietary logger and replaced it with sl4fj.
   - Renamed/refactored some parts to be more 'Java' like (e.g. naming, shadowing)
