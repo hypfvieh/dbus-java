@@ -41,7 +41,7 @@ public abstract class AbstractConnection {
 
     protected class FallbackContainer {
         private final Logger                  logger    = LoggerFactory.getLogger(getClass());
-        private Map<String[], ExportedObject> fallbacks = new HashMap<String[], ExportedObject>();
+        private Map<String[], ExportedObject> fallbacks = new HashMap<>();
 
         public synchronized void add(String path, ExportedObject eo) {
             logger.debug("Adding fallback on " + path + " of " + eo);
@@ -169,6 +169,11 @@ public abstract class AbstractConnection {
                 return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" " + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + intro;
             }
         }
+
+        @Override
+        public String getObjectPath() {
+            return objectpath;
+        }
     }
 
     protected class WorkerThread extends Thread {
@@ -295,7 +300,7 @@ public abstract class AbstractConnection {
     // CHECKSTYLE:ON
     static final Pattern                                                     DOLLAR_PATTERN           = Pattern.compile("[$]");
     public static final boolean                                              EXCEPTION_DEBUG;
-    private static final Map<Thread, DBusCallInfo>                           INFOMAP                  = new HashMap<Thread, DBusCallInfo>();
+    private static final Map<Thread, DBusCallInfo>                           INFOMAP                  = new HashMap<>();
     static final boolean                                                     FLOAT_SUPPORT;
 
 
@@ -308,20 +313,20 @@ public abstract class AbstractConnection {
     }
 
     protected AbstractConnection(String address) throws DBusException {
-        exportedObjects = new HashMap<String, ExportedObject>();
-        importedObjects = new HashMap<DBusInterface, RemoteObject>();
+        exportedObjects = new HashMap<>();
+        importedObjects = new HashMap<>();
         globalHandlerReference = new GlobalHandler();
         synchronized (exportedObjects) {
             exportedObjects.put(null, new ExportedObject(globalHandlerReference, weakreferences));
         }
-        handledSignals = new HashMap<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>>();
+        handledSignals = new HashMap<>();
         pendingCalls = new EfficientMap(PENDING_MAP_INITIAL_SIZE);
         outgoing = new EfficientQueue(PENDING_MAP_INITIAL_SIZE);
-        pendingCallbacks = new HashMap<MethodCall, CallbackHandler<? extends Object>>();
-        pendingCallbackReplys = new HashMap<MethodCall, DBusAsyncReply<? extends Object>>();
-        pendingErrors = new LinkedList<Error>();
-        runnables = new LinkedList<Runnable>();
-        workers = new LinkedList<WorkerThread>();
+        pendingCallbacks = new HashMap<>();
+        pendingCallbackReplys = new HashMap<>();
+        pendingErrors = new LinkedList<>();
+        runnables = new LinkedList<>();
+        workers = new LinkedList<>();
         objectTree = new ObjectTree();
         fallbackcontainer = new FallbackContainer();
         synchronized (workers) {
@@ -591,7 +596,7 @@ public abstract class AbstractConnection {
         synchronized (handledSignals) {
             Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
             if (null == v) {
-                v = new Vector<DBusSigHandler<? extends DBusSignal>>();
+                v = new Vector<>();
                 v.add(handler);
                 handledSignals.put(key, v);
             } else {
@@ -911,7 +916,7 @@ public abstract class AbstractConnection {
     })
     private void handleMessage(final DBusSignal s) {
         logger.debug("Handling incoming signal: " + s);
-        Vector<DBusSigHandler<? extends DBusSignal>> v = new Vector<DBusSigHandler<? extends DBusSignal>>();
+        Vector<DBusSigHandler<? extends DBusSignal>> v = new Vector<>();
         synchronized (handledSignals) {
             Vector<DBusSigHandler<? extends DBusSignal>> t;
             t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), null, null));
@@ -1056,6 +1061,7 @@ public abstract class AbstractConnection {
              logger.trace("Adding Runnable for method "+fasr.getMethod()+" with callback handler "+fcbh);
              addRunnable(new Runnable() {
                 private boolean run = false;
+                @Override
                 public synchronized void run()
                 {
                    if (run) return;

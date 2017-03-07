@@ -23,9 +23,16 @@ package org.freedesktop.dbus;
  * </p>
  */
 public interface DBusInterface {
+
     /**
     * Returns true on remote objects.
     * Local objects implementing this interface MUST return false.
     */
     boolean isRemote();
+
+    /**
+     * Returns the path of this object.
+     */
+    public String getObjectPath();
+
 }

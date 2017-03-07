@@ -100,6 +100,11 @@ public class P2pTestServer implements TestRemoteInterface {
     }
 
     @Override
+    public String getObjectPath() {
+        return null;
+    }
+
+    @Override
     public float testfloat(float[] f) {
         System.out.println("got float: " + Arrays.toString(f));
         return f[0];

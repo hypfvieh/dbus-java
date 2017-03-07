@@ -30,8 +30,8 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleTests, DBusSigHandler<DBus.Binding.TestClient.Trigger> {
     private DBusConnection conn;
     private boolean                run     = true;
-    private Set<String>    done    = new TreeSet<String>();
-    private Set<String>    notdone = new TreeSet<String>();
+    private Set<String>    done    = new TreeSet<>();
+    private Set<String>    notdone = new TreeSet<>();
     {
         notdone.add("org.freedesktop.DBus.Binding.Tests.Identity");
         notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityByte");
@@ -73,6 +73,11 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public String getObjectPath() {
+        return null;
     }
 
     public boolean isRun() {
@@ -304,12 +309,12 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
     public Map<String, List<String>> InvertMapping(Map<String, String> a) {
         done.add("org.freedesktop.DBus.Binding.Tests.InvertMapping");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.InvertMapping");
-        HashMap<String, List<String>> m = new HashMap<String, List<String>>();
+        HashMap<String, List<String>> m = new HashMap<>();
         for (String s : a.keySet()) {
             String b = a.get(s);
             List<String> l = m.get(b);
             if (null == l) {
-                l = new Vector<String>();
+                l = new Vector<>();
                 m.put(b, l);
             }
             l.add(s);
@@ -322,7 +327,7 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
     public DBus.Binding.Triplet<String, UInt32, Short> DeStruct(DBus.Binding.TestStruct a) {
         done.add("org.freedesktop.DBus.Binding.Tests.DeStruct");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.DeStruct");
-        return new DBus.Binding.Triplet<String, UInt32, Short>(a.a, a.b, a.c);
+        return new DBus.Binding.Triplet<>(a.a, a.b, a.c);
     }
 
     @Override
