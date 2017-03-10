@@ -154,6 +154,8 @@ public class Message {
 
     /**
     * Returns the name of the given header field.
+    * @param field field
+    * @return string
     */
     public static String getHeaderFieldName(byte field) {
         switch (field) {
@@ -183,6 +185,7 @@ public class Message {
     * @param endian The endianness to create the message.
     * @param _type The message type.
     * @param _flags Any message flags.
+    * @throws DBusException on error
     */
     protected Message(byte endian, byte _type, byte _flags) throws DBusException {
         wiredata = new byte[BUFFERINCREMENT][];
@@ -274,6 +277,7 @@ public class Message {
 
     /**
     * Appends a buffer to the buffer list.
+    * @param buf buffer byte array
     */
     protected void appendBytes(byte[] buf) {
         if (null == buf) {
@@ -302,6 +306,7 @@ public class Message {
 
     /**
     * Appends a byte to the buffer list.
+    * @param b byte
     */
     protected void appendByte(byte b) {
         if (preallocated > 0) {
@@ -328,6 +333,8 @@ public class Message {
     * @param buf The buffer to demarshall from.
     * @param ofs The offset to demarshall from.
     * @param width The byte-width of the int.
+    *
+    * @return long
     */
     public long demarshallint(byte[] buf, int ofs, int width) {
         return big ? demarshallintBig(buf, ofs, width) : demarshallintLittle(buf, ofs, width);
@@ -339,6 +346,8 @@ public class Message {
     * @param ofs The offset to demarshall from.
     * @param endian The endianness to use in demarshalling.
     * @param width The byte-width of the int.
+    *
+    * @return long
     */
     public static long demarshallint(byte[] buf, int ofs, byte endian, int width) {
         return endian == Endian.BIG ? demarshallintBig(buf, ofs, width) : demarshallintLittle(buf, ofs, width);
@@ -349,6 +358,7 @@ public class Message {
     * @param buf The buffer to demarshall from.
     * @param ofs The offset to demarshall from.
     * @param width The byte-width of the int.
+    * @return long
     */
     public static long demarshallintBig(byte[] buf, int ofs, int width) {
         long l = 0;
@@ -364,6 +374,8 @@ public class Message {
     * @param buf The buffer to demarshall from.
     * @param ofs The offset to demarshall from.
     * @param width The byte-width of the int.
+    *
+    * @return long
     */
     public static long demarshallintLittle(byte[] buf, int ofs, int width) {
         long l = 0;
@@ -775,6 +787,7 @@ public class Message {
 
     /**
     * Pad the message to the proper alignment for the given type.
+    * @param _type type
     */
     public void pad(byte _type) {
         logger.trace("padding for " + (char) _type);
@@ -796,6 +809,8 @@ public class Message {
 
     /**
     * Return the alignment for a given type.
+    * @param type type
+    * @return int
     */
     public static int getAlignment(byte type) {
         switch (type) {
@@ -836,6 +851,8 @@ public class Message {
     * Append a series of values to the message.
     * @param sig The signature(s) of the value(s).
     * @param data The value(s).
+    *
+    * @throws DBusException on error
     */
     public void append(String sig, Object... data) throws DBusException {
         logger.debug("Appending sig: " + sig + " data: " + Arrays.deepToString(data));
@@ -1101,6 +1118,8 @@ public class Message {
     * @param buf The buffer to demarshall from.
     * @param ofs The offset into the data buffer to start.
     * @return The demarshalled value(s).
+    *
+    * @throws DBusException on error
     */
     public Object[] extract(String sig, byte[] buf, int ofs) throws DBusException {
         return extract(sig, buf, new int[] {
@@ -1116,6 +1135,8 @@ public class Message {
     *            and the offset into the data buffer. These values will be
     *            updated to the start of the next value ofter demarshalling.
     * @return The demarshalled value(s).
+    *
+    * @throws DBusException on error
     */
     public Object[] extract(String sig, byte[] buf, int[] ofs) throws DBusException {
         logger.trace("extract(" + sig + ",#" + buf.length + ", {" + ofs[0] + "," + ofs[1] + "}");
@@ -1129,6 +1150,7 @@ public class Message {
 
     /**
     * Returns the Bus ID that sent the message.
+    * @return string
     */
     public String getSource() {
         return (String) headers.get(HeaderField.SENDER);
@@ -1136,6 +1158,7 @@ public class Message {
 
     /**
     * Returns the destination of the message.
+    * @return string
     */
     public String getDestination() {
         return (String) headers.get(HeaderField.DESTINATION);
@@ -1143,6 +1166,7 @@ public class Message {
 
     /**
     * Returns the interface of the message.
+    * @return string
     */
     public String getInterface() {
         return (String) headers.get(HeaderField.INTERFACE);
@@ -1150,6 +1174,7 @@ public class Message {
 
     /**
     * Returns the object path of the message.
+    * @return string
     */
     public String getPath() {
         Object o = headers.get(HeaderField.PATH);
@@ -1161,6 +1186,7 @@ public class Message {
 
     /**
     * Returns the member name or error name this message represents.
+    * @return string
     */
     public String getName() {
         if (this instanceof Error) {
@@ -1172,6 +1198,7 @@ public class Message {
 
     /**
     * Returns the dbus signature of the parameters.
+    * @return string
     */
     public String getSig() {
         return (String) headers.get(HeaderField.SIGNATURE);
@@ -1179,6 +1206,7 @@ public class Message {
 
     /**
     * Returns the message flags.
+    * @return int
     */
     public int getFlags() {
         return flags;
@@ -1206,6 +1234,8 @@ public class Message {
 
     /**
     * Parses and returns the parameters to this message as an Object array.
+    * @return object array
+    * @throws DBusException on failure
     */
     public Object[] getParameters() throws DBusException {
         if (null == args && null != body) {
@@ -1225,6 +1255,8 @@ public class Message {
 
     /**
     * Warning, do not use this method unless you really know what you are doing.
+    * @param source string
+    * @throws DBusException on error
     */
     public void setSource(String source) throws DBusException {
         if (null != body) {

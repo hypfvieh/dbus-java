@@ -36,6 +36,7 @@ public class DirectConnection extends AbstractConnection {
     /**
     * Create a direct connection to another application.
     * @param address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
+    * @throws DBusException on error
     */
     public DirectConnection(String address) throws DBusException {
         super(address);

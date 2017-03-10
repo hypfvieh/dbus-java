@@ -99,7 +99,7 @@ public class DBusViewer {
     private List<DBusConnection> connections;
 
     /**
-     * @param args
+     * @param args args
      */
     public static void main(String[] args) {
         new DBusViewer(CONNECTION_TYPES);

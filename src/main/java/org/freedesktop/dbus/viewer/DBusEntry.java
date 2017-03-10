@@ -96,7 +96,7 @@ public class DBusEntry {
     /**
      * retrieve the path parameter
      *
-     * @return
+     * @return path
      */
     public String getPath() {
         return path;
@@ -105,7 +105,7 @@ public class DBusEntry {
     /**
      * set the path parameter
      *
-     * @param _path
+     * @param _path path
      */
     public void setPath(String _path) {
         this.path = _path;

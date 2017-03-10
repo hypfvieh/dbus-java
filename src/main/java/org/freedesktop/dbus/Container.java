@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.freedesktop.dbus.exceptions.DBusException;
-
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
@@ -61,7 +59,7 @@ abstract class Container {
 
     /**
     * Returns the struct contents in order.
-    * @throws DBusException If there is  a problem doing this.
+    * @return object array
     */
     public final Object[] getParameters() {
         if (null != parameters) {

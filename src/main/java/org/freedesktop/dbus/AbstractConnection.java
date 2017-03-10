@@ -415,6 +415,8 @@ public abstract class AbstractConnection {
     * If they go out of scope they will automatically be unexported from the bus.
     * The default is to hold a strong reference, which means objects must be
     * explicitly unexported before they will be garbage collected.
+    *
+    * @param _weakreferences reference
     */
     public void setWeakReferences(boolean _weakreferences) {
         this.weakreferences = _weakreferences;
@@ -490,6 +492,8 @@ public abstract class AbstractConnection {
        * This method will resolve the well known name (if given) to a unique bus name when you call it.
        * This means that if a well known name is released by one process and acquired by another calls to
        * objects gained from this method will continue to operate on the original process.
+       *
+       * @param <T> class extending {@link DBusSignal}
        * @param busname The bus name to connect to. Usually a well known bus name in dot-notation (such as "org.freedesktop.local")
        * or may be a DBus address such as ":1-16".
        * @param objectpath The path on which the process is exporting the object.$
@@ -521,7 +525,10 @@ public abstract class AbstractConnection {
     /**
     * Remove a Signal Handler.
     * Stops listening for this signal.
+    *
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
+    * @param handler the handler
     * @throws DBusException If listening for the signal on the bus failed.
     * @throws ClassCastException If type is not a sub-type of DBusSignal.
     */
@@ -535,8 +542,11 @@ public abstract class AbstractConnection {
     /**
     * Remove a Signal Handler.
     * Stops listening for this signal.
+    *
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param object The object emitting the signal.
+    * @param handler the handler
     * @throws DBusException If listening for the signal on the bus failed.
     * @throws ClassCastException If type is not a sub-type of DBusSignal.
     */
@@ -556,6 +566,8 @@ public abstract class AbstractConnection {
     /**
     * Add a Signal Handler.
     * Adds a signal handler to call when a signal is received which matches the specified type and name.
+    *
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param handler The handler to call when a signal is received.
     * @throws DBusException If listening for the signal on the bus failed.
@@ -571,6 +583,8 @@ public abstract class AbstractConnection {
     /**
     * Add a Signal Handler.
     * Adds a signal handler to call when a signal is received which matches the specified type, name and object.
+    *
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param object The object from which the signal will be emitted
     * @param handler The handler to call when a signal is received.
@@ -682,6 +696,7 @@ public abstract class AbstractConnection {
     /**
     * Call a method asynchronously and set a callback.
     * This handler will be called in a separate thread.
+    * @param <A> whatever
     * @param object The remote object on which to call the method.
     * @param m The name of the method on the interface to call.
     * @param callback The callback handler.
@@ -1173,6 +1188,8 @@ public abstract class AbstractConnection {
 
     /**
     * Returns the address this connection is connected to.
+    * @return new {@link BusAddress} object
+    * @throws ParseException on error
     */
     public BusAddress getAddress() throws ParseException {
         return new BusAddress(addr);

@@ -67,6 +67,7 @@ public interface DBus extends DBusInterface {
     public interface Properties extends DBusInterface {
         /**
          * Get the value for the given property.
+         * @param <A> whatever
          * @param interface_name The interface this property is associated with.
          * @param property_name The name of the property.
          * @return The value of the property (may be any valid DBus type).
@@ -75,6 +76,7 @@ public interface DBus extends DBusInterface {
 
         /**
          * Set the value for the given property.
+         * @param <A> whatever
          * @param interface_name The interface this property is associated with.
          * @param property_name The name of the property.
          * @param value The new value of the property (may be any valid DBus type).
@@ -208,6 +210,9 @@ public interface DBus extends DBusInterface {
 
     /**
     * Does something undocumented.
+    * @param a string
+    *
+    * @return byte array
     */
     Byte[] GetConnectionSELinuxSecurityContext(String a);
 

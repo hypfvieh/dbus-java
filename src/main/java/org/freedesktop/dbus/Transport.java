@@ -523,7 +523,15 @@ public class Transport {
          * performs SASL auth on the given streams.
          * Mode selects whether to run as a SASL server or client.
          * Types is a bitmask of the available auth types.
-         * Returns true if the auth was successful and false if it failed.
+         *
+         * @param mode mode
+         * @param types types
+         * @param guid guid
+         * @param out out
+         * @param in in
+         * @param us us
+         * @return true if the auth was successful and false if it failed.
+         * @throws IOException on failure
          */
         public boolean auth(int mode, int types, String guid, OutputStream out, InputStream in, UnixSocket us) throws IOException {
             String username = System.getProperty("user.name");

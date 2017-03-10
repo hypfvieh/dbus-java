@@ -35,32 +35,44 @@ public class DBusCallInfo {
         this.flags = m.getFlags();
     }
 
-    /** Returns the BusID which called the method */
+    /** Returns the BusID which called the method.
+     * @return source
+     */
     public String getSource() {
         return source;
     }
 
-    /** Returns the name with which we were addressed on the Bus */
+    /** Returns the name with which we were addressed on the Bus.
+     * @return destination
+     */
     public String getDestination() {
         return destination;
     }
 
-    /** Returns the object path used to call this method */
+    /** Returns the object path used to call this method.
+     * @return objectpath
+     */
     public String getObjectPath() {
         return objectpath;
     }
 
-    /** Returns the interface this method was called with */
+    /** Returns the interface this method was called with.
+     * @return interface
+     */
     public String getInterface() {
         return iface;
     }
 
-    /** Returns the method name used to call this method */
+    /** Returns the method name used to call this method.
+     * @return method
+     */
     public String getMethod() {
         return method;
     }
 
-    /** Returns any flags set on this method call */
+    /** Returns any flags set on this method call.
+     * @return flags
+     */
     public int getFlags() {
         return flags;
     }

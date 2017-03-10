@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
         ElementType.TYPE, ElementType.METHOD
 })
 public @interface DBusMemberName {
-    /** The replacement member name. */
+    /** The replacement member name.
+     * @return value
+     */
     String value();
 }

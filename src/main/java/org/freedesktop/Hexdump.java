@@ -119,27 +119,34 @@ public final class Hexdump {
     }
 
     /**
-    * Returns a string which can be written to a Java source file as part
-    * of a static initializer for a byte array.
-    * Returns data in the format 0xAB, 0xCD, ....
-    * use like:
-    * javafile.print("byte[] data = {")
-    * javafile.print(Hexdump.toByteArray(data));
-    * javafile.println("};");
-    */
+     * Returns a string which can be written to a Java source file as part
+     * of a static initializer for a byte array.
+     * Returns data in the format 0xAB, 0xCD, ....
+     * use like:
+     * javafile.print("byte[] data = {")
+     * javafile.print(Hexdump.toByteArray(data));
+     * javafile.println("};");     * @param buf
+     * @param buf buffer
+     * @return string
+     */
     public static String toByteArray(byte[] buf) {
         return toByteArray(buf, 0, buf.length);
     }
 
     /**
-    * Returns a string which can be written to a Java source file as part
-    * of a static initializer for a byte array.
-    * Returns data in the format 0xAB, 0xCD, ....
-    * use like:
-    * javafile.print("byte[] data = {")
-    * javafile.print(Hexdump.toByteArray(data));
-    * javafile.println("};");
-    */
+     * Returns a string which can be written to a Java source file as part
+     * of a static initializer for a byte array.
+     * Returns data in the format 0xAB, 0xCD, ....
+     * use like:
+     * javafile.print("byte[] data = {")
+     * javafile.print(Hexdump.toByteArray(data));
+     * javafile.println("};");
+     *
+     * @param buf buffer
+     * @param ofs offset
+     * @param len length
+     * @return string
+     */
     public static String toByteArray(byte[] buf, int ofs, int len) {
         StringBuffer sb = new StringBuffer();
         for (int i = ofs; i < len && i < buf.length; i++) {

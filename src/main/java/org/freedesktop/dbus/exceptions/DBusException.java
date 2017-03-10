@@ -18,6 +18,7 @@ public class DBusException extends Exception {
 
     /**
     * Create an exception with the specified message
+    * @param message message
     */
     public DBusException(String message) {
         super(message);

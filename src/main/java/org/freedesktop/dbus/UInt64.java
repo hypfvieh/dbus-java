@@ -124,7 +124,9 @@ public class UInt64 extends Number implements Comparable<UInt64> {
         this.bottom = this.value.and(new BigInteger("4294967295")).longValue();
     }
 
-    /** The value of this as a BigInteger. */
+    /** The value of this as a BigInteger.
+     * @return value
+     */
     public BigInteger value() {
         return value;
     }
@@ -177,14 +179,17 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     }
 
     /** Compare two UInt32s.
-    * @return 0 if equal, -ve or +ve if they are different.
-    */
+     * @param other other uint64
+     * @return 0 if equal, -ve or +ve if they are different.
+     */
     @Override
     public int compareTo(UInt64 other) {
         return this.value.compareTo(other.value);
     }
 
-    /** The value of this as a string. */
+    /** The value of this as a string.
+     * @return string
+     */
     @Override
     public String toString() {
         return value.toString();
@@ -192,6 +197,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
 
     /**
     * Most significant 4 bytes.
+    * @return top
     */
     public long top() {
         return top;
@@ -199,6 +205,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
 
     /**
     * Least significant 4 bytes.
+    * @return bottom
     */
     public long bottom() {
         return bottom;

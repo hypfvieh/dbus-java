@@ -35,7 +35,7 @@ public class Variant<T> {
     /**
     * Create a Variant from a basic type object.
     * @param _o The wrapped value.
-    * @throws IllegalArugmentException If you try and wrap Null or an object of a non-basic type.
+    * @throws IllegalArgumentException If you try and wrap Null or an object of a non-basic type.
     */
     public Variant(T _o) throws IllegalArgumentException {
         if (null == _o) {
@@ -63,7 +63,7 @@ public class Variant<T> {
     * Create a Variant.
     * @param _o The wrapped value.
     * @param _type The explicit type of the value.
-    * @throws IllegalArugmentException If you try and wrap Null or an object which cannot be sent over DBus.
+    * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
     public Variant(T _o, Type _type) throws IllegalArgumentException {
         if (null == _o) {
@@ -91,7 +91,7 @@ public class Variant<T> {
     * Create a Variant.
     * @param _o The wrapped value.
     * @param _sig The explicit type of the value, as a dbus type string.
-    * @throws IllegalArugmentException If you try and wrap Null or an object which cannot be sent over DBus.
+    * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
     public Variant(T _o, String _sig) throws IllegalArgumentException {
         if (null == _o) {
@@ -116,17 +116,23 @@ public class Variant<T> {
         this.o = _o;
     }
 
-    /** Return the wrapped value. */
+    /** Return the wrapped value.
+     * @return value
+     */
     public T getValue() {
         return o;
     }
 
-    /** Return the type of the wrapped value. */
+    /** Return the type of the wrapped value.
+     *  @return type
+     */
     public Type getType() {
         return type;
     }
 
-    /** Return the dbus signature of the wrapped value. */
+    /** Return the dbus signature of the wrapped value.
+     * @return signature
+     */
     public String getSig() {
         return sig;
     }
@@ -137,7 +143,10 @@ public class Variant<T> {
         return "[" + o + "]";
     }
 
-    /** Compare this Variant with another by comparing contents */
+    /** Compare this Variant with another by comparing contents.
+     * @param other other object
+     * @return boolean
+     */
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {

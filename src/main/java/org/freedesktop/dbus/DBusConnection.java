@@ -225,6 +225,7 @@ public final class DBusConnection extends AbstractConnection {
     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
     * @param address The address of the bus to connect to
     * @throws DBusException  If there is a problem connecting to the Bus.
+    * @return {@link DBusConnection}
     */
     public static DBusConnection getConnection(String address) throws DBusException {
         synchronized (CONN) {
@@ -247,7 +248,11 @@ public final class DBusConnection extends AbstractConnection {
     * @param bustype The Bus to connect to.
     * @see #SYSTEM
     * @see #SESSION
+    *
+    * @return {@link DBusConnection}
+    *
     * @throws DBusException  If there is a problem connecting to the Bus.
+    *
     */
     public static DBusConnection getConnection(int bustype) throws DBusException {
         synchronized (CONN) {
@@ -505,6 +510,7 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
     * Returns the unique name of this connection.
+    * @return unique name
     */
     public String getUniqueName() {
         return busnames.get(0);
@@ -512,6 +518,7 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
     * Returns all the names owned by this connection.
+    * @return connection names
     */
     public String[] getNames() {
         Set<String> names = new TreeSet<String>();
@@ -601,6 +608,8 @@ public final class DBusConnection extends AbstractConnection {
        * This method will resolve the well known name (if given) to a unique bus name when you call it.
        * This means that if a well known name is released by one process and acquired by another calls to
        * objects gained from this method will continue to operate on the original process.
+       *
+       * @param <I> class extending {@link DBusInterface}
        * @param busname The bus name to connect to. Usually a well known bus name in dot-notation (such as "org.freedesktop.local")
        * or may be a DBus address such as ":1-16".
        * @param objectpath The path on which the process is exporting the object.$
@@ -633,6 +642,8 @@ public final class DBusConnection extends AbstractConnection {
        * This method will always refer to the well known name (if given) rather than resolving it to a unique bus name.
        * In particular this means that if a process providing the well known name disappears and is taken over by another process
        * proxy objects gained by this method will make calls on the new proccess.
+       *
+       * @param <I> class extending {@link DBusInterface}
        * @param busname The bus name to connect to. Usually a well known bus name name in dot-notation (such as "org.freedesktop.local")
        * or may be a DBus address such as ":1-16".
        * @param objectpath The path on which the process is exporting the object.
@@ -651,6 +662,8 @@ public final class DBusConnection extends AbstractConnection {
        * This method will always refer to the well known name (if given) rather than resolving it to a unique bus name.
        * In particular this means that if a process providing the well known name disappears and is taken over by another process
        * proxy objects gained by this method will make calls on the new proccess.
+       *
+       * @param <I> class extending {@link DBusInterface}
        * @param busname The bus name to connect to. Usually a well known bus name name in dot-notation (such as "org.freedesktop.local")
        * or may be a DBus address such as ":1-16".
        * @param objectpath The path on which the process is exporting the object.
@@ -705,8 +718,10 @@ public final class DBusConnection extends AbstractConnection {
     /**
     * Remove a Signal Handler.
     * Stops listening for this signal.
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param source The source of the signal.
+    * @param handler the handler
     * @throws DBusException If listening for the signal on the bus failed.
     * @throws ClassCastException If type is not a sub-type of DBusSignal.
     */
@@ -726,9 +741,11 @@ public final class DBusConnection extends AbstractConnection {
     /**
     * Remove a Signal Handler.
     * Stops listening for this signal.
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param source The source of the signal.
     * @param object The object emitting the signal.
+    * @param handler the handler
     * @throws DBusException If listening for the signal on the bus failed.
     * @throws ClassCastException If type is not a sub-type of DBusSignal.
     */
@@ -779,6 +796,7 @@ public final class DBusConnection extends AbstractConnection {
     /**
     * Add a Signal Handler.
     * Adds a signal handler to call when a signal is received which matches the specified type, name and source.
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param source The process which will send the signal. This <b>MUST</b> be a unique bus name and not a well known name.
     * @param handler The handler to call when a signal is received.
@@ -801,6 +819,7 @@ public final class DBusConnection extends AbstractConnection {
     /**
     * Add a Signal Handler.
     * Adds a signal handler to call when a signal is received which matches the specified type, name, source and object.
+    * @param <T> class extending {@link DBusSignal}
     * @param type The signal to watch for.
     * @param source The process which will send the signal. This <b>MUST</b> be a unique bus name and not a well known name.
     * @param object The object from which the signal will be emitted

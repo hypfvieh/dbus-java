@@ -307,6 +307,7 @@ public final class Marshalling {
     * @param rv Vector to return the types in.
     * @param limit Maximum number of types to parse (-1 == nolimit).
     * @return number of characters parsed from the type string.
+    * @throws DBusException on error
     */
     public static int getJavaType(String dbus, List<Type> rv, int limit) throws DBusException {
         if (null == dbus || "".equals(dbus) || 0 == limit) {
@@ -412,6 +413,7 @@ public final class Marshalling {
     * Recursively converts types for serialization onto DBus.
     * @param parameters The parameters to convert.
     * @param types The (possibly generic) types of the parameters.
+    * @param conn the connection
     * @return The converted parameters.
     * @throws DBusException Thrown if there is an error in converting the objects.
     */

@@ -22,6 +22,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Position {
-    /** The order of this field in the Struct. */
+    /** The order of this field in the Struct.
+     * @return value
+     */
     int value();
 }

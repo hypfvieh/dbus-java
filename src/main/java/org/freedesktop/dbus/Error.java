@@ -122,6 +122,7 @@ public class Error extends Message {
 
     /**
     * Turns this into an exception of the correct type
+    * @return exception
     */
     public DBusExecutionException getException() {
         try {

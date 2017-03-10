@@ -27,12 +27,16 @@ public interface DBusInterface {
     /**
     * Returns true on remote objects.
     * Local objects implementing this interface MUST return false.
+    *
+    * @return boolean
     */
     boolean isRemote();
 
     /**
      * Returns the path of this object.
+     *
+     * @return string
      */
-    public String getObjectPath();
+    String getObjectPath();
 
 }
