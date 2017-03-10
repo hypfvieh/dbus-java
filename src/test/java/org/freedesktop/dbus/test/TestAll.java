@@ -54,6 +54,11 @@ class TestNewClass implements TestNewInterface {
     }
 
     @Override
+    public String getObjectPath() {
+        return null;
+    }
+
+    @Override
     public String getName() {
         return toString();
     }
@@ -116,9 +121,9 @@ class TestClass implements TestRemoteInterface, TestRemoteInterface2, TestSignal
             TestAll.fail("show received the wrong arguments");
         }
         DBusCallInfo info = AbstractConnection.getCallInfo();
-        List<Integer> l = new Vector<Integer>();
+        List<Integer> l = new Vector<>();
         l.add(1953);
-        return new TestTuple<String, List<Integer>, Boolean>(info.getSource(), l, true);
+        return new TestTuple<>(info.getSource(), l, true);
     }
 
     @Override
@@ -136,6 +141,11 @@ class TestClass implements TestRemoteInterface, TestRemoteInterface2, TestSignal
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public String getObjectPath() {
+        return null;
     }
 
     /** The method we are exporting to the Bus. */
@@ -162,7 +172,7 @@ class TestClass implements TestRemoteInterface, TestRemoteInterface2, TestSignal
         if (ls.length != 4 || ls[0] != 2 || ls[1] != 6 || ls[2] != 8 || ls[3] != 12) {
             TestAll.fail("sampleArray, Integer array contents incorrect");
         }
-        Vector<Integer> v = new Vector<Integer>();
+        Vector<Integer> v = new Vector<>();
         v.add(-1);
         v.add(-5);
         v.add(-7);
@@ -343,7 +353,7 @@ class TestClass implements TestRemoteInterface, TestRemoteInterface2, TestSignal
 
     @Override
     public Map<String, Variant<?>> GetAll(String interface_name) {
-        return new HashMap<String, Variant<?>>();
+        return new HashMap<>();
     }
 
     @Override
@@ -631,7 +641,7 @@ public class TestAll {
                 clientconn.addSigHandler(TestSignalInterface.TestArraySignal.class, source, peer, new ArraySignalHandler());
                 clientconn.addSigHandler(TestSignalInterface.TestObjectSignal.class, new ObjectSignalHandler());
                 clientconn.addSigHandler(TestSignalInterface.TestPathSignal.class, new PathSignalHandler());
-                BadArraySignalHandler<TestSignalInterface.TestSignal> bash = new BadArraySignalHandler<TestSignalInterface.TestSignal>();
+                BadArraySignalHandler<TestSignalInterface.TestSignal> bash = new BadArraySignalHandler<>();
                 clientconn.addSigHandler(TestSignalInterface.TestSignal.class, bash);
                 clientconn.removeSigHandler(TestSignalInterface.TestSignal.class, bash);
                 System.out.println("done");
@@ -719,14 +729,14 @@ public class TestAll {
             if (!path.equals(p)) {
                 fail("pathrv incorrect");
             }
-            List<Path> paths = new Vector<Path>();
+            List<Path> paths = new Vector<>();
             paths.add(path);
             List<Path> ps = tri.pathlistrv(paths);
             System.out.println(paths.toString() + " => " + ps.toString());
             if (!paths.equals(ps)) {
                 fail("pathlistrv incorrect");
             }
-            Map<Path, Path> pathm = new HashMap<Path, Path>();
+            Map<Path, Path> pathm = new HashMap<>();
             pathm.put(path, path);
             Map<Path, Path> pm = tri.pathmaprv(pathm);
             System.out.println(pathm.toString() + " => " + pm.toString());
@@ -757,15 +767,15 @@ public class TestAll {
                 fail("testfloat returned the wrong thing");
             }
             System.out.println("Structs of Structs");
-            List<List<Integer>> lli = new Vector<List<Integer>>();
-            List<Integer> li = new Vector<Integer>();
+            List<List<Integer>> lli = new Vector<>();
+            List<Integer> li = new Vector<>();
             li.add(1);
             li.add(2);
             li.add(3);
             lli.add(li);
             lli.add(li);
             lli.add(li);
-            TestStruct3 ts3 = new TestStruct3(new TestStruct2(new Vector<String>(), new Variant<Integer>(0)), lli);
+            TestStruct3 ts3 = new TestStruct3(new TestStruct2(new Vector<String>(), new Variant<>(0)), lli);
             int[][] out = tri.teststructstruct(ts3);
             if (out.length != 3) {
                 fail("teststructstruct returned the wrong thing: " + Arrays.deepToString(out));
@@ -777,15 +787,15 @@ public class TestAll {
             }
 
             System.out.println("frobnicating");
-            List<Long> ls = new Vector<Long>();
+            List<Long> ls = new Vector<>();
             ls.add(2L);
             ls.add(5L);
             ls.add(71L);
-            Map<UInt16, Short> mus = new HashMap<UInt16, Short>();
+            Map<UInt16, Short> mus = new HashMap<>();
             mus.put(new UInt16(4), (short) 5);
             mus.put(new UInt16(5), (short) 6);
             mus.put(new UInt16(6), (short) 7);
-            Map<String, Map<UInt16, Short>> msmus = new HashMap<String, Map<UInt16, Short>>();
+            Map<String, Map<UInt16, Short>> msmus = new HashMap<>();
             msmus.put("stuff", mus);
             int rint = tri.frobnicate(ls, msmus, 13);
             if (-5 != rint) {
@@ -810,7 +820,7 @@ public class TestAll {
             }
 
             /* Test type signatures */
-            Vector<Type> ts = new Vector<Type>();
+            Vector<Type> ts = new Vector<>();
             Marshalling.getJavaType("ya{si}", ts, -1);
             tri.sig(ts.toArray(new Type[0]));
 
@@ -884,14 +894,14 @@ public class TestAll {
             }
 
             System.out.println("Doing stuff asynchronously");
-            DBusAsyncReply<Boolean> stuffreply = (DBusAsyncReply<Boolean>) clientconn.callMethodAsync(tri2, "dostuff", new TestStruct("bar", new UInt32(52), new Variant<Boolean>(new Boolean(true))));
+            DBusAsyncReply<Boolean> stuffreply = (DBusAsyncReply<Boolean>) clientconn.callMethodAsync(tri2, "dostuff", new TestStruct("bar", new UInt32(52), new Variant<>(new Boolean(true))));
 
             System.out.println("Checking bools");
             if (tri2.check()) {
                 fail("bools are broken");
             }
 
-            List<String> l = new Vector<String>();
+            List<String> l = new Vector<>();
             l.add("hi");
             l.add("hello");
             l.add("hej");
@@ -924,21 +934,21 @@ public class TestAll {
 
             System.out.print("Sending Array Signal...");
             /** This creates an instance of the Test Signal, with the given object path, signal name and parameters, and broadcasts in on the Bus. */
-            List<TestStruct2> tsl = new Vector<TestStruct2>();
-            tsl.add(new TestStruct2(l, new Variant<UInt64>(new UInt64(567))));
-            Map<UInt32, TestStruct2> tsm = new HashMap<UInt32, TestStruct2>();
-            tsm.put(new UInt32(1), new TestStruct2(l, new Variant<UInt64>(new UInt64(678))));
-            tsm.put(new UInt32(42), new TestStruct2(l, new Variant<UInt64>(new UInt64(789))));
+            List<TestStruct2> tsl = new Vector<>();
+            tsl.add(new TestStruct2(l, new Variant<>(new UInt64(567))));
+            Map<UInt32, TestStruct2> tsm = new HashMap<>();
+            tsm.put(new UInt32(1), new TestStruct2(l, new Variant<>(new UInt64(678))));
+            tsm.put(new UInt32(42), new TestStruct2(l, new Variant<>(new UInt64(789))));
             serverconn.sendSignal(new TestSignalInterface.TestArraySignal("/Test", tsl, tsm));
 
             System.out.println("done");
 
             System.out.print("testing custom serialization...");
-            Vector<Integer> v = new Vector<Integer>();
+            Vector<Integer> v = new Vector<>();
             v.add(1);
             v.add(2);
             v.add(3);
-            TestSerializable<String> s = new TestSerializable<String>(1, "woo", v);
+            TestSerializable<String> s = new TestSerializable<>(1, "woo", v);
             s = tri2.testSerializable((byte) 12, s, 13);
             System.out.print("returned: " + s);
             if (s.getInt() != 1 || !s.getString().equals("woo") || s.getVector().size() != 3 || s.getVector().get(0) != 1 || s.getVector().get(1) != 2 || s.getVector().get(2) != 3) {
@@ -986,8 +996,8 @@ public class TestAll {
             System.out.println("done");
 
             System.out.print("Testing nested lists...");
-            lli = new Vector<List<Integer>>();
-            li = new Vector<Integer>();
+            lli = new Vector<>();
+            li = new Vector<>();
             li.add(1);
             lli.add(li);
             List<List<Integer>> reti = tri2.checklist(lli);

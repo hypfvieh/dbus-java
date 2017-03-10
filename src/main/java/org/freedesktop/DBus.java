@@ -14,9 +14,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
@@ -88,6 +87,24 @@ public interface DBus extends DBusInterface {
          * @return The properties mapped to their values.
          */
         Map<String, Variant<?>> GetAll(String interface_name);
+
+        /**
+         * Signal generated when a property changes.
+         */
+        public class PropertiesChanged extends DBusSignal {
+            public final String interfaceName;
+            public final Map<String, Variant<?>> changedProperties;
+            public final List<String> invalidatedProperties;
+
+            public PropertiesChanged(final String path, final String _interfaceName,
+                    final Map<String, Variant<?>> _changedProperties, final List<String> _invalidatedProperties)
+                    throws DBusException {
+                super(path, _interfaceName, _changedProperties, _invalidatedProperties);
+                this.interfaceName = _interfaceName;
+                this.changedProperties = _changedProperties;
+                this.invalidatedProperties = _invalidatedProperties;
+            }
+        }
     }
 
     /**

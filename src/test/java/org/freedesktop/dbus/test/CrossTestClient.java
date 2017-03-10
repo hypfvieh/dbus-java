@@ -44,15 +44,15 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
     private static final Logger              LOGGER = LoggerFactory.getLogger(CrossTestClient.class);
 
     private DBusConnection                   conn;
-    public static final Set<String>               PASSED = new TreeSet<String>();
-    public static final Map<String, List<String>> FAILED = new HashMap<String, List<String>>();
+    public static final Set<String>               PASSED = new TreeSet<>();
+    public static final Map<String, List<String>> FAILED = new HashMap<>();
 
     private static CrossTestClient         CROSS_TEST_CLIENT_INSTANCE;
     static {
-        List<String> l = new Vector<String>();
+        List<String> l = new Vector<>();
         l.add("Signal never arrived");
         FAILED.put("org.freedesktop.DBus.Binding.TestSignals.Triggered", l);
-        l = new Vector<String>();
+        l = new Vector<>();
         l.add("Method never called");
         FAILED.put("org.freedesktop.DBus.Binding.TestClient.Response", l);
     }
@@ -64,6 +64,11 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public String getObjectPath() {
+        return null;
     }
 
     @Override
@@ -96,7 +101,7 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
         test = test.replaceAll("[$]", ".");
         List<String> reasons = FAILED.get(test);
         if (null == reasons) {
-            reasons = new Vector<String>();
+            reasons = new Vector<>();
             FAILED.put(test, reasons);
         }
         reasons.add(reason);
@@ -219,7 +224,7 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
 
     @SuppressWarnings("unchecked")
     public static List<Variant<Object>> primitizeRecurse(Object a, Type t) {
-        List<Variant<Object>> vs = new Vector<Variant<Object>>();
+        List<Variant<Object>> vs = new Vector<>();
         if (t instanceof ParameterizedType) {
             Class<Object> c = (Class<Object>) ((ParameterizedType) t).getRawType();
             if (List.class.isAssignableFrom(c)) {
@@ -272,7 +277,7 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
     }
 
     public static void primitizeTest(DBus.Binding.Tests tests, Object input) {
-        Variant<Object> in = new Variant<Object>(input);
+        Variant<Object> in = new Variant<>(input);
         List<Variant<Object>> vs = primitize(in);
         List<Variant<Object>> res;
 
@@ -322,8 +327,8 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
             fail("org.freedesktop.DBus.Introspectable.Introspect", "Got exception during introspection on / (" + dbee.getClass().getName() + "): " + dbee.getMessage());
         }
 
-        test(DBus.Binding.Tests.class, tests, "Identity", new Variant<Integer>(new Integer(1)), new Variant<Integer>(new Integer(1)));
-        test(DBus.Binding.Tests.class, tests, "Identity", new Variant<String>("Hello"), new Variant<String>("Hello"));
+        test(DBus.Binding.Tests.class, tests, "Identity", new Variant<>(new Integer(1)), new Variant<>(new Integer(1)));
+        test(DBus.Binding.Tests.class, tests, "Identity", new Variant<>("Hello"), new Variant<>("Hello"));
 
         test(DBus.Binding.Tests.class, tests, "IdentityBool", false, false);
         test(DBus.Binding.Tests.class, tests, "IdentityBool", true, true);
@@ -407,7 +412,7 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
         testArray(DBus.Binding.Tests.class, tests, "IdentityInt64Array", Long.TYPE, null);
         testArray(DBus.Binding.Tests.class, tests, "IdentityDoubleArray", Double.TYPE, null);
 
-        testArray(DBus.Binding.Tests.class, tests, "IdentityArray", Variant.class, new Variant<String>("aoeu"));
+        testArray(DBus.Binding.Tests.class, tests, "IdentityArray", Variant.class, new Variant<>("aoeu"));
         testArray(DBus.Binding.Tests.class, tests, "IdentityUInt16Array", UInt16.class, new UInt16(12));
         testArray(DBus.Binding.Tests.class, tests, "IdentityUInt32Array", UInt32.class, new UInt32(190));
         testArray(DBus.Binding.Tests.class, tests, "IdentityUInt64Array", UInt64.class, new UInt64(103948));
@@ -438,31 +443,31 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
         }
         test(DBus.Binding.SingleTests.class, singletests, "Sum", new UInt32(res % (UInt32.MAX_VALUE + 1)), bs);
 
-        test(DBus.Binding.Tests.class, tests, "DeStruct", new DBus.Binding.Triplet<String, UInt32, Short>("hi", new UInt32(12), new Short((short) 99)), new DBus.Binding.TestStruct("hi", new UInt32(12), new Short((short) 99)));
+        test(DBus.Binding.Tests.class, tests, "DeStruct", new DBus.Binding.Triplet<>("hi", new UInt32(12), new Short((short) 99)), new DBus.Binding.TestStruct("hi", new UInt32(12), new Short((short) 99)));
 
-        Map<String, String> in = new HashMap<String, String>();
-        Map<String, List<String>> out = new HashMap<String, List<String>>();
+        Map<String, String> in = new HashMap<>();
+        Map<String, List<String>> out = new HashMap<>();
         test(DBus.Binding.Tests.class, tests, "InvertMapping", out, in);
 
         in.put("hi", "there");
         in.put("to", "there");
         in.put("from", "here");
         in.put("in", "out");
-        List<String> l = new Vector<String>();
+        List<String> l = new Vector<>();
         l.add("hi");
         l.add("to");
         out.put("there", l);
-        l = new Vector<String>();
+        l = new Vector<>();
         l.add("from");
         out.put("here", l);
-        l = new Vector<String>();
+        l = new Vector<>();
         l.add("in");
         out.put("out", l);
         test(DBus.Binding.Tests.class, tests, "InvertMapping", out, in);
 
         primitizeTest(tests, new Integer(1));
-        primitizeTest(tests, new Variant<Variant<Variant<Variant<String>>>>(new Variant<Variant<Variant<String>>>(new Variant<Variant<String>>(new Variant<String>("Hi")))));
-        primitizeTest(tests, new Variant<Map<String, String>>(in, new DBusMapType(String.class, String.class)));
+        primitizeTest(tests, new Variant<>(new Variant<>(new Variant<>(new Variant<>("Hi")))));
+        primitizeTest(tests, new Variant<>(in, new DBusMapType(String.class, String.class)));
 
         test(DBus.Binding.Tests.class, tests, "Trigger", null, "/Test", new UInt64(21389479283L));
 

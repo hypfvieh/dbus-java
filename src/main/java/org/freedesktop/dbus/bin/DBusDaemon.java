@@ -95,8 +95,8 @@ public class DBusDaemon extends Thread {
         private String                name;
 
         MagicMap(String _name) {
-            m = new HashMap<A, LinkedList<B>>();
-            q = new LinkedList<A>();
+            m = new HashMap<>();
+            q = new LinkedList<>();
             this.name = _name;
         }
 
@@ -110,7 +110,7 @@ public class DBusDaemon extends Thread {
             if (m.containsKey(a)) {
                 m.get(a).add(b);
             } else {
-                LinkedList<B> l = new LinkedList<B>();
+                LinkedList<B> l = new LinkedList<>();
                 l.add(b);
                 m.put(a, l);
             }
@@ -124,7 +124,7 @@ public class DBusDaemon extends Thread {
             if (m.containsKey(a)) {
                 m.get(a).add(b);
             } else {
-                LinkedList<B> l = new LinkedList<B>();
+                LinkedList<B> l = new LinkedList<>();
                 l.add(b);
                 m.put(a, l);
             }
@@ -448,6 +448,11 @@ public class DBusDaemon extends Thread {
         }
 
         @Override
+        public String getObjectPath() {
+            return null;
+        }
+
+        @Override
         public String Introspect() {
             return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n" + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + "<node>\n" + "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "    <method name=\"Introspect\">\n"
                     + "      <arg name=\"data\" direction=\"out\" type=\"s\"/>\n" + "    </method>\n" + "  </interface>\n" + "  <interface name=\"org.freedesktop.DBus\">\n" + "    <method name=\"RequestName\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"in\" type=\"u\"/>\n"
@@ -576,7 +581,7 @@ public class DBusDaemon extends Thread {
 
         public Reader(Connstruct _conn) {
             this.conn = _conn;
-            weakconn = new WeakReference<Connstruct>(_conn);
+            weakconn = new WeakReference<>(_conn);
             setName("Reader");
         }
 
@@ -624,12 +629,12 @@ public class DBusDaemon extends Thread {
         }
     }
 
-    private Map<Connstruct, Reader>                      conns       = new HashMap<Connstruct, Reader>();
-    private HashMap<String, Connstruct>                  names       = new HashMap<String, Connstruct>();
-    private MagicMap<Message, WeakReference<Connstruct>> outqueue    = new MagicMap<Message, WeakReference<Connstruct>>("out");
-    private MagicMap<Message, WeakReference<Connstruct>> inqueue     = new MagicMap<Message, WeakReference<Connstruct>>("in");
-    private MagicMap<Message, WeakReference<Connstruct>> localqueue  = new MagicMap<Message, WeakReference<Connstruct>>("local");
-    private List<Connstruct>                             sigrecips   = new Vector<Connstruct>();
+    private Map<Connstruct, Reader>                      conns       = new HashMap<>();
+    private HashMap<String, Connstruct>                  names       = new HashMap<>();
+    private MagicMap<Message, WeakReference<Connstruct>> outqueue    = new MagicMap<>("out");
+    private MagicMap<Message, WeakReference<Connstruct>> inqueue     = new MagicMap<>("in");
+    private MagicMap<Message, WeakReference<Connstruct>> localqueue  = new MagicMap<>("local");
+    private List<Connstruct>                             sigrecips   = new Vector<>();
     private boolean                                      run        = true;
     private int                                          nextUnique = 0;
     private Object                                       uniqueLock = new Object();
@@ -664,9 +669,9 @@ public class DBusDaemon extends Thread {
                 synchronized (outqueue) {
                     for (Connstruct d : conns.keySet()) {
                         if (head) {
-                            outqueue.putFirst(m, new WeakReference<Connstruct>(d));
+                            outqueue.putFirst(m, new WeakReference<>(d));
                         } else {
-                            outqueue.putLast(m, new WeakReference<Connstruct>(d));
+                            outqueue.putLast(m, new WeakReference<>(d));
                         }
                     }
                     outqueue.notifyAll();
@@ -675,9 +680,9 @@ public class DBusDaemon extends Thread {
         } else {
             synchronized (outqueue) {
                 if (head) {
-                    outqueue.putFirst(m, new WeakReference<Connstruct>(c));
+                    outqueue.putFirst(m, new WeakReference<>(c));
                 } else {
-                    outqueue.putLast(m, new WeakReference<Connstruct>(c));
+                    outqueue.putLast(m, new WeakReference<>(c));
                 }
                 outqueue.notifyAll();
             }
@@ -693,7 +698,7 @@ public class DBusDaemon extends Thread {
 
         List<Connstruct> l;
         synchronized (sigrecips) {
-            l = new Vector<Connstruct>(sigrecips);
+            l = new Vector<>(sigrecips);
         }
 
         LOGGER.debug("exit");
@@ -802,7 +807,7 @@ public class DBusDaemon extends Thread {
             } catch (IOException exIo) {
             }
             synchronized (names) {
-                List<String> toRemove = new Vector<String>();
+                List<String> toRemove = new Vector<>();
                 for (String name : names.keySet()) {
                     if (names.get(name) == c) {
                         toRemove.add(name);

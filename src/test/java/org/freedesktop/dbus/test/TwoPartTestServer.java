@@ -21,6 +21,11 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
         }
 
         @Override
+        public String getObjectPath() {
+            return null;
+        }
+
+        @Override
         public String getName() {
             System.out.println("give name");
             return toString();
@@ -36,6 +41,11 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public String getObjectPath() {
+        return null;
     }
 
     @Override

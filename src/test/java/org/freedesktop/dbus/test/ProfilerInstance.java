@@ -20,6 +20,11 @@ public class ProfilerInstance implements Profiler {
     }
 
     @Override
+    public String getObjectPath() {
+        return null;
+    }
+
+    @Override
     public void array(int[] v) {
         return;
     }

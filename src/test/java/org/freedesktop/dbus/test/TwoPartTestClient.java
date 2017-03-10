@@ -25,6 +25,11 @@ public final class TwoPartTestClient {
         }
 
         @Override
+        public String getObjectPath() {
+            return null;
+        }
+
+        @Override
         public String getName() {
             System.out.println("client name");
             return toString();
