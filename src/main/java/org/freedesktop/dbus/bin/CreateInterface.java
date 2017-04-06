@@ -622,6 +622,7 @@ public class CreateInterface {
         boolean printtree = false;
         boolean fileout   = false;
         boolean builtin   = false;
+        boolean ignoreDtd = true;
         // CHECKSTYLE:ON
     }
 
@@ -631,7 +632,7 @@ public class CreateInterface {
 
     static void printSyntax(PrintStream o) {
         o.println("Syntax: CreateInterface <options> [file | busname object]");
-        o.println("        Options: --no-ignore-builtin --system -y --session -s --create-files -f --help -h --version -v");
+        o.println("        Options: --no-ignore-builtin  --enable-dtd-validation --system -y --session -s --create-files -f --help -h --version -v");
     }
 
     public static void version() {
@@ -652,6 +653,8 @@ public class CreateInterface {
                 config.fileout = true;
             } else if ("--print-tree".equals(p) || "-p".equals(p)) {
                 config.printtree = true;
+            } else if ("--enable-dtd-validation".equals(p)) {
+                config.ignoreDtd = false;
             } else if ("--help".equals(p) || "-h".equals(p)) {
                 printSyntax(System.out);
                 System.exit(0);
@@ -718,7 +721,7 @@ public class CreateInterface {
         try {
             PrintStreamFactory factory = config.fileout ? new FileStreamFactory() : new ConsoleStreamFactory();
             CreateInterface createInterface = new CreateInterface(factory, config.builtin);
-            createInterface.createInterface(introspectdata);
+            createInterface.createInterface(introspectdata, config);
         } catch (DBusException exD) {
             System.err.println("ERROR: " + exD.getMessage());
             System.exit(1);
@@ -726,16 +729,27 @@ public class CreateInterface {
     }
 
     /** Output the interface for the supplied xml reader
-    * @param introspectdata The introspect data reader
+    * @param _introspectdata The introspect data reader
     * @throws ParserConfigurationException If the xml parser could not be configured
     * @throws SAXException If a problem occurs reading the xml data
     * @throws IOException If an IO error occurs
     * @throws DBusException If the dbus related error occurs
     */
-    public void createInterface(Reader introspectdata) throws ParserConfigurationException, SAXException, IOException, DBusException {
+    public void createInterface(Reader _introspectdata, Config _config) throws ParserConfigurationException, SAXException, IOException, DBusException {
         DocumentBuilderFactory lfactory = DocumentBuilderFactory.newInstance();
+
+        if (_config != null && _config.ignoreDtd) { // if dtd validation is disabled (default)
+            lfactory.setValidating(false);
+            lfactory.setNamespaceAware(true);
+            lfactory.setFeature("http://xml.org/sax/features/namespaces", false);
+            lfactory.setFeature("http://xml.org/sax/features/validation", false);
+            lfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+            lfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        }
+
         DocumentBuilder builder = lfactory.newDocumentBuilder();
-        Document document = builder.parse(new InputSource(introspectdata));
+
+        Document document = builder.parse(new InputSource(_introspectdata));
 
         Element root = document.getDocumentElement();
         checkNode(root, "node");

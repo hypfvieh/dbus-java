@@ -81,7 +81,7 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
 
                         String docType = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
 
-                        createInterface.createInterface(new StringReader(xml.replace(docType, "")));
+                        createInterface.createInterface(new StringReader(xml.replace(docType, "")), null);
                         final JTabbedPane tabbedPane = new JTabbedPane();
 
                         tabbedPane.addTab(xmlFile, createSourceTab(xmlFile, xml));
