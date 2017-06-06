@@ -223,11 +223,25 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
+    * Will always register our own session to Dbus.
     * @param address The address of the bus to connect to
     * @throws DBusException  If there is a problem connecting to the Bus.
     * @return {@link DBusConnection}
     */
     public static DBusConnection getConnection(String address) throws DBusException {
+        return getConnection(address, true);
+    }
+
+    /**
+    * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
+    * Will register our own session to DBus if registerSelf is true (default).
+    * 
+    * @param address The address of the bus to connect to
+    * @param registerSelf register own session in dbus
+    * @throws DBusException  If there is a problem connecting to the Bus.
+    * @return {@link DBusConnection}
+    */
+    public static DBusConnection getConnection(String address, boolean registerSelf) throws DBusException {
         synchronized (CONN) {
             DBusConnection c = CONN.get(address);
             if (null != c) {
@@ -236,13 +250,13 @@ public final class DBusConnection extends AbstractConnection {
                 }
                 return c;
             } else {
-                c = new DBusConnection(address);
+                c = new DBusConnection(address, registerSelf);
                 CONN.put(address, c);
                 return c;
             }
         }
     }
-
+    
     /**
     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
     * @param bustype The Bus to connect to.
@@ -331,6 +345,10 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     private DBusConnection(String address) throws DBusException {
+        this(address, true);
+    }
+    
+    private DBusConnection(String address, boolean registerSelf) throws DBusException {
         super(address);
         busnames = new Vector<String>();
 
@@ -363,15 +381,17 @@ public final class DBusConnection extends AbstractConnection {
         addSigHandlerWithoutMatch(org.freedesktop.DBus.Local.Disconnected.class, h);
         addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
 
-        // register ourselves
-        dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
-        try {
-            busnames.add(dbus.Hello());
-        } catch (DBusExecutionException dbee) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", dbee);
+        // register ourselves if not disabled
+        if (registerSelf) {
+            dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
+            try {
+                busnames.add(dbus.Hello());
+            } catch (DBusExecutionException dbee) {
+                if (EXCEPTION_DEBUG) {
+                    logger.error("", dbee);
+                }
+                throw new DBusException(dbee.getMessage());
             }
-            throw new DBusException(dbee.getMessage());
         }
     }
 
