@@ -216,7 +216,7 @@ public abstract class AbstractConnection {
         public void run() {
             Message m = null;
 
-            logger.info("Monitoring outbound queue");
+            logger.trace("Monitoring outbound queue");
             // block on the outbound queue and send from it
             while (run) {
                 if (null != outgoing) {
@@ -241,7 +241,7 @@ public abstract class AbstractConnection {
                 m = null;
             }
 
-            logger.info("Flushing outbound queue and quitting");
+            logger.debug("Flushing outbound queue and quitting");
             // flush the outbound queue before disconnect.
             if (null != outgoing) {
                 do {
@@ -624,7 +624,7 @@ public abstract class AbstractConnection {
     */
     public void disconnect() {
         connected = false;
-        logger.info("Sending disconnected signal");
+        logger.debug("Sending disconnected signal");
         try {
             handleMessage(new org.freedesktop.DBus.Local.Disconnected("/"));
         } catch (Exception ex) {
@@ -633,7 +633,7 @@ public abstract class AbstractConnection {
             }
         }
 
-        logger.info("Disconnecting Abstract Connection");
+        logger.debug("Disconnecting Abstract Connection");
         // run all pending tasks.
         while (runnables.size() > 0) {
             synchronized (runnables) {

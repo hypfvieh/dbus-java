@@ -212,7 +212,7 @@ public class MessageReader {
     }
 
     public void close() throws IOException {
-        logger.info("Closing Message Reader");
+        logger.trace("Closing Message Reader");
         in.close();
     }
 }

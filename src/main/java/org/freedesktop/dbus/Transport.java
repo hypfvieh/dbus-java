@@ -835,7 +835,7 @@ public class Transport {
     }
 
     public void connect(BusAddress address, int timeout) throws IOException {
-        logger.info("Connecting to " + address);
+        logger.debug("Connecting to " + address);
         OutputStream out = null;
         InputStream in = null;
         UnixSocket us = null;
@@ -905,7 +905,7 @@ public class Transport {
     }
 
     public void disconnect() throws IOException {
-        logger.info("Disconnecting Transport");
+        logger.debug("Disconnecting Transport");
         min.close();
         mout.close();
     }

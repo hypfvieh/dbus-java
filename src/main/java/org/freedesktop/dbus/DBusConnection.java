@@ -174,7 +174,7 @@ public final class DBusConnection extends AbstractConnection {
         @Override
         public void handle(DBusSignal s) {
             if (s instanceof org.freedesktop.DBus.Local.Disconnected) {
-                logger.warn("Handling Disconnected signal from bus");
+                logger.debug("Handling Disconnected signal from bus");
                 try {
                     Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", new Object[] {
                             t("Disconnected")
@@ -235,7 +235,7 @@ public final class DBusConnection extends AbstractConnection {
     /**
     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
     * Will register our own session to DBus if registerSelf is true (default).
-    * 
+    *
     * @param address The address of the bus to connect to
     * @param registerSelf register own session in dbus
     * @throws DBusException  If there is a problem connecting to the Bus.
@@ -256,7 +256,7 @@ public final class DBusConnection extends AbstractConnection {
             }
         }
     }
-    
+
     /**
     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
     * @param bustype The Bus to connect to.
@@ -316,7 +316,7 @@ public final class DBusConnection extends AbstractConnection {
                         if (null == s || "".equals(s)) {
                             throw new DBusException(t("Cannot Resolve Session Bus Address"));
                         }
-                        logger.info("Read bus address " + s + " from file " + addressfile.toString());
+                        logger.debug("Read bus address " + s + " from file " + addressfile.toString());
                     } catch (Exception e) {
                         if (EXCEPTION_DEBUG) {
                             logger.error("", e);
@@ -347,7 +347,7 @@ public final class DBusConnection extends AbstractConnection {
     private DBusConnection(String address) throws DBusException {
         this(address, true);
     }
-    
+
     private DBusConnection(String address, boolean registerSelf) throws DBusException {
         super(address);
         busnames = new Vector<String>();
@@ -396,7 +396,7 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     DBusInterface dynamicProxy(String source, String path) throws DBusException {
-        logger.info("Introspecting " + path + " on " + source + " for dynamic proxy creation");
+        logger.debug("Introspecting " + path + " on " + source + " for dynamic proxy creation");
         try {
             DBus.Introspectable intro = getRemoteObject(source, path, DBus.Introspectable.class);
             String data = intro.Introspect();
@@ -897,7 +897,7 @@ public final class DBusConnection extends AbstractConnection {
         synchronized (CONN) {
             synchronized (reflock) {
                 if (0 == --refcount) {
-                    logger.info("Disconnecting DBusConnection");
+                    logger.debug("Disconnecting DBusConnection");
                     // Set all pending messages to have an error.
                     try {
                         Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", new Object[] {
