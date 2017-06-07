@@ -9,10 +9,12 @@ import java.util.Set;
 import org.bluez.Adapter1;
 import org.bluez.Device1;
 import org.bluez.exceptions.BluezDoesNotExistsException;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.AbstractPropertiesHandler;
+import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.SignalAwareProperties;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.DbusHelper;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothAdapter;
@@ -42,6 +44,7 @@ public class DeviceManager {
 
     private static boolean libraryLoaded = false;
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     static {
         // disable automatic loading of unix-socket library, we will load it if we need it
@@ -181,7 +184,7 @@ public class DeviceManager {
                 Device1 device = DbusHelper.getRemoteObject(dbusConnection, devicePath, Device1.class);
                 if (device != null) {
                     BluetoothDevice btDev = new BluetoothDevice(device, adapter, devicePath, dbusConnection);
-
+                    logger.debug("Found bluetooth device {} on adapter {}", btDev.getAddress(), adapterMac);
                     if (bluetoothDeviceByAdapterMac.containsKey(adapterMac)) {
                         bluetoothDeviceByAdapterMac.get(adapterMac).add(btDev);
                     } else {
@@ -192,7 +195,12 @@ public class DeviceManager {
                 }
             }
         }
-        return new ArrayList<>(bluetoothDeviceByAdapterMac.values()).get(0);
+        
+        List<BluetoothDevice> devicelist = bluetoothDeviceByAdapterMac.get(_adapter);
+        if (devicelist != null) {
+            return new ArrayList<>(devicelist);    
+        }
+        return new ArrayList<>();
     }
 
     /**
