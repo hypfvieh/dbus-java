@@ -54,6 +54,8 @@ public final class DbusHelper {
             LOGGER.info("Exception while search DBus.", _ex);
         } catch (IOException _ex) {
             LOGGER.error("Exception while applying Xpath to introspection result", _ex);
+        } catch (Exception _ex) {
+            LOGGER.error("Critical error while reading DBUS response (maybe no bluetoothd daemon running?)", _ex);
         }
         return foundNodes;
     }
