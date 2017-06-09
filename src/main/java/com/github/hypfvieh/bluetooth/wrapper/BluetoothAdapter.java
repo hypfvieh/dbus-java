@@ -54,7 +54,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Get the deviceName used in DBus (e.g. hci0).
-     * @return
+     *
+     * @return the device name
      */
     public String getDeviceName() {
         return getDbusPath().substring(getDbusPath().lastIndexOf("/") + 1);
@@ -62,7 +63,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * The changeable bluetooth friendly name.
-     * @return
+     *
+     * @return the alias name
      */
     public String getAlias() {
         return getTyped("Alias", String.class);
@@ -70,7 +72,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Change the current bluetooth friendly name.
-     * @param _alias
+     *
+     * @param _alias new alias to set
      */
     public void setAlias(String _alias) {
         setTyped("Alias", _alias);
@@ -78,7 +81,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Returns if the adapter is powered on (true) or powered off (false).
-     * @return
+     *
+     * @return power status
      */
     public boolean isPowered() {
         return getTyped("Powered", Boolean.class);
@@ -86,7 +90,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Turn adapter on (true) or off (false).
-     * @param _powered
+     *
+     * @param _powered set power status
      */
     public void setPowered(boolean _powered) {
         setTyped("Powered", _powered);
@@ -94,6 +99,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * True if device is discoverable (= visible for others), false otherwise.
+     *
      * @return maybe null if feature is not supported
      */
     public Boolean isDiscoverable() {
@@ -102,7 +108,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Set to true to enable device visibility for other bluetooth devices nearby.
-     * @param _discoverable
+     * @param _discoverable set device visible for others
      */
     public void setDiscoverable(boolean _discoverable) {
         setTyped("Discoverable", _discoverable);
@@ -111,7 +117,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * The current timeout (in seconds) configured before disabling discoverbility.<br>
      * If 0 discoverbility will never be disabled automatically.
-     * @return
+     *
+     * @return integer maybe null
      */
     public Integer getDiscoverableTimeout() {
         UInt32 typed = getTyped("DiscoverableTimeout", UInt32.class);
@@ -121,6 +128,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * Timeout (in seconds) to set before the device visibility for others will be disabled.<br>
      * If set to 0, device will stay visible forever.
+     *
+     * @param _discoverableTimeout timeout to set
      */
     public void setDiscoverableTimeout(Integer _discoverableTimeout) {
         setTyped("DiscoverableTimeout", new UInt32(_discoverableTimeout));
@@ -128,6 +137,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * True if pairing with this adapter is allowed for others.
+     *
      * @return maybe null if feature is not supported
      */
     public Boolean isPairable() {
@@ -137,7 +147,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * Set to true to allow pairing of other devices with this adapter.<br>
      * This is a global setting and effects all applications using this adapter.
-     * @param _pairable
+     *
+     * @param _pairable set pairing
      */
     public void setPairable(boolean _pairable) {
         setTyped("Pairable", _pairable);
@@ -146,7 +157,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * Current configured timeout (in seconds) before the pairable mode is disabled.<br>
      * If 0, timeout is disabled and pairability will never be disabled.
-     * @return
+     *
+     * @return integer maybe null
      */
     public Integer getPairableTimeout() {
         UInt32 typed = getTyped("PairableTimeout", UInt32.class);
@@ -156,7 +168,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * Set the timeout (in seconds) before the pairable mode is disabled.<br>
      * Setting this to 0 disables the timeout.
-     * @param _pairableTimeout
+     *
+     * @param _pairableTimeout set pairable timeout
      */
     public void setPairableTimeout(Integer _pairableTimeout) {
         setTyped("PairableTimeout", new UInt32(_pairableTimeout));
@@ -164,7 +177,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * Returns the bluetooth device (MAC) address.
-     * @return
+     *
+     * @return mac address, maybe null
      */
     public String getAddress() {
         return getTyped("Address", String.class);
@@ -178,7 +192,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * or controlled by an external daemon providing
      * access to the pretty hostname configuration.
      * </p>
-     * @return
+     * @return name, maybe null
      */
     public String getName() {
         return getTyped("Name", String.class);
@@ -192,7 +206,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * automatically configured by DMI/ACPI information
      * or provided as static configuration.
      * </p>
-     * @return
+     *
+     * @return integer, maybe null
      */
     public Integer getDeviceClass() {
         UInt32 typed = getTyped("Class", UInt32.class);
@@ -201,7 +216,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
 
     /**
      * True if discovery procedure is active, false otherwise.
-     * @return
+     *
+     * @return discovering status
      */
     public Boolean isDiscovering() {
         return internalDiscover || getTyped("Discovering", Boolean.class);
@@ -272,9 +288,9 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     /**
      * Remove a device and it's pairing information.
      *
-     * @param _device
-     * @throws BluezFailedException
-     * @throws BluezInvalidArgumentException
+     * @param _device device to remove
+     * @throws BluezFailedException when something went wrong
+     * @throws BluezInvalidArgumentException when device was invalid
      */
     public void removeDevice(Device1 _device) throws BluezFailedException, BluezInvalidArgumentException {
         adapter.RemoveDevice(_device);
@@ -305,11 +321,11 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      *
      * If a transport mode is used which is not supported by the device, a {@link BluezNotSupportedException} is thrown.
      *
-     * @param _filter
+     * @param _filter filter to use
      * @throws BluezInvalidArgumentException thrown if any arguments in the map are not supported
-     * @throws BluezNotReadyException
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotReadyException if adapter not ready
+     * @throws BluezNotSupportedException if operation not supported
+     * @throws BluezFailedException any other error
      */
     public void setDiscoveryFilter(Map<String, Object> _filter) throws BluezInvalidArgumentException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
 

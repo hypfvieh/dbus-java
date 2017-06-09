@@ -36,7 +36,7 @@ public abstract class AbstractBluetoothObject {
 
     /**
      * DBus-Interface class used in this wrapper object.
-     * @return
+     * @return class which implements the interface
      */
     protected abstract Class<? extends DBusInterface> getInterfaceClass();
 
@@ -57,7 +57,8 @@ public abstract class AbstractBluetoothObject {
      * @param _objectNames Set of object names to retrieve [e.g service0000, service0001]
      * @param _parentPath DBus parent path (objectName will be appended) [e.g. /org/bluez/hci0]
      * @param _type Expected DBusInterface type [e.g. Device1]
-     * @return
+     * @param <T> class/interface extending {@link DBusInterface}
+     * @return Map of string key and the given interface
      */
     protected <T extends DBusInterface> Map<String, T> getRemoteObjects(Set<String> _objectNames, String _parentPath, Class<T> _type) {
         Map<String, T> map = new LinkedHashMap<>();
@@ -78,7 +79,8 @@ public abstract class AbstractBluetoothObject {
      * Helper to get a value of a DBus property.
      * @param _field DBus property key
      * @param _type expected return type of DBus property
-     * @return
+     * @param <T> class of the expected result
+     * @return value of _field as _type class or null
      */
     @SuppressWarnings("unchecked")
     protected <T> T getTyped(String _field, Class<T> _type) {
@@ -116,8 +118,8 @@ public abstract class AbstractBluetoothObject {
      * <br>
      * To get around that ugly behavior, this library uses Maps with object value.<br>
      * This method will convert the object values to variant values.
-     * @param _options
-     * @return
+     * @param _options options map
+     * @return map of variant, maybe empty but never null
      */
     @SuppressWarnings({
             "rawtypes", "unchecked"
@@ -159,8 +161,8 @@ public abstract class AbstractBluetoothObject {
 
     /**
      * Convert Byte[] to byte[] array.
-     * @param oBytes
-     * @return
+     * @param oBytes the array to convert
+     * @return primitive byte array
      */
     protected byte[] toPrimitives(Byte[] oBytes) {
         byte[] bytes = new byte[oBytes.length];

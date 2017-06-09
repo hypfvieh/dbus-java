@@ -84,7 +84,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * Get the given {@link BluetoothGattService} instance by UUID.
-     * @param _uuid
+     * @param _uuid uuid
      * @return {@link BluetoothGattService}, maybe null if not found
      */
     public BluetoothGattService getGattServiceByUuid(String _uuid) {
@@ -96,7 +96,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * Get {@link BluetoothAdapter} object where this {@link BluetoothDevice} object belongs to.
-     * @return
+     * @return adapter
      */
     public BluetoothAdapter getAdapter() {
         return adapter;
@@ -105,7 +105,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * Get the raw {@link Device1} object wrapped by this {@link BluetoothDevice} object.
-     * @return
+     * @return device
      */
     public Device1 getRawDevice() {
         return rawdevice;
@@ -127,6 +127,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * drivers will also be removed and no new ones will<br>
      * be probed as long as the device is blocked
      * </p>
+     * @param _blocked set blocked status
      */
     public void setBlocked(Boolean _blocked) {
         setTyped("Blocked", _blocked);
@@ -143,7 +144,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
     /**
      * Set to true to trust the connected device, or to false if you don't.<br>
      * Default is false.
-     * @param _trusted
+     * @param _trusted set trusted
      */
     public void setTrusted(boolean _trusted) {
         setTyped("Trusted", _trusted);
@@ -151,7 +152,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * The current name alias for the remote device.
-     * @return
+     * @return alias name
      */
     public String getAlias() {
         return getTyped("Alias", String.class);
@@ -167,6 +168,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * device name. Setting an empty string as alias will<br>
      * convert it back to the remote device name.
      * </p>
+     * @param _alias alias name to set
      */
     public void setAlias(String _alias) {
         setTyped("Alias", _alias);
@@ -175,7 +177,8 @@ public class BluetoothDevice extends AbstractBluetoothObject {
     /**
      * The Advertising Data Flags of the remote device.<br>
      * <b>EXPERIMENTAL</b>
-     * @return
+     *
+     * @return byte array maybe null
      */
     public byte[] getAdvertisingFlags() {
         Vector<?> typed = getTyped("AdvertisingFlags", Vector.class);
@@ -191,6 +194,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * List of 128-bit UUIDs that represents the available
      * remote services.
      * </p>
+     * @return string array of UUIDs, maybe null
      */
     public String[] getUuids() {
         Vector<?> typed = getTyped("UUIDs", Vector.class);
@@ -227,7 +231,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * True if the device is currently paired with another device. False otherwise.
-     * @return
+     * @return boolean, maybe null
      */
     public Boolean isPaired() {
         return getTyped("Paired", Boolean.class);
@@ -251,6 +255,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Service advertisement data. Keys are the UUIDs in
      * string format followed by its byte array value.
      * </p>
+     * @return map of string/bytearray, maybe null
      */
     @SuppressWarnings("unchecked")
     public Map<String, byte[]> getServiceData() {
@@ -264,6 +269,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * 16 bits Manufacturer ID followed by its byte array
      * value.
      * </p>
+     * @return map of uint16/bytearray, maybe null
      */
     @SuppressWarnings("unchecked")
     public Map<UInt16, byte[]> getManufacturerData() {
@@ -276,6 +282,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Received Signal Strength Indicator of the remote
      * device (inquiry or advertising).
      * </p>
+     * @return short, maybe null
      */
     public Short getRssi() {
         return getTyped("RSSI", Short.class);
@@ -287,6 +294,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Advertised transmitted power level (inquiry or
      * advertising).
      * </p>
+     * @return short, maybe null
      */
     public Short getTxPower() {
         return getTyped("TxPower", Short.class);
@@ -294,7 +302,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
 
     /**
      * Returns the remote devices bluetooth (MAC) address.
-     * @return
+     * @return mac address, maybe null
      */
     public String getAddress() {
         return getTyped("Address", String.class);
@@ -306,6 +314,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Proposed icon name according to the freedesktop.org
      * icon naming specification.
      * </p>
+     * @return icon name, maybe null
      */
     public String getIcon() {
         return getTyped("Icon", String.class);
@@ -317,6 +326,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * Remote Device ID information in modalias format
      * used by the kernel and udev.
      * </p>
+     * @return modalias string, maybe null
      */
     public String getModAlias() {
         return getTyped("Modalias", String.class);
@@ -337,6 +347,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * If the Alias property is unset, it will reflect<br>
      * this value which makes it more convenient.
      * </p>
+     * @return name, maybe null
      */
     public String getName() {
         String name = null;
@@ -356,6 +367,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * <p>
      * External appearance of device, as found on GAP service.
      * </p>
+     * @return integer, maybe null
      */
     public Integer getAppearance() {
         UInt16 typed = getTyped("Appearance", UInt16.class);
@@ -367,6 +379,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * <p>
      * The Bluetooth class of device of the remote device.
      * </p>
+     * @return integer, maybe null
      */
     public Integer getBluetoothClass() {
         UInt32 typed = getTyped("Class", UInt32.class);
@@ -383,7 +396,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * connected it will try to connect currently disconnected
      * ones.
      * </p>
-     * @return
+     * @return true if connected, false otherwise
      */
     public boolean connect() {
         try {
@@ -409,7 +422,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * This method can be also used to cancel a preceding<br>
      * Connect call before a reply to it has been received.
      * </p>
-     * @return
+     * @return true if disconnected false otherwise
      */
     public boolean disconnect() {
         try {
@@ -417,7 +430,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
             return true;
         } catch (BluezNotConnectedException _ex) {
         }
-        return isConnected();
+        return !isConnected();
     }
 
     /**
@@ -427,7 +440,9 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * device. The UUID provided is the remote service<br>
      * UUID for the profile.
      * </p>
-     * @return
+     *
+     * @param _uuid profile uuid
+     * @return true if connected to given profile, false otherwise
      */
     public boolean connectProfile(String _uuid) {
         try {
@@ -452,7 +467,9 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * as long as the profile is registered this will always<br>
      * succeed.
      * </p>
-     * @return
+     *
+     * @param _uuid profile uuid
+     * @return true if profile disconnected, false otherwise
      */
     public boolean disconnectProfile(String _uuid) {
         try {
@@ -496,9 +513,6 @@ public class BluetoothDevice extends AbstractBluetoothObject {
         }
     }
 
-//    public void pair2() throws BluezInvalidArgumentException, BluezFailedException, BluezAuthenticationFailedException {
-//        device.Pair();
-//    }
 
     /**
      * <b>From bluez Documentation:</b>

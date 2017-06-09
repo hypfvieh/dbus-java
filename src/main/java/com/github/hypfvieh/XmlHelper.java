@@ -30,11 +30,9 @@ public final class XmlHelper {
 
     /**
      * Create a new {@link Document} instance from the given string, disabling validation.
-     * @param _xmlStr
-     * @param _validating
-     * @param _namespaceAware
-     * @return
-     * @throws IOException
+     * @param _xmlStr xml string
+     * @return document, never null
+     * @throws IOException on error
      */
     public static Document parseXmlString(String _xmlStr) throws IOException {
 
@@ -61,10 +59,10 @@ public final class XmlHelper {
     /**
      * Use an Xpath expression on the given node or document.
      *
-     * @param _xpathExpression
-     * @param _xmlDocumentOrNode
-     * @return
-     * @throws IOException
+     * @param _xpathExpression xpath expression string
+     * @param _xmlDocumentOrNode a {@link Document} or {@link Node} object
+     * @return NodeList never null
+     * @throws IOException on error
      */
     public static NodeList applyXpathExpressionToDocument(String _xpathExpression, Node _xmlDocumentOrNode)
             throws IOException {

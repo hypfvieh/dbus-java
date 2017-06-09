@@ -76,6 +76,9 @@ public class DeviceManager {
      * or create a new interface just for this session (if _sessionConnection = true).
      *
      * @param _sessionConnection true to create user-session, false to use system session
+     * @return {@link DeviceManager}
+     *
+     * @throws DBusException on error
      */
     public static DeviceManager createInstance(boolean _sessionConnection) throws DBusException {
         loadLibrary();
@@ -83,14 +86,19 @@ public class DeviceManager {
         return INSTANCE;
     }
 
+    /**
+     * Close current connection.
+     */
     public void closeConnection() {
         dbusConnection.disconnect();
     }
 
     /**
      * Create a new {@link DeviceManager} instance using the given DBus address (e.g. tcp://127.0.0.1:13245)
-     * @param _address
-     * @throws DBusException
+     * @param _address address to connect to
+     * @throws DBusException on error
+     *
+     * @return {@link DeviceManager}
      */
     public static DeviceManager createInstance(String _address) throws DBusException {
         if (_address == null) {
@@ -106,7 +114,7 @@ public class DeviceManager {
 
     /**
      * Get the created instance.
-     * @return
+     * @return {@link DeviceManager}, never null
      */
     public static DeviceManager getInstance() {
         if (INSTANCE == null) {
@@ -147,8 +155,8 @@ public class DeviceManager {
 
     /**
      * Scan for bluetooth devices using the default adapter.
-     * @param _timeout
-     * @return
+     * @param _timeout timout to use for scanning
+     * @return list of found {@link BluetoothDevice}
      */
     public List<BluetoothDevice> scanForBluetoothDevices(int _timeout) {
         return scanForBluetoothDevices(defaultAdapterMac, _timeout);
@@ -160,7 +168,7 @@ public class DeviceManager {
      *
      * @param _adapter adapter to use (either MAC or Dbus-Devicename (e.g. hci0))
      * @param _timeoutMs timeout in milliseconds to scan for devices
-     * @return
+     * @return list of found {@link BluetoothDevice}
      */
     public List<BluetoothDevice> scanForBluetoothDevices(String _adapter, int _timeoutMs) {
         BluetoothAdapter adapter = getAdapter(_adapter);
@@ -195,10 +203,10 @@ public class DeviceManager {
                 }
             }
         }
-        
+
         List<BluetoothDevice> devicelist = bluetoothDeviceByAdapterMac.get(_adapter);
         if (devicelist != null) {
-            return new ArrayList<>(devicelist);    
+            return new ArrayList<>(devicelist);
         }
         return new ArrayList<>();
     }
@@ -208,7 +216,7 @@ public class DeviceManager {
      * Will scan for devices if no default device is given and given ident is also null.
      * Will also scan for devices if the requested device could not be found in device map.
      *
-     * @param _ident
+     * @param _ident mac address or device name
      * @return device, maybe null if no device could be found with the given ident
      */
     private BluetoothAdapter getAdapter(String _ident) {
@@ -263,7 +271,7 @@ public class DeviceManager {
 
     /**
      * Get all bluetooth devices connected to the adapter with the given MAC address.
-     * @param _adapterMac
+     * @param _adapterMac adapters MAC address
      * @return list - maybe empty
      */
     public List<BluetoothDevice> getDevices(String _adapterMac) {
@@ -312,7 +320,7 @@ public class DeviceManager {
      * Register a PropertiesChanged callback handler on the DBusConnection.
      *
      * @param _handler callback class instance
-     * @throws DBusException
+     * @throws DBusException on error
      */
     public void registerPropertyHandler(AbstractPropertiesHandler _handler) throws DBusException {
         dbusConnection.addSigHandler(SignalAwareProperties.PropertiesChanged.class, _handler);

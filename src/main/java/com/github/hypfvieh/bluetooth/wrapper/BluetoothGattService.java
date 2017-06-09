@@ -69,7 +69,7 @@ public class BluetoothGattService extends AbstractBluetoothObject {
 
     /**
      * Return the {@link BluetoothGattCharacteristic} object for the given UUID.
-     * @param _uuid
+     * @param _uuid uuid
      * @return maybe null if not found
      */
     public BluetoothGattCharacteristic getGattCharacteristicByUuid(String _uuid) {
@@ -84,7 +84,7 @@ public class BluetoothGattService extends AbstractBluetoothObject {
      * <p>
      * 128-bit service UUID.
      * </p>
-     * @return
+     * @return uuid, maybe null
      */
     public String getUuid() {
         return getTyped("UUID", String.class);
@@ -109,7 +109,8 @@ public class BluetoothGattService extends AbstractBluetoothObject {
      * Array of object paths representing the included<br>
      * services of this service.
      * </p>
-     * @return
+     * @return object array, maybe null
+     * @throws BluezNotImplementedException always - because currently not supported
      */
     public Object[] getIncludes() throws BluezNotImplementedException {
         throw new BluezNotImplementedException("Feature not yet implemented");
@@ -117,7 +118,7 @@ public class BluetoothGattService extends AbstractBluetoothObject {
 
     /**
      * Get the raw {@link GattService1} object.
-     * @return
+     * @return {@link GattService1}, maybe null
      */
     public GattService1 getService() {
         return service;
@@ -125,7 +126,7 @@ public class BluetoothGattService extends AbstractBluetoothObject {
 
     /**
      * Get the {@link BluetoothDevice} instance which is providing this {@link BluetoothGattService}.
-     * @return
+     * @return {@link BluetoothDevice}, maybe null
      */
     public BluetoothDevice getDevice() {
         return device;

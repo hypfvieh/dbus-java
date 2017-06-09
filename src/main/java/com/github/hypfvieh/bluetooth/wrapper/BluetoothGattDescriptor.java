@@ -44,13 +44,13 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * "offset": uint16 offset
      * "device": Object Device (Server only)
      * </pre>
-     * @param _value
-     * @param _options
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
-     * @throws BluezNotPermittedException
-     * @throws BluezNotAuthorizedException
-     * @throws BluezNotSupportedException
+     * @param _value value to write
+     * @param _options options to use
+     * @throws BluezFailedException if anything failed
+     * @throws BluezInProgressException if operation in progress
+     * @throws BluezNotPermittedException if operation not permitted
+     * @throws BluezNotAuthorizedException if not authorized
+     * @throws BluezNotSupportedException if not supported
      */
     public void writeValue(byte[] _value, Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException {
         descriptor.WriteValue(_value, optionsToVariantMap(_options));
@@ -63,13 +63,13 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * "offset": uint16 offset
      * "device": Object Device (Server only)
      * </pre>
-     * @param _options
-     * @return
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
-     * @throws BluezNotPermittedException
-     * @throws BluezNotAuthorizedException
-     * @throws BluezNotSupportedException
+     * @param _options options to use
+     * @return byte array, maybe null
+     * @throws BluezFailedException if anything failed
+     * @throws BluezInProgressException if operation in progress
+     * @throws BluezNotPermittedException if operation not permitted
+     * @throws BluezNotAuthorizedException if not authorized
+     * @throws BluezNotSupportedException if not supported
      */
     public byte[] readValue(Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException  {
         return descriptor.ReadValue(optionsToVariantMap(_options));
@@ -80,6 +80,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * <p>
      * 128-bit descriptor UUID.
      * </p>
+     * @return uuid, maybe null
      */
     public String getUuid() {
         return getTyped("UUID", String.class);
@@ -87,7 +88,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
 
     /**
      * Get the {@link BluetoothGattCharacteristic} instance behind this {@link BluetoothGattDescriptor} object.
-     * @return
+     * @return {@link BluetoothGattCharacteristic}, maybe null
      */
     public BluetoothGattCharacteristic getCharacteristic() {
         return characteristicWrapper;
@@ -95,7 +96,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
 
     /**
      * Get the raw {@link GattDescriptor1} object behind this wrapper.
-     * @return
+     * @return {@link GattDescriptor1}, maybe null
      */
     public GattDescriptor1 getRawCharacteric() {
         return descriptor;
@@ -108,6 +109,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * gets updated only after a successful read request, upon<br>
      * which a PropertiesChanged signal will be emitted.
      * </p>
+     * @return byte array, maybe null
      */
     public byte[] getValue() {
         Vector<?> typed = getTyped("UUIDs", Vector.class);
@@ -121,6 +123,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * <b>From bluez Documentation:</b>
      * <p>
      * Defines how the descriptor value can be used.<br>
+     * </p>
      * <i>Possible values:</i>
      * <pre>
      *      "read"
@@ -132,7 +135,7 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      *      "secure-read" (Server Only)
      *      "secure-write" (Server Only)
      * </pre>
-     * </p>
+     * @return string, maybe null
      */
     public String getFlags() {
         return getTyped("Flags", String.class);

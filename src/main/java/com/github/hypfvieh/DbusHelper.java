@@ -30,6 +30,7 @@ public final class DbusHelper {
 
     /**
      * Find all &lt;node&gt;-Elements in DBUS Introspection XML and extracts the value of the 'name' attribute.
+     * @param _connection the dbus connection
      * @param _path dbus-path-to-introspect
      * @return Set of String, maybe empty but never null
      */
@@ -65,6 +66,7 @@ public final class DbusHelper {
      * @param _connection Dbus connection to use
      * @param _path dbus request path
      * @param _objClass interface class to use
+     * @param <T> some class/interface implementing/extending {@link DBusInterface}
      * @return the created object or null on error
      */
     public static <T extends DBusInterface> T getRemoteObject(DBusConnection _connection, String _path, Class<T> _objClass) {
