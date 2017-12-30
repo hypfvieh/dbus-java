@@ -109,6 +109,43 @@ public interface DBus extends DBusInterface {
         }
     }
 
+    public interface ObjectManager extends DBusInterface {
+        /**
+         * Get a sub-tree of objects. The root of the sub-tree is this object.
+         * @return A Map from object path (DBusInterface) to a Map from interface name to a properties Map (as returned by Properties.GetAll())
+         */
+        Map<DBusInterface, Map<String, Map<String, Variant>>> GetManagedObjects();
+
+        /**
+         * Signal generated when a new interface is added
+         */
+        class InterfacesAdded extends DBusSignal {
+            public final DBusInterface object;
+            public final Map<String, Map<String, Variant>> interfaces;
+
+            public InterfacesAdded(String path, DBusInterface object, Map<String, Map<String, Variant>> interfaces) throws DBusException {
+                super(path, object, interfaces);
+                this.object = object;
+                this.interfaces = interfaces;
+            }
+        }
+
+        /**
+         * Signal generated when an interface is removed
+         */
+        class InterfacesRemoved extends DBusSignal {
+            public final DBusInterface object;
+            public final List<String> interfaces;
+
+            public InterfacesRemoved(String path, DBusInterface object, List<String> interfaces) throws DBusException {
+                super(path, object, interfaces);
+                this.object = object;
+                this.interfaces = interfaces;
+            }
+        }
+
+    }
+
     /**
     * Messages generated locally in the application.
     */
