@@ -285,9 +285,9 @@ public class Message {
         }
         if (preallocated > 0) {
             if (paofs + buf.length > pabuf.length) {
-                throw new ArrayIndexOutOfBoundsException(MessageFormat.format(t("Array index out of bounds, paofs={0}, pabuf.length={1}, buf.length={2}."), new Object[] {
+                throw new ArrayIndexOutOfBoundsException(MessageFormat.format(t("Array index out of bounds, paofs={0}, pabuf.length={1}, buf.length={2}."),
                         paofs, pabuf.length, buf.length
-                }));
+                ));
             }
             System.arraycopy(buf, 0, pabuf, paofs, buf.length);
             paofs += buf.length;
@@ -779,9 +779,9 @@ public class Message {
             if (AbstractConnection.EXCEPTION_DEBUG) {
                 logger.error("", cce);
             }
-            throw new MarshallingException(MessageFormat.format(t("Trying to marshall to unconvertable type (from {0} to {1})."), new Object[] {
-                    data.getClass().getName(), sigb[sigofs]
-            }));
+            throw new MarshallingException(MessageFormat.format(t("Trying to marshall to unconvertible type (from {0} to {1})."),
+                    data.getClass().getName(), (char) sigb[sigofs]
+            ));
         }
     }
 
