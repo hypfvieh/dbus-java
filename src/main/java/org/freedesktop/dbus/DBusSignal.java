@@ -209,9 +209,7 @@ public class DBusSignal extends Message {
             s.bytecounter = wiredata.length;
             return s;
         } catch (Exception e) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", e);
-            }
+            logger.debug("", e);
             throw new DBusException(e.getMessage());
         }
     }
@@ -296,9 +294,7 @@ public class DBusSignal extends Message {
                 headers.put(Message.HeaderField.SIGNATURE, sig);
                 setArgs(args);
             } catch (Exception e) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    logger.error("", e);
-                }
+                logger.debug("", e);
                 throw new DBusException(t("Failed to add signal parameters: ") + e.getMessage());
             }
         }

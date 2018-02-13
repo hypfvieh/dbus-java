@@ -169,9 +169,7 @@ final class ArrayFrob {
             }
 
         } catch (Exception e) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                LoggerFactory.getLogger(ArrayFrob.class).error("", e);
-            }
+            LoggerFactory.getLogger(ArrayFrob.class).debug("Cannot convert object.", e);
             throw new IllegalArgumentException(e);
         }
 

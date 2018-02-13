@@ -170,9 +170,7 @@ public final class Marshalling {
                     }
                     out[level].append(s[0]);
                 } catch (ArrayIndexOutOfBoundsException aioobe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", aioobe);
-                    }
+                    LOGGER.debug("", aioobe);
                     throw new DBusException(t("Map must have 2 parameters"));
                 }
                 out[level].append('}');
@@ -400,9 +398,7 @@ public final class Marshalling {
             }
             return i;
         } catch (IndexOutOfBoundsException ioobe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                LOGGER.error("", ioobe);
-            }
+            LOGGER.debug("Failed to parse DBus type signature.", ioobe);
             throw new DBusException(t("Failed to parse DBus type signature: ") + dbus);
         }
     }
@@ -676,9 +672,7 @@ public final class Marshalling {
                             System.arraycopy(parameters, i + newtypes.length, compress, i + 1, parameters.length - i - newtypes.length);
                             parameters = compress;
                         } catch (ArrayIndexOutOfBoundsException aioobe) {
-                            if (AbstractConnection.EXCEPTION_DEBUG) {
-                                LOGGER.error("", aioobe);
-                            }
+                            LOGGER.debug("", aioobe);
                             throw new DBusException(MessageFormat.format(t("Not enough elements to create custom object from serialized data ({0} < {1})."), parameters.length - i, newtypes.length));
                         }
                     }

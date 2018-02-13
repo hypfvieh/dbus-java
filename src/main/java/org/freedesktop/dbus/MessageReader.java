@@ -181,18 +181,14 @@ public class MessageReader {
         try {
             m.populate(buf, header, body);
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
             buf = null;
             tbuf = null;
             body = null;
             header = null;
             throw dbe;
-        } catch (RuntimeException exRe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", exRe);
-            }
+        } catch (RuntimeException exRe) { // this really smells badly!
+            logger.debug("", exRe);
             buf = null;
             tbuf = null;
             body = null;

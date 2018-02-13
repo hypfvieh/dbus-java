@@ -49,9 +49,7 @@ public class Variant<T> {
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
             throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _o.getClass(), dbe.getMessage()));
         }
         this.o = _o;
@@ -75,9 +73,7 @@ public class Variant<T> {
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
             throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _type, dbe.getMessage()));
         }
         this.o = _o;
@@ -102,9 +98,7 @@ public class Variant<T> {
             }
             this.type = ts.get(0);
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
             throw new IllegalArgumentException(MessageFormat.format(t("Can''t wrap {0} in an unqualified Variant ({1})."), _sig, dbe.getMessage()));
         }
         this.o = _o;
