@@ -484,9 +484,7 @@ public class Message {
         try {
             largs = getParameters();
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
         }
         if (null == largs || 0 == largs.length) {
             sb.append('}');
@@ -595,9 +593,7 @@ public class Message {
                 try {
                     payloadbytes = payload.getBytes("UTF-8");
                 } catch (UnsupportedEncodingException uee) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        logger.debug("", uee);
-                    }
+                    logger.debug("System does not support UTF-8 encoding", uee);
                     throw new DBusException(t("System does not support UTF-8 encoding"));
                 }
                 logger.trace("Appending String of length " + payloadbytes.length);
@@ -776,11 +772,9 @@ public class Message {
             }
             return i;
         } catch (ClassCastException cce) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", cce);
-            }
+            logger.debug("Trying to marshall to unconvertible type.", cce);
             throw new MarshallingException(MessageFormat.format(t("Trying to marshall to unconvertible type (from {0} to {1})."),
-                    data.getClass().getName(), (char) sigb[sigofs]
+                data.getClass().getName(), (char) sigb[sigofs]
             ));
         }
     }
@@ -1081,9 +1075,7 @@ public class Message {
             try {
                 rv = new String(buf, ofs[1], length, "UTF-8");
             } catch (UnsupportedEncodingException uee) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    logger.debug("", uee);
-                }
+                logger.debug("System does not support UTF-8 encoding", uee);
                 throw new DBusException(t("System does not support UTF-8 encoding"));
             }
             ofs[1] += length + 1;

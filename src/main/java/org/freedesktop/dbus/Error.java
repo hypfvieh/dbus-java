@@ -145,9 +145,7 @@ public class Error extends Message {
             ex.setType(getName());
             return ex;
         } catch (Exception ex1) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", ex1);
-            }
+            logger.debug("", ex1);
             DBusExecutionException ex;
             Object[] args = null;
             try {

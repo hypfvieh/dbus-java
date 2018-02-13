@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.AbstractConnection;
 import org.freedesktop.dbus.BusAddress;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.DirectConnection;
@@ -183,9 +182,7 @@ public class DBusDaemon extends Thread {
                 DBusSignal s = new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", c.unique, "", c.unique);
                 send(null, s);
             } catch (DBusException dbe) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    LOGGER.error("", dbe);
-                }
+                LOGGER.debug("", dbe);
             }
 
             LOGGER.debug("exit");
@@ -278,9 +275,7 @@ public class DBusDaemon extends Thread {
                     send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", name));
                     send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, "", c.unique));
                 } catch (DBusException dbe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", dbe);
-                    }
+                    LOGGER.debug("", dbe);
                 }
             }
 
@@ -310,9 +305,7 @@ public class DBusDaemon extends Thread {
                     send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameLost", "s", name));
                     send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, c.unique, ""));
                 } catch (DBusException dbe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", dbe);
-                    }
+                    LOGGER.debug("", dbe);
                 }
             }
 
@@ -424,19 +417,13 @@ public class DBusDaemon extends Thread {
                         send(_c, new MethodReturn("org.freedesktop.DBus", (MethodCall) _m, sig, rv), true);
                     }
                 } catch (InvocationTargetException ite) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", ite);
-                    }
+                    LOGGER.debug("", ite);
                     send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, ite.getCause()));
                 } catch (DBusExecutionException dbee) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", dbee);
-                    }
+                   LOGGER.debug("", dbee);
                     send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, dbee));
                 } catch (Exception e) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", e);
-                    }
+                    LOGGER.debug("", e);
                     send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", t("An error occurred while calling ") + _m.getName()));
                 }
             } catch (NoSuchMethodException exNsm) {
@@ -502,9 +489,7 @@ public class DBusDaemon extends Thread {
                             }
                         }
                     } catch (DBusException dbe) {
-                        if (AbstractConnection.EXCEPTION_DEBUG) {
-                            LOGGER.debug("", dbe);
-                        }
+                        LOGGER.debug("", dbe);
                     }
                 } else if (LOGGER.isDebugEnabled()) {
                     LOGGER.info("Discarding " + msg + " connection reaped");
@@ -557,9 +542,7 @@ public class DBusDaemon extends Thread {
                             try {
                                 c.mout.writeMessage(m);
                             } catch (IOException ioe) {
-                                if (AbstractConnection.EXCEPTION_DEBUG) {
-                                    logger.error("", ioe);
-                                }
+                                logger.debug("", ioe);
                                 removeConnection(c);
                             }
                         }
@@ -600,14 +583,10 @@ public class DBusDaemon extends Thread {
                 try {
                     m = conn.min.readMessage();
                 } catch (IOException ioe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", ioe);
-                    }
+                    LOGGER.debug("", ioe);
                     removeConnection(conn);
                 } catch (DBusException dbe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        LOGGER.error("", dbe);
-                    }
+                    LOGGER.debug("", dbe);
                     if (dbe instanceof FatalException) {
                         removeConnection(conn);
                     }
@@ -740,9 +719,7 @@ public class DBusDaemon extends Thread {
                                         m.setSource(c.unique);
                                     }
                                 } catch (DBusException dbe) {
-                                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                                        LOGGER.error("", dbe);
-                                    }
+                                    LOGGER.debug("", dbe);
                                     send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", t("Sending message failed")));
                                 }
 
@@ -761,9 +738,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format(t("The name `{0}' does not exist"), new Object[] {
-                                                    m.getDestination()
-                                            })));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format(t("The name `{0}' does not exist"), m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }
@@ -774,9 +749,7 @@ public class DBusDaemon extends Thread {
                     }
                 }
             } catch (DBusException dbe) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    LOGGER.error("", dbe);
-                }
+                LOGGER.debug("", dbe);
             }
         }
 
@@ -814,9 +787,7 @@ public class DBusDaemon extends Thread {
                         try {
                             send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, c.unique, ""));
                         } catch (DBusException dbe) {
-                            if (AbstractConnection.EXCEPTION_DEBUG) {
-                                LOGGER.error("", dbe);
-                            }
+                            LOGGER.debug("", dbe);
                         }
                     }
                 }
@@ -880,9 +851,7 @@ public class DBusDaemon extends Thread {
     }
 
     public static void main(String[] args) throws Exception {
-        if (AbstractConnection.EXCEPTION_DEBUG) {
-            LOGGER.debug("enter");
-        }
+        LOGGER.debug("enter");
         String addr = null;
         String pidfile = null;
         String addrfile = null;

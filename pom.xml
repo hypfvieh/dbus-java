@@ -12,16 +12,7 @@
 	<name>${project.artifactId}</name>
 
 	<description>
-		Slightly improved version of the Java DBus library
-		provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
-
-		Changes:
-		 - Fixed lot's of Java warnings
-		 - Fixed broken 'Gettext' feature (Exceptions on unsupported languages, usage of "_" as method name).
-		 - Renamed some classes/methods/variables to comply with Java naming scheme.
-		 - Removed usage of proprietary logger and replaced it with sl4fj.
-		 - Renamed/refactored some parts to be more 'Java' like (e.g. naming, shadowing)
-		 - Fixed problems with DbusConnection.getConnection(SESSION) when using display export (e.g. SSH X11 forward)
+		Improved version of the DBus-Java library provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
 	</description>
 
 	<properties>
@@ -80,7 +71,7 @@
 		    <artifactId>slf4j-simple</artifactId>
 		    <version>1.7.25</version>
 		    <scope>test</scope>
-        </dependency>
+        	</dependency>
 	</dependencies>
 
 	<scm>

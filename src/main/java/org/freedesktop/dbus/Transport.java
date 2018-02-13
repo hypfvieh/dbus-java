@@ -320,9 +320,7 @@ public class Transport {
             try {
                 return new Command(sb.toString());
             } catch (Exception e) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    logger.error("", e);
-                }
+                logger.error("Cannot create command.", e);
                 return new Command();
             }
         }
@@ -381,9 +379,7 @@ public class Transport {
                 try {
                     md = MessageDigest.getInstance("SHA");
                 } catch (NoSuchAlgorithmException nsae) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        logger.error("", nsae);
-                    }
+                    logger.debug("", nsae);
                     return ERROR;
                 }
                 byte[] buf = new byte[8];
@@ -423,9 +419,7 @@ public class Transport {
             try {
                 md = MessageDigest.getInstance("SHA");
             } catch (NoSuchAlgorithmException nsae) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    logger.error("", nsae);
-                }
+                logger.error("", nsae);
                 return ERROR;
             }
             switch (_auth) {
@@ -451,9 +445,7 @@ public class Transport {
                     try {
                         addCookie(context, "" + id, id / 1000, cookie);
                     } catch (IOException ioe) {
-                        if (AbstractConnection.EXCEPTION_DEBUG) {
-                            logger.error("", ioe);
-                        }
+                        logger.debug("", ioe);
                     }
 
                     logger.debug("Sending challenge: " + context + ' ' + id + ' ' + challenge);

@@ -73,9 +73,7 @@ public class MessageReader {
         byte protover = buf[3];
         if (protover > Message.PROTOCOL) {
             buf = null;
-            throw new MessageProtocolVersionException(MessageFormat.format(t("Protocol version {0} is unsupported"), new Object[] {
-                    protover
-            }));
+            throw new MessageProtocolVersionException(MessageFormat.format(t("Protocol version {0} is unsupported"), protover));
         }
 
         /* Read the length of the variable header */
@@ -172,9 +170,7 @@ public class MessageReader {
             m = new Error();
             break;
         default:
-            throw new MessageTypeException(MessageFormat.format(t("Message type {0} unsupported"), new Object[] {
-                    type
-            }));
+            throw new MessageTypeException(MessageFormat.format(t("Message type {0} unsupported"), type));
         }
         if (logger.isTraceEnabled()) {
             logger.trace(Hexdump.format(buf));
@@ -185,18 +181,14 @@ public class MessageReader {
         try {
             m.populate(buf, header, body);
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", dbe);
-            }
+            logger.debug("", dbe);
             buf = null;
             tbuf = null;
             body = null;
             header = null;
             throw dbe;
-        } catch (RuntimeException exRe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                logger.error("", exRe);
-            }
+        } catch (RuntimeException exRe) { // this really smells badly!
+            logger.debug("", exRe);
             buf = null;
             tbuf = null;
             body = null;

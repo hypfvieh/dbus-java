@@ -70,9 +70,7 @@ public class DBusAsyncReply<ReturnType> {
                 } catch (DBusExecutionException exDee) {
                     error = exDee;
                 } catch (DBusException dbe) {
-                    if (AbstractConnection.EXCEPTION_DEBUG) {
-                        logger.error("", dbe);
-                    }
+                    logger.debug("", dbe);
                     error = new DBusExecutionException(dbe.getMessage());
                 }
             }

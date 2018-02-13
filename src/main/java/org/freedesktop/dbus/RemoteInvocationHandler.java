@@ -52,12 +52,8 @@ class RemoteInvocationHandler implements InvocationHandler {
                         m.getGenericReturnType()
                 }, conn);
             } catch (Exception e) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    LOGGER.error("", e);
-                }
-                throw new DBusExecutionException(MessageFormat.format(t("Wrong return type (failed to de-serialize correct types: {0} )"), new Object[] {
-                        e.getMessage()
-                }));
+                LOGGER.debug("Wrong return type.", e);
+                throw new DBusExecutionException(MessageFormat.format(t("Wrong return type (failed to de-serialize correct types: {0} )"), e.getMessage()));
             }
         }
 
@@ -81,9 +77,7 @@ class RemoteInvocationHandler implements InvocationHandler {
             try {
                 return cons.newInstance(rp);
             } catch (Exception e) {
-                if (AbstractConnection.EXCEPTION_DEBUG) {
-                    LOGGER.error("", e);
-                }
+                LOGGER.debug("", e);
                 throw new DBusException(e.getMessage());
             }
         }
@@ -128,9 +122,7 @@ class RemoteInvocationHandler implements InvocationHandler {
                 }
             }
         } catch (DBusException dbe) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                LOGGER.error("", dbe);
-            }
+            LOGGER.debug("Failed to construct outgoing method call.", dbe);
             throw new DBusExecutionException(t("Failed to construct outgoing method call: ") + dbe.getMessage());
         }
         if (null == conn.outgoing) {
@@ -171,9 +163,7 @@ class RemoteInvocationHandler implements InvocationHandler {
         try {
             return convertRV(reply.getSig(), reply.getParameters(), m, conn);
         } catch (DBusException e) {
-            if (AbstractConnection.EXCEPTION_DEBUG) {
-                LOGGER.error("", e);
-            }
+            LOGGER.debug("", e);
             throw new DBusExecutionException(e.getMessage());
         }
     }

@@ -59,9 +59,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             try {
                 addSigHandler(new DBusMatchRule(DBus.NameOwnerChanged.class, null, null), this);
             } catch (DBusException dbe) {
-                if (EXCEPTION_DEBUG) {
-                    logger.error("", dbe);
-                }
+                logger.debug("", dbe);
             }
         }
 
@@ -319,9 +317,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
                         }
                         logger.debug("Read bus address " + s + " from file " + addressfile.toString());
                     } catch (Exception e) {
-                        if (EXCEPTION_DEBUG) {
-                            logger.error("", e);
-                        }
+                        logger.debug("", e);
                         throw new DBusException(t("Cannot Resolve Session Bus Address"));
                     }
                 }
@@ -360,18 +356,10 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
         try {
             transport = new Transport(addr, AbstractConnection.TIMEOUT);
             connected = true;
-        } catch (IOException ioe) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", ioe);
-            }
+        } catch (IOException | ParseException ioe) {
+            logger.debug("Error creating transport", ioe);
             disconnect();
             throw new DBusException(t("Failed to connect to bus ") + ioe.getMessage());
-        } catch (ParseException exP) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", exP);
-            }
-            disconnect();
-            throw new DBusException(t("Failed to connect to bus ") + exP.getMessage());
         }
 
         // start listening for calls
@@ -388,9 +376,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             try {
                 busnames.add(dbus.Hello());
             } catch (DBusExecutionException dbee) {
-                if (EXCEPTION_DEBUG) {
-                    logger.error("", dbee);
-                }
+                logger.debug("", dbee);
                 throw new DBusException(dbee.getMessage());
             }
         }
@@ -441,12 +427,8 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             importedObjects.put(newi, ro);
             return newi;
         } catch (Exception e) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", e);
-            }
-            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0} exported by {1}. Reason: {2}"), new Object[] {
-                    path, source, e.getMessage()
-            }));
+            logger.debug("", e);
+            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0} exported by {1}. Reason: {2}"), path, source, e.getMessage()));
         }
     }
 
@@ -483,9 +465,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             try {
                 dbus.ReleaseName(busname);
             } catch (DBusExecutionException dbee) {
-                if (EXCEPTION_DEBUG) {
-                    logger.error("", dbee);
-                }
+                logger.debug("", dbee);
                 throw new DBusException(dbee.getMessage());
             }
             this.busnames.remove(busname);
@@ -508,9 +488,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             try {
                 rv = dbus.RequestName(busname, new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
             } catch (DBusExecutionException dbee) {
-                if (EXCEPTION_DEBUG) {
-                    logger.error("", dbee);
-                }
+                logger.debug("", dbee);
                 throw new DBusException(dbee.getMessage());
             }
             switch (rv.intValue()) {
@@ -800,13 +778,9 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
                     try {
                         dbus.RemoveMatch(rule.toString());
                     } catch (NotConnected exNc) {
-                        if (EXCEPTION_DEBUG) {
-                            logger.error("", exNc);
-                        }
+                        logger.debug("No connection.", exNc);
                     } catch (DBusExecutionException dbee) {
-                        if (EXCEPTION_DEBUG) {
-                            logger.error("", dbee);
-                        }
+                        logger.debug("", dbee);
                         throw new DBusException(dbee);
                     }
                 }
@@ -870,9 +844,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
         try {
             dbus.AddMatch(rule.toString());
         } catch (DBusExecutionException dbee) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", dbee);
-            }
+            logger.debug("", dbee);
             throw new DBusException(dbee.getMessage());
         }
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());

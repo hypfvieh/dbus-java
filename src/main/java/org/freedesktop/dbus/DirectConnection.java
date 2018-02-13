@@ -45,14 +45,10 @@ public class DirectConnection extends AbstractConnection {
             transport = new Transport(addr, AbstractConnection.TIMEOUT);
             connected = true;
         } catch (IOException exIo) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", exIo);
-            }
+            logger.debug("", exIo);
             throw new DBusException(t("Failed to connect to bus ") + exIo.getMessage());
         } catch (ParseException exP) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", exP);
-            }
+            logger.debug("", exP);
             throw new DBusException(t("Failed to connect to bus ") + exP.getMessage());
         }
 
@@ -141,12 +137,8 @@ public class DirectConnection extends AbstractConnection {
             importedObjects.put(newi, ro);
             return newi;
         } catch (Exception e) {
-            if (EXCEPTION_DEBUG) {
-                logger.error("", e);
-            }
-            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0}; reason: {1}."), new Object[] {
-                    path, e.getMessage()
-            }));
+            logger.debug("", e);
+            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0}; reason: {1}."), path, e.getMessage()));
         }
     }
 
