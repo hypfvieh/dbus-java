@@ -577,7 +577,7 @@ public abstract class AbstractConnection {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException(t("Not A DBus Signal"));
         }
-        addSigHandler(new DBusMatchRule(type), (DBusSigHandler<? extends DBusSignal>) handler);
+        addSigHandler(new DBusMatchRule(type), handler);
     }
 
     /**
@@ -599,7 +599,7 @@ public abstract class AbstractConnection {
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException(t("Invalid object path: ") + objectpath);
         }
-        addSigHandler(new DBusMatchRule(type, null, objectpath), (DBusSigHandler<? extends DBusSignal>) handler);
+        addSigHandler(new DBusMatchRule(type, null, objectpath), handler);
     }
 
     protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
@@ -766,7 +766,7 @@ public abstract class AbstractConnection {
         }
     }
 
-    private void handleMessage(final MethodCall m) throws DBusException {
+    private void handleMessage(final MethodCall m) {
         logger.debug("Handling incoming method call: " + m);
 
         ExportedObject eo = null;
@@ -823,9 +823,7 @@ public abstract class AbstractConnection {
             meth = eo.methods.get(new MethodTuple(m.getName(), m.getSig()));
             if (null == meth) {
                 try {
-                    queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(MessageFormat.format(t("The method `{0}.{1}' does not exist on this object."), new Object[] {
-                            m.getInterface(), m.getName()
-                    }))));
+                    queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(MessageFormat.format(t("The method `{0}.{1}' does not exist on this object."), m.getInterface(), m.getName()))));
                 } catch (DBusException exDe) {
                 }
                 return;
@@ -916,9 +914,7 @@ public abstract class AbstractConnection {
                         logger.error("", e);
                     }
                     try {
-                        conn.queueOutgoing(new Error(m, new DBusExecutionException(MessageFormat.format(t("Error Executing Method {0}.{1}: {2}"), new Object[] {
-                                m.getInterface(), m.getName(), e.getMessage()
-                        }))));
+                        conn.queueOutgoing(new Error(m, new DBusExecutionException(MessageFormat.format(t("Error Executing Method {0}.{1}: {2}"), m.getInterface(), m.getName(), e.getMessage()))));
                     } catch (DBusException exDe) {
                     }
                 }
@@ -1118,9 +1114,7 @@ public abstract class AbstractConnection {
             if (m instanceof MethodCall) {
                 if (0 == (m.getFlags() & Message.Flags.NO_REPLY_EXPECTED)) {
                     if (null == pendingCalls) {
-                        ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", new Object[] {
-                                t("Disconnected")
-                        }));
+                        ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", t("Disconnected")));
                     } else {
                         synchronized (pendingCalls) {
                             pendingCalls.put(m.getSerial(), (MethodCall) m);
@@ -1137,9 +1131,7 @@ public abstract class AbstractConnection {
             }
             if (m instanceof MethodCall && e instanceof NotConnected) {
                 try {
-                    ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", new Object[] {
-                            t("Disconnected")
-                    }));
+                    ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0, "s", t("Disconnected")));
                 } catch (DBusException exDe) {
                 }
             }

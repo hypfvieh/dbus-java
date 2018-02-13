@@ -780,7 +780,7 @@ public class Message {
                 logger.error("", cce);
             }
             throw new MarshallingException(MessageFormat.format(t("Trying to marshall to unconvertible type (from {0} to {1})."),
-                    data.getClass().getName(), (char) sigb[sigofs]
+                data.getClass().getName(), (char) sigb[sigofs]
             ));
         }
     }

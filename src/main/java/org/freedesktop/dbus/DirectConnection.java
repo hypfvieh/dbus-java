@@ -144,9 +144,7 @@ public class DirectConnection extends AbstractConnection {
             if (EXCEPTION_DEBUG) {
                 logger.error("", e);
             }
-            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0}; reason: {1}."), new Object[] {
-                    path, e.getMessage()
-            }));
+            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0}; reason: {1}."), path, e.getMessage()));
         }
     }
 

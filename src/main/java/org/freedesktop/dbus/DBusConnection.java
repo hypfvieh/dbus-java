@@ -444,9 +444,7 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
             if (EXCEPTION_DEBUG) {
                 logger.error("", e);
             }
-            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0} exported by {1}. Reason: {2}"), new Object[] {
-                    path, source, e.getMessage()
-            }));
+            throw new DBusException(MessageFormat.format(t("Failed to create proxy object for {0} exported by {1}. Reason: {2}"), path, source, e.getMessage()));
         }
     }
 

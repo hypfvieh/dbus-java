@@ -175,9 +175,7 @@ final class ArrayFrob {
             throw new IllegalArgumentException(e);
         }
 
-        throw new IllegalArgumentException(MessageFormat.format(t("Not An Expected Convertion type from {0} to {1}"), new Object[] {
-                o.getClass(), c
-        }));
+        throw new IllegalArgumentException(MessageFormat.format(t("Not An Expected Convertion type from {0} to {1}"), o.getClass(), c));
     }
 
     public static Object[] type(Object[] old, Class<Object> c) {

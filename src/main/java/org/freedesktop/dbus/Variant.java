@@ -52,9 +52,7 @@ public class Variant<T> {
             if (AbstractConnection.EXCEPTION_DEBUG) {
                 logger.error("", dbe);
             }
-            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), new Object[] {
-                    _o.getClass(), dbe.getMessage()
-            }));
+            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _o.getClass(), dbe.getMessage()));
         }
         this.o = _o;
     }
@@ -80,9 +78,7 @@ public class Variant<T> {
             if (AbstractConnection.EXCEPTION_DEBUG) {
                 logger.error("", dbe);
             }
-            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), new Object[] {
-                    _type, dbe.getMessage()
-            }));
+            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _type, dbe.getMessage()));
         }
         this.o = _o;
     }
@@ -109,9 +105,7 @@ public class Variant<T> {
             if (AbstractConnection.EXCEPTION_DEBUG) {
                 logger.error("", dbe);
             }
-            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), new Object[] {
-                    _sig, dbe.getMessage()
-            }));
+            throw new IllegalArgumentException(MessageFormat.format(t("Can''t wrap {0} in an unqualified Variant ({1})."), _sig, dbe.getMessage()));
         }
         this.o = _o;
     }

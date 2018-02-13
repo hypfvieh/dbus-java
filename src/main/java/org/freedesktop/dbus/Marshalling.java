@@ -395,9 +395,7 @@ public final class Marshalling {
                     i += c + 1;
                     break;
                 default:
-                    throw new DBusException(MessageFormat.format(t("Failed to parse DBus type signature: {0} ({1})."), new Object[] {
-                            dbus, dbus.charAt(i)
-                    }));
+                    throw new DBusException(MessageFormat.format(t("Failed to parse DBus type signature: {0} ({1})."), dbus, dbus.charAt(i)));
                 }
             }
             return i;
@@ -681,9 +679,7 @@ public final class Marshalling {
                             if (AbstractConnection.EXCEPTION_DEBUG) {
                                 LOGGER.error("", aioobe);
                             }
-                            throw new DBusException(MessageFormat.format(t("Not enough elements to create custom object from serialized data ({0} < {1})."), new Object[] {
-                                    parameters.length - i, newtypes.length
-                            }));
+                            throw new DBusException(MessageFormat.format(t("Not enough elements to create custom object from serialized data ({0} < {1})."), parameters.length - i, newtypes.length));
                         }
                     }
                 }

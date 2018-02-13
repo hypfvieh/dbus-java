@@ -761,9 +761,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format(t("The name `{0}' does not exist"), new Object[] {
-                                                    m.getDestination()
-                                            })));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format(t("The name `{0}' does not exist"), m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }

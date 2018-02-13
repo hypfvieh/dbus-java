@@ -605,9 +605,7 @@ public class CreateInterface {
             }
             expected += name + " or ";
         }
-        System.err.println(MessageFormat.format(t("ERROR: Expected {0}, got {1}, failed."), new Object[] {
-                expected.replaceAll("....$", ""), n.getNodeName()
-        }));
+        System.err.println(MessageFormat.format(t("ERROR: Expected {0}, got {1}, failed."), expected.replaceAll("....$", ""), n.getNodeName()));
         System.exit(1);
     }
 

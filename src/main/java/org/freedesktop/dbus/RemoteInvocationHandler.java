@@ -55,9 +55,7 @@ class RemoteInvocationHandler implements InvocationHandler {
                 if (AbstractConnection.EXCEPTION_DEBUG) {
                     LOGGER.error("", e);
                 }
-                throw new DBusExecutionException(MessageFormat.format(t("Wrong return type (failed to de-serialize correct types: {0} )"), new Object[] {
-                        e.getMessage()
-                }));
+                throw new DBusExecutionException(MessageFormat.format(t("Wrong return type (failed to de-serialize correct types: {0} )"), e.getMessage()));
             }
         }
 
