@@ -13,7 +13,6 @@ package org.freedesktop.dbus;
 import static org.freedesktop.dbus.Gettext.t;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * Signal Handlers and method calls from remote objects are run in their own threads, you MUST handle the concurrency issues.
  * </p>
  */
-public final class DBusConnection extends AbstractConnection implements Closeable {
+public final class DBusConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /**
      * Add addresses of peers to a set which will watch for them to
@@ -901,8 +900,4 @@ public final class DBusConnection extends AbstractConnection implements Closeabl
         }
     }
 
-	@Override
-	public void close() {
-		disconnect();
-	}
 }

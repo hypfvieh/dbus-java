@@ -29,17 +29,15 @@ public final class Caller {
     }
 
     public static void main(String[] args) {
-        try {
+        String addr = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+
+        try (Transport conn = new Transport(new BusAddress(addr))) {
             if (args.length < 4) {
                 System.out.println("Syntax: Caller <dest> <path> <interface> <method> [<sig> <args>]");
                 System.exit(1);
             }
-            String addr = System.getenv("DBUS_SESSION_BUS_ADDRESS");
-            BusAddress address = new BusAddress(addr);
-            Transport conn = new Transport(address);
 
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
-            ;
             conn.mout.writeMessage(m);
 
             if ("".equals(args[2])) {

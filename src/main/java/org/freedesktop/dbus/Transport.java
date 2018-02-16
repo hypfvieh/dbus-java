@@ -13,6 +13,7 @@ package org.freedesktop.dbus;
 import static org.freedesktop.dbus.Gettext.t;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,7 +42,7 @@ import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
 import cx.ath.matthew.utils.Hexdump;
 
-public class Transport {
+public class Transport implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     public static class SASL {
         private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -790,6 +791,7 @@ public class Transport {
     public MessageReader min;
     public MessageWriter mout;
     // CHECKSTYLE:ON
+    private UnixServerSocket unixServerSocket;
 
     public Transport() {
     }
@@ -838,13 +840,13 @@ public class Transport {
             types = SASL.AUTH_EXTERNAL;
             if (null != address.getParameter("listen")) {
                 mode = SASL.MODE_SERVER;
-                UnixServerSocket uss = new UnixServerSocket();
+                unixServerSocket = new UnixServerSocket();
                 if (null != address.getParameter("abstract")) {
-                    uss.bind(new UnixSocketAddress(address.getParameter("abstract"), true));
+                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("abstract"), true));
                 } else if (null != address.getParameter("path")) {
-                    uss.bind(new UnixSocketAddress(address.getParameter("path"), false));
+                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("path"), false));
                 }
-                us = uss.accept();
+                us = unixServerSocket.accept();
             } else {
                 mode = SASL.MODE_CLIENT;
                 us = new UnixSocket();
@@ -900,5 +902,14 @@ public class Transport {
         logger.debug("Disconnecting Transport");
         min.close();
         mout.close();
+        if (unixServerSocket != null && !unixServerSocket.isClosed()) {
+            unixServerSocket.close();
+        }
     }
+
+    @Override
+    public void close() throws IOException {
+        disconnect();
+    }
+
 }

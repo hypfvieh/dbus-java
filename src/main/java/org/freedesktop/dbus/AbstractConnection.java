@@ -12,6 +12,7 @@ package org.freedesktop.dbus;
 
 import static org.freedesktop.dbus.Gettext.t;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /** Handles a connection to DBus.
  */
-public abstract class AbstractConnection {
+public abstract class AbstractConnection implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected class FallbackContainer {
@@ -661,8 +662,10 @@ public abstract class AbstractConnection {
         }
     }
 
+
+
     @Override
-    public void finalize() {
+    public void close() throws IOException {
         disconnect();
     }
 
