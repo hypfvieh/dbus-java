@@ -132,7 +132,6 @@ public class CreateInterface {
         this.builtin = _builtin;
     }
 
-    @SuppressWarnings("fallthrough")
     String parseReturns(Vector<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs) throws DBusException {
         String[] names = new String[] {
                 "Pair", "Triplet", "Quad", "Quintuple", "Sextuple", "Septuple"

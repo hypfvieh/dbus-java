@@ -73,7 +73,6 @@ public class DBusViewer {
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
-            @SuppressWarnings("synthetic-access")
             public void run() {
 
                 final JTabbedPane tabbedPane = new JTabbedPane();
@@ -116,7 +115,6 @@ public class DBusViewer {
         }
         Runnable loader = new Runnable() {
             @Override
-            @SuppressWarnings("synthetic-access")
             public void run() {
                 boolean users = true, owners = true;
                 for (final String key : connectionTypes.keySet()) {

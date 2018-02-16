@@ -103,7 +103,6 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
 
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
-                            @SuppressWarnings("synthetic-access")
                             public void run() {
                                 JOptionPane.showMessageDialog(table, introspectionPanel, "Introspection", JOptionPane.PLAIN_MESSAGE);
                             }
@@ -113,7 +112,6 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                         e.printStackTrace();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
-                            @SuppressWarnings("synthetic-access")
                             public void run() {
                                 JOptionPane.showMessageDialog(table, e.getMessage(), "Introspection Failed", JOptionPane.ERROR_MESSAGE);
                             }
