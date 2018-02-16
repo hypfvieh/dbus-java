@@ -13,6 +13,8 @@ import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.SignalAwareProperties;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.DbusHelper;
 
@@ -23,6 +25,8 @@ import com.github.hypfvieh.DbusHelper;
  *
  */
 public abstract class AbstractBluetoothObject {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final BluetoothDeviceType bluetoothType;
     private DBusConnection dbusConnection;
@@ -82,16 +86,16 @@ public abstract class AbstractBluetoothObject {
      * @param <T> class of the expected result
      * @return value of _field as _type class or null
      */
-    @SuppressWarnings("unchecked")
     protected <T> T getTyped(String _field, Class<T> _type) {
         try {
             SignalAwareProperties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, SignalAwareProperties.class);
             Object obj = remoteObject.Get(getInterfaceClass().getName(), _field);
             if (ClassUtils.isAssignable(_type, obj.getClass())) {
-                return (T) obj;
+                return _type.cast(obj);
             }
 
         } catch (DBusException _ex) {
+            logger.trace("Error while receiving data from DBUS (Field: {}, Type: {}).", _field, _type, _ex);
         }
         return null;
     }
@@ -107,6 +111,7 @@ public abstract class AbstractBluetoothObject {
             SignalAwareProperties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, SignalAwareProperties.class);
             remoteObject.Set(Adapter1.class.getName(), _field, _value);
         } catch (DBusException _ex) {
+            logger.trace("Error while setting data for DBUS (Field: {}, Value: {}).", _field, _value, _ex);
         }
     }
 
@@ -121,17 +126,14 @@ public abstract class AbstractBluetoothObject {
      * @param _options options map
      * @return map of variant, maybe empty but never null
      */
-    @SuppressWarnings({
-            "rawtypes", "unchecked"
-    })
-    protected Map<String, Variant> optionsToVariantMap(Map<String, Object> _options) {
-        Map<String, Variant> optionMap = new LinkedHashMap<>();
+    protected Map<String, Variant<?>> optionsToVariantMap(Map<String, Object> _options) {
+        Map<String, Variant<?>> optionMap = new LinkedHashMap<>();
         if (_options != null) {
             for (Entry<String, Object> entry : _options.entrySet()) {
                 if (entry.getValue() == null) { // null values cannot be wrapped
                     continue;
                 }
-                optionMap.put(entry.getKey(), new Variant(entry.getValue()));
+                optionMap.put(entry.getKey(), new Variant<>(entry.getValue()));
             }
         }
         return optionMap;

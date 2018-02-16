@@ -11,13 +11,12 @@ import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.Variant;
 
 public interface GattCharacteristic1 extends DBusInterface {
-    @SuppressWarnings("rawtypes")
-    byte[] ReadValue(Map<String,Variant> _options)
+    byte[] ReadValue(Map<String,Variant<?>> _options)
                throws BluezFailedException, BluezInProgressException,
                    BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException;
 
-    @SuppressWarnings("rawtypes")
-    void WriteValue(byte[] _value, Map<String,Variant> _options)
+
+    void WriteValue(byte[] _value, Map<String,Variant<?>> _options)
             throws BluezFailedException, BluezInProgressException, BluezNotPermittedException,
                 BluezNotAuthorizedException, BluezNotSupportedException;
 
