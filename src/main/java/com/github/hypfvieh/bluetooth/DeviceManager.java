@@ -212,6 +212,18 @@ public class DeviceManager {
     }
 
     /**
+     * Get the current adapter in use.
+     * @return the adapter currently in use, maybe null
+     */
+    public BluetoothAdapter getAdapter() {
+        if (defaultAdapterMac != null && bluetoothAdaptersByMac.containsKey(defaultAdapterMac)) {
+            return bluetoothAdaptersByMac.get(defaultAdapterMac);
+        } else {
+            return scanForBluetoothAdapters().get(0);
+        }
+    }
+    
+    /**
      * Find an adapter by the given identifier (either MAC or device name).
      * Will scan for devices if no default device is given and given ident is also null.
      * Will also scan for devices if the requested device could not be found in device map.
