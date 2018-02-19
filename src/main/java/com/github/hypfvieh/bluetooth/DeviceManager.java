@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
 import org.bluez.exceptions.BluezDoesNotExistsException;
+import org.bluez.exceptions.BluezFailedException;
+import org.bluez.exceptions.BluezInvalidArgumentException;
+import org.bluez.exceptions.BluezNotReadyException;
+import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.AbstractPropertiesHandler;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.SignalAwareProperties;
@@ -211,6 +216,32 @@ public class DeviceManager {
         return new ArrayList<>();
     }
 
+    /**
+     * Setup bluetooth scan/discovery filter.
+     * 
+     * @param _filter
+     * @throws BluezInvalidArgumentException
+     * @throws BluezNotReadyException
+     * @throws BluezNotSupportedException
+     * @throws BluezFailedException
+     */
+    public void setScanFilter(Map<DiscoveryFilter, Object> _filter) throws BluezInvalidArgumentException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
+        Map<String, Object> filters = new LinkedHashMap<>();
+        for (Entry<DiscoveryFilter, Object> entry : _filter.entrySet()) {
+            if (!entry.getKey().getValueClass().isInstance(entry.getValue())) {
+                throw new BluezInvalidArgumentException("Filter value not of required type " + entry.getKey().getValueClass());
+            }
+            if (entry.getValue() instanceof Enum<?>) {
+                filters.put(entry.getKey().name(), entry.getValue().toString());    
+            } else {
+                filters.put(entry.getKey().name(), entry.getValue());
+            }
+            
+        }
+        
+        getAdapter().setDiscoveryFilter(filters);
+    }
+    
     /**
      * Get the current adapter in use.
      * @return the adapter currently in use, maybe null
