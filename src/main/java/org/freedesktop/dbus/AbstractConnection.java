@@ -13,6 +13,7 @@ package org.freedesktop.dbus;
 import static org.freedesktop.dbus.Gettext.t;
 
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -284,7 +285,7 @@ public abstract class AbstractConnection implements Closeable {
     protected LinkedList<Runnable>                                           runnables;
     protected LinkedList<WorkerThread>                                       workers;
     protected FallbackContainer                                              fallbackcontainer;
-    protected boolean                                                        run;
+    protected volatile boolean                                               run;
     EfficientQueue                                                           outgoing;
     LinkedList<Error>                                                        pendingErrors;
 
@@ -1130,6 +1131,9 @@ public abstract class AbstractConnection implements Closeable {
         try {
             m = transport.min.readMessage();
         } catch (IOException exIo) {
+            if (!run && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
+                return null;
+            }
             throw new FatalDBusException(exIo.getMessage());
         }
         return m;
