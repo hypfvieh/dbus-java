@@ -38,9 +38,9 @@ import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.UInt64;
 import org.freedesktop.dbus.Variant;
-import org.freedesktop.dbus.connection.AbstractConnection;
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
@@ -673,9 +673,9 @@ public class TestAll {
 
             System.out.println("Sending Signal");
             /** This creates an instance of the Test Signal, with the given object path, signal name and parameters, and broadcasts in on the Bus. */
-            serverconn.sendSignal(new TestSignalInterface.TestSignal("/foo/bar/Wibble", "Bar", new UInt32(42)));
-            serverconn.sendSignal(new TestSignalInterface.EmptySignal("/foo/bar/Wibble"));
-            serverconn.sendSignal(new TestSignalInterface2.TestRenamedSignal("/foo/bar/Wibble", "Bar", new UInt32(42)));
+            serverconn.sendMessage(new TestSignalInterface.TestSignal("/foo/bar/Wibble", "Bar", new UInt32(42)));
+            serverconn.sendMessage(new TestSignalInterface.EmptySignal("/foo/bar/Wibble"));
+            serverconn.sendMessage(new TestSignalInterface2.TestRenamedSignal("/foo/bar/Wibble", "Bar", new UInt32(42)));
 
             System.out.println("These things are on the bus:");
             String[] names = dbus.ListNames();
@@ -750,7 +750,7 @@ public class TestAll {
                 fail("pathmaprv incorrect");
             }
 
-            serverconn.sendSignal(new TestSignalInterface.TestPathSignal("/Test", path, paths, pathm));
+            serverconn.sendMessage(new TestSignalInterface.TestPathSignal("/Test", path, paths, pathm));
 
             Collator col = Collator.getInstance();
             col.setDecomposition(Collator.FULL_DECOMPOSITION);
@@ -939,7 +939,7 @@ public class TestAll {
             Map<UInt32, TestStruct2> tsm = new HashMap<>();
             tsm.put(new UInt32(1), new TestStruct2(l, new Variant<>(new UInt64(678))));
             tsm.put(new UInt32(42), new TestStruct2(l, new Variant<>(new UInt64(789))));
-            serverconn.sendSignal(new TestSignalInterface.TestArraySignal("/Test", tsl, tsm));
+            serverconn.sendMessage(new TestSignalInterface.TestArraySignal("/Test", tsl, tsm));
 
             System.out.println("done");
 
@@ -1012,7 +1012,7 @@ public class TestAll {
             System.out.println("done");
 
             /* send an object in a signal */
-            serverconn.sendSignal(new TestSignalInterface.TestObjectSignal("/foo/bar/Wibble", tclass));
+            serverconn.sendMessage(new TestSignalInterface.TestObjectSignal("/foo/bar/Wibble", tclass));
 
             /** Pause while we wait for the DBus messages to go back and forth. */
             Thread.sleep(1000);

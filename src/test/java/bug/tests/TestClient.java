@@ -3,8 +3,8 @@ package bug.tests;
 
 import java.util.List;
 
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.CrossTestClient;
 

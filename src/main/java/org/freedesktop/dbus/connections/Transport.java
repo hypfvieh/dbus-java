@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.connections;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
+import org.freedesktop.dbus.Message;
+import org.freedesktop.dbus.MessageReader;
+import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

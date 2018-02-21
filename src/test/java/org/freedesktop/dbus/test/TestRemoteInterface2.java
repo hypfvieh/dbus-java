@@ -14,9 +14,9 @@ import java.util.List;
 
 import org.freedesktop.DBus.Description;
 import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.DBusInterfaceName;
-import org.freedesktop.dbus.DBusMemberName;
 import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
 
 @Description("An example remote interface")
 @DBusInterfaceName("org.freedesktop.dbus.test.AlternateTestInterface")

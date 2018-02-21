@@ -19,7 +19,9 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.connection.AbstractConnection;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;

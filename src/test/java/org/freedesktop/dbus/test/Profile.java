@@ -18,8 +18,8 @@ import org.freedesktop.DBus.Introspectable;
 import org.freedesktop.DBus.Peer;
 import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
     private int count = 0;
@@ -384,7 +384,7 @@ public final class Profile {
                 for (int i = 0; i < SIGNAL_OUTER; i++) {
                     for (int j = 0; j < SIGNAL_INNER; j++) {
                         l.start();
-                        conn.sendSignal(ps);
+                        conn.sendMessage(ps);
                         l.stop();
                     }
                     System.out.print(".");

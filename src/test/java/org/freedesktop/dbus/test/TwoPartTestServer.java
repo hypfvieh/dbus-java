@@ -11,8 +11,8 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.DBusSigHandler;
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 
 public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
     public class TwoPartTestObject implements TwoPartObject {

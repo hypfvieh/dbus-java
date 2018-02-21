@@ -10,8 +10,8 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.Position;
 import org.freedesktop.dbus.Tuple;
+import org.freedesktop.dbus.annotations.Position;
 
 //CHECKSTYLE:OFF
 public final class TestTuple<A, B, C> extends Tuple {

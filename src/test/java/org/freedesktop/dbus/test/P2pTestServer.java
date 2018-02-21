@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.connection.DirectConnection;
+import org.freedesktop.dbus.connections.impl.DirectConnection;
 
 public class P2pTestServer implements TestRemoteInterface {
     @Override
@@ -117,8 +117,9 @@ public class P2pTestServer implements TestRemoteInterface {
         w.println(address);
         w.flush();
         w.close();
-        DirectConnection dc = new DirectConnection(address + ",listen=true");
-        System.out.println("Connected");
-        dc.exportObject("/Test", new P2pTestServer());
+        try (DirectConnection dc = new DirectConnection(address + ",listen=true")) {            
+            System.out.println("Connected");
+            dc.exportObject("/Test", new P2pTestServer());
+        }
     }
 }

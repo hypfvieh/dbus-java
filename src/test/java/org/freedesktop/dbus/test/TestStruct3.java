@@ -12,8 +12,8 @@ package org.freedesktop.dbus.test;
 
 import java.util.List;
 
-import org.freedesktop.dbus.Position;
 import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 //CHECKSTYLE:OFF

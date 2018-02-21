@@ -23,12 +23,14 @@ import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.UInt64;
 import org.freedesktop.dbus.Variant;
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.test.Binding.SingleTests;
+import org.freedesktop.dbus.test.Binding.Triplet;
 
-public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleTests, DBusSigHandler<DBus.Binding.TestClient.Trigger> {
+public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Binding.TestClient.Trigger> {
     private DBusConnection conn;
     private boolean                run     = true;
     private Set<String>    done    = new TreeSet<>();
@@ -325,10 +327,10 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
 
     @Override
     @DBus.Description("This method returns the contents of a struct as separate values")
-    public DBus.Binding.Triplet<String, UInt32, Short> DeStruct(DBus.Binding.TestStruct a) {
+    public Triplet<String, UInt32, Variant<?>> DeStruct(TestStruct a) {
         done.add("org.freedesktop.DBus.Binding.Tests.DeStruct");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.DeStruct");
-        return new DBus.Binding.Triplet<>(a.a, a.b, a.c);
+        return new Triplet<String, UInt32, Variant<?>>(a.a, a.b, a.c);
     }
 
     @Override
@@ -353,7 +355,7 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
         done.add("org.freedesktop.DBus.Binding.Tests.Trigger");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Trigger");
         try {
-            conn.sendSignal(new DBus.Binding.TestSignals.Triggered(a, b));
+            conn.sendMessage(new Binding.TestSignals.Triggered(a, b));
         } catch (DBusException exD) {
             throw new DBusExecutionException(exD.getMessage());
         }
@@ -370,11 +372,11 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
     }
 
     @Override
-    public void handle(DBus.Binding.TestClient.Trigger t) {
+    public void handle(Binding.TestClient.Trigger t) {
         done.add("org.freedesktop.DBus.Binding.TestClient.Trigger");
         notdone.remove("org.freedesktop.DBus.Binding.TestClient.Trigger");
         try {
-            DBus.Binding.TestClient cb = conn.getRemoteObject(t.getSource(), "/Test", DBus.Binding.TestClient.class);
+            Binding.TestClient cb = conn.getRemoteObject(t.getSource(), "/Test", Binding.TestClient.class);
             cb.Response(t.a, t.b);
         } catch (DBusException exD) {
             throw new DBusExecutionException(exD.getMessage());
@@ -386,7 +388,7 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
             DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
             CrossTestServer cts = new CrossTestServer(conn);
-            conn.addSigHandler(DBus.Binding.TestClient.Trigger.class, cts);
+            conn.addSigHandler(Binding.TestClient.Trigger.class, cts);
             conn.exportObject("/Test", cts);
             synchronized (cts) {
                 while (cts.run) {

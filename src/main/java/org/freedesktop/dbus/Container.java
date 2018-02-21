@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.annotations.Position;
+
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.

@@ -10,10 +10,10 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.Position;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.annotations.Position;
 //CHECKSTYLE:OFF
 public final class TestStruct extends Struct {
     @Position(0)
@@ -21,9 +21,9 @@ public final class TestStruct extends Struct {
     @Position(1)
     public final UInt32                    b;
     @Position(2)
-    public final Variant<? extends Object> c;
+    public final Variant<?>                c;
 
-    public TestStruct(String _a, UInt32 _b, Variant<? extends Object> _c) {
+    public TestStruct(String _a, UInt32 _b, Variant<?> _c) {
         this.a = _a;
         this.b = _b;
         this.c = _c;

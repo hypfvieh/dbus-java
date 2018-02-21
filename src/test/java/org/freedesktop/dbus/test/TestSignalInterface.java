@@ -15,10 +15,10 @@ import java.util.Map;
 
 import org.freedesktop.DBus.Description;
 import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.DBusMemberName;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 /**

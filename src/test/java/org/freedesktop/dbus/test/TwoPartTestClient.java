@@ -10,8 +10,8 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.connection.DBusConnection;
-import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 
 public final class TwoPartTestClient {
 
@@ -48,7 +48,7 @@ public final class TwoPartTestClient {
         System.out.println(o.getName());
         TwoPartTestObject tpto = new TwoPartTestObject();
         conn.exportObject("/TestObject", tpto);
-        conn.sendSignal(new TwoPartInterface.TwoPartSignal("/FromObject", tpto));
+        conn.sendMessage(new TwoPartInterface.TwoPartSignal("/FromObject", tpto));
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {

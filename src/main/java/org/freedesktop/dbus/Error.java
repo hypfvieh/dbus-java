@@ -13,7 +13,7 @@ package org.freedesktop.dbus;
 import java.lang.reflect.Constructor;
 import java.util.Vector;
 
-import org.freedesktop.dbus.connection.AbstractConnection;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;

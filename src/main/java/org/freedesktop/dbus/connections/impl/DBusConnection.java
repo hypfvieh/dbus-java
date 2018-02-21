@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus.connection;
+package org.freedesktop.dbus.connections.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,6 +35,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;

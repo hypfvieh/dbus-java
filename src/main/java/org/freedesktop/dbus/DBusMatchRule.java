@@ -12,7 +12,9 @@ package org.freedesktop.dbus;
 
 import java.util.HashMap;
 
-import org.freedesktop.dbus.connection.AbstractConnection;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 

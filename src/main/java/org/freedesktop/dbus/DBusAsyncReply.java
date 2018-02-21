@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.freedesktop.DBus.Error.NoReply;
-import org.freedesktop.dbus.connection.AbstractConnection;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A handle to an asynchronous method call.
  */
-public class DBusAsyncReply<ReturnType> {
+public class DBusAsyncReply<T> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -34,9 +34,9 @@ public class DBusAsyncReply<ReturnType> {
     * @param replies A Collection of handles to replies to check.
     * @return A Collection only containing those calls which have had replies.
     */
-    public static Collection<DBusAsyncReply<? extends Object>> hasReply(Collection<DBusAsyncReply<? extends Object>> replies) {
-        Collection<DBusAsyncReply<? extends Object>> c = new ArrayList<DBusAsyncReply<? extends Object>>(replies);
-        Iterator<DBusAsyncReply<? extends Object>> i = c.iterator();
+    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> replies) {
+        Collection<DBusAsyncReply<?>> c = new ArrayList<>(replies);
+        Iterator<DBusAsyncReply<?>> i = c.iterator();
         while (i.hasNext()) {
             if (!i.next().hasReply()) {
                 i.remove();
@@ -45,7 +45,7 @@ public class DBusAsyncReply<ReturnType> {
         return c;
     }
 
-    private ReturnType             rval  = null;
+    private T                      rval  = null;
     private DBusExecutionException error = null;
     private MethodCall             mc;
     private Method                 me;
@@ -65,7 +65,9 @@ public class DBusAsyncReply<ReturnType> {
                 error = ((Error) m).getException();
             } else if (m instanceof MethodReturn) {
                 try {
-                    rval = (ReturnType) RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);
+                    Object obj = RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);
+                    
+                    rval = (T) obj;
                 } catch (DBusExecutionException exDee) {
                     error = exDee;
                 } catch (DBusException dbe) {
@@ -94,7 +96,7 @@ public class DBusAsyncReply<ReturnType> {
     * @throws DBusExecutionException if the reply to the method was an error.
     * @throws NoReply if the method hasn't had a reply yet
     */
-    public ReturnType getReply() throws DBusExecutionException {
+    public T getReply() throws DBusExecutionException {
         if (null != rval) {
             return rval;
         } else if (null != error) {

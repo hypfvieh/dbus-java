@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.connection;
+package org.freedesktop.dbus.connections;
 
 import java.lang.reflect.Method;
 import java.util.Map;

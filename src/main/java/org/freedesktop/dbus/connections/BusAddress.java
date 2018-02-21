@@ -9,7 +9,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.connections;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -23,7 +23,9 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.freedesktop.dbus.connection.AbstractConnection;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
