@@ -3,9 +3,7 @@ Improved version of [Java-DBus library provided by freedesktop.org](https://dbus
 
 ##### Changes
   - Fixed lots of Java warnings (Generics, unclosed resources)
-  - Fixed broken 'Gettext' feature used for exception messages
-    - Instead of throwing NullPointerExceptions the method will use the english message text if no translation was available
-    - Renamed the method "\_" to "t" as "\_" is a reserved word since Java 8
+  - Removed broken 'Gettext' feature used for exception messages, english exception messages should be good enough
   - Renamed some classes/methods/variables to comply with Java naming scheme
   - Removed proprietary logger and replaced it with slf4j
   - Renamed/refactored some parts to be more 'Java' like (e.g. naming, shadowing)
