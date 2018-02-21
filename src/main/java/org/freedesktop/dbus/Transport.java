@@ -42,6 +42,141 @@ import cx.ath.matthew.utils.Hexdump;
 
 public class Transport implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    
+    // CHECKSTYLE:OFF
+    private MessageReader min;
+    private MessageWriter mout;
+    // CHECKSTYLE:ON
+    private UnixServerSocket unixServerSocket;
+
+    public Transport() {
+    }
+
+    public static String genGUID() {
+        Random r = new Random();
+        byte[] buf = new byte[16];
+        r.nextBytes(buf);
+        String guid = Hexdump.toHex(buf);
+        return guid.replaceAll(" ", "");
+    }
+
+    public Transport(BusAddress address) throws IOException {
+        connect(address);
+    }
+
+    public Transport(String address) throws IOException, DBusException {
+        connect(new BusAddress(address));
+    }
+
+    public Transport(String address, int timeout) throws IOException, DBusException {
+        connect(new BusAddress(address), timeout);
+    }
+
+    public Transport(BusAddress address, int timeout) throws IOException, DBusException {
+        connect(address, timeout);
+    }
+    
+    public void writeMessage(Message message) throws IOException {
+        if (mout != null) {
+            mout.writeMessage(message);
+        }
+    }
+    
+    public Message readMessage() throws IOException, DBusException {
+        if (min != null) {
+            return min.readMessage();
+        }
+        return null;
+    }
+   
+    private void connect(BusAddress address) throws IOException {
+        connect(address, 0);
+    }
+
+    private void connect(BusAddress address, int timeout) throws IOException {
+        logger.debug("Connecting to " + address);
+        OutputStream out = null;
+        InputStream in = null;
+        UnixSocket us = null;
+        Socket s = null;
+        int mode = 0;
+        int types = 0;
+        if ("unix".equals(address.getType())) {
+            types = SASL.AUTH_EXTERNAL;
+            if (null != address.getParameter("listen")) {
+                mode = SASL.MODE_SERVER;
+                unixServerSocket = new UnixServerSocket();
+                if (null != address.getParameter("abstract")) {
+                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("abstract"), true));
+                } else if (null != address.getParameter("path")) {
+                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("path"), false));
+                }
+                us = unixServerSocket.accept();
+            } else {
+                mode = SASL.MODE_CLIENT;
+                us = new UnixSocket();
+                if (null != address.getParameter("abstract")) {
+                    us.connect(new UnixSocketAddress(address.getParameter("abstract"), true));
+                } else if (null != address.getParameter("path")) {
+                    us.connect(new UnixSocketAddress(address.getParameter("path"), false));
+                }
+            }
+            us.setPassCred(true);
+            in = us.getInputStream();
+            out = us.getOutputStream();
+        } else if ("tcp".equals(address.getType())) {
+            types = SASL.AUTH_SHA;
+            if (null != address.getParameter("listen")) {
+                mode = SASL.MODE_SERVER;
+                try (ServerSocket ss = new ServerSocket()) {
+                    ss.bind(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
+                    s = ss.accept();
+                }
+            } else {
+                mode = SASL.MODE_CLIENT;
+                s = new Socket();
+                s.connect(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
+            }
+            in = s.getInputStream();
+            out = s.getOutputStream();
+        } else {
+            throw new IOException("unknown address type " + address.getType());
+        }
+
+        if (!(new SASL()).auth(mode, types, address.getParameter("guid"), out, in, us)) {
+            out.close();
+            throw new IOException("Failed to auth");
+        }
+        if (null != us) {
+            logger.trace("Setting timeout to " + timeout + " on Socket");
+            if (timeout == 1) {
+                us.setBlocking(false);
+            } else {
+                us.setSoTimeout(timeout);
+            }
+        }
+        if (null != s) {
+            logger.trace("Setting timeout to " + timeout + " on Socket");
+            s.setSoTimeout(timeout);
+        }
+        mout = new MessageWriter(out);
+        min = new MessageReader(in);
+    }
+
+    public void disconnect() throws IOException {
+        logger.debug("Disconnecting Transport");
+        min.close();
+        mout.close();
+        if (unixServerSocket != null && !unixServerSocket.isClosed()) {
+            unixServerSocket.close();
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        disconnect();
+    }
+
     public static class SASL {
         private final Logger logger = LoggerFactory.getLogger(getClass());
         public static class Command {
@@ -50,10 +185,10 @@ public class Transport implements Closeable {
             private int    mechs;
             private String data;
             private String response;
-
+    
             public Command() {
             }
-
+    
             public Command(String s) throws IOException {
                 String[] ss = s.split(" ");
                 logger.trace("Creating command from: " + Arrays.toString(ss));
@@ -100,33 +235,33 @@ public class Transport implements Closeable {
                 }
                 logger.trace("Created command: " + this);
             }
-
+    
             public int getCommand() {
                 return command;
             }
-
+    
             public int getMechs() {
                 return mechs;
             }
-
+    
             public String getData() {
                 return data;
             }
-
+    
             public String getResponse() {
                 return response;
             }
-
+    
             public void setResponse(String s) {
                 response = s;
             }
-
+    
             @Override
             public String toString() {
                 return "Command(" + command + ", " + mechs + ", " + data + ", " + null + ")";
             }
         }
-
+    
         private static Collator col = Collator.getInstance();
         static {
             col.setDecomposition(Collator.FULL_DECOMPOSITION);
@@ -138,7 +273,7 @@ public class Transport implements Closeable {
         public static final int    MAX_TIME_TRAVEL_SECONDS     = 60 * 5;
         public static final int    COOKIE_TIMEOUT              = 240;
         public static final String COOKIE_CONTEXT              = "org_freedesktop_java";
-
+    
         private String findCookie(String context, String ID) throws IOException {
             String homedir = System.getProperty("user.home");
             File f = new File(homedir + "/.dbus-keyrings/" + context);
@@ -157,25 +292,25 @@ public class Transport implements Closeable {
             r.close();
             return lCookie;
         }
-
+    
         private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
             String homedir = System.getProperty("user.home");
             File keydir = new File(homedir + "/.dbus-keyrings/");
             File cookiefile = new File(homedir + "/.dbus-keyrings/" + _context);
             File lock = new File(homedir + "/.dbus-keyrings/" + _context + ".lock");
             File temp = new File(homedir + "/.dbus-keyrings/" + _context + ".temp");
-
+    
             // ensure directory exists
             if (!keydir.exists()) {
                 keydir.mkdirs();
             }
-
+    
             // acquire lock
             long start = System.currentTimeMillis();
             while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) {
                 ;
             }
-
+    
             // read old file
             Vector<String> lines = new Vector<String>();
             if (cookiefile.exists()) {
@@ -191,27 +326,27 @@ public class Transport implements Closeable {
                 }
                 r.close();
             }
-
+    
             // add cookie
             lines.add(_id + " " + _timestamp + " " + _cookie);
-
+    
             // write temp file
             PrintWriter w = new PrintWriter(new FileOutputStream(temp));
             for (String l : lines) {
                 w.println(l);
             }
             w.close();
-
+    
             // atomically move to old file
             if (!temp.renameTo(cookiefile)) {
                 cookiefile.delete();
                 temp.renameTo(cookiefile);
             }
-
+    
             // remove lock
             lock.delete();
         }
-
+    
         /**
          * Takes the string, encodes it as hex and then turns it into a string again.
          * No, I don't know why either.
@@ -219,11 +354,11 @@ public class Transport implements Closeable {
         private String stupidlyEncode(String data) {
             return Hexdump.toHex(data.getBytes()).replaceAll(" ", "");
         }
-
+    
         private String stupidlyEncode(byte[] data) {
             return Hexdump.toHex(data).replaceAll(" ", "");
         }
-
+    
         private byte getNibble(char c) {
             switch (c) {
             case '0':
@@ -255,7 +390,7 @@ public class Transport implements Closeable {
                 return 0;
             }
         }
-
+    
         private String stupidlyDecode(String data) {
             char[] cs = new char[data.length()];
             char[] res = new char[cs.length / 2];
@@ -268,15 +403,15 @@ public class Transport implements Closeable {
             }
             return new String(res);
         }
-
+    
         public static final int MODE_SERVER      = 1;
         public static final int MODE_CLIENT      = 2;
-
+    
         public static final int AUTH_NONE        = 0;
         public static final int AUTH_EXTERNAL    = 1;
         public static final int AUTH_SHA         = 2;
         public static final int AUTH_ANON        = 4;
-
+    
         public static final int COMMAND_AUTH     = 1;
         public static final int COMMAND_DATA     = 2;
         public static final int COMMAND_REJECTED = 3;
@@ -284,7 +419,7 @@ public class Transport implements Closeable {
         public static final int COMMAND_BEGIN    = 5;
         public static final int COMMAND_CANCEL   = 6;
         public static final int COMMAND_ERROR    = 7;
-
+    
         public static final int INITIAL_STATE    = 0;
         public static final int WAIT_DATA        = 1;
         public static final int WAIT_OK          = 2;
@@ -293,12 +428,12 @@ public class Transport implements Closeable {
         public static final int WAIT_BEGIN       = 5;
         public static final int AUTHENTICATED    = 6;
         public static final int FAILED           = 7;
-
+    
         public static final int OK               = 1;
         public static final int CONTINUE         = 2;
         public static final int ERROR            = 3;
         public static final int REJECT           = 4;
-
+    
         public Command receive(InputStream s) throws IOException {
             StringBuffer sb = new StringBuffer();
             top: while (true) {
@@ -323,7 +458,7 @@ public class Transport implements Closeable {
                 return new Command();
             }
         }
-
+    
         public void send(OutputStream out, int command, String... data) throws IOException {
             StringBuffer sb = new StringBuffer();
             switch (command) {
@@ -396,9 +531,9 @@ public class Transport implements Closeable {
                 }
                 String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
                 buf = md.digest(response.getBytes());
-
+    
                 logger.trace("Response: " + response + " hash: " + Hexdump.format(buf));
-
+    
                 response = stupidlyEncode(buf);
                 c.setResponse(stupidlyEncode(clientchallenge + " " + response));
                 return OK;
@@ -407,11 +542,11 @@ public class Transport implements Closeable {
                 return ERROR;
             }
         }
-
+    
         // CHECKSTYLE:OFF
         public String challenge = "";
         public String cookie    = "";
-
+    
         public int do_response(int _auth, String _uid, String _kernelUid, Command _c) {
         // CHECKSTYLE:ON
             MessageDigest md = null;
@@ -446,9 +581,9 @@ public class Transport implements Closeable {
                     } catch (IOException ioe) {
                         logger.debug("", ioe);
                     }
-
+    
                     logger.debug("Sending challenge: " + context + ' ' + id + ' ' + challenge);
-
+    
                     _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
                     return CONTINUE;
                 default:
@@ -474,7 +609,7 @@ public class Transport implements Closeable {
                 return ERROR;
             }
         }
-
+    
         public String[] getTypes(int types) {
             switch (types) {
             case AUTH_EXTERNAL:
@@ -509,7 +644,7 @@ public class Transport implements Closeable {
                 return new String[] {};
             }
         }
-
+    
         /**
          * performs SASL auth on the given streams.
          * Mode selects whether to run as a SASL server or client.
@@ -541,11 +676,11 @@ public class Transport implements Closeable {
             int failed = 0;
             int current = 0;
             int state = INITIAL_STATE;
-
+    
             while (state != AUTHENTICATED && state != FAILED) {
-
+    
                 logger.trace("AUTH state: " + state);
-
+    
                 switch (mode) {
                 case MODE_CLIENT:
                     switch (state) {
@@ -780,138 +915,9 @@ public class Transport implements Closeable {
                     return false;
                 }
             }
-
+    
             return state == AUTHENTICATED;
         }
-    }
-
-    // CHECKSTYLE:OFF
-    public MessageReader min;
-    public MessageWriter mout;
-    // CHECKSTYLE:ON
-    private UnixServerSocket unixServerSocket;
-
-    public Transport() {
-    }
-
-    public static String genGUID() {
-        Random r = new Random();
-        byte[] buf = new byte[16];
-        r.nextBytes(buf);
-        String guid = Hexdump.toHex(buf);
-        return guid.replaceAll(" ", "");
-    }
-
-    public Transport(BusAddress address) throws IOException {
-        connect(address);
-    }
-
-    public Transport(String address) throws IOException, DBusException {
-        connect(new BusAddress(address));
-    }
-
-    public Transport(String address, int timeout) throws IOException, DBusException {
-        connect(new BusAddress(address), timeout);
-    }
-
-    public Transport(BusAddress address, int timeout) throws IOException, DBusException {
-        connect(address, timeout);
-    }
-    
-    public void connect(String address) throws IOException, DBusException {
-        connect(new BusAddress(address), 0);
-    }
-
-    public void connect(String address, int timeout) throws IOException, DBusException {
-        connect(new BusAddress(address), timeout);
-    }
-
-    public void connect(BusAddress address) throws IOException {
-        connect(address, 0);
-    }
-
-    public void connect(BusAddress address, int timeout) throws IOException {
-        logger.debug("Connecting to " + address);
-        OutputStream out = null;
-        InputStream in = null;
-        UnixSocket us = null;
-        Socket s = null;
-        int mode = 0;
-        int types = 0;
-        if ("unix".equals(address.getType())) {
-            types = SASL.AUTH_EXTERNAL;
-            if (null != address.getParameter("listen")) {
-                mode = SASL.MODE_SERVER;
-                unixServerSocket = new UnixServerSocket();
-                if (null != address.getParameter("abstract")) {
-                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("abstract"), true));
-                } else if (null != address.getParameter("path")) {
-                    unixServerSocket.bind(new UnixSocketAddress(address.getParameter("path"), false));
-                }
-                us = unixServerSocket.accept();
-            } else {
-                mode = SASL.MODE_CLIENT;
-                us = new UnixSocket();
-                if (null != address.getParameter("abstract")) {
-                    us.connect(new UnixSocketAddress(address.getParameter("abstract"), true));
-                } else if (null != address.getParameter("path")) {
-                    us.connect(new UnixSocketAddress(address.getParameter("path"), false));
-                }
-            }
-            us.setPassCred(true);
-            in = us.getInputStream();
-            out = us.getOutputStream();
-        } else if ("tcp".equals(address.getType())) {
-            types = SASL.AUTH_SHA;
-            if (null != address.getParameter("listen")) {
-                mode = SASL.MODE_SERVER;
-                try (ServerSocket ss = new ServerSocket()) {
-                    ss.bind(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
-                    s = ss.accept();
-                }
-            } else {
-                mode = SASL.MODE_CLIENT;
-                s = new Socket();
-                s.connect(new InetSocketAddress(address.getParameter("host"), Integer.parseInt(address.getParameter("port"))));
-            }
-            in = s.getInputStream();
-            out = s.getOutputStream();
-        } else {
-            throw new IOException("unknown address type " + address.getType());
-        }
-
-        if (!(new SASL()).auth(mode, types, address.getParameter("guid"), out, in, us)) {
-            out.close();
-            throw new IOException("Failed to auth");
-        }
-        if (null != us) {
-            logger.trace("Setting timeout to " + timeout + " on Socket");
-            if (timeout == 1) {
-                us.setBlocking(false);
-            } else {
-                us.setSoTimeout(timeout);
-            }
-        }
-        if (null != s) {
-            logger.trace("Setting timeout to " + timeout + " on Socket");
-            s.setSoTimeout(timeout);
-        }
-        mout = new MessageWriter(out);
-        min = new MessageReader(in);
-    }
-
-    public void disconnect() throws IOException {
-        logger.debug("Disconnecting Transport");
-        min.close();
-        mout.close();
-        if (unixServerSocket != null && !unixServerSocket.isClosed()) {
-            unixServerSocket.close();
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        disconnect();
     }
 
 }

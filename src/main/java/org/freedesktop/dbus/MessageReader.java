@@ -11,6 +11,7 @@
 package org.freedesktop.dbus;
 
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,10 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.utils.Hexdump;
 
-public class MessageReader {
+public class MessageReader implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private InputStream in;
+    private InputStream inputStream;
     private byte[]      buf    = null;
     private byte[]      tbuf   = null;
     private byte[]      header = null;
@@ -36,7 +37,7 @@ public class MessageReader {
     private int[]       len    = new int[4];
 
     public MessageReader(InputStream _in) {
-        this.in = new BufferedInputStream(_in);
+        this.inputStream = new BufferedInputStream(_in);
     }
 
     public Message readMessage() throws IOException, DBusException {
@@ -48,7 +49,7 @@ public class MessageReader {
         }
         if (len[0] < 12) {
             try {
-                rv = in.read(buf, len[0], 12 - len[0]);
+                rv = inputStream.read(buf, len[0], 12 - len[0]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -81,7 +82,7 @@ public class MessageReader {
         }
         if (len[1] < 4) {
             try {
-                rv = in.read(tbuf, len[1], 4 - len[1]);
+                rv = inputStream.read(tbuf, len[1], 4 - len[1]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -114,7 +115,7 @@ public class MessageReader {
         }
         if (len[2] < headerlen) {
             try {
-                rv = in.read(header, 8 + len[2], headerlen - len[2]);
+                rv = inputStream.read(header, 8 + len[2], headerlen - len[2]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -139,7 +140,7 @@ public class MessageReader {
         }
         if (len[3] < body.length) {
             try {
-                rv = in.read(body, len[3], body.length - len[3]);
+                rv = inputStream.read(body, len[3], body.length - len[3]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -201,8 +202,14 @@ public class MessageReader {
         return m;
     }
 
+    @Override
     public void close() throws IOException {
         logger.trace("Closing Message Reader");
-        in.close();
+        inputStream.close();
+        inputStream = null;
+    }
+    
+    public boolean isClosed() {
+        return inputStream != null;
     }
 }

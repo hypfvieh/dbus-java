@@ -11,6 +11,7 @@
 package org.freedesktop.dbus;
 
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -20,24 +21,24 @@ import org.slf4j.LoggerFactory;
 import cx.ath.matthew.unix.USOutputStream;
 import cx.ath.matthew.utils.Hexdump;
 
-public class MessageWriter {
+public class MessageWriter implements Closeable {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private OutputStream out;
-    private boolean      isunix;
+    private OutputStream outputStream;
+    private boolean      unixSocket;
 
     public MessageWriter(OutputStream _out) {
-        this.out = _out;
-        this.isunix = false;
+        this.outputStream = _out;
+        this.unixSocket = false;
         try {
             if (_out instanceof USOutputStream) {
-                this.isunix = true;
+                this.unixSocket = true;
             }
         } catch (Throwable t) {
         }
-        if (!this.isunix) {
-            this.out = new BufferedOutputStream(this.out);
+        if (!this.unixSocket) {
+            this.outputStream = new BufferedOutputStream(_out);
         }
     }
 
@@ -50,28 +51,34 @@ public class MessageWriter {
             logger.warn("Message " + m + " wire-data was null!");
             return;
         }
-        if (isunix) {
+        if (unixSocket) {
             if (logger.isTraceEnabled()) {
                 logger.debug("Writing all " + m.getWireData().length + " buffers simultaneously to Unix Socket");
                 for (byte[] buf : m.getWireData()) {
                     logger.trace("(" + buf + "):" + (null == buf ? "" : Hexdump.format(buf)));
                 }
             }
-            ((USOutputStream) out).write(m.getWireData());
+            ((USOutputStream) outputStream).write(m.getWireData());
         } else {
             for (byte[] buf : m.getWireData()) {
                 logger.trace("(" + buf + "):" + (null == buf ? "" : Hexdump.format(buf)));
                 if (null == buf) {
                     break;
                 }
-                out.write(buf);
+                outputStream.write(buf);
             }
         }
-        out.flush();
+        outputStream.flush();
     }
 
+    @Override
     public void close() throws IOException {
         logger.info("Closing Message Writer");
-        out.close();
+        outputStream.close();
+        outputStream = null;
+    }
+
+    public boolean isClosed() {
+        return outputStream != null;
     }
 }

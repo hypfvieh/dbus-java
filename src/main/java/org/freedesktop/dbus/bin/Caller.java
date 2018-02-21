@@ -38,7 +38,7 @@ public final class Caller {
             }
 
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
-            conn.mout.writeMessage(m);
+            conn.writeMessage(m);
 
             if ("".equals(args[2])) {
                 args[2] = null;
@@ -65,9 +65,9 @@ public final class Caller {
                 m = new MethodCall(args[0], args[1], args[2], args[3], (byte) 0, args[4], os);
             }
             long serial = m.getSerial();
-            conn.mout.writeMessage(m);
+            conn.writeMessage(m);
             do {
-                m = conn.min.readMessage();
+                m = conn.readMessage();
             } while (serial != m.getReplySerial());
             if (m instanceof Error) {
                 ((Error) m).throwException();

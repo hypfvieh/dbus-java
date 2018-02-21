@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -258,11 +259,12 @@ public abstract class AbstractConnection implements Closeable {
         private boolean terminate;
         
         SenderThread() {
-            setName("Sender");
+            setName("DBUS Sender Thread");
         }
 
         public void terminate() {
             terminate = true;
+            interrupt();
         }
         
         @Override
@@ -589,6 +591,7 @@ public abstract class AbstractConnection implements Closeable {
         
         try {
             // try to wait for all pending tasks.
+            workerThreadPool.shutdown();
             workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
         } catch (InterruptedException _ex) {
             logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
@@ -843,7 +846,7 @@ public abstract class AbstractConnection implements Closeable {
     })
     private void handleMessage(final DBusSignal s) {
         logger.debug("Handling incoming signal: " + s);
-        Vector<DBusSigHandler<? extends DBusSignal>> v = new Vector<>();
+        List<DBusSigHandler<? extends DBusSignal>> v = new ArrayList<>();
         synchronized (handledSignals) {
             Vector<DBusSigHandler<? extends DBusSignal>> t;
             t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), null, null));
@@ -866,6 +869,7 @@ public abstract class AbstractConnection implements Closeable {
         if (0 == v.size()) {
             return;
         }
+        
         final AbstractConnection conn = this;
         for (final DBusSigHandler<? extends DBusSignal> h : v) {
             logger.trace("Adding Runnable for signal " + s + " with handler " + h);
@@ -1023,7 +1027,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             }
 
-            transport.mout.writeMessage(m);
+            transport.writeMessage(m);
 
         } catch (Exception e) {
             logger.debug("Exception while sending message.", e);
@@ -1046,7 +1050,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             } else if (m instanceof MethodReturn) {
                 try {
-                    transport.mout.writeMessage(new Error(m, e));
+                    transport.writeMessage(new Error(m, e));
                 } catch (IOException exIo) {
                     logger.debug("", exIo);
                 } catch (DBusException exDe) {
@@ -1065,7 +1069,7 @@ public abstract class AbstractConnection implements Closeable {
         }
         Message m = null;
         try {
-            m = transport.min.readMessage();
+            m = transport.readMessage();
         } catch (IOException exIo) {
             if (!run && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
                 return null;
