@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus.viewer;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.awt.event.ActionEvent;
 import java.io.File;
 
@@ -74,7 +72,7 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
             chooser = new JFileChooser();
         }
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(t("Select parent directory for saving"));
+        chooser.setDialogTitle("Select parent directory for saving");
 
         int result = chooser.showDialog(tabbedPane, "Select");
 
@@ -86,10 +84,10 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
 
                     new Thread(runnable).start();
                 } else {
-                    JOptionPane.showMessageDialog(tabbedPane, t("Could not write to parent directory"), t("Invalid Parent Directory"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(tabbedPane, "Could not write to parent directory", "Invalid Parent Directory", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(tabbedPane, t("Could not access parent directory"), t("Invalid Parent Directory"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(tabbedPane, "Could not access parent directory", "Invalid Parent Directory", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

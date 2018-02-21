@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.lang.annotation.Annotation;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -63,10 +61,10 @@ class ExportedObject {
                     // don't let people export things which don't have a
                     // valid D-Bus interface name
                     if (c.getName().equals(c.getSimpleName())) {
-                        throw new DBusException(t("DBusInterfaces cannot be declared outside a package"));
+                        throw new DBusException("DBusInterfaces cannot be declared outside a package");
                     }
                     if (c.getName().length() > AbstractConnection.MAX_NAME_LENGTH) {
-                        throw new DBusException(t("Introspected interface name exceeds 255 characters. Cannot export objects of type ") + c.getName());
+                        throw new DBusException("Introspected interface name exceeds 255 characters. Cannot export objects of type " + c.getName());
                     } else {
                         introspectiondata += " <interface name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".") + "\">\n";
                     }
@@ -82,7 +80,7 @@ class ExportedObject {
                             name = meth.getName();
                         }
                         if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException(t("Introspected method name exceeds 255 characters. Cannot export objects with method ") + name);
+                            throw new DBusException("Introspected method name exceeds 255 characters. Cannot export objects with method " + name);
                         }
                         introspectiondata += "  <method name=\"" + name + "\" >\n";
                         introspectiondata += getAnnotations(meth);
@@ -110,7 +108,7 @@ class ExportedObject {
                                     }
                                 }
                             } else if (Object[].class.equals(meth.getGenericReturnType())) {
-                                throw new DBusException(t("Return type of Object[] cannot be introspected properly"));
+                                throw new DBusException("Return type of Object[] cannot be introspected properly");
                             } else {
                                 for (String s : Marshalling.getDBusType(meth.getGenericReturnType())) {
                                     introspectiondata += "   <arg type=\"" + s + "\" direction=\"out\"/>\n";
@@ -131,7 +129,7 @@ class ExportedObject {
                             name = sig.getSimpleName();
                         }
                         if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException(t("Introspected signal name exceeds 255 characters. Cannot export objects with signals of type ") + name);
+                            throw new DBusException("Introspected signal name exceeds 255 characters. Cannot export objects with signals of type " + name);
                         }
                         introspectiondata += "  <signal name=\"" + name + "\">\n";
                         Constructor<?> con = sig.getConstructors()[0];

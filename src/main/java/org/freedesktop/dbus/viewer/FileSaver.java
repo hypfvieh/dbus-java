@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus.viewer;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -91,26 +89,26 @@ final class FileSaver implements Runnable {
                         final String errorMessage = "Could not save " + fileName + ": " + ex.getLocalizedMessage();
                         if (iterator.hasNext()) {
 
-                            int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + t("Try saving other files?"), t("Save Failed"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                            int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
                             if (confirm != JOptionPane.OK_OPTION) {
                                 break;
                             }
                         } else {
-                            JOptionPane.showMessageDialog(parentComponent, errorMessage + ".", t("Save Failed"), JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(parentComponent, errorMessage + ".", "Save Failed", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
             } else {
 
-                final String errorMessage = t("Could not access parent directory for ") + fileName;
+                final String errorMessage = "Could not access parent directory for " + fileName;
                 if (iterator.hasNext()) {
 
-                    int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + t("Try saving other files?"), t("Save Failed"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                    int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
                     if (confirm != JOptionPane.OK_OPTION) {
                         break;
                     }
                 } else {
-                    JOptionPane.showMessageDialog(parentComponent, errorMessage + ".", t("Save Failed"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(parentComponent, errorMessage + ".", "Save Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

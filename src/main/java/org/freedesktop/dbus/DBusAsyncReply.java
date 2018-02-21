@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,13 +105,13 @@ public class DBusAsyncReply<ReturnType> {
         } else if (null != error) {
             throw error;
         } else {
-            throw new NoReply(t("Async call has not had a reply"));
+            throw new NoReply("Async call has not had a reply");
         }
     }
 
     @Override
     public String toString() {
-        return t("Waiting for: ") + mc;
+        return "Waiting for: " + mc;
     }
 
     Method getMethod() {

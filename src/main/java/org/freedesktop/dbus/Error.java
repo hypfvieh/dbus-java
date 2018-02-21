@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.lang.reflect.Constructor;
 import java.util.Vector;
 
@@ -39,7 +37,7 @@ public class Error extends Message {
         super(Message.Endian.BIG, Message.MessageType.ERROR, (byte) 0);
 
         if (null == errorName) {
-            throw new MessageFormatException(t("Must specify error name to Errors."));
+            throw new MessageFormatException("Must specify error name to Errors.");
         }
         headers.put(Message.HeaderField.REPLY_SERIAL, replyserial);
         headers.put(Message.HeaderField.ERROR_NAME, errorName);

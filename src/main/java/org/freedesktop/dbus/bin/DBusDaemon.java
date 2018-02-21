@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus.bin;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -165,7 +163,7 @@ public class DBusDaemon extends Thread {
 
             synchronized (c) {
                 if (null != c.unique) {
-                    throw new org.freedesktop.DBus.Error.AccessDenied(t("Connection has already sent a Hello message"));
+                    throw new org.freedesktop.DBus.Error.AccessDenied("Connection has already sent a Hello message");
                 }
                 synchronized (uniqueLock) {
                     c.unique = ":1." + (++nextUnique);
@@ -424,10 +422,10 @@ public class DBusDaemon extends Thread {
                     send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, dbee));
                 } catch (Exception e) {
                     LOGGER.debug("", e);
-                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", t("An error occurred while calling ") + _m.getName()));
+                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", "An error occurred while calling " + _m.getName()));
                 }
             } catch (NoSuchMethodException exNsm) {
-                send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", t("This service does not support ") + _m.getName()));
+                send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", "This service does not support " + _m.getName()));
             }
 
             LOGGER.debug("exit");
@@ -712,7 +710,7 @@ public class DBusDaemon extends Thread {
                             LOGGER.info("<inqueue> Got message " + m + " from " + c.unique);
                             // check if they have hello'd
                             if (null == c.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
-                                send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", t("You must send a Hello message")));
+                                send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
                             } else {
                                 try {
                                     if (null != c.unique) {
@@ -720,7 +718,7 @@ public class DBusDaemon extends Thread {
                                     }
                                 } catch (DBusException dbe) {
                                     LOGGER.debug("", dbe);
-                                    send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", t("Sending message failed")));
+                                    send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                                 }
 
                                 if ("org.freedesktop.DBus".equals(m.getDestination())) {
@@ -738,7 +736,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format(t("The name `{0}' does not exist"), m.getDestination())));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format("The name `{0}' does not exist", m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }

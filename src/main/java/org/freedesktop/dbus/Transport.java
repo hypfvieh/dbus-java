@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -98,7 +96,7 @@ public class Transport implements Closeable {
                     command = COMMAND_ERROR;
                     data = ss[1];
                 } else {
-                    throw new IOException(t("Invalid Command ") + ss[0]);
+                    throw new IOException("Invalid Command " + ss[0]);
                 }
                 logger.trace("Created command: " + this);
             }
@@ -875,12 +873,12 @@ public class Transport implements Closeable {
             in = s.getInputStream();
             out = s.getOutputStream();
         } else {
-            throw new IOException(t("unknown address type ") + address.getType());
+            throw new IOException("unknown address type " + address.getType());
         }
 
         if (!(new SASL()).auth(mode, types, address.getParameter("guid"), out, in, us)) {
             out.close();
-            throw new IOException(t("Failed to auth"));
+            throw new IOException("Failed to auth");
         }
         if (null != us) {
             logger.trace("Setting timeout to " + timeout + " on Socket");

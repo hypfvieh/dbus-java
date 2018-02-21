@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -55,7 +53,7 @@ public class MessageReader {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException(t("Underlying transport returned EOF"));
+                throw new EOFException("Underlying transport returned EOF");
             }
             len[0] += rv;
         }
@@ -73,7 +71,7 @@ public class MessageReader {
         byte protover = buf[3];
         if (protover > Message.PROTOCOL) {
             buf = null;
-            throw new MessageProtocolVersionException(MessageFormat.format(t("Protocol version {0} is unsupported"), protover));
+            throw new MessageProtocolVersionException(MessageFormat.format("Protocol version {0} is unsupported", protover));
         }
 
         /* Read the length of the variable header */
@@ -88,7 +86,7 @@ public class MessageReader {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException(t("Underlying transport returned EOF"));
+                throw new EOFException("Underlying transport returned EOF");
             }
             len[1] += rv;
         }
@@ -121,7 +119,7 @@ public class MessageReader {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException(t("Underlying transport returned EOF"));
+                throw new EOFException("Underlying transport returned EOF");
             }
             len[2] += rv;
         }
@@ -146,7 +144,7 @@ public class MessageReader {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException(t("Underlying transport returned EOF"));
+                throw new EOFException("Underlying transport returned EOF");
             }
             len[3] += rv;
         }
@@ -170,7 +168,7 @@ public class MessageReader {
             m = new Error();
             break;
         default:
-            throw new MessageTypeException(MessageFormat.format(t("Message type {0} unsupported"), type));
+            throw new MessageTypeException(MessageFormat.format("Message type {0} unsupported", type));
         }
         if (logger.isTraceEnabled()) {
             logger.trace(Hexdump.format(buf));

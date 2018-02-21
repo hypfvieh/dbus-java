@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.text.MessageFormat;
 
 /**
@@ -31,7 +29,7 @@ public class UInt32 extends Number implements Comparable<UInt32> {
     */
     public UInt32(long _value) {
         if (_value < MIN_VALUE || _value > MAX_VALUE) {
-            throw new NumberFormatException(MessageFormat.format(t("{0} is not between {1} and {2}."), _value, MIN_VALUE, MAX_VALUE));
+            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", _value, MIN_VALUE, MAX_VALUE));
         }
         this.value = _value;
     }

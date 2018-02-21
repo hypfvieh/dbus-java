@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Vector;
@@ -39,18 +37,18 @@ public class Variant<T> {
     */
     public Variant(T _o) throws IllegalArgumentException {
         if (null == _o) {
-            throw new IllegalArgumentException(t("Can't wrap Null in a Variant"));
+            throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
         type = _o.getClass();
         try {
             String[] ss = Marshalling.getDBusType(_o.getClass(), true);
             if (ss.length != 1) {
-                throw new IllegalArgumentException(t("Can't wrap a multi-valued type in a Variant: ") + type);
+                throw new IllegalArgumentException("Can't wrap a multi-valued type in a Variant: " + type);
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _o.getClass(), dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _o.getClass(), dbe.getMessage()));
         }
         this.o = _o;
     }
@@ -63,18 +61,18 @@ public class Variant<T> {
     */
     public Variant(T _o, Type _type) throws IllegalArgumentException {
         if (null == _o) {
-            throw new IllegalArgumentException(t("Can't wrap Null in a Variant"));
+            throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
         this.type = _type;
         try {
             String[] ss = Marshalling.getDBusType(_type);
             if (ss.length != 1) {
-                throw new IllegalArgumentException(t("Can't wrap a multi-valued type in a Variant: ") + _type);
+                throw new IllegalArgumentException("Can't wrap a multi-valued type in a Variant: " + _type);
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format(t("Can't wrap {0} in an unqualified Variant ({1})."), _type, dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _type, dbe.getMessage()));
         }
         this.o = _o;
     }
@@ -87,19 +85,19 @@ public class Variant<T> {
     */
     public Variant(T _o, String _sig) throws IllegalArgumentException {
         if (null == _o) {
-            throw new IllegalArgumentException(t("Can't wrap Null in a Variant"));
+            throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
         this.sig = _sig;
         try {
             Vector<Type> ts = new Vector<Type>();
             Marshalling.getJavaType(_sig, ts, 1);
             if (ts.size() != 1) {
-                throw new IllegalArgumentException(t("Can't wrap multiple or no types in a Variant: ") + _sig);
+                throw new IllegalArgumentException("Can't wrap multiple or no types in a Variant: " + _sig);
             }
             this.type = ts.get(0);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format(t("Can''t wrap {0} in an unqualified Variant ({1})."), _sig, dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can''t wrap {0} in an unqualified Variant ({1}).", _sig, dbe.getMessage()));
         }
         this.o = _o;
     }

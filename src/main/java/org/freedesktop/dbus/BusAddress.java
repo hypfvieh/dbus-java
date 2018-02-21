@@ -10,8 +10,6 @@
 */
 package org.freedesktop.dbus;
 
-import static org.freedesktop.dbus.Gettext.t;
-
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,14 +25,14 @@ public class BusAddress {
 
     public BusAddress(String address) throws ParseException {
         if (null == address || "".equals(address)) {
-            throw new ParseException(t("Bus address is blank"), 0);
+            throw new ParseException("Bus address is blank", 0);
         }
 
         logger.trace("Parsing bus address: " + address);
 
         String[] ss = address.split(":", 2);
         if (ss.length < 2) {
-            throw new ParseException(t("Bus address is invalid: ") + address, 0);
+            throw new ParseException("Bus address is invalid: " + address, 0);
         }
         type = ss[0];
 
