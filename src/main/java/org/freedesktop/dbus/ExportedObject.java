@@ -23,10 +23,27 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
-class ExportedObject {
+public class ExportedObject {
+    private Map<MethodTuple, Method> methods;
+    private Reference<DBusInterface> object;
+    private String                   introspectiondata;
+
+    public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
+        if (_weakreferences) {
+            this.object = new WeakReference<DBusInterface>(_object);
+        } else {
+            this.object = new StrongReference<DBusInterface>(_object);
+        }
+        introspectiondata = "";
+        methods = getExportedMethods(_object.getClass());
+        introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n" + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
+        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n" + "  </method>\n" + " </interface>\n";
+    }
+    
     private String getAnnotations(AnnotatedElement c) {
         String ans = "";
         for (Annotation a : c.getDeclaredAnnotations()) {
@@ -152,21 +169,17 @@ class ExportedObject {
         }
         return m;
     }
-    // CHECKSTYLE:OFF
-    Map<MethodTuple, Method> methods;
-    Reference<DBusInterface> object;
-    String                   introspectiondata;
-    // CHECKSTYLE:ON
 
-    ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
-        if (_weakreferences) {
-            this.object = new WeakReference<DBusInterface>(_object);
-        } else {
-            this.object = new StrongReference<DBusInterface>(_object);
-        }
-        introspectiondata = "";
-        methods = getExportedMethods(_object.getClass());
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n" + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n" + "  </method>\n" + " </interface>\n";
+    public Map<MethodTuple, Method> getMethods() {
+        return methods;
     }
+
+    public Reference<DBusInterface> getObject() {
+        return object;
+    }
+
+    public String getIntrospectiondata() {
+        return introspectiondata;
+    }
+
 }

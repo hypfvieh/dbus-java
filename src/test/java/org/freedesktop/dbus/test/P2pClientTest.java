@@ -15,7 +15,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DirectConnection;
+import org.freedesktop.dbus.connection.DirectConnection;
 
 public final class P2pClientTest {
 

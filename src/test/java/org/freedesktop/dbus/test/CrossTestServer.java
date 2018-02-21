@@ -18,12 +18,13 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.UInt64;
 import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
@@ -382,7 +383,7 @@ public class CrossTestServer implements DBus.Binding.Tests, DBus.Binding.SingleT
 
     public static void main(String[] args) {
         try {
-            DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
             CrossTestServer cts = new CrossTestServer(conn);
             conn.addSigHandler(DBus.Binding.TestClient.Trigger.class, cts);

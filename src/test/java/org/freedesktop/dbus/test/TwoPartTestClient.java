@@ -10,7 +10,8 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 
 public final class TwoPartTestClient {
 
@@ -38,7 +39,7 @@ public final class TwoPartTestClient {
 
     public static void main(String[] args) throws Exception {
         System.out.println("get conn");
-        DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+        DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
         System.out.println("get remote");
         TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
         System.out.println("get object");

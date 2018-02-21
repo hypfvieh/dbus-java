@@ -10,8 +10,9 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusSigHandler;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 
 public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
     public class TwoPartTestObject implements TwoPartObject {
@@ -66,7 +67,7 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
     }
 
     public static void main(String[] args) throws Exception {
-        DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+        DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
         conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
         TwoPartTestServer server = new TwoPartTestServer(conn);
         conn.exportObject("/", server);

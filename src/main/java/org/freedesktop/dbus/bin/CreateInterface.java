@@ -36,8 +36,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.types.DBusStructType;
@@ -611,7 +612,7 @@ public class CreateInterface {
 
     static class Config {
         // CHECKSTYLE:OFF
-        int     bus       = DBusConnection.SESSION;
+        DBusBusType     bus       = DBusBusType.SESSION;
         String  busname   = null;
         String  object    = null;
         File    datafile  = null;
@@ -640,9 +641,9 @@ public class CreateInterface {
         Config config = new Config();
         for (String p : args) {
             if ("--system".equals(p) || "-y".equals(p)) {
-                config.bus = DBusConnection.SYSTEM;
+                config.bus = DBusBusType.SYSTEM;
             } else if ("--session".equals(p) || "-s".equals(p)) {
-                config.bus = DBusConnection.SESSION;
+                config.bus = DBusBusType.SESSION;
             } else if ("--no-ignore-builtin".equals(p)) {
                 config.builtin = true;
             } else if ("--create-files".equals(p) || "-f".equals(p)) {

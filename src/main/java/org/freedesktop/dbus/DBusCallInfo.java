@@ -26,7 +26,7 @@ public class DBusCallInfo {
     private String          method;
     private int             flags;
 
-    DBusCallInfo(Message m) {
+    public DBusCallInfo(Message m) {
         this.source = m.getSource();
         this.destination = m.getDestination();
         this.objectpath = m.getPath();

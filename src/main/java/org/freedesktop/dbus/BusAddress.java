@@ -1,6 +1,7 @@
 /*
    D-Bus Java Implementation
    Copyright (c) 2005-2006 Matthew Johnson
+   Copyright (c) 2017-2018 David M.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of either the GNU Lesser General Public License Version 2 or the
@@ -10,36 +11,43 @@
 */
 package org.freedesktop.dbus;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BusAddress {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger        logger = LoggerFactory.getLogger(getClass());
 
-    private String              type;
-    private Map<String, String> parameters;
+    private final AddressBusTypes     type;
+    private final Map<String, String> parameters = new HashMap<>();
 
-    public BusAddress(String address) throws ParseException {
+    private final String rawAddress;
+    
+    public BusAddress(String address) throws DBusException {
         if (null == address || "".equals(address)) {
-            throw new ParseException("Bus address is blank", 0);
+            throw new DBusException("Bus address is blank");
         }
 
         logger.trace("Parsing bus address: " + address);
 
         String[] ss = address.split(":", 2);
         if (ss.length < 2) {
-            throw new ParseException("Bus address is invalid: " + address, 0);
+            throw new DBusException("Bus address is invalid: " + address);
         }
-        type = ss[0];
+
+        type = AddressBusTypes.toEnum(ss[0]);
+        if (type == null) {
+            throw new DBusException("Unsupported transport type: " + ss[0]);
+        }
 
         logger.trace("Transport type: " + type);
 
+        rawAddress = address;
+        
         String[] ps = ss[1].split(",");
-        parameters = new HashMap<String, String>();
         for (String p : ps) {
             String[] kv = p.split("=", 2);
             parameters.put(kv[0], kv[1]);
@@ -50,7 +58,7 @@ public class BusAddress {
     }
 
     public String getType() {
-        return type;
+        return type.getBusType();
     }
 
     public String getParameter(String key) {
@@ -60,5 +68,27 @@ public class BusAddress {
     @Override
     public String toString() {
         return type + ": " + parameters;
+    }
+    
+    public String getRawAddress() {
+        return rawAddress;
+    }
+
+    public static enum AddressBusTypes {
+        UNIX,
+        TCP;
+
+        public String getBusType() {
+            return name().toLowerCase();
+        }
+
+        public static AddressBusTypes toEnum(String _str) {
+            for (AddressBusTypes itm : values()) {
+                if (itm.getBusType().equals(_str.toLowerCase())) {
+                    return itm;
+                }
+            }
+            return null;
+        }
     }
 }

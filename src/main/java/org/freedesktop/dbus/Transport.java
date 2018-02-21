@@ -27,11 +27,11 @@ import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -806,19 +806,23 @@ public class Transport implements Closeable {
         connect(address);
     }
 
-    public Transport(String address) throws IOException, ParseException {
+    public Transport(String address) throws IOException, DBusException {
         connect(new BusAddress(address));
     }
 
-    public Transport(String address, int timeout) throws IOException, ParseException {
+    public Transport(String address, int timeout) throws IOException, DBusException {
         connect(new BusAddress(address), timeout);
     }
 
-    public void connect(String address) throws IOException, ParseException {
+    public Transport(BusAddress address, int timeout) throws IOException, DBusException {
+        connect(address, timeout);
+    }
+    
+    public void connect(String address) throws IOException, DBusException {
         connect(new BusAddress(address), 0);
     }
 
-    public void connect(String address, int timeout) throws IOException, ParseException {
+    public void connect(String address, int timeout) throws IOException, DBusException {
         connect(new BusAddress(address), timeout);
     }
 

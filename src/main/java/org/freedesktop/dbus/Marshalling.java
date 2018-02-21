@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
@@ -624,7 +625,7 @@ public final class Marshalling {
     }
 
     @SuppressWarnings("unchecked")
-    static Object[] deSerializeParameters(Object[] parameters, Type[] types, AbstractConnection conn) throws Exception {
+    public static Object[] deSerializeParameters(Object[] parameters, Type[] types, AbstractConnection conn) throws Exception {
         LOGGER.trace("Deserializing from " + Arrays.deepToString(parameters) + " to " + Arrays.deepToString(types));
         if (null == parameters) {
             return null;

@@ -91,7 +91,7 @@ public class MethodReturn extends Message {
         return call;
     }
 
-    protected void setCall(MethodCall _call) {
+    public void setCall(MethodCall _call) {
         this.call = _call;
     }
 }

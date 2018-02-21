@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Keeps track of the exported objects for introspection data */
-class ObjectTree {
+public class ObjectTree {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -43,7 +43,7 @@ class ObjectTree {
 
     private TreeNode root;
 
-    ObjectTree() {
+    public ObjectTree() {
         root = new TreeNode("");
     }
 

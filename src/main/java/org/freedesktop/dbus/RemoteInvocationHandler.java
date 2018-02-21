@@ -19,13 +19,14 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.freedesktop.DBus;
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class RemoteInvocationHandler implements InvocationHandler {
+public class RemoteInvocationHandler implements InvocationHandler {
     public static final int CALL_TYPE_SYNC     = 0;
     public static final int CALL_TYPE_ASYNC    = 1;
     public static final int CALL_TYPE_CALLBACK = 2;
@@ -94,7 +95,7 @@ class RemoteInvocationHandler implements InvocationHandler {
         }
         MethodCall call;
         byte flags = 0;
-        if (!ro.autostart) {
+        if (!ro.isAutostart()) {
             flags |= Message.Flags.NO_AUTO_START;
         }
         if (syncmethod == CALL_TYPE_ASYNC) {
@@ -110,38 +111,34 @@ class RemoteInvocationHandler implements InvocationHandler {
             } else {
                 name = m.getName();
             }
-            if (null == ro.iface) {
-                call = new MethodCall(ro.busname, ro.objectpath, null, name, flags, sig, args);
+            if (null == ro.getInterface()) {
+                call = new MethodCall(ro.getBusName(), ro.getObjectPath(), null, name, flags, sig, args);
             } else {
-                if (null != ro.iface.getAnnotation(DBusInterfaceName.class)) {
-                    call = new MethodCall(ro.busname, ro.objectpath, ro.iface.getAnnotation(DBusInterfaceName.class).value(), name, flags, sig, args);
+                if (null != ro.getInterface().getAnnotation(DBusInterfaceName.class)) {
+                    call = new MethodCall(ro.getBusName(), ro.getObjectPath(), ro.getInterface().getAnnotation(DBusInterfaceName.class).value(), name, flags, sig, args);
                 } else {
-                    call = new MethodCall(ro.busname, ro.objectpath, AbstractConnection.DOLLAR_PATTERN.matcher(ro.iface.getName()).replaceAll("."), name, flags, sig, args);
+                    call = new MethodCall(ro.getBusName(), ro.getObjectPath(), AbstractConnection.DOLLAR_PATTERN.matcher(ro.getInterface().getName()).replaceAll("."), name, flags, sig, args);
                 }
             }
         } catch (DBusException dbe) {
             LOGGER.debug("Failed to construct outgoing method call.", dbe);
             throw new DBusExecutionException("Failed to construct outgoing method call: " + dbe.getMessage());
         }
-        if (null == conn.outgoing) {
+        if (!conn.isConnected()) {
             throw new NotConnected("Not Connected");
         }
 
         switch (syncmethod) {
-        case CALL_TYPE_ASYNC:
-            conn.queueOutgoing(call);
-            return new DBusAsyncReply<>(call, m, conn);
-        case CALL_TYPE_CALLBACK:
-            synchronized (conn.pendingCallbacks) {
-                LOGGER.trace("Queueing Callback " + callback + " for " + call);
-                conn.pendingCallbacks.put(call, callback);
-                conn.pendingCallbackReplys.put(call, new DBusAsyncReply<>(call, m, conn));
-            }
-            conn.queueOutgoing(call);
-            return null;
-        case CALL_TYPE_SYNC:
-            conn.queueOutgoing(call);
-            break;
+            case CALL_TYPE_ASYNC:
+                conn.queueOutgoing(call);
+                return new DBusAsyncReply<>(call, m, conn);
+            case CALL_TYPE_CALLBACK:
+                conn.queueCallback(call, m, callback);
+                conn.queueOutgoing(call);
+                return null;
+            case CALL_TYPE_SYNC:
+                conn.queueOutgoing(call);
+                break;
         }
 
         // get reply
@@ -171,7 +168,7 @@ class RemoteInvocationHandler implements InvocationHandler {
     RemoteObject       remote;
     // CHECKSTYLE:ON
 
-    RemoteInvocationHandler(AbstractConnection _conn, RemoteObject _remote) {
+    public RemoteInvocationHandler(AbstractConnection _conn, RemoteObject _remote) {
         this.remote = _remote;
         this.conn = _conn;
     }
@@ -181,7 +178,7 @@ class RemoteInvocationHandler implements InvocationHandler {
         if (method.getName().equals("isRemote")) {
             return true;
         } else if (method.getName().equals("getObjectPath")) {
-            return remote.objectpath;
+            return remote.getObjectPath();
         } else if (method.getName().equals("clone")) {
             return null;
         } else if (method.getName().equals("equals")) {

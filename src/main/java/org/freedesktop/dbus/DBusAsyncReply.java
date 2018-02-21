@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.freedesktop.DBus.Error.NoReply;
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class DBusAsyncReply<ReturnType> {
     private Method                 me;
     private AbstractConnection     conn;
 
-    DBusAsyncReply(MethodCall _mc, Method _me, AbstractConnection _conn) {
+    public DBusAsyncReply(MethodCall _mc, Method _me, AbstractConnection _conn) {
         this.mc = _mc;
         this.me = _me;
         this.conn = _conn;
@@ -114,15 +115,15 @@ public class DBusAsyncReply<ReturnType> {
         return "Waiting for: " + mc;
     }
 
-    Method getMethod() {
+    public Method getMethod() {
         return me;
     }
 
-    AbstractConnection getConnection() {
+    public AbstractConnection getConnection() {
         return conn;
     }
 
-    MethodCall getCall() {
+    public MethodCall getCall() {
         return mc;
     }
 }

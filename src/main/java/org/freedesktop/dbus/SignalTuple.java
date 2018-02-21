@@ -10,15 +10,13 @@
 */
 package org.freedesktop.dbus;
 
-class SignalTuple {
-    // CHECKSTYLE:OFF
-    String type;
-    String name;
-    String object;
-    String source;
-    // CHECKSTYLE:ON
+public class SignalTuple {
+    private String type;
+    private String name;
+    private String object;
+    private String source;
 
-    SignalTuple(String _type, String _name, String _object, String _source) {
+    public SignalTuple(String _type, String _name, String _object, String _source) {
         this.type = _type;
         this.name = _name;
         this.object = _object;

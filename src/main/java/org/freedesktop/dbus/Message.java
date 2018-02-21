@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.freedesktop.dbus.exceptions.UnknownTypeCodeException;
@@ -34,20 +35,20 @@ import cx.ath.matthew.utils.Hexdump;
  */
 public class Message {
     /** Defines constants representing the endianness of the message. */
-    interface Endian {
+    public interface Endian {
         byte BIG    = 'B';
         byte LITTLE = 'l';
     }
 
     /** Defines constants representing the flags which can be set on a message. */
-    interface Flags {
+    public interface Flags {
         byte NO_REPLY_EXPECTED = 0x01;
         byte NO_AUTO_START     = 0x02;
         byte ASYNC             = 0x40;
     }
 
     /** Defines constants for each message type. */
-    interface MessageType {
+    public interface MessageType {
         byte METHOD_CALL   = 1;
         byte METHOD_RETURN = 2;
         byte ERROR         = 3;
@@ -58,7 +59,7 @@ public class Message {
     public static final byte PROTOCOL = 1;
 
     /** Defines constants for each valid header field type. */
-    interface HeaderField {
+    public interface HeaderField {
         byte PATH         = 1;
         byte INTERFACE    = 2;
         byte MEMBER       = 3;
@@ -72,7 +73,7 @@ public class Message {
     /** Defines constants for each argument type.
     * There are two constants for each argument type,
     * as a byte or as a String (the _STRING version) */
-    interface ArgumentType {
+    public interface ArgumentType {
         String BYTE_STRING        = "y";
         String BOOLEAN_STRING     = "b";
         String INT16_STRING       = "n";
@@ -1239,7 +1240,7 @@ public class Message {
         return args;
     }
 
-    protected void setArgs(Object[] _args) {
+    public void setArgs(Object[] _args) {
         this.args = _args;
     }
 

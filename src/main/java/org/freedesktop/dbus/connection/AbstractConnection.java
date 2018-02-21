@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.connection;
 
 import java.io.Closeable;
 import java.io.EOFException;
@@ -21,11 +21,38 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.freedesktop.DBus;
+import org.freedesktop.dbus.BusAddress;
+import org.freedesktop.dbus.CallbackHandler;
+import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.DBusCallInfo;
+import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.DBusSigHandler;
+import org.freedesktop.dbus.DBusSignal;
+import org.freedesktop.dbus.Error;
+import org.freedesktop.dbus.ExportedObject;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.Message;
+import org.freedesktop.dbus.MethodCall;
+import org.freedesktop.dbus.MethodReturn;
+import org.freedesktop.dbus.MethodTuple;
+import org.freedesktop.dbus.ObjectTree;
+import org.freedesktop.dbus.RemoteInvocationHandler;
+import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.SignalTuple;
+import org.freedesktop.dbus.Transport;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.FatalDBusException;
@@ -34,11 +61,64 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.threads.NameableThreadFactory;
+
 /** Handles a connection to DBus.
  */
 public abstract class AbstractConnection implements Closeable {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger        logger = LoggerFactory.getLogger(getClass());
 
+    public static final boolean FLOAT_SUPPORT;
+    static {
+        FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
+    }
+
+    public static final String                                             BUSNAME_REGEX    =
+            "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
+    public static final String                                             CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
+    public static final String                                             OBJECT_REGEX     =
+            "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
+    public static final Pattern                                            DOLLAR_PATTERN   = Pattern.compile("[$]");
+
+    public static final int                                                MAX_ARRAY_LENGTH = 67108864;
+    public static final int                                                MAX_NAME_LENGTH  = 255;
+
+    /**
+     * Timeout in us on checking the BUS for incoming messages and sending outgoing messages
+     */
+    protected static final int                                             TIMEOUT          = 100000;
+    /** Initial size of the pending calls map */
+    static final byte                                                      THREADCOUNT      = 4;
+
+    private ObjectTree                                                     objectTree;
+    private GlobalHandler                                                  globalHandlerReference;
+    
+    protected Map<String, ExportedObject>                                    exportedObjects;
+    protected Map<DBusInterface, RemoteObject>                               importedObjects;
+
+    protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
+    protected Map<Long, MethodCall>                                          pendingCalls;
+
+    private PendingCallbackManager                                         callbackManager;
+
+    private ExecutorService                                                workerThreadPool;
+    private FallbackContainer                                              fallbackcontainer;
+    private volatile boolean                                               run;
+    
+    private LinkedBlockingQueue<Message>                                   outgoingQueue;
+    LinkedList<Error>                                                      pendingErrors;
+
+    private ConnectionThread                                               connectionThread;
+    private SenderThread                                                   senderThread;
+    private Transport                                                      transport;
+
+    private boolean                                                        weakreferences   = false;
+    private boolean                                                        connected        = false;
+
+    private static final Map<Thread, DBusCallInfo>                         INFOMAP          = new ConcurrentHashMap<>();
+
+    private BusAddress                                                     busAddress;
+    
     protected class FallbackContainer {
         private final Logger                  logger    = LoggerFactory.getLogger(getClass());
         private Map<String[], ExportedObject> fallbacks = new HashMap<>();
@@ -76,10 +156,10 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
-    protected class ConnThread extends Thread {
+    protected class ConnectionThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
-        public ConnThread() {
+        public ConnectionThread() {
             setName("DBusConnection");
         }
 
@@ -156,7 +236,7 @@ public abstract class AbstractConnection implements Closeable {
             if (null == intro) {
                 ExportedObject eo = fallbackcontainer.get(objectpath);
                 if (null != eo) {
-                    intro = eo.introspectiondata;
+                    intro = eo.getIntrospectiondata();
                 }
             }
             if (null == intro) {
@@ -172,136 +252,51 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
-    protected class WorkerThread extends Thread {
-        private boolean running = true;
-
-        public void halt() {
-            running = false;
-        }
-
-        @Override
-        public void run() {
-            while (running) {
-                Runnable r = null;
-                synchronized (runnables) {
-                    while (runnables.size() == 0 && running) {
-                        try {
-                            runnables.wait();
-                        } catch (InterruptedException ex) {
-                        }
-                    }
-                    if (runnables.size() > 0) {
-                        r = runnables.removeFirst();
-                    }
-                }
-                if (null != r) {
-                    r.run();
-                }
-            }
-        }
-    }
-
     private class SenderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
+        private boolean terminate;
+        
         SenderThread() {
             setName("Sender");
         }
 
+        public void terminate() {
+            terminate = true;
+        }
+        
         @Override
         public void run() {
             Message m = null;
 
             logger.trace("Monitoring outbound queue");
             // block on the outbound queue and send from it
-            while (run) {
-                if (null != outgoing) {
-                    synchronized (outgoing) {
-                        logger.trace("Blocking");
-                        while (outgoing.size() == 0 && run) {
-                            try {
-                                outgoing.wait();
-                            } catch (InterruptedException ex) {
-                            }
-                        }
-                        logger.trace("Notified");
-                        if (outgoing.size() > 0) {
-                            m = outgoing.remove();
-                        }
-                        logger.debug("Got message: " + m);
+            while (!terminate) {
+                try {
+                    m = outgoingQueue.take();
+                    if (m != null) {
+                        sendMessage(m);
+                        m = null;
                     }
+                } catch (InterruptedException _ex) {
+                    logger.warn("Interrupted while waiting for message to send", _ex);
                 }
-                if (null != m) {
-                    sendMessage(m);
-                }
-                m = null;
             }
 
             logger.debug("Flushing outbound queue and quitting");
             // flush the outbound queue before disconnect.
-            if (null != outgoing) {
-                do {
-                    EfficientQueue ogq = outgoing;
-                    synchronized (ogq) {
-                        outgoing = null;
-                    }
-                    if (!ogq.isEmpty()) {
-                        m = ogq.remove();
-                    } else {
-                        m = null;
-                    }
-                    sendMessage(m);
-                } while (null != m);
+            while (!outgoingQueue.isEmpty()) {
+                Message poll = outgoingQueue.poll();
+                if (poll != null) {
+                    sendMessage(outgoingQueue.poll());
+                } else {
+                    break;
+                }
             }
-
-            // close the underlying streams
         }
     }
 
-    /**
-    * Timeout in us on checking the BUS for incoming messages and sending outgoing messages
-    */
-    protected static final int                                               TIMEOUT                  = 100000;
-    /** Initial size of the pending calls map */
-    private static final int                                                 PENDING_MAP_INITIAL_SIZE = 10;
-    static final String                                                      BUSNAME_REGEX            = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
-    static final String                                                      CONNID_REGEX             = "^:[0-9]*\\.[0-9]*$";
-    static final String                                                      OBJECT_REGEX             = "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
-    static final byte                                                        THREADCOUNT              = 4;
-    static final int                                                         MAX_ARRAY_LENGTH         = 67108864;
-    static final int                                                         MAX_NAME_LENGTH          = 255;
-
-    private ObjectTree                                                       objectTree;
-    private GlobalHandler                                                    globalHandlerReference;
-    // CHECKSTYLE:OFF
-    protected Map<String, ExportedObject>                                    exportedObjects;
-    protected Map<DBusInterface, RemoteObject>                               importedObjects;
-    protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    protected EfficientMap                                                   pendingCalls;
-    protected Map<MethodCall, CallbackHandler<? extends Object>>             pendingCallbacks;
-    protected Map<MethodCall, DBusAsyncReply<? extends Object>>              pendingCallbackReplys;
-    protected LinkedList<Runnable>                                           runnables;
-    protected LinkedList<WorkerThread>                                       workers;
-    protected FallbackContainer                                              fallbackcontainer;
-    protected volatile boolean                                               run;
-    EfficientQueue                                                           outgoing;
-    LinkedList<Error>                                                        pendingErrors;
-
-    protected ConnThread                                                     thread;
-    protected SenderThread                                                   sender;
-    protected Transport                                                      transport;
-    protected String                                                         addr;
-    protected boolean                                                        weakreferences           = false;
-    protected boolean                                                        connected                = false;
-    // CHECKSTYLE:ON
-    static final Pattern                                                     DOLLAR_PATTERN           = Pattern.compile("[$]");
-    private static final Map<Thread, DBusCallInfo>                           INFOMAP                  = new HashMap<>();
-    static final boolean                                                     FLOAT_SUPPORT;
-
-
-    static {
-        FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
-    }
+    
 
     protected AbstractConnection(String address) throws DBusException {
         exportedObjects = new HashMap<>();
@@ -311,32 +306,35 @@ public abstract class AbstractConnection implements Closeable {
             exportedObjects.put(null, new ExportedObject(globalHandlerReference, weakreferences));
         }
         handledSignals = new HashMap<>();
-        pendingCalls = new EfficientMap(PENDING_MAP_INITIAL_SIZE);
-        outgoing = new EfficientQueue(PENDING_MAP_INITIAL_SIZE);
-        pendingCallbacks = new HashMap<>();
-        pendingCallbackReplys = new HashMap<>();
+        pendingCalls = new ConcurrentSkipListMap<>(); // TODO: EfficentMap used insertion order, is natural order also suitable?
+        outgoingQueue = new LinkedBlockingQueue<>();
+        
+        callbackManager = new PendingCallbackManager();
+        
         pendingErrors = new LinkedList<>();
-        runnables = new LinkedList<>();
-        workers = new LinkedList<>();
+        workerThreadPool = Executors.newFixedThreadPool(THREADCOUNT, new NameableThreadFactory("DbusWorkerThreads", false));
+        
         objectTree = new ObjectTree();
         fallbackcontainer = new FallbackContainer();
-        synchronized (workers) {
-            for (int i = 0; i < THREADCOUNT; i++) {
-                WorkerThread t = new WorkerThread();
-                t.start();
-                workers.add(t);
-            }
-        }
         run = true;
-        addr = address;
+        
+        try {
+            busAddress = new BusAddress(address);
+            transport = new Transport(busAddress, AbstractConnection.TIMEOUT);
+            connected = true;
+        } catch (IOException | DBusException ioe) {
+            logger.debug("Error creating transport", ioe);
+            disconnect();
+            throw new DBusException("Failed to connect to bus " + ioe.getMessage());
+        }
     }
 
     protected void listen() {
         // start listening
-        thread = new ConnThread();
-        thread.start();
-        sender = new SenderThread();
-        sender.start();
+        connectionThread = new ConnectionThread();
+        connectionThread.start();
+        senderThread = new SenderThread();
+        senderThread.start();
     }
 
     /**
@@ -345,41 +343,30 @@ public abstract class AbstractConnection implements Closeable {
     * @param newcount The new number of worker Threads to use.
     */
     public void changeThreadCount(byte newcount) {
-        synchronized (workers) {
-            if (workers.size() > newcount) {
-                int n = workers.size() - newcount;
-                for (int i = 0; i < n; i++) {
-                    WorkerThread t = workers.removeFirst();
-                    t.halt();
-                }
-            } else if (workers.size() < newcount) {
-                int n = newcount - workers.size();
-                for (int i = 0; i < n; i++) {
-                    WorkerThread t = new WorkerThread();
-                    t.start();
-                    workers.add(t);
-                }
-            }
-        }
+        if (newcount != THREADCOUNT) {
+            List<Runnable> remainingTasks = workerThreadPool.shutdownNow(); // kill previous threadpool
+            workerThreadPool = Executors.newFixedThreadPool(newcount, new NameableThreadFactory("DbusWorkerThreads", false));
+            // re-schedule previously waiting tasks
+            for (Runnable runnable : remainingTasks) {
+                workerThreadPool.execute(runnable);    
+            }            
+        }     
     }
 
     private void addRunnable(Runnable r) {
-        synchronized (runnables) {
-            runnables.add(r);
-            runnables.notifyAll();
-        }
+        workerThreadPool.execute(r);
     }
 
-    String getExportedObject(DBusInterface i) throws DBusException {
+    public String getExportedObject(DBusInterface i) throws DBusException {
         synchronized (exportedObjects) {
             for (String s : exportedObjects.keySet()) {
-                if (i.equals(exportedObjects.get(s).object.get())) {
+                if (i.equals(exportedObjects.get(s).getObject().get())) {
                     return s;
                 }
             }
         }
 
-        String s = importedObjects.get(i).objectpath;
+        String s = importedObjects.get(i).getObjectPath();
         if (null != s) {
             return s;
         }
@@ -387,18 +374,14 @@ public abstract class AbstractConnection implements Closeable {
         throw new DBusException("Not an object exported or imported by this connection");
     }
 
-    abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
+    public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
 
     /**
     * Returns a structure with information on the current method call.
     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
     */
     public static DBusCallInfo getCallInfo() {
-        DBusCallInfo info;
-        synchronized (INFOMAP) {
-            info = INFOMAP.get(Thread.currentThread());
-        }
-        return info;
+        return INFOMAP.get(Thread.currentThread());
     }
 
     /**
@@ -435,7 +418,7 @@ public abstract class AbstractConnection implements Closeable {
             }
             ExportedObject eo = new ExportedObject(object, weakreferences);
             exportedObjects.put(objectpath, eo);
-            objectTree.add(objectpath, eo, eo.introspectiondata);
+            objectTree.add(objectpath, eo, eo.getIntrospectiondata());
         }
     }
 
@@ -477,23 +460,7 @@ public abstract class AbstractConnection implements Closeable {
             objectTree.remove(objectpath);
         }
     }
-
-    /**
-       * Return a reference to a remote object.
-       * This method will resolve the well known name (if given) to a unique bus name when you call it.
-       * This means that if a well known name is released by one process and acquired by another calls to
-       * objects gained from this method will continue to operate on the original process.
-       *
-       * @param <T> class extending {@link DBusSignal}
-       * @param busname The bus name to connect to. Usually a well known bus name in dot-notation (such as "org.freedesktop.local")
-       * or may be a DBus address such as ":1-16".
-       * @param objectpath The path on which the process is exporting the object.$
-       * @param type The interface they are exporting it on. This type must have the same full class name and exposed method signatures
-       * as the interface the remote object is exporting.
-       * @return A reference to a remote object.
-       * @throws ClassCastException If type is not a sub-type of DBusInterface
-       * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
-    */
+    
     /**
     * Send a signal.
     * @param signal The signal to send.
@@ -502,15 +469,8 @@ public abstract class AbstractConnection implements Closeable {
         queueOutgoing(signal);
     }
 
-    void queueOutgoing(Message m) {
-        synchronized (outgoing) {
-            if (null == outgoing) {
-                return;
-            }
-            outgoing.add(m);
-            logger.debug("Notifying outgoing thread");
-            outgoing.notifyAll();
-        }
+    public void queueOutgoing(Message m) {
+        outgoingQueue.add(m);       
     }
 
     /**
@@ -545,7 +505,7 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        String objectpath = importedObjects.get(object).objectpath;
+        String objectpath = importedObjects.get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
@@ -586,7 +546,7 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        String objectpath = importedObjects.get(object).objectpath;
+        String objectpath = importedObjects.get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
@@ -613,7 +573,7 @@ public abstract class AbstractConnection implements Closeable {
     /**
     * Disconnect from the Bus.
     */
-    public void disconnect() {
+    public void disconnect() {        
         connected = false;
         logger.debug("Sending disconnected signal");
         try {
@@ -622,23 +582,22 @@ public abstract class AbstractConnection implements Closeable {
             logger.debug("Exception while disconnecting", ex);
         }
 
+        // stop sending messages
+        senderThread.terminate();
+        
         logger.debug("Disconnecting Abstract Connection");
-        // run all pending tasks.
-        while (runnables.size() > 0) {
-            synchronized (runnables) {
-                runnables.notifyAll();
-            }
+        
+        try {
+            // try to wait for all pending tasks.
+            workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
+        } catch (InterruptedException _ex) {
+            logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
         }
 
         // stop the main thread
         run = false;
 
-        // unblock the sending thread.
-        synchronized (outgoing) {
-            outgoing.notifyAll();
-        }
-
-        // disconnect from the trasport layer
+        // disconnect from the transport layer
         try {
             if (null != transport) {
                 transport.disconnect();
@@ -647,21 +606,13 @@ public abstract class AbstractConnection implements Closeable {
         } catch (IOException exIo) {
             logger.debug("Exception while disconnecting transport.", exIo);
         }
-
+        
         // stop all the workers
-        synchronized (workers) {
-            for (WorkerThread t : workers) {
-                t.halt();
-            }
+        if (!workerThreadPool.isTerminated()) { // try forceful shutdown
+            workerThreadPool.shutdownNow();
         }
 
-        // make sure none are blocking on the runnables queue still
-        synchronized (runnables) {
-            runnables.notifyAll();
-        }
     }
-
-
 
     @Override
     public void close() throws IOException {
@@ -701,10 +652,10 @@ public abstract class AbstractConnection implements Closeable {
 
         try {
             Method me;
-            if (null == ro.iface) {
+            if (null == ro.getInterface()) {
                 me = object.getClass().getMethod(m, types);
             } else {
-                me = ro.iface.getMethod(m, types);
+                me = ro.getInterface().getMethod(m, types);
             }
             RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_CALLBACK, callback, parameters);
         } catch (DBusExecutionException exEe) {
@@ -732,10 +683,10 @@ public abstract class AbstractConnection implements Closeable {
 
         try {
             Method me;
-            if (null == ro.iface) {
+            if (null == ro.getInterface()) {
                 me = object.getClass().getMethod(m, types);
             } else {
-                me = ro.iface.getMethod(m, types);
+                me = ro.getInterface().getMethod(m, types);
             }
             return (DBusAsyncReply<?>) RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_ASYNC, null, parameters);
         } catch (DBusExecutionException exDee) {
@@ -758,12 +709,12 @@ public abstract class AbstractConnection implements Closeable {
             synchronized (exportedObjects) {
                 eo = exportedObjects.get(null);
             }
-            if (null != eo && null == eo.object.get()) {
+            if (null != eo && null == eo.getObject().get()) {
                 unExportObject(null);
                 eo = null;
             }
             if (null != eo) {
-                meth = eo.methods.get(new MethodTuple(m.getName(), m.getSig()));
+                meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
             }
             if (null != meth) {
                 o = new GlobalHandler(m.getPath());
@@ -777,7 +728,7 @@ public abstract class AbstractConnection implements Closeable {
             synchronized (exportedObjects) {
                 eo = exportedObjects.get(m.getPath());
             }
-            if (null != eo && null == eo.object.get()) {
+            if (null != eo && null == eo.getObject().get()) {
                 logger.info("Unexporting " + m.getPath() + " implicitly");
                 unExportObject(m.getPath());
                 eo = null;
@@ -794,16 +745,16 @@ public abstract class AbstractConnection implements Closeable {
             if (logger.isTraceEnabled()) {
                 logger.trace("Searching for method " + m.getName() + " with signature " + m.getSig());
                 logger.trace("List of methods on " + eo + ":");
-                for (MethodTuple mt : eo.methods.keySet()) {
-                    logger.trace("   " + mt + " => " + eo.methods.get(mt));
+                for (MethodTuple mt : eo.getMethods().keySet()) {
+                    logger.trace("   " + mt + " => " + eo.getMethods().get(mt));
                 }
             }
-            meth = eo.methods.get(new MethodTuple(m.getName(), m.getSig()));
+            meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
             if (null == meth) {
                 queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(MessageFormat.format("The method `{0}.{1}' does not exist on this object.", m.getInterface(), m.getName()))));
                 return;
             }
-            o = eo.object.get();
+            o = eo.getObject().get();
         }
 
         // now execute it
@@ -836,9 +787,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
 
                 try {
-                    synchronized (INFOMAP) {
-                        INFOMAP.put(Thread.currentThread(), info);
-                    }
+                    INFOMAP.put(Thread.currentThread(), info);
                     Object result;
                     try {
                         logger.trace("Invoking Method: " + me + " on " + ob + " with parameters " + Arrays.deepToString(m.getParameters()));
@@ -847,9 +796,7 @@ public abstract class AbstractConnection implements Closeable {
                         logger.debug(ite.getMessage(), ite);
                         throw ite.getCause();
                     }
-                    synchronized (INFOMAP) {
-                        INFOMAP.remove(Thread.currentThread());
-                    }
+                    INFOMAP.remove(Thread.currentThread());
                     if (!noreply) {
                         MethodReturn reply;
                         if (Void.TYPE.equals(me.getReturnType())) {
@@ -948,6 +895,10 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
+    public void queueCallback(MethodCall _call, Method _method, CallbackHandler<?> _callback) {
+        callbackManager.queueCallback(_call, _method, _callback, this);
+    }
+    
     private void handleMessage(final Error err) {
         logger.debug("Handling incoming error: " + err);
         MethodCall m = null;
@@ -955,18 +906,16 @@ public abstract class AbstractConnection implements Closeable {
             return;
         }
         synchronized (pendingCalls) {
-            if (pendingCalls.contains(err.getReplySerial())) {
+            if (pendingCalls.containsKey(err.getReplySerial())) {
                 m = pendingCalls.remove(err.getReplySerial());
             }
         }
         if (null != m) {
             m.setReply(err);
             CallbackHandler<?> cbh = null;
-            synchronized (pendingCallbacks) {
-                cbh = pendingCallbacks.remove(m);
-                logger.trace(cbh + " = pendingCallbacks.remove(" + m + ")");
-                pendingCallbackReplys.remove(m);
-            }
+            cbh = callbackManager.removeCallback(m);
+            logger.trace(cbh + " = pendingCallbacks.remove(" + m + ")");
+            
             // queue callback for execution
             if (null != cbh) {
                 final CallbackHandler<?> fcbh = cbh;
@@ -983,14 +932,10 @@ public abstract class AbstractConnection implements Closeable {
                         try {
                             logger.trace("Running Error Callback for " + err);
                             DBusCallInfo info = new DBusCallInfo(err);
-                            synchronized (INFOMAP) {
                                 INFOMAP.put(Thread.currentThread(), info);
-                            }
 
                             fcbh.handleError(err.getException());
-                            synchronized (INFOMAP) {
-                                INFOMAP.remove(Thread.currentThread());
-                            }
+                            INFOMAP.remove(Thread.currentThread());
 
                         } catch (Exception e) {
                             logger.debug("Exception while running error callback.", e);
@@ -1013,25 +958,22 @@ public abstract class AbstractConnection implements Closeable {
        MethodCall m = null;
        if (null == pendingCalls) return;
        synchronized (pendingCalls) {
-          if (pendingCalls.contains(mr.getReplySerial()))
+          if (pendingCalls.containsKey(mr.getReplySerial()))
              m = pendingCalls.remove(mr.getReplySerial());
        }
        if (null != m) {
           m.setReply(mr);
           mr.setCall(m);
           @SuppressWarnings("rawtypes")
-          CallbackHandler cbh = null;
-          DBusAsyncReply<?> asr = null;
-          synchronized (pendingCallbacks) {
-             cbh = pendingCallbacks.remove(m);
-             logger.trace(cbh+" = pendingCallbacks.remove("+m+")");
-             asr = pendingCallbackReplys.remove(m);
-          }
+          CallbackHandler cbh = callbackManager.getCallback(m);
+          DBusAsyncReply<?> asr = callbackManager.getCallbackReply(m);
+          callbackManager.removeCallback(m);
+          
           // queue callback for execution
           if (null != cbh) {
              final CallbackHandler<Object> fcbh = cbh;
              final DBusAsyncReply<?> fasr = asr;
-             logger.trace("Adding Runnable for method "+fasr.getMethod()+" with callback handler "+fcbh);
+             logger.trace("Adding Runnable for method {} with callback handler {}", fcbh, fasr != null ? fasr.getMethod() : null);
              addRunnable(new Runnable() {
                 private boolean run = false;
                 @Override
@@ -1042,14 +984,10 @@ public abstract class AbstractConnection implements Closeable {
                    try {
                       logger.trace("Running Callback for "+mr);
                       DBusCallInfo info = new DBusCallInfo(mr);
-                      synchronized (INFOMAP) {
-                         INFOMAP.put(Thread.currentThread(), info);
-                      }
+                      INFOMAP.put(Thread.currentThread(), info);
                       Object convertRV = RemoteInvocationHandler.convertRV(mr.getSig(), mr.getParameters(), fasr.getMethod(), fasr.getConnection());
                       fcbh.handle(convertRV);
-                      synchronized (INFOMAP) {
-                         INFOMAP.remove(Thread.currentThread());
-                      }
+                      INFOMAP.remove(Thread.currentThread());
 
                    } catch (Exception e) {
                       logger.debug("Exception while running callback.", e);
@@ -1142,7 +1080,11 @@ public abstract class AbstractConnection implements Closeable {
     * @return new {@link BusAddress} object
     * @throws ParseException on error
     */
-    public BusAddress getAddress() throws ParseException {
-        return new BusAddress(addr);
+    public BusAddress getAddress() {
+        return busAddress;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }

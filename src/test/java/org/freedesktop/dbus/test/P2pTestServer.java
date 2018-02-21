@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.DirectConnection;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.UInt16;
+import org.freedesktop.dbus.connection.DirectConnection;
 
 public class P2pTestServer implements TestRemoteInterface {
     @Override

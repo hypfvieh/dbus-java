@@ -1,0 +1,447 @@
+Linux (/ˈlɪnəks/ (About this sound listen) LIN-əks) is a family of free and open-source software operating systems built around the Linux kernel.
+Typically, Linux is packaged in a form known as a Linux distribution (or distro for short) for both desktop and server use.
+The defining component of a Linux distribution is the Linux kernel, an operating system kernel first released on September 17, 1991, by Linus Torvalds.
+Linux was originally developed for personal computers based on the Intel x86 architecture, but has since been ported to more platforms than any other operating system.
+Because of the dominance of the Linux kernel-based Android OS on smartphones, Linux has the largest installed base of all general-purpose operating systems.
+Linux is also the leading operating system on servers and other big iron systems such as mainframe computers, and the only OS used on TOP500 supercomputers (since November 2017, having before gradually eliminated all competitors).
+It is used by around 2.
+3% of desktop computers.
+The Chromebook, which runs the Linux kernel-based Chrome OS, dominates the US K–12 education market and represents nearly 20% of the sub-$300 notebook sales in the US.
+Linux also runs on embedded systems—devices whose operating system is typically built into the firmware and is highly tailored to the system.
+This includes TiVo and similar DVR devices, network routers, facility automation controls, televisions, video game consoles and smartwatches.
+Many smartphones and tablet computers run Android and other Linux derivatives.
+The development of Linux is one of the most prominent examples of free and open-source software collaboration.
+The underlying source code may be used, modified and distributed—commercially or non-commercially—by anyone under the terms of its respective licenses, such as the GNU General Public License.
+Some of the most popular and mainstream Linux distributions are Arch Linux, CentOS, Debian, Fedora, Gentoo Linux, Linux Mint, Mageia, openSUSE and Ubuntu, together with commercial distributions such as Red Hat Enterprise Linux and SUSE Linux Enterprise Server.
+Distributions include the Linux kernel, supporting utilities and libraries, many of which are provided by the GNU Project, and usually a large amount of application software to fulfil the distribution's intended use.
+Desktop Linux distributions include a windowing system, such as X11, Mir or a Wayland implementation, and an accompanying desktop environment such as GNOME or KDE Plasma; some distributions may also include a less resource-intensive desktop, such as LXDE or Xfce.
+Distributions intended to run on servers may omit all graphical environments from the standard install, and instead include other software to set up and operate a solution stack such as LAMP.
+Because Linux is freely redistributable, anyone may create a distribution for any intended use.
+Many Linux distributions use the word "Linux" in their name.
+The Free Software Foundation uses the name "GNU/Linux" to refer to the operating system family, as well as specific distributions, to emphasize that most Linux distributions are not just the Linux kernel, and that they have in common not only the kernel, but also numerous utilities and libraries, a large proportion of which are from the GNU project.
+This has led to some controversy.
+Precursors
+Linus Torvalds, principal author of the Linux kernel
+The Unix operating system was conceived and implemented in 1969, at AT&T's Bell Laboratories in the United States by Ken Thompson, Dennis Ritchie, Douglas McIlroy, and Joe Ossanna.
+First released in 1971, Unix was written entirely in assembly language, as was common practice at the time.
+Later, in a key pioneering approach in 1973, it was rewritten in the C programming language by Dennis Ritchie (with the exception of some hardware and I/O routines).
+The availability of a high-level language implementation of Unix made its porting to different computer platforms easier.
+Due to an earlier antitrust case forbidding it from entering the computer business, AT&T was required to license the operating system's source code to anyone who asked.
+As a result, Unix grew quickly and became widely adopted by academic institutions and businesses.
+In 1984, AT&T divested itself of Bell Labs; freed of the legal obligation requiring free licensing, Bell Labs began selling Unix as a proprietary product, where users weren't legally allowed to modify Unix.
+The GNU Project, started in 1983 by Richard Stallman, had the goal of creating a "complete Unix-compatible software system" composed entirely of free software.
+Work began in 1984.
+Later, in 1985, Stallman started the Free Software Foundation and wrote the GNU General Public License (GNU GPL) in 1989.
+By the early 1990s, many of the programs required in an operating system (such as libraries, compilers, text editors, a Unix shell, and a windowing system) were completed, although low-level elements such as device drivers, daemons, and the kernel, called GNU/Hurd, were stalled and incomplete.
+Linus Torvalds has stated that if the GNU kernel had been available at the time (1991), he would not have decided to write his own.
+Although not released until 1992, due to legal complications, development of 386BSD, from which NetBSD, OpenBSD and FreeBSD descended, predated that of Linux.
+Torvalds has also stated that if 386BSD had been available at the time, he probably would not have created Linux.
+MINIX was created by Andrew S.
+Tanenbaum, a computer science professor, and released in 1987 as a minimal Unix-like operating system targeted at students and others who wanted to learn the operating system principles.
+Although the complete source code of MINIX was freely available, the licensing terms prevented it from being free software until the licensing changed in April 2000.
+Creation
+In 1991, while attending the University of Helsinki, Torvalds became curious about operating systems.
+Frustrated by the licensing of MINIX, which at the time limited it to educational use only, he began to work on his own operating system kernel, which eventually became the Linux kernel.
+Torvalds began the development of the Linux kernel on MINIX and applications written for MINIX were also used on Linux.
+Later, Linux matured and further Linux kernel development took place on Linux systems.
+GNU applications also replaced all MINIX components, because it was advantageous to use the freely available code from the GNU Project with the fledgling operating system; code licensed under the GNU GPL can be reused in other computer programs as long as they also are released under the same or a compatible license.
+Torvalds initiated a switch from his original license, which prohibited commercial redistribution, to the GNU GPL.
+Developers worked to integrate GNU components with the Linux kernel, making a fully functional and free operating system.
+Naming
+5.
+25-inch floppy disks holding a very early version of Linux
+Linus Torvalds had wanted to call his invention "Freax", a portmanteau of "free", "freak", and "x" (as an allusion to Unix).
+During the start of his work on the system, some of the project's makefiles included the name "Freax" for about half a year.
+Torvalds had already considered the name "Linux", but initially dismissed it as too egotistical.
+In order to facilitate development, the files were uploaded to the FTP server (ftp.
+funet.
+fi) of FUNET in September 1991.
+Ari Lemmke, Torvalds' coworker at the Helsinki University of Technology (HUT), who was one of the volunteer administrators for the FTP server at the time, did not think that "Freax" was a good name.
+So, he named the project "Linux" on the server without consulting Torvalds.
+Later, however, Torvalds consented to "Linux".
+To demonstrate how the word "Linux" should be pronounced (/ˈlɪnəks/ (About this sound listen) LIN-əks), Torvalds included an audio guide (About this sound listen (help·info)) with the kernel source code.
+Another variant of pronunciation is /ˈlaɪnəks/ LYN-əks.
+Commercial and popular uptake
+Main article: Linux adoption
+Ubuntu, a popular Linux distribution
+Nexus 5X running Android
+Adoption of Linux in production environments, rather than being used only by hobbyists, started to take off first in the mid-1990s in the supercomputing community, where organizations such as NASA started to replace their increasingly expensive machines with clusters of inexpensive commodity computers running Linux.
+Commercial use followed when Dell and IBM, followed by Hewlett-Packard, started offering Linux support to escape Microsoft's monopoly in the desktop operating system market.
+Today, Linux systems are used throughout computing, from embedded systems to virtually all supercomputers, and have secured a place in server installations such as the popular LAMP application stack.
+Use of Linux distributions in home and enterprise desktops has been growing.
+Linux distributions have also become popular in the netbook market, with many devices shipping with customized Linux distributions installed, and Google releasing their own Chrome OS designed for netbooks.
+Linux's greatest success in the consumer market is perhaps the mobile device market, with Android being one of the most dominant operating systems on smartphones and very popular on tablets and, more recently, on wearables.
+Linux gaming is also on the rise with Valve showing its support for Linux and rolling out its own gaming oriented Linux distribution.
+Linux distributions have also gained popularity with various local and national governments, such as the federal government of Brazil.
+Current development
+In flight entertainment system booting up showing the Linux logo
+Torvalds continues to direct the development of the kernel.
+Stallman heads the Free Software Foundation, which in turn supports the GNU components.
+Finally, individuals and corporations develop third-party non-GNU components.
+These third-party components comprise a vast body of work and may include both kernel modules and user applications and libraries.
+Linux vendors and communities combine and distribute the kernel, GNU components, and non-GNU components, with additional package management software in the form of Linux distributions.
+Design
+A Linux-based system is a modular Unix-like operating system, deriving much of its basic design from principles established in Unix during the 1970s and 1980s.
+Such a system uses a monolithic kernel, the Linux kernel, which handles process control, networking, access to the peripherals, and file systems.
+Device drivers are either integrated directly with the kernel, or added as modules that are loaded while the system is running.
+The GNU userland is a key part of most systems based on the Linux kernel, with Android being the notable exception.
+The Project's implementation of the C library functions as a wrapper for the system calls of the Linux kernel necessary to the kernel-userspace interface, the toolchain is a broad collection of programming tools vital to Linux development (including the compilers used to build the Linux kernel itself), and the coreutils implement many basic Unix tools.
+The project also develops a popular CLI shell.
+The graphical user interface (or GUI) used by most Linux systems is built on top of an implementation of the X Window System.
+More recently, the Linux community seeks to advance to Wayland as the new display server protocol in place of X11.
+Many other open-source software projects contribute to Linux systems.
+Installed components of a Linux system include the following:
+A bootloader, for example GNU GRUB, LILO, SYSLINUX, or Gummiboot.
+This is a program that loads the Linux kernel into the computer's main memory, by being executed by the computer when it is turned on and after the firmware initialization is performed.
+An init program, such as the traditional sysvinit and the newer systemd, OpenRC and Upstart.
+This is the first process launched by the Linux kernel, and is at the root of the process tree: in other terms, all processes are launched through init.
+It starts processes such as system services and login prompts (whether graphical or in terminal mode).
+Software libraries, which contain code that can be used by running processes.
+On Linux systems using ELF-format executable files, the dynamic linker that manages use of dynamic libraries is known as ld-linux.
+so.
+If the system is set up for the user to compile software themselves, header files will also be included to describe the interface of installed libraries.
+Besides the most commonly used software library on Linux systems, the GNU C Library (glibc), there are numerous other libraries, such as SDL and Mesa.
+    C standard library is the library needed to run C programs on a computer system, with the GNU C Library being the standard.
+For embedded systems, alternatives such as the EGLIBC (a glibc fork once used by Debian) and uClibc (which was designed for uClinux) have been developed, although both are no longer maintained.
+Android uses its own C library, Bionic.
+Basic Unix commands, with GNU coreutils being the standard implementation.
+Alternatives exist for embedded systems, such as the copyleft BusyBox, and the BSD-licensed Toybox.
+Widget toolkits are the libraries used to build graphical user interfaces (GUIs) for software applications.
+Numerous widget toolkits are available, including GTK+ and Clutter developed by the GNOME project, Qt developed by the Qt Project and led by Digia, and Enlightenment Foundation Libraries (EFL) developed primarily by the Enlightenment team.
+A package management system, such as dpkg and RPM.
+Alternatively packages can be compiled from binary or source tarballs.
+User interface programs such as command shells or windowing environments.
+User interface
+The user interface, also known as the shell, is either a command-line interface (CLI), a graphical user interface (GUI), or through controls attached to the associated hardware, which is common for embedded systems.
+For desktop systems, the default mode is usually a graphical user interface, although the CLI is commonly available through terminal emulator windows or on a separate virtual console.
+CLI shells are text-based user interfaces, which use text for both input and output.
+The dominant shell used in Linux is the Bourne-Again Shell (bash), originally developed for the GNU project.
+Most low-level Linux components, including various parts of the userland, use the CLI exclusively.
+The CLI is particularly suited for automation of repetitive or delayed tasks, and provides very simple inter-process communication.
+On desktop systems, the most popular user interfaces are the GUI shells, packaged together with extensive desktop environments, such as the K Desktop Environment (KDE), GNOME, MATE, Cinnamon, Unity, LXDE, Pantheon and Xfce, though a variety of additional user interfaces exist.
+Most popular user interfaces are based on the X Window System, often simply called "X".
+It provides network transparency and permits a graphical application running on one system to be displayed on another where a user may interact with the application; however, certain extensions of the X Window System are not capable of working over the network.
+Several X display servers exist, with the reference implementation, X.
+Org Server, being the most popular.
+Several types of window managers exist for X11, including tiling, dynamic, stacking and compositing.
+Window managers provide means to control the placement and appearance of individual application windows, and interact with the X Window System.
+Simpler X window managers such as dwm or ratpoison provide a minimalist functionality, while more elaborate window managers such as FVWM, Enlightenment or Window Maker provide more features such as a built-in taskbar and themes, but are still lightweight when compared to desktop environments.
+Desktop environments include window managers as part of their standard installations, such as Mutter (GNOME), KWin (KDE) or Xfwm (xfce), although users may choose to use a different window manager if preferred.
+Wayland is a display server protocol intended as a replacement for the X11 protocol; as of 2014, it has not received wider adoption.
+Unlike X11, Wayland does not need an external window manager and compositing manager.
+Therefore, a Wayland compositor takes the role of the display server, window manager and compositing manager.
+Weston is the reference implementation of Wayland, while GNOME's Mutter and KDE's KWin are being ported to Wayland as standalone display servers.
+Enlightenment has already been successfully ported since version 19.
+Video input infrastructure
+Main article: Video4Linux
+Linux currently has two modern kernel-userspace APIs for handling video input devices: V4L2 API for video streams and radio, and DVB API for digital TV reception.
+Due to the complexity and diversity of different devices, and due to the large amount of formats and standards handled by those APIs, this infrastructure needs to evolve to better fit other devices.
+Also, a good userspace device library is the key of the success for having userspace applications to be able to work with all formats supported by those devices.
+Development
+    
+This section needs additional citations for verification.
+Please help improve this article by adding citations to reliable sources.
+Unsourced material may be challenged and removed.
+(September 2017) (Learn how and when to remove this template message)
+Simplified history of Unix-like operating systems.
+Linux shares similar architecture and concepts (as part of the POSIX standard) but does not share non-free source code with the original Unix or MINIX.
+Main articles: Linux distribution and Free software
+The primary difference between Linux and many other popular contemporary operating systems is that the Linux kernel and other components are free and open-source software.
+Linux is not the only such operating system, although it is by far the most widely used.
+Some free and open-source software licenses are based on the principle of copyleft, a kind of reciprocity: any work derived from a copyleft piece of software must also be copyleft itself.
+The most common free software license, the GNU General Public License (GPL), is a form of copyleft, and is used for the Linux kernel and many of the components from the GNU Project.
+Linux based distributions are intended by developers for interoperability with other operating systems and established computing standards.
+Linux systems adhere to POSIX, SUS, LSB, ISO, and ANSI standards where possible, although to date only one Linux distribution has been POSIX.
+1 certified, Linux-FT.
+Free software projects, although developed through collaboration, are often produced independently of each other.
+The fact that the software licenses explicitly permit redistribution, however, provides a basis for larger scale projects that collect the software produced by stand-alone projects and make it available all at once in the form of a Linux distribution.
+Many Linux distributions, or "distros", manage a remote collection of system software and application software packages available for download and installation through a network connection.
+This allows users to adapt the operating system to their specific needs.
+Distributions are maintained by individuals, loose-knit teams, volunteer organizations, and commercial entities.
+A distribution is responsible for the default configuration of the installed Linux kernel, general system security, and more generally integration of the different software packages into a coherent whole.
+Distributions typically use a package manager such as apt, yum, zypper, pacman or portage to install, remove, and update all of a system's software from one central location.
+Community
+See also: Free software community and Linux User Group
+A distribution is largely driven by its developer and user communities.
+Some vendors develop and fund their distributions on a volunteer basis, Debian being a well-known example.
+Others maintain a community version of their commercial distributions, as Red Hat does with Fedora, and SUSE does with openSUSE.
+In many cities and regions, local associations known as Linux User Groups (LUGs) seek to promote their preferred distribution and by extension free software.
+They hold meetings and provide free demonstrations, training, technical support, and operating system installation to new users.
+Many Internet communities also provide support to Linux users and developers.
+Most distributions and free software / open-source projects have IRC chatrooms or newsgroups.
+Online forums are another means for support, with notable examples being LinuxQuestions.
+org and the various distribution specific support and community forums, such as ones for Ubuntu, Fedora, and Gentoo.
+Linux distributions host mailing lists; commonly there will be a specific topic such as usage or development for a given list.
+There are several technology websites with a Linux focus.
+Print magazines on Linux often bundle cover disks that carry software or even complete Linux distributions.
+Although Linux distributions are generally available without charge, several large corporations sell, support, and contribute to the development of the components of the system and of free software.
+An analysis of the Linux kernel showed 75 percent of the code from December 2008 to January 2010 was developed by programmers working for corporations, leaving about 18 percent to volunteers and 7% unclassified.
+Major corporations that provide contributions include Dell, IBM, HP, Oracle, Sun Microsystems (now part of Oracle) and Nokia.
+A number of corporations, notably Red Hat, Canonical and SUSE, have built a significant business around Linux distributions.
+The free software licenses, on which the various software packages of a distribution built on the Linux kernel are based, explicitly accommodate and encourage commercialization; the relationship between a Linux distribution as a whole and individual vendors may be seen as symbiotic.
+One common business model of commercial suppliers is charging for support, especially for business users.
+A number of companies also offer a specialized business version of their distribution, which adds proprietary support packages and tools to administer higher numbers of installations or to simplify administrative tasks.
+Another business model is to give away the software in order to sell hardware.
+This used to be the norm in the computer industry, with operating systems such as CP/M, Apple DOS and versions of Mac OS prior to 7.
+6 freely copyable (but not modifiable).
+As computer hardware standardized throughout the 1980s, it became more difficult for hardware manufacturers to profit from this tactic, as the OS would run on any manufacturer's computer that shared the same architecture.
+Programming on Linux
+Linux distributions support dozens of programming languages.
+The original development tools used for building both Linux applications and operating system programs are found within the GNU toolchain, which includes the GNU Compiler Collection (GCC) and the GNU Build System.
+Amongst others, GCC provides compilers for Ada, C, C++, Go and Fortran.
+Many programming languages have a cross-platform reference implementation that supports Linux, for example PHP, Perl, Ruby, Python, Java, Go, Rust and Haskell.
+First released in 2003, the LLVM project provides an alternative cross-platform open-source compiler for many languages.
+Proprietary compilers for Linux include the Intel C++ Compiler, Sun Studio, and IBM XL C/C++ Compiler.
+BASIC in the form of Visual Basic is supported in such forms as Gambas, FreeBASIC, and XBasic, and in terms of terminal programming or QuickBASIC or Turbo BASIC programming in the form of QB64.
+A common feature of Unix-like systems, Linux includes traditional specific-purpose programming languages targeted at scripting, text processing and system configuration and management in general.
+Linux distributions support shell scripts, awk, sed and make.
+Many programs also have an embedded programming language to support configuring or programming themselves.
+For example, regular expressions are supported in programs like grep and locate, the traditional Unix MTA Sendmail contains its own Turing complete scripting system, and the advanced text editor GNU Emacs is built around a general purpose Lisp interpreter.
+Most distributions also include support for PHP, Perl, Ruby, Python and other dynamic languages.
+While not as common, Linux also supports C# (via Mono), Vala, and Scheme.
+Guile Scheme acts as an extension language targeting the GNU system utilities, seeking to make the conventionally small, static, compiled C programs of Unix design rapidly and dynamically extensible via an elegant, functional high-level scripting system; many GNU programs can be compiled with optional Guile bindings to this end.
+A number of Java Virtual Machines and development kits run on Linux, including the original Sun Microsystems JVM (HotSpot), and IBM's J2SE RE, as well as many open-source projects like Kaffe and JikesRVM.
+GNOME and KDE are popular desktop environments and provide a framework for developing applications.
+These projects are based on the GTK+ and Qt widget toolkits, respectively, which can also be used independently of the larger framework.
+Both support a wide variety of languages.
+There are a number of Integrated development environments available including Anjuta, Code::Blocks, CodeLite, Eclipse, Geany, ActiveState Komodo, KDevelop, Lazarus, MonoDevelop, NetBeans, and Qt Creator, while the long-established editors Vim, nano and Emacs remain popular.
+Hardware support
+Linux is ubiquitously found on various types of hardware.
+See also: List of Linux-supported computer architectures
+The Linux kernel is a widely ported operating system kernel, available for devices ranging from mobile phones to supercomputers; it runs on a highly diverse range of computer architectures, including the hand-held ARM-based iPAQ and the IBM mainframes System z9 or System z10.
+Specialized distributions and kernel forks exist for less mainstream architectures; for example, the ELKS kernel fork can run on Intel 8086 or Intel 80286 16-bit microprocessors, while the µClinux kernel fork may run on systems without a memory management unit.
+The kernel also runs on architectures that were only ever intended to use a manufacturer-created operating system, such as Macintosh computers (with both PowerPC and Intel processors), PDAs, video game consoles, portable music players, and mobile phones.
+There are several industry associations and hardware conferences devoted to maintaining and improving support for diverse hardware under Linux, such as FreedomHEC.
+Over time, support for different hardware has improved in Linux, resulting in any off-the-shelf purchase having a "good chance" of being compatible.
+Uses
+See also: Linux range of use
+Besides the Linux distributions designed for general-purpose use on desktops and servers, distributions may be specialized for different purposes including: computer architecture support, embedded systems, stability, security, localization to a specific region or language, targeting of specific user groups, support for real-time applications, or commitment to a given desktop environment.
+Furthermore, some distributions deliberately include only free software.
+As of 2015, over four hundred Linux distributions are actively developed, with about a dozen distributions being most popular for general-purpose use.
+Desktop
+Visible software components of the Linux desktop stack include the display server, widget engines, and some of the more widespread widget toolkits.
+There are also components not directly visible to end users, including D-Bus and PulseAudio.
+See also: Desktop environment and Linux adoption: Measuring desktop adoption
+The popularity of Linux on standard desktop computers and laptops has been increasing over the years.
+Most modern distributions include a graphical user environment, with, as of February 2015, the two most popular environments being the KDE Plasma Desktop and Xfce.
+No single official Linux desktop exists: rather desktop environments and Linux distributions select components from a pool of free and open-source software with which they construct a GUI implementing some more or less strict design guide.
+GNOME, for example, has its human interface guidelines as a design guide, which gives the human–machine interface an important role, not just when doing the graphical design, but also when considering people with disabilities, and even when focusing on security.
+The collaborative nature of free software development allows distributed teams to perform language localization of some Linux distributions for use in locales where localizing proprietary systems would not be cost-effective.
+For example, the Sinhalese language version of the Knoppix distribution became available significantly before Microsoft translated Windows XP into Sinhalese.
+In this case the Lanka Linux User Group played a major part in developing the localized system by combining the knowledge of university professors, linguists, and local developers.
+Performance and applications
+The performance of Linux on the desktop has been a controversial topic;[citation needed] for example in 2007 Con Kolivas accused the Linux community of favoring performance on servers.
+He quit Linux kernel development out of frustration with this lack of focus on the desktop, and then gave a "tell all" interview on the topic.
+Since then a significant amount of development has focused on improving the desktop experience.
+Projects such as Upstart and systemd aim for a faster boot time; the Wayland and Mir projects aim at replacing X11 while enhancing desktop performance, security and appearance.
+Many popular applications are available for a wide variety of operating systems.
+For example, Mozilla Firefox, OpenOffice.
+org/LibreOffice and Blender have downloadable versions for all major operating systems.
+Furthermore, some applications initially developed for Linux, such as Pidgin, and GIMP, were ported to other operating systems (including Windows and Mac OS X) due to their popularity.
+In addition, a growing number of proprietary desktop applications are also supported on Linux, such as Autodesk Maya, Softimage XSI and Apple Shake in the high-end field of animation and visual effects; see the list of proprietary software for Linux for more details.
+There are also several companies that have ported their own or other companies' games to Linux, with Linux also being a supported platform on both the popular Steam and Desura digital-distribution services.
+Many other types of applications available for Microsoft Windows and Mac OS X also run on Linux.
+Commonly, either a free software application will exist which does the functions of an application found on another operating system, or that application will have a version that works on Linux, such as with Skype and some video games like Dota 2 and Team Fortress 2.
+Furthermore, the Wine project provides a Windows compatibility layer to run unmodified Windows applications on Linux.
+It is sponsored by commercial interests including CodeWeavers, which produces a commercial version of the software.
+Since 2009, Google has also provided funding to the Wine project.
+CrossOver, a proprietary solution based on the open-source Wine project, supports running Windows versions of Microsoft Office, Intuit applications such as Quicken and QuickBooks, Adobe Photoshop versions through CS2, and many popular games such as World of Warcraft.
+In other cases, where there is no Linux port of some software in areas such as desktop publishing and professional audio, there is equivalent software available on Linux.
+It is also possible to run applications written for Android on other versions of Linux using Anbox.
+Components and installation
+Besides externally visible components, such as X window managers, a non-obvious but quite central role is played by the programs hosted by freedesktop.
+org, such as D-Bus or PulseAudio; both major desktop environments (GNOME and KDE) include them, each offering graphical front-ends written using the corresponding toolkit (GTK+ or Qt).
+A display server is another component, which for the longest time has been communicating in the X11 display server protocol with its clients; prominent software talking X11 includes the X.
+Org Server and Xlib.
+Frustration over the cumbersome X11 core protocol, and especially over its numerous extensions, has led to the creation of a new display server protocol, Wayland.
+Installing, updating and removing software in Linux is typically done through the use of package managers such as the Synaptic Package Manager, PackageKit, and Yum Extender.
+While most major Linux distributions have extensive repositories, often containing tens of thousands of packages, not all the software that can run on Linux is available from the official repositories.
+Alternatively, users can install packages from unofficial repositories, download pre-compiled packages directly from websites, or compile the source code by themselves.
+All these methods come with different degrees of difficulty; compiling the source code is in general considered a challenging process for new Linux users, but it is hardly needed in modern distributions and is not a method specific to Linux.
+Netbooks
+Linux distributions have also become popular in the netbook market, with many devices such as the Asus Eee PC and Acer Aspire One shipping with customized Linux distributions installed.
+In 2009, Google announced its Chrome OS as a minimal Linux-based operating system, using the Chrome browser as the main user interface.
+Chrome OS does not run any non-web applications, except for the bundled file manager and media player (a certain level of support for Android applications was added in later versions).
+Netbooks that shipped with the operating system, termed Chromebooks, started appearing on the market in June 2011.
+Servers, mainframes and supercomputers
+Broad overview of the LAMP software bundle, displayed here together with Squid.
+A high-performance and high-availability web server solution providing security in a hostile environment.
+Linux distributions have long been used as server operating systems, and have risen to prominence in that area; Netcraft reported in September 2006, that eight of the ten (other two with "unknown" OS) most reliable internet hosting companies ran Linux distributions on their web servers, with Linux in the top position.
+In June 2008, Linux distributions represented five of the top ten, FreeBSD three of ten, and Microsoft two of ten; since February 2010, Linux distributions represented six of the top ten, FreeBSD two of ten, and Microsoft one of ten, with Linux in the top position.
+Linux distributions are the cornerstone of the LAMP server-software combination (Linux, Apache, MariaDB/MySQL, Perl/PHP/Python) which has achieved popularity among developers, and which is one of the more common platforms for website hosting.
+Linux distributions have become increasingly popular on mainframes, partly due to pricing and the open-source model.
+In December 2009, computer giant IBM reported that it would predominantly market and sell mainframe-based Enterprise Linux Server.
+At LinuxCon North America 2015, IBM announced LinuxONE, a series of mainframes specifically designed to run Linux and open-source software.
+Linux distributions are also dominant as operating systems for supercomputers.
+As of November 2017, all supercomputers on the 500 list run some variant of Linux.
+Smart devices
+Android smartphones
+Several operating systems for smart devices, such as smartphones, tablet computers, smart TVs, and in-vehicle infotainment (IVI) systems, are based on Linux.
+Major platforms for such systems include Android, Firefox OS, Mer and Tizen.
+Android has become the dominant mobile operating system for smartphones, running on 79.
+3% of units sold worldwide during the second quarter of 2013.
+Android is also a popular operating system for tablets, and Android smart TVs and in-vehicle infotainment systems have also appeared in the market.
+Cellphones and PDAs running Linux on open-source platforms became more common from 2007; examples include the Nokia N810, Openmoko's Neo1973, and the Motorola ROKR E8.
+Continuing the trend, Palm (later acquired by HP) produced a new Linux-derived operating system, webOS, which is built into its line of Palm Pre smartphones.
+Nokia's Maemo, one of the earliest mobile operating systems, was based on Debian.
+It was later merged with Intel's Moblin, another Linux-based operating system, to form MeeGo.
+The project was later terminated in favor of Tizen, an operating system targeted at mobile devices as well as IVI.
+Tizen is a project within The Linux Foundation.
+Several Samsung products are already running Tizen, Samsung Gear 2 being the most significant example.
+Samsung Z smartphones will use Tizen instead of Android.
+As a result of MeeGo's termination, the Mer project forked the MeeGo codebase to create a basis for mobile-oriented operating systems.
+In July 2012, Jolla announced Sailfish OS, their own mobile operating system built upon Mer technology.
+Mozilla's Firefox OS consists of the Linux kernel, a hardware abstraction layer, a web-standards-based runtime environment and user interface, and an integrated web browser.
+Canonical has released Ubuntu Touch, aiming to bring convergence to the user experience on this mobile operating system and its desktop counterpart, Ubuntu.
+The operating system also provides a full Ubuntu desktop when connected to an external monitor.
+Embedded devices
+See also: Embedded Linux and Linux devices
+The Jolla Phone has the Linux-based Sailfish OS
+In-car entertainment system of the Tesla Model S is based on Ubuntu
+Nokia X, a smartphone that runs Linux kernel
+Due to its low cost and ease of customization, Linux is often used in embedded systems.
+In the non-mobile telecommunications equipment sector, the majority of customer-premises equipment (CPE) hardware runs some Linux-based operating system.
+OpenWrt is a community driven example upon which many of the OEM firmware releases are based.
+For example, the popular TiVo digital video recorder also uses a customized Linux, as do several network firewalls and routers from such makers as Cisco/Linksys.
+The Korg OASYS, the Korg KRONOS, the Yamaha Motif XS/Motif XF music workstations, Yamaha S90XS/S70XS, Yamaha MOX6/MOX8 synthesizers, Yamaha Motif-Rack XS tone generator module, and Roland RD-700GX digital piano also run Linux.
+Linux is also used in stage lighting control systems, such as the WholeHogIII console.
+Gaming
+Main article: Linux gaming
+In the past, not many games were available for Linux, but in the recent years, more games have been released with support for Linux.
+Nowadays, many games support Linux (especially Indie games), except for a few AAA title games.
+On the other hand, as a popular mobile platform, Android (which uses the Linux kernel) has gained much developer interest and is one of the main platforms for mobile game development along with iOS operating system by Apple for iPhone and iPad devices.
+On February 14, 2013, Valve released a Linux version of Steam, a popular game distribution platform on PC.
+Many Steam games were ported to Linux.
+On December 13, 2013, Valve released SteamOS, a gaming oriented OS based on Debian, for beta testing, and has plans to ship Steam Machines as a gaming and entertainment platform.
+Valve has also developed VOGL, an OpenGL debugger intended to aid video game development, as well as porting its Source game engine to desktop Linux.
+As a result of Valve's effort, several prominent games such as DotA 2, Team Fortress 2, Portal, Portal 2 and Left 4 Dead 2 are now natively available on desktop Linux.
+On July 31, 2013, Nvidia released Shield as an attempt to use Android as a specialized gaming platform.
+Some Linux users play Windows games through Wine or CrossOver Linux.
+Specialized uses
+Due to the flexibility, customizability and free and open-source nature of Linux, it becomes possible to highly tune Linux for a specific purpose.
+There are two main methods for creating a specialized Linux distribution: building from scratch or from a general-purpose distribution as a base.
+The distributions often used for this purpose include Debian, Fedora, Ubuntu (which is itself based on Debian), Arch Linux, Gentoo, and Slackware.
+In contrast, Linux distributions built from scratch do not have general-purpose bases; instead, they focus on the JeOS philosophy by including only necessary components and avoiding resource overhead caused by components considered redundant in the distribution's use cases.
+Home theater PC
+A home theater PC (HTPC) is a PC that is mainly used as an entertainment system, especially a Home theater system.
+It is normally connected to a television, and often an additional audio system.
+OpenELEC, a Linux distribution that incorporates the media center software Kodi, is an OS tuned specifically for an HTPC.
+Having been built from the ground up adhering to the JeOS principle, the OS is very lightweight and very suitable for the confined usage range of an HTPC.
+There are also special editions of Linux distributions that include the MythTV media center software, such as Mythbuntu, a special edition of Ubuntu.
+Digital security
+Kali Linux is a Debian-based Linux distribution designed for digital forensics and penetration testing.
+It comes preinstalled with several software applications for penetration testing and identifying security exploits.
+The Ubuntu derivative BackBox provides pre-installed security and network analysis tools for ethical hacking.
+There are many Linux distributions created with privacy, secrecy, network anonymity and information security in mind, including Tails, Tin Hat Linux and Tinfoil Hat Linux.
+Lightweight Portable Security is a distribution based on Arch Linux and developed by the United States Department of Defense.
+Tor-ramdisk is a minimal distribution created solely to host the network anonymity software Tor.
+System rescue
+Linux Live CD sessions have long been used as a tool for recovering data from a broken computer system and for repairing the system.
+Building upon that idea, several Linux distributions tailored for this purpose have emerged, most of which use GParted as a partition editor, with additional data recovery and system repair software:
+GParted Live – a Debian-based distribution developed by the GParted project.
+Parted Magic – a commercial Linux distribution.
+SystemRescueCD – a Gentoo-based distribution with support for editing Windows registry.
+In space
+SpaceX uses multiple redundant flight computers in a fault-tolerant design in the Falcon 9 rocket.
+Each Merlin engine is controlled by three voting computers, with two physical processors per computer that constantly check each other's operation.
+Linux is not inherently fault-tolerant (no operating system is, as it is a function of the whole system including the hardware), but the flight computer software makes it so for its purpose.
+For flexibility, commercial off-the-shelf parts and system-wide "radiation-tolerant" design are used instead of radiation hardened parts.
+As of June 2015, SpaceX has made 19 launches of the Falcon 9 since 2010, out of which 18 have successfully delivered their primary payloads to Earth orbit, including some support missions for the International Space Station.
+In addition, Windows was used as an operating system on non-mission critical systems‍—‌laptops used on board the space station, for example‍—‌but it has been replaced with Linux; the first Linux-powered humanoid robot is also undergoing in-flight testing.
+The Jet Propulsion Laboratory has used Linux for a number of years "to help with projects relating to the construction of unmanned space flight and deep space exploration"; NASA uses Linux in robotics in the Mars rover, and Ubuntu Linux to "save data from satellites".
+Education
+Linux distributions have been created to provide hands-on experience with coding and source code to students, on devices such as the Raspberry Pi.
+In addition to producing a practical device, the intention is to show students "how things work under the hood".
+The Ubuntu derivatives Edubuntu and The Linux Schools Project, as well as the Debian derivative Skolelinux, provide education-oriented software packages.
+They also include tools for administering and building school computer labs and computer-based classrooms, such as the Linux Terminal Server Project (LTSP).
+Others
+Instant WebKiosk and Webconverger are browser-based Linux distributions often used in web kiosks and digital signage.
+Thinstation is a minimalist distribution designed for thin clients.
+Rocks Cluster Distribution is tailored for high-performance computing clusters.
+There are general-purpose Linux distributions that target a specific audience, such as users of a specific language or geographical area.
+Such examples include Ubuntu Kylin for Chinese language users and BlankOn targeted at Indonesians.
+Profession-specific distributions include Ubuntu Studio for media creation and DNALinux for bioinformatics.
+There is also a Muslim-oriented distribution of the name Sabily, as well as an Arabic-focused distribution called Ojuba Linux that consequently also provides some Islamic tools.
+Certain organizations use slightly specialized Linux distributions internally, including GendBuntu used by the French National Gendarmerie, Goobuntu used internally by Google, and Astra Linux developed specifically for the Russian army.
+Market share and uptake
+Main article: Linux adoption
+See also: Usage share of operating systems
+Many quantitative studies of free/open-source software focus on topics including market share and reliability, with numerous studies specifically examining Linux.
+The Linux market is growing rapidly, and the revenue of servers, desktops, and packaged software running Linux was expected to[needs update] exceed $35.
+7 billion by 2008.
+Analysts and proponents attribute the relative success of Linux to its security, reliability, low cost, and freedom from vendor lock-in.
+Desktops and laptops
+According to web server statistics, as of June 2016, the estimated market share of Linux on desktop computers is around 1.
+8%.
+In comparison, Microsoft Windows has a market share of around 89.
+7%, while Mac OS covers around 8.5%.
+Web servers
+W3Cook publishes stats that use the top 1,000,000 Alexa domains, which as of May 2015 estimate that 96.
+55% of web servers run Linux, 1.
+73% run Windows, and 1.
+72% run FreeBSD.
+W3Techs publishes stats that use the top 10,000,000 Alexa domains, updated monthly and as of November 2016 estimate that 66.
+7% of web servers run Linux/Unix, and 33.
+4% run Microsoft Windows.
+In September 2008, Microsoft's CEO Steve Ballmer stated that 60% of web servers ran Linux, versus 40% that ran Windows Server.
+IDC's Q1 2007 report indicated that Linux held 12.
+7% of the overall server market at that time; this estimate was based on the number of Linux servers sold by various companies, and did not include server hardware purchased separately that had Linux installed on it later.s
+Mobile devices
+Android, which is based on the Linux kernel, has become the dominant operating system for smartphones.
+During the second quarter of 2013, 79.
+3% of smartphones sold worldwide used Android.
+Android is also a popular operating system for tablets, being responsible for more than 60% of tablet sales as of 2013.
+According to web server statistics, as of December 2014 Android has a market share of about 46%, with iOS holding 45%, and the remaining 9% attributed to various niche platforms.
+Film production
+For years Linux has been the platform of choice in the film industry.
+The first major film produced on Linux servers was 1997's Titanic.
+Since then major studios including DreamWorks Animation, Pixar, Weta Digital, and Industrial Light & Magic have migrated to Linux.
+According to the Linux Movies Group, more than 95% of the servers and desktops at large animation and visual effects companies use Linux.
+Use in government
+Linux distributions have also gained popularity with various local and national governments.
+The federal government of Brazil is well known for its support for Linux.
+News of the Russian military creating its own Linux distribution has also surfaced, and has come to fruition as the G.
+H.
+ost Project.
+The Indian state of Kerala has gone to the extent of mandating that all state high schools run Linux on their computers.
+China uses Linux exclusively as the operating system for its Loongson processor family to achieve technology independence.
+In Spain, some regions have developed their own Linux distributions, which are widely used in education and official institutions, like gnuLinEx in Extremadura and Guadalinex in Andalusia.
+France and Germany have also taken steps toward the adoption of Linux.
+North Korea's Red Star OS, developed since 2002, is based on a version of Fedora Linux.
+Copyright, trademark and naming
+See also: GNU/Linux naming controversy and SCO-Linux controversies
+Linux kernel is licensed under the GNU General Public License (GPL), version 2.
+The GPL requires that anyone who distributes software based on source code under this license, must make the originating source code (and any modifications) available to the recipient under the same terms.
+Other key components of a typical Linux distribution are also mainly licensed under the GPL, but they may use other licenses; many libraries use the GNU Lesser General Public License (LGPL), a more permissive variant of the GPL, and the X.
+org implementation of the X Window System uses the MIT License.
+Torvalds states that the Linux kernel will not move from version 2 of the GPL to version 3.
+He specifically dislikes some provisions in the new license which prohibit the use of the software in digital rights management.
+It would also be impractical to obtain permission from all the copyright holders, who number in the thousands.
+A 2001 study of Red Hat Linux 7.
+1 found that this distribution contained 30 million source lines of code.
+Using the Constructive Cost Model, the study estimated that this distribution required about eight thousand person-years of development time.
+According to the study, if all this software had been developed by conventional proprietary means, it would have cost about $1.
+53 billion (2018 US dollars) to develop in the United States.
+Most of the source code (71%) was written in the C programming language, but many other languages were used, including C++, Lisp, assembly language, Perl, Python, Fortran, and various shell scripting languages.
+Slightly over half of all lines of code were licensed under the GPL.
+The Linux kernel itself was 2.
+4 million lines of code, or 8% of the total.
+In a later study, the same analysis was performed for Debian version 4.
+0 (etch, which was released in 2007).
+This distribution contained close to 283 million source lines of code, and the study estimated that it would have required about seventy three thousand man-years and cost US$8.
+46 billion (in 2018 dollars) to develop by conventional means.
+The name "Linux" is also used for a laundry detergent made by Swiss company Rösch.
+In the United States, the name Linux is a trademark registered to Linus Torvalds.
+Initially, nobody registered it, but on August 15, 1994, William R.
+Della Croce, Jr.
+filed for the trademark Linux, and then demanded royalties from Linux distributors.
+In 1996, Torvalds and some affected organizations sued him to have the trademark assigned to Torvalds, and, in 1997, the case was settled.
+The licensing of the trademark has since been handled by the Linux Mark Institute (LMI).
+Torvalds has stated that he trademarked the name only to prevent someone else from using it.
+LMI originally charged a nominal sublicensing fee for use of the Linux name as part of trademarks, but later changed this in favor of offering a free, perpetual worldwide sublicense.
+The Free Software Foundation (FSF) prefers GNU/Linux as the name when referring to the operating system as a whole, because it considers Linux distributions to be variants of the GNU operating system initiated in 1983 by Richard Stallman, president of the FSF.
+They explicitly take no issue over the name Android for the Android OS, which is also an operating system based on the Linux kernel, as GNU is not a part of it.
+A minority of public figures and software projects other than Stallman and the FSF, notably Debian (which had been sponsored by the FSF up to 1996), also use GNU/Linux when referring to the operating system as a whole.
+Most media and common usage, however, refers to this family of operating systems simply as Linux, as do many large Linux distributions (for example, SUSE Linux and Red Hat Enterprise Linux).
+By contrast, Linux distributions containing only free software use "GNU/Linux" or simply "GNU", such as Trisquel GNU/Linux, Parabola GNU/Linux-libre, BLAG Linux and GNU, and gNewSense.
+As of May 2011, about 8% to 13% of a modern Linux distribution is made of GNU components (the range depending on whether GNOME is considered part of GNU), as determined by counting lines of source code making up Ubuntu's "Natty" release; meanwhile, 6% is taken by the Linux kernel, increased to 9% when including its direct dependencies.

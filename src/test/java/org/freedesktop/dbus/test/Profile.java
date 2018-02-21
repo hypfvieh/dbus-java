@@ -16,9 +16,10 @@ import java.util.Vector;
 
 import org.freedesktop.DBus.Introspectable;
 import org.freedesktop.DBus.Peer;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
     private int count = 0;
@@ -133,7 +134,7 @@ public final class Profile {
                 System.out.println("Syntax: profile <pings|arrays|introspect|maps|bytes|lists|structs|signals|rate|strings>");
                 System.exit(1);
             }
-            DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             conn.requestBusName("org.freedesktop.DBus.java.profiler");
             if ("pings".equals(args[0])) {
                 int count = PING_INNER * PING_OUTER;

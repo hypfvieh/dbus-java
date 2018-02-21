@@ -161,7 +161,7 @@ public class MethodCall extends Message {
         }
     }
 
-    protected synchronized void setReply(Message _reply) {
+    public synchronized void setReply(Message _reply) {
         logger.trace("Setting reply to " + this + " to " + _reply);
         this.reply = _reply;
         notifyAll();

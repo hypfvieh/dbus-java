@@ -25,7 +25,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.Struct;
@@ -33,6 +32,8 @@ import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.UInt64;
 import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.connection.DBusConnection;
+import org.freedesktop.dbus.connection.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.types.DBusMapType;
@@ -537,7 +538,7 @@ public class CrossTestClient implements DBus.Binding.TestClient, DBusSigHandler<
     public static void main(String[] args) {
         try {
             /* init */
-            DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             CROSS_TEST_CLIENT_INSTANCE = new CrossTestClient(conn);
             conn.exportObject("/Test", CROSS_TEST_CLIENT_INSTANCE);
             conn.addSigHandler(DBus.Binding.TestSignals.Triggered.class, CROSS_TEST_CLIENT_INSTANCE);

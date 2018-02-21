@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.freedesktop.dbus.connection.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.slf4j.Logger;
@@ -90,7 +91,7 @@ public class DBusSignal extends Message {
     }
 
     // CHECKSTYLE:OFF
-    static class internalsig extends DBusSignal {
+    public static class internalsig extends DBusSignal {
         internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
             super(source, objectpath, type, name, sig, parameters, serial);
         }
@@ -156,7 +157,7 @@ public class DBusSignal extends Message {
     }
 
     @SuppressWarnings("unchecked")
-    DBusSignal createReal(AbstractConnection conn) throws DBusException {
+    public DBusSignal createReal(AbstractConnection conn) throws DBusException {
         String intname = intnames.get(getInterface());
         String signame = signames.get(getName());
         if (null == intname) {
@@ -303,7 +304,7 @@ public class DBusSignal extends Message {
         pad((byte) 8);
     }
 
-    void appendbody(AbstractConnection conn) throws DBusException {
+    public void appendbody(AbstractConnection conn) throws DBusException {
         if (bodydone) {
             return;
         }

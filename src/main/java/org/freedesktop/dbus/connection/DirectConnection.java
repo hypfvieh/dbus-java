@@ -8,18 +8,25 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.connection;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.ServerSocket;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Random;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
+import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.DBusSigHandler;
+import org.freedesktop.dbus.DBusSignal;
+import org.freedesktop.dbus.ExportedObject;
+import org.freedesktop.dbus.RemoteInvocationHandler;
+import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.SignalTuple;
+import org.freedesktop.dbus.Transport;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,18 +45,6 @@ public class DirectConnection extends AbstractConnection {
     */
     public DirectConnection(String address) throws DBusException {
         super(address);
-
-        try {
-            transport = new Transport(addr, AbstractConnection.TIMEOUT);
-            connected = true;
-        } catch (IOException exIo) {
-            logger.debug("", exIo);
-            throw new DBusException("Failed to connect to bus " + exIo.getMessage());
-        } catch (ParseException exP) {
-            logger.debug("", exP);
-            throw new DBusException("Failed to connect to bus " + exP.getMessage());
-        }
-
         listen();
     }
 
@@ -145,12 +140,12 @@ public class DirectConnection extends AbstractConnection {
         synchronized (exportedObjects) {
             o = exportedObjects.get(path);
         }
-        if (null != o && null == o.object.get()) {
+        if (null != o && null == o.getObject().get()) {
             unExportObject(path);
             o = null;
         }
         if (null != o) {
-            return o.object.get();
+            return o.getObject().get();
         }
         return dynamicProxy(path);
     }
@@ -257,7 +252,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
-    DBusInterface getExportedObject(String source, String path) throws DBusException {
+    public DBusInterface getExportedObject(String source, String path) throws DBusException {
         return getExportedObject(path);
     }
 }
