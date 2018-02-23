@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
+import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
 import org.freedesktop.dbus.exceptions.MessageTypeException;

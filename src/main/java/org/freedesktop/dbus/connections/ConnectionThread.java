@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.FatalException;
+import org.freedesktop.dbus.interfaces.FatalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

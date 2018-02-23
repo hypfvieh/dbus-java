@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
+
 public class RemoteObject {
     private String                         busname;
     private String                         objectpath;

@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.freedesktop.dbus.Path;
-import org.freedesktop.dbus.UInt16;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.types.UInt16;
 
 public class P2pTestServer implements TestRemoteInterface {
     @Override

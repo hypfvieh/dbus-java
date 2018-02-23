@@ -1,6 +1,6 @@
 package bug.tests;
 
-import org.freedesktop.DBus;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -24,14 +24,14 @@ public class TestServer implements ITestServer {
         run = _run;
     }
     
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public byte identityByte(byte input) {
         System.out.println("Received byte: " + input);
         return input;
     }
     
     
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public byte[] identityByteArray(byte[] input) {
         System.out.println("Received byte array: " + input);
         System.out.println("String representation of byte array: " + new String(input));

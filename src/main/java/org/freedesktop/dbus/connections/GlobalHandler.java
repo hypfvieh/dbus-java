@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.ExportedObject;
+import org.freedesktop.dbus.errors.UnknownObject;
 
-public class GlobalHandler implements org.freedesktop.DBus.Peer, org.freedesktop.DBus.Introspectable {
+public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.freedesktop.dbus.interfaces.Introspectable {
     /**
      * 
      */
@@ -40,7 +40,7 @@ public class GlobalHandler implements org.freedesktop.DBus.Peer, org.freedesktop
             }
         }
         if (null == intro) {
-            throw new DBus.Error.UnknownObject("Introspecting on non-existant object");
+            throw new UnknownObject("Introspecting on non-existant object");
         } else {
             return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" "
                     + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + intro;
@@ -50,5 +50,10 @@ public class GlobalHandler implements org.freedesktop.DBus.Peer, org.freedesktop
     @Override
     public String getObjectPath() {
         return objectpath;
+    }
+
+    @Override
+    public String GetMachineId() {
+        return connection.getMachineId();
     }
 }

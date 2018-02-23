@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus.exceptions;
+package org.freedesktop.dbus.interfaces;
 
 public interface NonFatalException
 {

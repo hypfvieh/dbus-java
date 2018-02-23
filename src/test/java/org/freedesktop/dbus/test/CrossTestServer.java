@@ -17,18 +17,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusSigHandler;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.UInt64;
-import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.test.Binding.SingleTests;
 import org.freedesktop.dbus.test.Binding.Triplet;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 
 public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Binding.TestClient.Trigger> {
     private DBusConnection conn;
@@ -108,7 +108,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public <T> Variant<T> Identity(Variant<T> input) {
         done.add("org.freedesktop.DBus.Binding.Tests.Identity");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Identity");
@@ -116,7 +116,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public byte IdentityByte(byte input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityByte");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityByte");
@@ -124,7 +124,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public boolean IdentityBool(boolean input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityBool");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityBool");
@@ -132,7 +132,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public short IdentityInt16(short input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt16");
@@ -140,7 +140,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt16 IdentityUInt16(UInt16 input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt16");
@@ -148,7 +148,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public int IdentityInt32(int input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt32");
@@ -156,7 +156,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt32 IdentityUInt32(UInt32 input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt32");
@@ -164,7 +164,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public long IdentityInt64(long input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt64");
@@ -172,7 +172,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt64 IdentityUInt64(UInt64 input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt64");
@@ -180,7 +180,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public double IdentityDouble(double input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityDouble");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityDouble");
@@ -188,7 +188,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public String IdentityString(String input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityString");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityString");
@@ -196,7 +196,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public <T> Variant<T>[] IdentityArray(Variant<T>[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityArray");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityArray");
@@ -204,7 +204,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public byte[] IdentityByteArray(byte[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityByteArray");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityByteArray");
@@ -212,7 +212,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public boolean[] IdentityBoolArray(boolean[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityBoolArray");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityBoolArray");
@@ -220,7 +220,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public short[] IdentityInt16Array(short[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt16Array");
@@ -228,7 +228,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt16[] IdentityUInt16Array(UInt16[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt16Array");
@@ -236,7 +236,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public int[] IdentityInt32Array(int[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt32Array");
@@ -244,7 +244,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt32[] IdentityUInt32Array(UInt32[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt32Array");
@@ -252,7 +252,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public long[] IdentityInt64Array(long[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt64Array");
@@ -260,7 +260,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public UInt64[] IdentityUInt64Array(UInt64[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64Array");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt64Array");
@@ -268,7 +268,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public double[] IdentityDoubleArray(double[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityDoubleArray");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityDoubleArray");
@@ -276,7 +276,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns whatever it is passed")
+    @IntrospectionDescription("Returns whatever it is passed")
     public String[] IdentityStringArray(String[] input) {
         done.add("org.freedesktop.DBus.Binding.Tests.IdentityStringArray");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityStringArray");
@@ -284,7 +284,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns the sum of the values in the input list")
+    @IntrospectionDescription("Returns the sum of the values in the input list")
     public long Sum(int[] a) {
         done.add("org.freedesktop.DBus.Binding.Tests.Sum");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Sum");
@@ -296,7 +296,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Returns the sum of the values in the input list")
+    @IntrospectionDescription("Returns the sum of the values in the input list")
     public UInt32 Sum(byte[] a) {
         done.add("org.freedesktop.DBus.Binding.SingleTests.Sum");
         notdone.remove("org.freedesktop.DBus.Binding.SingleTests.Sum");
@@ -308,7 +308,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Given a map of A => B, should return a map of B => a list of all the As which mapped to B")
+    @IntrospectionDescription("Given a map of A => B, should return a map of B => a list of all the As which mapped to B")
     public Map<String, List<String>> InvertMapping(Map<String, String> a) {
         done.add("org.freedesktop.DBus.Binding.Tests.InvertMapping");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.InvertMapping");
@@ -326,7 +326,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("This method returns the contents of a struct as separate values")
+    @IntrospectionDescription("This method returns the contents of a struct as separate values")
     public Triplet<String, UInt32, Variant<?>> DeStruct(TestStruct a) {
         done.add("org.freedesktop.DBus.Binding.Tests.DeStruct");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.DeStruct");
@@ -334,7 +334,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("Given any compound type as a variant, return all the primitive types recursively contained within as an array of variants")
+    @IntrospectionDescription("Given any compound type as a variant, return all the primitive types recursively contained within as an array of variants")
     public List<Variant<Object>> Primitize(Variant<Object> a) {
         done.add("org.freedesktop.DBus.Binding.Tests.Primitize");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Primitize");
@@ -342,7 +342,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("inverts it's input")
+    @IntrospectionDescription("inverts it's input")
     public boolean Invert(boolean a) {
         done.add("org.freedesktop.DBus.Binding.Tests.Invert");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Invert");
@@ -350,7 +350,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     }
 
     @Override
-    @DBus.Description("triggers sending of a signal from the supplied object with the given parameter")
+    @IntrospectionDescription("triggers sending of a signal from the supplied object with the given parameter")
     public void Trigger(String a, UInt64 b) {
         done.add("org.freedesktop.DBus.Binding.Tests.Trigger");
         notdone.remove("org.freedesktop.DBus.Binding.Tests.Trigger");

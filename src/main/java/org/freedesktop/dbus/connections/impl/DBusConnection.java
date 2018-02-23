@@ -10,37 +10,41 @@
 */
 package org.freedesktop.dbus.connections.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.Error;
 import org.freedesktop.dbus.ExportedObject;
 import org.freedesktop.dbus.MethodCall;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
-import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.types.UInt32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.hypfvieh.util.FileIoUtil;
+import com.github.hypfvieh.util.StringUtil;
 
 /**
  * Handles a connection to DBus.
@@ -55,7 +59,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class DBusConnection extends AbstractConnection {
     private final Logger                             logger                     = LoggerFactory.getLogger(getClass());
-
+    
     public static final String                       DEFAULT_SYSTEM_BUS_ADDRESS =
             "unix:path=/var/run/dbus/system_bus_socket";
 
@@ -64,6 +68,10 @@ public final class DBusConnection extends AbstractConnection {
     private static final ConcurrentMap<String, DBusConnection> CONNECTIONS                = new ConcurrentHashMap<>();
     private DBus                                     dbus;
 
+    private final String                             machineId;
+
+    
+    
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
      * always register our own session to Dbus.
@@ -98,13 +106,24 @@ public final class DBusConnection extends AbstractConnection {
             if (null != c) {
                 return c;
             } else {
-                c = new DBusConnection(address, registerSelf);
+                c = new DBusConnection(address, registerSelf, getDbusMachineId());
                 CONNECTIONS.put(address, c);
                 return c;
             }
         }
     }
 
+    private static DBusConnection getConnection(Supplier<String> _addressGenerator, boolean _registerSelf) throws DBusException {
+        if (_addressGenerator == null) {
+            throw new DBusException("Invalid address generator");
+        }
+        String address = _addressGenerator.get();
+        if (address == null) {
+            throw new DBusException("null is not a valid DBUS address");
+        }
+        return getConnection(address, _registerSelf);
+    }
+    
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
      * 
@@ -121,80 +140,87 @@ public final class DBusConnection extends AbstractConnection {
      */
     public static DBusConnection getConnection(DBusBusType bustype) throws DBusException {
 
-        Logger logger = LoggerFactory.getLogger(DBusConnection.class);
-        String s = null;
         switch (bustype) {
-        case SYSTEM:
-            s = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
-            if (null == s) {
-                s = DEFAULT_SYSTEM_BUS_ADDRESS;
-            }
-            break;
-        case SESSION:
-            s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
-            if (null == s) {
-                // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
-                // $DISPLAY`
-                String display = System.getenv("DISPLAY");
-                if (null == display) {
-                    throw new DBusException("Cannot Resolve Session Bus Address");
-                }
-                if (!display.startsWith(":") && display.contains(":")) { // display seems to be a remote display
-                                                                         // (e.g. X forward through SSH)
-                    display = display.substring(display.indexOf(':'));
-                }
-
-                File uuidfile = new File("/var/lib/dbus/machine-id");
-                if (!uuidfile.exists()) {
-                    throw new DBusException("Cannot Resolve Session Bus Address");
-                }
-                try (BufferedReader r = new BufferedReader(new FileReader(uuidfile))) {
-                    String uuid = r.readLine();
-                    String homedir = System.getProperty("user.home");
-                    File addressfile = new File(homedir + "/.dbus/session-bus",
-                            uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
-                    if (!addressfile.exists()) {
-                        throw new DBusException("Cannot Resolve Session Bus Address");
+            case SYSTEM:
+                return getConnection(() -> {
+                    String bus = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
+                    if (bus == null) {
+                        bus = DEFAULT_SYSTEM_BUS_ADDRESS;
                     }
-                    try (BufferedReader rf = new BufferedReader(new FileReader(addressfile))) {
-                        String l;
-                        while (null != (l = rf.readLine())) {
-                            logger.trace("Reading D-Bus session data: " + l);
-                            if (l.matches("DBUS_SESSION_BUS_ADDRESS.*")) {
-                                s = l.replaceAll("^[^=]*=", "");
-                                logger.trace("Parsing " + l + " to " + s);
+                    return bus;
+                }, true);
+            case SESSION:
+                return getConnection(() -> {
+                    String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+                    if (null == s) {
+                        // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
+                        // $DISPLAY`
+                        String display = System.getenv("DISPLAY");
+                        if (null == display) {
+                            throw new RuntimeException("Cannot Resolve Session Bus Address");
+                        }
+                        if (!display.startsWith(":") && display.contains(":")) { // display seems to be a remote display
+                                                                                 // (e.g. X forward through SSH)
+                            display = display.substring(display.indexOf(':'));
+                        }
+                       
+                        try {
+                            String uuid = getDbusMachineId();
+                            String homedir = System.getProperty("user.home");
+                            File addressfile = new File(homedir + "/.dbus/session-bus",
+                                    uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
+                            if (!addressfile.exists()) {
+                                throw new RuntimeException("Cannot Resolve Session Bus Address");
                             }
+                            Properties readProperties = FileIoUtil.readProperties(addressfile);
+                            String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
+                            if (StringUtil.isEmpty(sessionAddress)) {
+                                throw new RuntimeException("Cannot Resolve Session Bus Address");
+                            }
+                            return sessionAddress;
+                        } catch (DBusException _ex) {
+                            throw new RuntimeException("Cannot Resolve Session Bus Address", _ex);
                         }
                     }
+                    return s;
 
-                    if (null == s || "".equals(s)) {
-                        throw new DBusException("Cannot Resolve Session Bus Address");
-                    }
-                    logger.debug("Read bus address " + s + " from file " + addressfile.toString());
-                } catch (Exception e) {
-                    logger.debug("", e);
-                    throw new DBusException("Cannot Resolve Session Bus Address");
-                }
-            }
-            break;
-        default:
-            throw new DBusException("Invalid Bus Type: " + bustype);
+                }, true);
+            default:
+                throw new DBusException("Invalid Bus Type: " + bustype);
         }
-
-        return getConnection(s, true);
         
     }
 
-    private DBusConnection(String address, boolean registerSelf) throws DBusException {
+    /**
+     * Extracts the machine-id usually found in /var/lib/dbus/machine-id.
+     * 
+     * @return machine-id string, never null
+     * @throws DBusException if machine-id could not be found
+     */
+    private static String getDbusMachineId() throws DBusException {
+        File uuidfile = new File("/var/lib/dbus/machine-id");
+        if (!uuidfile.exists()) {
+            throw new DBusException("Cannot Resolve Session Bus Address");
+        }
+        
+        String uuid = FileIoUtil.readFileToString(uuidfile);
+        if (StringUtil.isEmpty(uuid)) {
+            throw new DBusException("Cannot Resolve Session Bus Address: MachineId file is empty.");
+        }
+        
+        return uuid;            
+    }
+    
+    private DBusConnection(String address, boolean registerSelf, String _machineId) throws DBusException {
         super(address);
         busnames = new ArrayList<>();
-
+        machineId = _machineId;
         // start listening for calls
         listen();
 
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();
-        addSigHandlerWithoutMatch(org.freedesktop.DBus.Local.Disconnected.class, h);
+        addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.Local.Disconnected.class, h);
         addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
@@ -212,7 +238,7 @@ public final class DBusConnection extends AbstractConnection {
     DBusInterface dynamicProxy(String source, String path) throws DBusException {
         logger.debug("Introspecting " + path + " on " + source + " for dynamic proxy creation");
         try {
-            DBus.Introspectable intro = getRemoteObject(source, path, DBus.Introspectable.class);
+            Introspectable intro = getRemoteObject(source, path, Introspectable.class);
             String data = intro.Introspect();
             logger.trace("Got introspection data: " + data);
 
@@ -802,7 +828,7 @@ public final class DBusConnection extends AbstractConnection {
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal s) {
-            if (s instanceof org.freedesktop.DBus.Local.Disconnected) {
+            if (s instanceof org.freedesktop.dbus.interfaces.Local.Disconnected) {
                 logger.debug("Handling Disconnected signal from bus");
                 try {
                     Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0,
@@ -832,6 +858,13 @@ public final class DBusConnection extends AbstractConnection {
             }
         }
     }
+
+    @Override
+    public String getMachineId() {
+        return machineId;
+    }
+
+
 
     public static enum DBusBusType {
         /**

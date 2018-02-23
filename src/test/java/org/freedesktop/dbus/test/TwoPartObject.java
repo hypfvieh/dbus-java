@@ -10,7 +10,7 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 public interface TwoPartObject extends DBusInterface {
     String getName();

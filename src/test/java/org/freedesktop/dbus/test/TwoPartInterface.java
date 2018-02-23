@@ -10,9 +10,9 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 public interface TwoPartInterface extends DBusInterface {
     TwoPartObject getNew();

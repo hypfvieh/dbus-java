@@ -10,20 +10,20 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.DBus.Description;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt32;
 
 /**
  * A sample signal with two parameters
  */
-@Description("Test interface containing signals")
+@IntrospectionDescription("Test interface containing signals")
 @DBusInterfaceName("some.other.interface.Name")
 public interface TestSignalInterface2 extends DBusInterface {
-    @Description("Test basic signal")
+    @IntrospectionDescription("Test basic signal")
     class TestRenamedSignal extends DBusSignal {
         //CHECKSTYLE:OFF
         public final String value;

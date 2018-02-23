@@ -13,21 +13,21 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.DBus.Description;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Path;
-import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt32;
 
 /**
  * A sample signal with two parameters
  */
 //CHECKSTYLE:OFF
-@Description("Test interface containing signals")
+@IntrospectionDescription("Test interface containing signals")
 public interface TestSignalInterface extends DBusInterface {
-    @Description("Test basic signal")
+    @IntrospectionDescription("Test basic signal")
     class TestSignal extends DBusSignal {
         public final String value;
         public final UInt32 number;
@@ -57,7 +57,7 @@ public interface TestSignalInterface extends DBusInterface {
         }
     }
 
-    @Description("Test signal with arrays")
+    @IntrospectionDescription("Test signal with arrays")
     class TestArraySignal extends DBusSignal {
         public final List<TestStruct2>        v;
         public final Map<UInt32, TestStruct2> m;
@@ -69,7 +69,7 @@ public interface TestSignalInterface extends DBusInterface {
         }
     }
 
-    @Description("Test signal sending an object path")
+    @IntrospectionDescription("Test signal sending an object path")
     @DBusMemberName("TestSignalObject")
     class TestObjectSignal extends DBusSignal {
         public final DBusInterface otherpath;

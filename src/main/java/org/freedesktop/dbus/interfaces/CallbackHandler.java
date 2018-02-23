@@ -8,8 +8,15 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus.exceptions;
+package org.freedesktop.dbus.interfaces;
 
-public interface FatalException
-{
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+
+/**
+ * Interface for callbacks in async mode
+ */
+public interface CallbackHandler<T> {
+    void handle(T r);
+
+    void handleError(DBusExecutionException e);
 }

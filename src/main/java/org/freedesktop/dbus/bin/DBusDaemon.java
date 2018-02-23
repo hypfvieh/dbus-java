@@ -18,6 +18,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,26 +31,31 @@ import java.util.Vector;
 
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.Error;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.MethodCall;
 import org.freedesktop.dbus.MethodReturn;
-import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.errors.Error;
+import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalException;
+import org.freedesktop.dbus.interfaces.FatalException;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.unix.UnixServerSocket;
 import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
+import cx.ath.matthew.utils.Hexdump;
 
 /**
  * A replacement DBusDaemon
@@ -141,11 +149,24 @@ public class DBusDaemon extends Thread {
         }
     }
 
-    public class DBusServer extends Thread implements DBus, DBus.Introspectable, DBus.Peer {
+    public class DBusServer extends Thread implements DBus, Introspectable, Peer {
+        
+        private final String machineId;
+        
         public DBusServer() {
             setName("Server");
+            String ascii;
+            try {
+                ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes())); 
+            } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
+                ascii = this.hashCode() + "";
+            }
+            
+            machineId = ascii;
         }
 
+        
+        
         // CHECKSTYLE:OFF
         public Connstruct c;
         public Message    m;
@@ -163,7 +184,7 @@ public class DBusDaemon extends Thread {
 
             synchronized (c) {
                 if (null != c.unique) {
-                    throw new org.freedesktop.DBus.Error.AccessDenied("Connection has already sent a Hello message");
+                    throw new org.freedesktop.dbus.errors.AccessDenied("Connection has already sent a Hello message");
                 }
                 synchronized (uniqueLock) {
                     c.unique = ":1." + (++nextUnique);
@@ -313,7 +334,7 @@ public class DBusDaemon extends Thread {
         }
 
         @Override
-        public void AddMatch(String matchrule) throws Error.MatchRuleInvalid {
+        public void AddMatch(String matchrule) throws MatchRuleInvalid {
 
             LOGGER.debug("enter");
 
@@ -331,7 +352,7 @@ public class DBusDaemon extends Thread {
         }
 
         @Override
-        public void RemoveMatch(String matchrule) throws Error.MatchRuleInvalid {
+        public void RemoveMatch(String matchrule) throws MatchRuleInvalid {
 
             LOGGER.debug("enter");
 
@@ -371,15 +392,6 @@ public class DBusDaemon extends Thread {
             return new Byte[0];
         }
 
-        @Override
-        public void ReloadConfig() {
-
-            LOGGER.debug("enter");
-
-            LOGGER.debug("exit");
-
-            return;
-        }
 
         @SuppressWarnings("unchecked")
         private void handleMessage(Connstruct _c, Message _m) throws DBusException {
@@ -416,16 +428,16 @@ public class DBusDaemon extends Thread {
                     }
                 } catch (InvocationTargetException ite) {
                     LOGGER.debug("", ite);
-                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, ite.getCause()));
+                    send(_c, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _m, ite.getCause()));
                 } catch (DBusExecutionException dbee) {
                    LOGGER.debug("", dbee);
-                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _m, dbee));
+                    send(_c, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _m, dbee));
                 } catch (Exception e) {
                     LOGGER.debug("", e);
-                    send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", "An error occurred while calling " + _m.getName()));
+                    send(_c, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.GeneralError", _m.getSerial(), "s", "An error occurred while calling " + _m.getName()));
                 }
             } catch (NoSuchMethodException exNsm) {
-                send(_c, new org.freedesktop.dbus.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", "This service does not support " + _m.getName()));
+                send(_c, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", "This service does not support " + _m.getName()));
             }
 
             LOGGER.debug("exit");
@@ -497,6 +509,37 @@ public class DBusDaemon extends Thread {
             LOGGER.debug("exit");
 
         }
+
+        @Override
+        public String[] ListActivatableNames() {
+            return null;
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetConnectionCredentials(String _busName) {
+            return null;
+        }
+
+        @Override
+        public Byte[] GetAdtAuditSessionData(String _busName) {
+            return null;
+        }
+
+        @Override
+        public void UpdateActivationEnvironment(Map<String, String>[] _environment) {
+            
+        }
+
+        @Override
+        public String GetId() {
+            return null;
+        }
+
+        @Override
+        public String GetMachineId() {
+            return machineId;
+        }
+       
     }
 
     public class Sender extends Thread {

@@ -13,9 +13,9 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 public interface Profiler extends DBusInterface {
     class ProfileSignal extends DBusSignal {

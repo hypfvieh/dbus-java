@@ -4,9 +4,9 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.freedesktop.dbus.CallbackHandler;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.MethodCall;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
 
 public class PendingCallbackManager {
     private Map<MethodCall, CallbackHandler<? extends Object>>             pendingCallbacks;

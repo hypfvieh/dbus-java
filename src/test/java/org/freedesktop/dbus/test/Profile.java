@@ -14,12 +14,12 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Vector;
 
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.DBus.Peer;
-import org.freedesktop.dbus.DBusSigHandler;
-import org.freedesktop.dbus.UInt32;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.types.UInt32;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
     private int count = 0;

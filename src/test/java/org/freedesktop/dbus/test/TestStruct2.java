@@ -13,9 +13,9 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 
 import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.types.Variant;
 //CHECKSTYLE:OFF
 public final class TestStruct2 extends Struct {
     @Position(0)

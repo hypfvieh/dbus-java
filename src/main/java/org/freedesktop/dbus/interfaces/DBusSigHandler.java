@@ -8,7 +8,9 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.interfaces;
+
+import org.freedesktop.dbus.DBusSignal;
 
 /** Handle a signal on DBus.
  *  All Signal handlers are run in their own Thread.

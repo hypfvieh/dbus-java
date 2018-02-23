@@ -24,6 +24,7 @@ import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

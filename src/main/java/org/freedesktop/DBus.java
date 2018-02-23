@@ -10,19 +10,14 @@
 */
 package org.freedesktop;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.Variant;
+import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.Variant;
 //CHECKSTYLE:OFF
 public interface DBus extends DBusInterface {
     int DBUS_NAME_FLAG_ALLOW_REPLACEMENT      = 0x01;
@@ -39,161 +34,10 @@ public interface DBus extends DBusInterface {
     int DBUS_START_REPLY_ALREADY_RUNNING      = 2;
 
     /**
-    * All DBus Applications should respond to the Ping method on this interface
-    */
-    public interface Peer extends DBusInterface {
-        void Ping();
-    }
-
-    /**
-    * Objects can provide introspection data via this interface and method.
-    * See the <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Format</a>.
-    */
-    public interface Introspectable extends DBusInterface {
-        /**
-         * @return The XML introspection data for this object
-         */
-        String Introspect();
-    }
-
-    /**
-    * A standard properties interface.
-    */
-    public interface Properties extends DBusInterface {
-        /**
-         * Get the value for the given property.
-         * @param <A> whatever
-         * @param interface_name The interface this property is associated with.
-         * @param property_name The name of the property.
-         * @return The value of the property (may be any valid DBus type).
-         */
-        <A> A Get(String interface_name, String property_name);
-
-        /**
-         * Set the value for the given property.
-         * @param <A> whatever
-         * @param interface_name The interface this property is associated with.
-         * @param property_name The name of the property.
-         * @param value The new value of the property (may be any valid DBus type).
-         */
-        <A> void Set(String interface_name, String property_name, A value);
-
-        /**
-         * Get all properties and values.
-         * @param interface_name The interface the properties is associated with.
-         * @return The properties mapped to their values.
-         */
-        Map<String, Variant<?>> GetAll(String interface_name);
-
-        /**
-         * Signal generated when a property changes.
-         */
-        public class PropertiesChanged extends DBusSignal {
-            public final String interfaceName;
-            public final Map<String, Variant<?>> changedProperties;
-            public final List<String> invalidatedProperties;
-
-            public PropertiesChanged(final String path, final String _interfaceName,
-                    final Map<String, Variant<?>> _changedProperties, final List<String> _invalidatedProperties)
-                    throws DBusException {
-                super(path, _interfaceName, _changedProperties, _invalidatedProperties);
-                this.interfaceName = _interfaceName;
-                this.changedProperties = _changedProperties;
-                this.invalidatedProperties = _invalidatedProperties;
-            }
-        }
-    }
-
-    public interface ObjectManager extends DBusInterface {
-        /**
-         * Get a sub-tree of objects. The root of the sub-tree is this object.
-         * @return A Map from object path (DBusInterface) to a Map from interface name to a properties Map (as returned by Properties.GetAll())
-         */
-        Map<DBusInterface, Map<String, Map<String, Variant<?>>>> GetManagedObjects();
-
-        /**
-         * Signal generated when a new interface is added
-         */
-        class InterfacesAdded extends DBusSignal {
-            public final DBusInterface object;
-            public final Map<String, Map<String, Variant<?>>> interfaces;
-
-            public InterfacesAdded(String path, DBusInterface object, Map<String, Map<String, Variant<?>>> interfaces) throws DBusException {
-                super(path, object, interfaces);
-                this.object = object;
-                this.interfaces = interfaces;
-            }
-        }
-
-        /**
-         * Signal generated when an interface is removed
-         */
-        class InterfacesRemoved extends DBusSignal {
-            public final DBusInterface object;
-            public final List<String> interfaces;
-
-            public InterfacesRemoved(String path, DBusInterface object, List<String> interfaces) throws DBusException {
-                super(path, object, interfaces);
-                this.object = object;
-                this.interfaces = interfaces;
-            }
-        }
-
-    }
-
-    /**
-    * Messages generated locally in the application.
-    */
-    public interface Local extends DBusInterface {
-        class Disconnected extends DBusSignal {
-            public Disconnected(String path) throws DBusException {
-                super(path);
-            }
-        }
-    }
-
-    /**
     * Initial message to register ourselves on the Bus.
     * @return The unique name of this connection to the Bus.
     */
     String Hello();
-
-    /**
-    * Lists all connected names on the Bus.
-    * @return An array of all connected names.
-    */
-    String[] ListNames();
-
-    /**
-    * Determine if a name has an owner.
-    * @param name The name to query.
-    * @return true if the name has an owner.
-    */
-    boolean NameHasOwner(String name);
-
-    /**
-    * Get the connection unique name that owns the given name.
-    * @param name The name to query.
-    * @return The connection which owns the name.
-    */
-    String GetNameOwner(String name);
-
-    /**
-    * Get the Unix UID that owns a connection name.
-    * @param connection_name The connection name.
-    * @return The Unix UID that owns it.
-    */
-    UInt32 GetConnectionUnixUser(String connection_name);
-
-    /**
-    * Start a service. If the given service is not provided
-    * by any application, it will be started according to the .service file
-    * for that service.
-    * @param name The service name to start.
-    * @param flags Unused.
-    * @return DBUS_START_REPLY constants.
-    */
-    UInt32 StartServiceByName(String name, UInt32 flags);
 
     /**
     * Request a name on the bus.
@@ -211,22 +55,6 @@ public interface DBus extends DBusInterface {
     UInt32 ReleaseName(String name);
 
     /**
-    * Add a match rule.
-    * Will cause you to receive messages that aren't directed to you which
-    * match this rule.
-    * @param matchrule The Match rule as a string. Format Undocumented.
-    */
-    void AddMatch(String matchrule) throws Error.MatchRuleInvalid;
-
-    /**
-    * Remove a match rule.
-    * Will cause you to stop receiving messages that aren't directed to you which
-    * match this rule.
-    * @param matchrule The Match rule as a string. Format Undocumented.
-    */
-    void RemoveMatch(String matchrule) throws Error.MatchRuleInvalid;
-
-    /**
     * List the connections currently queued for a name.
     * @param name The name to query
     * @return A list of unique connection IDs.
@@ -234,24 +62,23 @@ public interface DBus extends DBusInterface {
     String[] ListQueuedOwners(String name);
 
     /**
-    * Returns the proccess ID associated with a connection.
-    * @param connection_name The name of the connection
-    * @return The PID of the connection.
+    * Lists all connected names on the Bus.
+    * @return An array of all connected names.
     */
-    UInt32 GetConnectionUnixProcessID(String connection_name);
+    String[] ListNames();
 
     /**
-    * Does something undocumented.
-    * @param a string
-    *
-    * @return byte array
-    */
-    Byte[] GetConnectionSELinuxSecurityContext(String a);
-
+     * Returns a list of all names that can be activated on the bus. 
+     * @return Array of strings where each string is a bus name
+     */
+    String[] ListActivatableNames();
+    
     /**
-    * Does something undocumented.
+    * Determine if a name has an owner.
+    * @param name The name to query.
+    * @return true if the name has an owner.
     */
-    void ReloadConfig();
+    boolean NameHasOwner(String name);
 
     /**
     * Signal sent when the owner of a name changes
@@ -260,7 +87,7 @@ public interface DBus extends DBusInterface {
         public final String name;
         public final String oldOwner;
         public final String newOwner;
-
+    
         public NameOwnerChanged(String path, String _name, String _oldOwner, String _newOwner) throws DBusException {
             super(path, new Object[] {
                     _name, _oldOwner, _newOwner
@@ -276,7 +103,7 @@ public interface DBus extends DBusInterface {
     */
     class NameLost extends DBusSignal {
         public final String name;
-
+    
         public NameLost(String path, String _name) throws DBusException {
             super(path, _name);
             this.name = _name;
@@ -288,7 +115,7 @@ public interface DBus extends DBusInterface {
     */
     class NameAcquired extends DBusSignal {
         public final String name;
-
+    
         public NameAcquired(String _path, String _name) throws DBusException {
             super(_path, _name);
             this.name = _name;
@@ -296,119 +123,185 @@ public interface DBus extends DBusInterface {
     }
 
     /**
-    * Contains standard errors that can be thrown from methods.
+    * Start a service. If the given service is not provided
+    * by any application, it will be started according to the .service file
+    * for that service.
+    * @param name The service name to start.
+    * @param flags Unused.
+    * @return DBUS_START_REPLY constants.
     */
-    public interface Error {
-        /**
-         * Thrown if the method called was unknown on the remote object
-         */
-        @SuppressWarnings("serial")
-        class UnknownMethod extends DBusExecutionException {
-            public UnknownMethod(String message) {
-                super(message);
-            }
-        }
-
-        /**
-         * Thrown if the object was unknown on a remote connection
-         */
-        @SuppressWarnings("serial")
-        class UnknownObject extends DBusExecutionException {
-            public UnknownObject(String message) {
-                super(message);
-            }
-        }
-
-        /**
-         * Thrown if the requested service was not available
-         */
-        @SuppressWarnings("serial")
-        class ServiceUnknown extends DBusExecutionException {
-            public ServiceUnknown(String message) {
-                super(message);
-            }
-        }
-
-        /**
-         * Thrown if the match rule is invalid
-         */
-        @SuppressWarnings("serial")
-        class MatchRuleInvalid extends DBusExecutionException {
-            public MatchRuleInvalid(String message) {
-                super(message);
-            }
-        }
-
-        /**
-         * Thrown if there is no reply to a method call
-         */
-        @SuppressWarnings("serial")
-        class NoReply extends DBusExecutionException {
-            public NoReply(String message) {
-                super(message);
-            }
-        }
-
-        /**
-         * Thrown if a message is denied due to a security policy
-         */
-        @SuppressWarnings("serial")
-        class AccessDenied extends DBusExecutionException {
-            public AccessDenied(String message) {
-                super(message);
-            }
-        }
-    }
+    UInt32 StartServiceByName(String name, UInt32 flags);
 
     /**
-    * Description of the interface or method, returned in the introspection data
+     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
+     * Normally, session bus activated services inherit the environment of the bus daemon. This method adds to or modifies that environment when activating services.
+     * Some bus instances, such as the standard system bus, may disable access to this method for some or all callers.
+     * Note, both the environment variable names and values must be valid UTF-8. There's no way to update the activation environment with data that is invalid UTF-8. 
+     *
+     * @param environment Environment to add or update
+     */
+    void UpdateActivationEnvironment(Map<String,String>[] environment);
+    
+    /**
+    * Get the connection unique name that owns the given name.
+    * @param name The name to query.
+    * @return The connection which owns the name.
     */
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface Description {
-        String value();
-    }
+    String GetNameOwner(String name);
 
     /**
-    * Indicates that a DBus interface or method is deprecated
+    * Get the Unix UID that owns a connection name.
+    * @param connection_name The connection name.
+    * @return The Unix UID that owns it.
     */
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface Deprecated {
-    }
+    UInt32 GetConnectionUnixUser(String connection_name);
 
     /**
-    * Contains method-specific annotations
+    * Returns the proccess ID associated with a connection.
+    * @param connection_name The name of the connection
+    * @return The PID of the connection.
     */
-    public interface Method {
-        /**
-         * Methods annotated with this do not send a reply
-         */
-        @Target(ElementType.METHOD)
-        @Retention(RetentionPolicy.RUNTIME)
-        public @interface NoReply {
-        }
-
-        /**
-         * Give an error that the method can return
-         */
-        @Target(ElementType.METHOD)
-        @Retention(RetentionPolicy.RUNTIME)
-        public @interface Error {
-            String value();
-        }
-    }
+    UInt32 GetConnectionUnixProcessID(String connection_name);
 
     /**
-    * Contains GLib-specific annotations
+     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
+     * Returns as many credentials as possible for the process connected to
+     * the server. If unable to determine certain credentials (for instance,
+     * because the process is not on the same machine as the bus daemon,
+     * or because this version of the bus daemon does not support a
+     * particular security framework), or if the values of those credentials
+     * cannot be represented as documented here, then those credentials
+     * are omitted.
+     * </p><p>
+     * Keys in the returned dictionary not containing "." are defined
+     * by this specification. Bus daemon implementors supporting
+     * credentials frameworks not mentioned in this document should either
+     * contribute patches to this specification, or use keys containing
+     * "." and starting with a reversed domain name.
+     * </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col><col><col></colgroup><thead><tr><th>Key</th><th>Value type</th><th>Value</th></tr></thead><tbody><tr><td>UnixUserID</td><td>UINT32</td><td>The numeric Unix user ID, as defined by POSIX</td></tr><tr><td>ProcessID</td><td>UINT32</td><td>The numeric process ID, on platforms that have
+     * this concept. On Unix, this is the process ID defined by
+     * POSIX.</td></tr><tr><td>WindowsSID</td><td>STRING</td><td>The Windows security identifier in its string form,
+     * e.g. "S-1-5-21-3623811015-3361044348-30300820-1013" for
+     * a domain or local computer user or "S-1-5-18" for the
+     * LOCAL_SYSTEM user</td></tr><tr><td>LinuxSecurityLabel</td><td>ARRAY of BYTE</td><td>
+     * <p>On Linux systems, the security label that would result
+     * from the SO_PEERSEC getsockopt call. The array contains
+     * the non-zero bytes of the security label in an unspecified
+     * ASCII-compatible encoding<a href="#ftn.idm2993" class="footnote" name="idm2993"><sup class="footnote">[a]</sup></a>, followed by a single zero byte.</p>
+     * <p>
+     * For example, the SELinux context
+     * <code class="literal">system_u:system_r:init_t:s0</code>
+     * (a string of length 27) would be encoded as 28 bytes
+     * ending with ':', 's', '0', '\x00'.<a href="#ftn.idm2997" class="footnote" name="idm2997"><sup class="footnote">[b]</sup></a>
+     * </p>
+     * <p>
+     * On SELinux systems this is the SELinux context, as output
+     * by <code class="literal">ps -Z</code> or <code class="literal">ls -Z</code>.
+     * Typical values might include
+     * <code class="literal">system_u:system_r:init_t:s0</code>,
+     * <code class="literal">unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023</code>,
+     * or
+     * <code class="literal">unconfined_u:unconfined_r:chrome_sandbox_t:s0-s0:c0.c1023</code>.
+     * </p>
+     * <p>
+     * On Smack systems, this is the Smack label.
+     * Typical values might include
+     * <code class="literal">_</code>, <code class="literal">*</code>,
+     * <code class="literal">User</code>, <code class="literal">System</code>
+     * or <code class="literal">System::Shared</code>.
+     * </p>
+     * <p>
+     * On AppArmor systems, this is the AppArmor context,
+     * a composite string encoding the AppArmor label (one or more
+     * profiles) and the enforcement mode.
+     * Typical values might include <code class="literal">unconfined</code>,
+     * <code class="literal">/usr/bin/firefox (enforce)</code> or
+     * <code class="literal">user1 (complain)</code>.
+     * </p>
+     * </td></tr></tbody><tbody class="footnotes"><tr><td colspan="3"><div id="ftn.idm2993" class="footnote"><p><a href="#idm2993" class="para"><sup class="para">[a] </sup></a>It could be ASCII or UTF-8, but could also be
+     * ISO Latin-1 or any other encoding.</p></div><div id="ftn.idm2997" class="footnote"><p><a href="#idm2997" class="para"><sup class="para">[b] </sup></a>Note that this is not the same as the older
+     * GetConnectionSELinuxContext method, which does
+     * not append the zero byte. Always appending the
+     * zero byte allows callers to read the string
+     * from the message payload without copying.</p></div></td></tr></tbody></table></div><p>
+     * </p><p>
+     * This method was added in D-Bus 1.7 to reduce the round-trips
+     * required to list a process's credentials. In older versions, calling
+     * this method will fail: applications should recover by using the
+     * separate methods such as
+     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-unix-user" title="org.freedesktop.DBus.GetConnectionUnixUser">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionUnixUser</code>”</a>
+     * instead.
+     * 
+     * 
+     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+     * @return Credentials
+     */
+    Map<String, Variant<?>> GetConnectionCredentials(String busName);
+    
+    
+    /**
+     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
+     * 
+     * Returns auditing data used by Solaris ADT, in an unspecified<br>
+     * binary format. If you know what this means, please contribute<br>
+     * documentation via the D-Bus bug tracking system.<br>
+     * This method is on the core DBus interface for historical reasons;<br>
+     * the same information should be made available via<br>
+     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials" title="org.freedesktop.DBus.GetConnectionCredentials">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+     * in future.<br>
+     * 
+     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+     * @return auditing data as returned by adt_export_session_data()
+     */
+    Byte[] GetAdtAuditSessionData(String busName);
+    
+    /**
+    * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
+    * Returns the security context used by SELinux, in an unspecified<br>
+    * format. If you know what this means, please contribute<br>
+    * documentation via the D-Bus bug tracking system.<br>
+    * This method is on the core DBus interface for historical reasons;<br>
+    * the same information should be made available via<br>
+    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials" title="org.freedesktop.DBus.GetConnectionCredentials">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+    * in future.
+    * 
+    * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+    *
+    * @return some sort of string of bytes, not necessarily UTF-8, not including '\0'
     */
-    public interface GLib {
-        /**
-         * Define a C symbol to map to this method. Used by GLib only
-         */
-        @Target(ElementType.METHOD)
-        @Retention(RetentionPolicy.RUNTIME)
-        public @interface CSymbol {
-            String value();
-        }
-    }
+    Byte[] GetConnectionSELinuxSecurityContext(String busName);
+
+    /**
+    * Add a match rule.
+    * Will cause you to receive messages that aren't directed to you which
+    * match this rule.
+    * @param matchrule The Match rule as a string. Format Undocumented.
+    */
+    void AddMatch(String matchrule) throws MatchRuleInvalid;
+
+    /**
+    * Remove a match rule.
+    * Will cause you to stop receiving messages that aren't directed to you which
+    * match this rule.
+    * @param matchrule The Match rule as a string. Format Undocumented.
+    */
+    void RemoveMatch(String matchrule) throws MatchRuleInvalid;
+
+    /**
+     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
+     * Gets the unique ID of the bus. The unique ID here is shared among all addresses the<br>
+     * bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in<br>
+     * <a  href="#uuids" title="UUIDs">the section called “UUIDs”</a>. <br> 
+     * Each address the bus is listening on also has its own unique<br>
+     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" title="Server Addresses">the section called “Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
+     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called “<code class="literal">org.freedesktop.DBus.Peer</code>”</a> and returned
+     * by org.freedesktop.DBus.Peer.GetMachineId().<br>
+     * For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
+     *    
+     * @return id Unique ID identifying the bus daemon
+     */
+    String GetId();
+
+    
 }
 //CHECKSTYLE:ON

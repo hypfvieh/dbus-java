@@ -11,9 +11,9 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.annotations.Position;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.Variant;
 //CHECKSTYLE:OFF
 public final class TestStruct extends Struct {
     @Position(0)

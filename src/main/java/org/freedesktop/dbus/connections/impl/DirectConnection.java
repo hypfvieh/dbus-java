@@ -12,15 +12,16 @@ package org.freedesktop.dbus.connections.impl;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.Random;
 import java.util.Vector;
 
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.ExportedObject;
 import org.freedesktop.dbus.RemoteInvocationHandler;
@@ -29,8 +30,15 @@ import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.hypfvieh.util.StringUtil;
+
+import cx.ath.matthew.utils.Hexdump;
 
 /** Handles a peer to peer connection between two applications withou a bus daemon.
  * <p>
@@ -39,6 +47,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DirectConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final String machineId;
     /**
     * Create a direct connection to another application.
     * @param address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
@@ -46,8 +55,20 @@ public class DirectConnection extends AbstractConnection {
     */
     public DirectConnection(String address) throws DBusException {
         super(address);
+        machineId = createMachineId();
         listen();
     }
+
+    private String createMachineId() {
+        String ascii;
+        
+        try {
+            ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
+            return ascii;
+        } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
+        }
+        
+        return StringUtil.randomString(32);    }
 
     /**
     * Creates a bus address for a randomly generated tcp port.
@@ -95,7 +116,7 @@ public class DirectConnection extends AbstractConnection {
 
     DBusInterface dynamicProxy(String path) throws DBusException {
         try {
-            DBus.Introspectable intro = (DBus.Introspectable) getRemoteObject(path, DBus.Introspectable.class);
+            Introspectable intro = (Introspectable) getRemoteObject(path, Introspectable.class);
             String data = intro.Introspect();
             String[] tags = data.split("[<>]");
             Vector<String> ifaces = new Vector<String>();
@@ -255,5 +276,10 @@ public class DirectConnection extends AbstractConnection {
     @Override
     public DBusInterface getExportedObject(String source, String path) throws DBusException {
         return getExportedObject(path);
+    }
+
+    @Override
+    public String getMachineId() {
+       return machineId;
     }
 }

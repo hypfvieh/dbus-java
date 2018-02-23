@@ -10,8 +10,8 @@
 */
 package org.freedesktop.dbus.viewer;
 
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.types.UInt32;
 
 /** A summary class for a dbus entry for use in a table model
  *

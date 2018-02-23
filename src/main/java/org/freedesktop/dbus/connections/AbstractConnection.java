@@ -32,15 +32,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.CallbackHandler;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.Error;
 import org.freedesktop.dbus.ExportedObject;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Message;
@@ -51,10 +46,16 @@ import org.freedesktop.dbus.ObjectTree;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
+import org.freedesktop.dbus.errors.Error;
+import org.freedesktop.dbus.errors.UnknownMethod;
+import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.FatalDBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -427,7 +428,7 @@ public abstract class AbstractConnection implements Closeable {
         connected = false;
         logger.debug("Sending disconnected signal");
         try {
-            handleMessage(new org.freedesktop.DBus.Local.Disconnected("/"));
+            handleMessage(new org.freedesktop.dbus.interfaces.Local.Disconnected("/"));
         } catch (Exception ex) {
             logger.debug("Exception while disconnecting", ex);
         }
@@ -605,7 +606,7 @@ public abstract class AbstractConnection implements Closeable {
 
             if (null == eo) {
                 queueOutgoing(new Error(m,
-                        new DBus.Error.UnknownObject(m.getPath() + " is not an object provided by this process.")));
+                        new UnknownObject(m.getPath() + " is not an object provided by this process.")));
                 return;
             }
             if (logger.isTraceEnabled()) {
@@ -617,7 +618,7 @@ public abstract class AbstractConnection implements Closeable {
             }
             meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
             if (null == meth) {
-                queueOutgoing(new Error(m, new DBus.Error.UnknownMethod(MessageFormat.format(
+                queueOutgoing(new Error(m, new UnknownMethod(MessageFormat.format(
                         "The method `{0}.{1}' does not exist on this object.", m.getInterface(), m.getName()))));
                 return;
             }
@@ -650,7 +651,7 @@ public abstract class AbstractConnection implements Closeable {
                             + Arrays.deepToString(ts));
                 } catch (Exception e) {
                     logger.debug("", e);
-                    handleException(conn, m, new DBus.Error.UnknownMethod("Failure in de-serializing message: " + e));
+                    handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));
                     return;
                 }
 
@@ -983,4 +984,6 @@ public abstract class AbstractConnection implements Closeable {
     public boolean isConnected() {
         return connected;
     }
+    
+    public abstract String getMachineId();
 }

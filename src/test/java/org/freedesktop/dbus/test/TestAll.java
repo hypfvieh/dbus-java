@@ -20,30 +20,31 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
-import org.freedesktop.DBus.Error.MatchRuleInvalid;
-import org.freedesktop.DBus.Error.ServiceUnknown;
-import org.freedesktop.DBus.Error.UnknownObject;
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.DBus.Peer;
-import org.freedesktop.DBus.Properties;
-import org.freedesktop.dbus.CallbackHandler;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Path;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.UInt64;
-import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.errors.MatchRuleInvalid;
+import org.freedesktop.dbus.errors.ServiceUnknown;
+import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Local;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -411,7 +412,7 @@ class EmptySignalHandler implements DBusSigHandler<TestSignalInterface.EmptySign
 /**
  * Disconnect handler
  */
-class DisconnectHandler implements DBusSigHandler<DBus.Local.Disconnected> {
+class DisconnectHandler implements DBusSigHandler<Local.Disconnected> {
     private DBusConnection       conn;
     private RenamedSignalHandler sh;
 
@@ -422,7 +423,7 @@ class DisconnectHandler implements DBusSigHandler<DBus.Local.Disconnected> {
 
     /** Handling a signal */
     @Override
-    public void handle(DBus.Local.Disconnected t) {
+    public void handle(Local.Disconnected t) {
         if (false == TestAll.done6) {
             TestAll.done6 = true;
             System.out.println("Handling disconnect, unregistering handler");
@@ -636,7 +637,7 @@ public class TestAll {
                 clientconn.addSigHandler(TestSignalInterface.EmptySignal.class, new EmptySignalHandler());
                 clientconn.addSigHandler(TestSignalInterface.TestSignal.class, sigh);
                 clientconn.addSigHandler(TestSignalInterface2.TestRenamedSignal.class, rsh);
-                clientconn.addSigHandler(DBus.Local.Disconnected.class, new DisconnectHandler(clientconn, rsh));
+                clientconn.addSigHandler(Local.Disconnected.class, new DisconnectHandler(clientconn, rsh));
                 String source = dbus.GetNameOwner("foo.bar.Test");
                 clientconn.addSigHandler(TestSignalInterface.TestArraySignal.class, source, peer, new ArraySignalHandler());
                 clientconn.addSigHandler(TestSignalInterface.TestObjectSignal.class, new ObjectSignalHandler());

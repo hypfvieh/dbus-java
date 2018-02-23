@@ -10,10 +10,10 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.DBus.Description;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
-@Description("A test exception to throw over DBus")
+@IntrospectionDescription("A test exception to throw over DBus")
 @SuppressWarnings("serial")
 public class TestException extends DBusExecutionException {
     public TestException(String message) {

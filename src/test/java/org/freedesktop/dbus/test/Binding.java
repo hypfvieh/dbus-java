@@ -1,30 +1,30 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.DBus.Description;
-import org.freedesktop.dbus.DBusInterface;
 import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Tuple;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.UInt64;
+import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
 
 /**
 * Contains Binding-test interfaces
 */
 public interface Binding {
     public interface SingleTests extends DBusInterface {
-        @Description("Returns the sum of the values in the input list")
+        @IntrospectionDescription("Returns the sum of the values in the input list")
         UInt32 Sum(byte[] a);
     }
 
     public interface TestClient extends DBusInterface {
-        @Description("when the trigger signal is received, this method should be called on the sending process/object.")
+        @IntrospectionDescription("when the trigger signal is received, this method should be called on the sending process/object.")
         void Response(UInt16 a, double b);
 
-        @Description("Causes a callback")
+        @IntrospectionDescription("Causes a callback")
         class Trigger extends DBusSignal {
             public final UInt16 a;
             public final double b;
@@ -39,7 +39,7 @@ public interface Binding {
     }
 
     public interface TestSignals extends DBusInterface {
-        @Description("Sent in response to a method call")
+        @IntrospectionDescription("Sent in response to a method call")
         class Triggered extends DBusSignal {
             public final UInt64 a;
 

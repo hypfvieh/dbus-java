@@ -15,12 +15,12 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Vector;
 
-import org.freedesktop.dbus.Error;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.MethodCall;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.Transport;
+import org.freedesktop.dbus.errors.Error;
 
 public final class Caller {
 

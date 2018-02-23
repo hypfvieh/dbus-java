@@ -13,8 +13,8 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 import java.util.Vector;
 
-import org.freedesktop.dbus.DBusSerializable;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusSerializable;
 
 public class TestSerializable<A> implements DBusSerializable {
     private int             a;

@@ -8,12 +8,13 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.types;
 
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Vector;
 
+import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

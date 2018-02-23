@@ -14,8 +14,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
 
 public final class P2pClientTest {
 
@@ -40,8 +41,8 @@ public final class P2pClientTest {
                 } catch (TestException ex) {
                     System.out.println("Caught TestException");
                 }
-                ((DBus.Peer) tri).Ping();
-                System.out.println(((DBus.Introspectable) tri).Introspect());
+                ((Peer) tri).Ping();
+                System.out.println(((Introspectable) tri).Introspect());
                 dc.disconnect();
                 System.out.println("Disconnected");
 

@@ -18,13 +18,17 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.errors.Error;
+import org.freedesktop.dbus.errors.NoReply;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +107,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
         if (syncmethod == CALL_TYPE_ASYNC) {
             flags |= Message.Flags.ASYNC;
         }
-        if (m.isAnnotationPresent(DBus.Method.NoReply.class)) {
+        if (m.isAnnotationPresent(MethodNoReply.class)) {
             flags |= Message.Flags.NO_REPLY_EXPECTED;
         }
         try {
@@ -144,13 +148,13 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         // get reply
-        if (m.isAnnotationPresent(DBus.Method.NoReply.class)) {
+        if (m.isAnnotationPresent(MethodNoReply.class)) {
             return null;
         }
 
         Message reply = call.getReply();
         if (null == reply) {
-            throw new DBus.Error.NoReply("No reply within specified time");
+            throw new NoReply("No reply within specified time");
         }
 
         if (reply instanceof Error) {

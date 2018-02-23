@@ -24,19 +24,20 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.DBusSigHandler;
 import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.UInt64;
-import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.types.DBusMapType;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -297,10 +298,10 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
         }
     }
 
-    public static void doTests(DBus.Peer peer, DBus.Introspectable intro, DBus.Introspectable rootintro, Tests tests, Binding.SingleTests singletests) {
+    public static void doTests(Peer peer, Introspectable intro, Introspectable rootintro, Tests tests, Binding.SingleTests singletests) {
         Random r = new Random();
         int i;
-        test(DBus.Peer.class, peer, "Ping", null);
+        test(Peer.class, peer, "Ping", null);
 
         try {
             if (intro.Introspect().startsWith("<!DOCTYPE")) {
@@ -544,10 +545,10 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
             conn.addSigHandler(Binding.TestSignals.Triggered.class, CROSS_TEST_CLIENT_INSTANCE);
             Tests tests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Tests.class);
             Binding.SingleTests singletests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Binding.SingleTests.class);
-            DBus.Peer peer = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", DBus.Peer.class);
-            DBus.Introspectable intro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", DBus.Introspectable.class);
+            Peer peer = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Peer.class);
+            Introspectable intro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Introspectable.class);
 
-            DBus.Introspectable rootintro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/", DBus.Introspectable.class);
+            Introspectable rootintro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/", Introspectable.class);
 
             doTests(peer, intro, rootintro, tests, singletests);
 

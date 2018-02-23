@@ -22,7 +22,7 @@ import org.freedesktop.dbus.annotations.Position;
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
  */
-abstract class Container {
+public abstract class Container {
     private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
 
     static void putTypeCache(Type k, Type[] v) {

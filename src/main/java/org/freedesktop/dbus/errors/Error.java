@@ -8,11 +8,12 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.errors;
 
 import java.lang.reflect.Constructor;
 import java.util.Vector;
 
+import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class Error extends Message {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    Error() {
+    public Error() {
     }
 
     public Error(String dest, String errorName, long replyserial, String sig, Object... args) throws DBusException {
@@ -109,6 +110,12 @@ public class Error extends Message {
             return NotConnected.class;
         }
         Class<? extends DBusExecutionException> c = null;
+        
+        // Fix package name for DBus own error messages
+        if (name.startsWith("org.freedesktop.DBus.Error.")) {
+            name = name.replace("org.freedesktop.DBus.Error.", "org.freedesktop.dbus.errors.");
+        }
+        
         do {
             try {
                 c = (Class<? extends org.freedesktop.dbus.exceptions.DBusExecutionException>) Class.forName(name);
