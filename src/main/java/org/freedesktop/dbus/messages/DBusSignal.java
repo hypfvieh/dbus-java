@@ -8,17 +8,21 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.InternalSignal;
+import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -29,7 +33,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBusSignal extends Message {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE       =
+            new ConcurrentHashMap<>();
+
+    private static final Map<Class<? extends DBusSignal>, Type[]>                            TYPE_CACHE        =
+            new ConcurrentHashMap<>();
+
+    private static final Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> CONSTRUCTOR_CACHE =
+            new ConcurrentHashMap<>();
+
+    private static final Map<String, String>                                                 SIGNAL_NAMES      =
+            new ConcurrentHashMap<>();
+    private static final Map<String, String>                                                 INT_NAMES         =
+            new ConcurrentHashMap<>();
+    
+    private final Logger                                                                     logger            =
+            LoggerFactory.getLogger(getClass());
+
+    private Class<? extends DBusSignal>                                                      clazz;
+    private boolean                                                                          bodydone          = false;
+    private byte[]                                                                           blen;
 
     DBusSignal() {
     }
@@ -40,11 +63,11 @@ public class DBusSignal extends Message {
         if (null == path || null == member || null == iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
         }
-        headers.put(Message.HeaderField.PATH, path);
-        headers.put(Message.HeaderField.MEMBER, member);
-        headers.put(Message.HeaderField.INTERFACE, iface);
+        getHeaders().put(Message.HeaderField.PATH, path);
+        getHeaders().put(Message.HeaderField.MEMBER, member);
+        getHeaders().put(Message.HeaderField.INTERFACE, iface);
 
-        Vector<Object> hargs = new Vector<Object>();
+        List<Object> hargs = new ArrayList<>();
         hargs.add(new Object[] {
                 Message.HeaderField.PATH, new Object[] {
                         ArgumentType.OBJECT_PATH_STRING, path
@@ -62,7 +85,7 @@ public class DBusSignal extends Message {
         });
 
         if (null != source) {
-            headers.put(Message.HeaderField.SENDER, source);
+            getHeaders().put(Message.HeaderField.SENDER, source);
             hargs.add(new Object[] {
                     Message.HeaderField.SENDER, new Object[] {
                             ArgumentType.STRING_STRING, source
@@ -76,46 +99,31 @@ public class DBusSignal extends Message {
                             ArgumentType.SIGNATURE_STRING, sig
                     }
             });
-            headers.put(Message.HeaderField.SIGNATURE, sig);
+            getHeaders().put(Message.HeaderField.SIGNATURE, sig);
             setArgs(args);
         }
 
         blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", ++serial, hargs.toArray());
+        long newSerial = getSerial() + 1;
+        setSerial(newSerial);
+        append("ua(yv)", newSerial, hargs.toArray());
         pad((byte) 8);
 
-        long counter = bytecounter;
+        long counter = getByteCounter();
         if (null != sig) {
             append(sig, args);
         }
-        marshallint(bytecounter - counter, blen, 0, 4);
+        marshallint(getByteCounter() - counter, blen, 0, 4);
         bodydone = true;
     }
-
-    // CHECKSTYLE:OFF
-    public static class internalsig extends DBusSignal {
-        internalsig(String source, String objectpath, String type, String name, String sig, Object[] parameters, long serial) throws DBusException {
-            super(source, objectpath, type, name, sig, parameters, serial);
-        }
-    }
-    // CHECKSTYLE:ON
-
-    private static Map<Class<? extends DBusSignal>, Type[]>                            typeCache  = new HashMap<Class<? extends DBusSignal>, Type[]>();
-    private static Map<String, Class<? extends DBusSignal>>                            classCache = new HashMap<String, Class<? extends DBusSignal>>();
-    private static Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> conCache   = new HashMap<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>>();
-    private static Map<String, String>                                                 signames   = new HashMap<String, String>();
-    private static Map<String, String>                                                 intnames   = new HashMap<String, String>();
-    private Class<? extends DBusSignal>                                                c;
-    private boolean                                                                    bodydone   = false;
-    private byte[]                                                                     blen;
-
+  
     static void addInterfaceMap(String java, String dbus) {
-        intnames.put(dbus, java);
+        INT_NAMES.put(dbus, java);
     }
 
     static void addSignalMap(String java, String dbus) {
-        signames.put(dbus, java);
+        SIGNAL_NAMES.put(dbus, java);
     }
 
     static DBusSignal createSignal(Class<? extends DBusSignal> c, String source, String objectpath, String sig, long serial, Object... parameters) throws DBusException {
@@ -130,15 +138,15 @@ public class DBusSignal extends Message {
         } else {
             throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
         }
-        DBusSignal s = new internalsig(source, objectpath, type, c.getSimpleName(), sig, parameters, serial);
-        s.c = c;
+        DBusSignal s = new InternalSignal(source, objectpath, type, c.getSimpleName(), sig, serial, parameters);
+        s.clazz = c;
         return s;
     }
 
     @SuppressWarnings("unchecked")
     private static Class<? extends DBusSignal> createSignalClass(String intname, String signame) throws DBusException {
         String name = intname + '$' + signame;
-        Class<? extends DBusSignal> c = classCache.get(name);
+        Class<? extends DBusSignal> c = CLASS_CACHE.get(name);
         if (null == c) {
             c = DBusMatchRule.getCachedSignalType(name);
         }
@@ -155,30 +163,30 @@ public class DBusSignal extends Message {
         if (null == c) {
             throw new DBusException("Could not create class from signal " + intname + '.' + signame);
         }
-        classCache.put(name, c);
+        CLASS_CACHE.put(name, c);
         return c;
     }
 
     @SuppressWarnings("unchecked")
     public DBusSignal createReal(AbstractConnection conn) throws DBusException {
-        String intname = intnames.get(getInterface());
-        String signame = signames.get(getName());
+        String intname = INT_NAMES.get(getInterface());
+        String signame = SIGNAL_NAMES.get(getName());
         if (null == intname) {
             intname = getInterface();
         }
         if (null == signame) {
             signame = getName();
         }
-        if (null == c) {
-            c = createSignalClass(intname, signame);
+        if (null == clazz) {
+            clazz = createSignalClass(intname, signame);
         }
 
-        logger.debug("Converting signal to type: " + c);
-        Type[] types = typeCache.get(c);
-        Constructor<? extends DBusSignal> con = conCache.get(c);
+        logger.debug("Converting signal to type: " + clazz);
+        Type[] types = TYPE_CACHE.get(clazz);
+        Constructor<? extends DBusSignal> con = CONSTRUCTOR_CACHE.get(clazz);
         if (null == types) {
-            con = (Constructor<? extends DBusSignal>) c.getDeclaredConstructors()[0];
-            conCache.put(c, con);
+            con = (Constructor<? extends DBusSignal>) clazz.getDeclaredConstructors()[0];
+            CONSTRUCTOR_CACHE.put(clazz, con);
             Type[] ts = con.getGenericParameterTypes();
             types = new Type[ts.length - 1];
             for (int i = 1; i < ts.length; i++) {
@@ -190,7 +198,7 @@ public class DBusSignal extends Message {
                     types[i - 1] = ts[i];
                 }
             }
-            typeCache.put(c, types);
+            TYPE_CACHE.put(clazz, types);
         }
 
         try {
@@ -203,12 +211,12 @@ public class DBusSignal extends Message {
                 params[0] = getPath();
                 System.arraycopy(args, 0, params, 1, args.length);
 
-                logger.debug("Creating signal of type " + c + " with parameters " + Arrays.deepToString(params));
+                logger.debug("Creating signal of type " + clazz + " with parameters " + Arrays.deepToString(params));
                 s = con.newInstance(params);
             }
-            s.headers = headers;
-            s.wiredata = wiredata;
-            s.bytecounter = wiredata.length;
+            s.getHeaders().putAll(getHeaders());
+            s.setWiredata(getWireData());
+            s.setByteCounter(getWireData().length);
             return s;
         } catch (Exception e) {
             logger.debug("", e);
@@ -248,11 +256,11 @@ public class DBusSignal extends Message {
             iface = AbstractConnection.DOLLAR_PATTERN.matcher(enc.getName()).replaceAll(".");
         }
 
-        headers.put(Message.HeaderField.PATH, objectpath);
-        headers.put(Message.HeaderField.MEMBER, member);
-        headers.put(Message.HeaderField.INTERFACE, iface);
+        getHeaders().put(Message.HeaderField.PATH, objectpath);
+        getHeaders().put(Message.HeaderField.MEMBER, member);
+        getHeaders().put(Message.HeaderField.INTERFACE, iface);
 
-        Vector<Object> hargs = new Vector<Object>();
+        List<Object> hargs = new ArrayList<>();
         hargs.add(new Object[] {
                 Message.HeaderField.PATH, new Object[] {
                         ArgumentType.OBJECT_PATH_STRING, objectpath
@@ -272,10 +280,10 @@ public class DBusSignal extends Message {
         String sig = null;
         if (0 < args.length) {
             try {
-                Type[] types = typeCache.get(tc);
+                Type[] types = TYPE_CACHE.get(tc);
                 if (null == types) {
                     Constructor<? extends DBusSignal> con = (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
-                    conCache.put(tc, con);
+                    CONSTRUCTOR_CACHE.put(tc, con);
                     Type[] ts = con.getGenericParameterTypes();
                     types = new Type[ts.length - 1];
                     for (int i = 1; i <= types.length; i++) {
@@ -285,7 +293,7 @@ public class DBusSignal extends Message {
                             types[i - 1] = ts[i];
                         }
                     }
-                    typeCache.put(tc, types);
+                    TYPE_CACHE.put(tc, types);
                 }
                 sig = Marshalling.getDBusType(types);
                 hargs.add(new Object[] {
@@ -293,7 +301,7 @@ public class DBusSignal extends Message {
                                 ArgumentType.SIGNATURE_STRING, sig
                         }
                 });
-                headers.put(Message.HeaderField.SIGNATURE, sig);
+                getHeaders().put(Message.HeaderField.SIGNATURE, sig);
                 setArgs(args);
             } catch (Exception e) {
                 logger.debug("", e);
@@ -303,7 +311,9 @@ public class DBusSignal extends Message {
 
         blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", ++serial, hargs.toArray());
+        long newSerial = getSerial() + 1;
+        setSerial(newSerial);
+        append("ua(yv)", newSerial, hargs.toArray());
         pad((byte) 8);
     }
 
@@ -312,16 +322,16 @@ public class DBusSignal extends Message {
             return;
         }
 
-        Type[] types = typeCache.get(getClass());
+        Type[] types = TYPE_CACHE.get(getClass());
         Object[] args = Marshalling.convertParameters(getParameters(), types, conn);
         setArgs(args);
         String sig = getSig();
 
-        long counter = bytecounter;
+        long counter = getByteCounter();
         if (null != args && 0 < args.length) {
             append(sig, args);
         }
-        marshallint(bytecounter - counter, blen, 0, 4);
+        marshallint(getByteCounter() - counter, blen, 0, 4);
         bodydone = true;
     }
 }

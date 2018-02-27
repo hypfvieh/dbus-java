@@ -53,10 +53,10 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
     static {
         List<String> l = new Vector<>();
         l.add("Signal never arrived");
-        FAILED.put("org.freedesktop.DBus.Binding.TestSignals.Triggered", l);
+        FAILED.put("org.freedesktop.Binding.TestSignals.Triggered", l);
         l = new Vector<>();
         l.add("Method never called");
-        FAILED.put("org.freedesktop.DBus.Binding.TestClient.Response", l);
+        FAILED.put("org.freedesktop.Binding.TestClient.Response", l);
     }
 
     public CrossTestClient(DBusConnection _conn) {
@@ -75,23 +75,23 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
 
     @Override
     public void handle(Binding.TestSignals.Triggered t) {
-        FAILED.remove("org.freedesktop.DBus.Binding.TestSignals.Triggered");
+        FAILED.remove("org.freedesktop.Binding.TestSignals.Triggered");
         if (new UInt64(21389479283L).equals(t.a) && "/Test".equals(t.getPath())) {
-            pass("org.freedesktop.DBus.Binding.TestSignals.Triggered");
+            pass("org.freedesktop.Binding.TestSignals.Triggered");
         } else if (!new UInt64(21389479283L).equals(t.a)) {
-            fail("org.freedesktop.DBus.Binding.TestSignals.Triggered", "Incorrect signal content; expected 21389479283 got " + t.a);
+            fail("org.freedesktop.Binding.TestSignals.Triggered", "Incorrect signal content; expected 21389479283 got " + t.a);
         } else if (!"/Test".equals(t.getPath())) {
-            fail("org.freedesktop.DBus.Binding.TestSignals.Triggered", "Incorrect signal source object; expected /Test got " + t.getPath());
+            fail("org.freedesktop.Binding.TestSignals.Triggered", "Incorrect signal source object; expected /Test got " + t.getPath());
         }
     }
 
     @Override
     public void Response(UInt16 a, double b) {
-        FAILED.remove("org.freedesktop.DBus.Binding.TestClient.Response");
+        FAILED.remove("org.freedesktop.Binding.TestClient.Response");
         if (a.equals(new UInt16(15)) && (b == 12.5)) {
-            pass("org.freedesktop.DBus.Binding.TestClient.Response");
+            pass("org.freedesktop.Binding.TestClient.Response");
         } else {
-            fail("org.freedesktop.DBus.Binding.TestClient.Response", "Incorrect parameters; expected 15, 12.5 got " + a + ", " + b);
+            fail("org.freedesktop.Binding.TestClient.Response", "Incorrect parameters; expected 15, 12.5 got " + a + ", " + b);
         }
     }
 
@@ -278,7 +278,7 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
         return primitizeRecurse(a.getValue(), a.getType());
     }
 
-    public static void primitizeTest(Tests tests, Object input) {
+    public static void primitizeTest(Binding.Tests tests, Object input) {
         Variant<Object> in = new Variant<>(input);
         List<Variant<Object>> vs = primitize(in);
         List<Variant<Object>> res;
@@ -287,141 +287,141 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
 
             res = tests.Primitize(in);
             if (setCompareLists(res, vs)) {
-                pass("org.freedesktop.DBus.Binding.Tests.Primitize");
+                pass("org.freedesktop.Binding.Tests.Primitize");
             } else {
-                fail("org.freedesktop.DBus.Binding.Tests.Primitize", "Wrong Return Value; expected " + collapseArray(vs) + " got " + collapseArray(res));
+                fail("org.freedesktop.Binding.Tests.Primitize", "Wrong Return Value; expected " + collapseArray(vs) + " got " + collapseArray(res));
             }
 
         } catch (Exception e) {
             LOGGER.debug("", e);
-            fail("org.freedesktop.DBus.Binding.Tests.Primitize", "Exception occurred during test: (" + e.getClass().getName() + ") " + e.getMessage());
+            fail("org.freedesktop.Binding.Tests.Primitize", "Exception occurred during test: (" + e.getClass().getName() + ") " + e.getMessage());
         }
     }
 
-    public static void doTests(Peer peer, Introspectable intro, Introspectable rootintro, Tests tests, Binding.SingleTests singletests) {
+    public static void doTests(Peer peer, Introspectable intro, Introspectable rootintro, Binding.Tests tests, Binding.SingleTests singletests) {
         Random r = new Random();
         int i;
         test(Peer.class, peer, "Ping", null);
 
         try {
             if (intro.Introspect().startsWith("<!DOCTYPE")) {
-                pass("org.freedesktop.DBus.Introspectable.Introspect");
+                pass("org.freedesktop.Introspectable.Introspect");
             } else {
-                fail("org.freedesktop.DBus.Introspectable.Introspect", "Didn't get valid xml data back when introspecting /Test");
+                fail("org.freedesktop.Introspectable.Introspect", "Didn't get valid xml data back when introspecting /Test");
             }
         } catch (DBusExecutionException dbee) {
 
             LOGGER.debug("", dbee);
 
-            fail("org.freedesktop.DBus.Introspectable.Introspect", "Got exception during introspection on /Test (" + dbee.getClass().getName() + "): " + dbee.getMessage());
+            fail("org.freedesktop.Introspectable.Introspect", "Got exception during introspection on /Test (" + dbee.getClass().getName() + "): " + dbee.getMessage());
         }
 
         try {
             if (rootintro.Introspect().startsWith("<!DOCTYPE")) {
-                pass("org.freedesktop.DBus.Introspectable.Introspect");
+                pass("org.freedesktop.Introspectable.Introspect");
             } else {
-                fail("org.freedesktop.DBus.Introspectable.Introspect", "Didn't get valid xml data back when introspecting /");
+                fail("org.freedesktop.Introspectable.Introspect", "Didn't get valid xml data back when introspecting /");
             }
         } catch (DBusExecutionException dbee) {
 
             LOGGER.debug("", dbee);
 
-            fail("org.freedesktop.DBus.Introspectable.Introspect", "Got exception during introspection on / (" + dbee.getClass().getName() + "): " + dbee.getMessage());
+            fail("org.freedesktop.Introspectable.Introspect", "Got exception during introspection on / (" + dbee.getClass().getName() + "): " + dbee.getMessage());
         }
 
-        test(Tests.class, tests, "Identity", new Variant<>(new Integer(1)), new Variant<>(new Integer(1)));
-        test(Tests.class, tests, "Identity", new Variant<>("Hello"), new Variant<>("Hello"));
+        test(Binding.Tests.class, tests, "Identity", new Variant<>(new Integer(1)), new Variant<>(new Integer(1)));
+        test(Binding.Tests.class, tests, "Identity", new Variant<>("Hello"), new Variant<>("Hello"));
 
-        test(Tests.class, tests, "IdentityBool", false, false);
-        test(Tests.class, tests, "IdentityBool", true, true);
+        test(Binding.Tests.class, tests, "IdentityBool", false, false);
+        test(Binding.Tests.class, tests, "IdentityBool", true, true);
 
-        test(Tests.class, tests, "Invert", false, true);
-        test(Tests.class, tests, "Invert", true, false);
+        test(Binding.Tests.class, tests, "Invert", false, true);
+        test(Binding.Tests.class, tests, "Invert", true, false);
 
-        test(Tests.class, tests, "IdentityByte", (byte) 0, (byte) 0);
-        test(Tests.class, tests, "IdentityByte", (byte) 1, (byte) 1);
-        test(Tests.class, tests, "IdentityByte", (byte) -1, (byte) -1);
-        test(Tests.class, tests, "IdentityByte", Byte.MAX_VALUE, Byte.MAX_VALUE);
-        test(Tests.class, tests, "IdentityByte", Byte.MIN_VALUE, Byte.MIN_VALUE);
+        test(Binding.Tests.class, tests, "IdentityByte", (byte) 0, (byte) 0);
+        test(Binding.Tests.class, tests, "IdentityByte", (byte) 1, (byte) 1);
+        test(Binding.Tests.class, tests, "IdentityByte", (byte) -1, (byte) -1);
+        test(Binding.Tests.class, tests, "IdentityByte", Byte.MAX_VALUE, Byte.MAX_VALUE);
+        test(Binding.Tests.class, tests, "IdentityByte", Byte.MIN_VALUE, Byte.MIN_VALUE);
         i = r.nextInt();
-        test(Tests.class, tests, "IdentityByte", (byte) i, (byte) i);
+        test(Binding.Tests.class, tests, "IdentityByte", (byte) i, (byte) i);
 
-        test(Tests.class, tests, "IdentityInt16", (short) 0, (short) 0);
-        test(Tests.class, tests, "IdentityInt16", (short) 1, (short) 1);
-        test(Tests.class, tests, "IdentityInt16", (short) -1, (short) -1);
-        test(Tests.class, tests, "IdentityInt16", Short.MAX_VALUE, Short.MAX_VALUE);
-        test(Tests.class, tests, "IdentityInt16", Short.MIN_VALUE, Short.MIN_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt16", (short) 0, (short) 0);
+        test(Binding.Tests.class, tests, "IdentityInt16", (short) 1, (short) 1);
+        test(Binding.Tests.class, tests, "IdentityInt16", (short) -1, (short) -1);
+        test(Binding.Tests.class, tests, "IdentityInt16", Short.MAX_VALUE, Short.MAX_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt16", Short.MIN_VALUE, Short.MIN_VALUE);
         i = r.nextInt();
-        test(Tests.class, tests, "IdentityInt16", (short) i, (short) i);
+        test(Binding.Tests.class, tests, "IdentityInt16", (short) i, (short) i);
 
-        test(Tests.class, tests, "IdentityInt32", 0, 0);
-        test(Tests.class, tests, "IdentityInt32", 1, 1);
-        test(Tests.class, tests, "IdentityInt32", -1, -1);
-        test(Tests.class, tests, "IdentityInt32", Integer.MAX_VALUE, Integer.MAX_VALUE);
-        test(Tests.class, tests, "IdentityInt32", Integer.MIN_VALUE, Integer.MIN_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt32", 0, 0);
+        test(Binding.Tests.class, tests, "IdentityInt32", 1, 1);
+        test(Binding.Tests.class, tests, "IdentityInt32", -1, -1);
+        test(Binding.Tests.class, tests, "IdentityInt32", Integer.MAX_VALUE, Integer.MAX_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt32", Integer.MIN_VALUE, Integer.MIN_VALUE);
         i = r.nextInt();
-        test(Tests.class, tests, "IdentityInt32", i, i);
+        test(Binding.Tests.class, tests, "IdentityInt32", i, i);
 
-        test(Tests.class, tests, "IdentityInt64", (long) 0, (long) 0);
-        test(Tests.class, tests, "IdentityInt64", (long) 1, (long) 1);
-        test(Tests.class, tests, "IdentityInt64", (long) -1, (long) -1);
-        test(Tests.class, tests, "IdentityInt64", Long.MAX_VALUE, Long.MAX_VALUE);
-        test(Tests.class, tests, "IdentityInt64", Long.MIN_VALUE, Long.MIN_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt64", (long) 0, (long) 0);
+        test(Binding.Tests.class, tests, "IdentityInt64", (long) 1, (long) 1);
+        test(Binding.Tests.class, tests, "IdentityInt64", (long) -1, (long) -1);
+        test(Binding.Tests.class, tests, "IdentityInt64", Long.MAX_VALUE, Long.MAX_VALUE);
+        test(Binding.Tests.class, tests, "IdentityInt64", Long.MIN_VALUE, Long.MIN_VALUE);
         i = r.nextInt();
-        test(Tests.class, tests, "IdentityInt64", (long) i, (long) i);
+        test(Binding.Tests.class, tests, "IdentityInt64", (long) i, (long) i);
 
-        test(Tests.class, tests, "IdentityUInt16", new UInt16(0), new UInt16(0));
-        test(Tests.class, tests, "IdentityUInt16", new UInt16(1), new UInt16(1));
-        test(Tests.class, tests, "IdentityUInt16", new UInt16(UInt16.MAX_VALUE), new UInt16(UInt16.MAX_VALUE));
-        test(Tests.class, tests, "IdentityUInt16", new UInt16(UInt16.MIN_VALUE), new UInt16(UInt16.MIN_VALUE));
-        i = r.nextInt();
-        i = i > 0 ? i : -i;
-        test(Tests.class, tests, "IdentityUInt16", new UInt16(i % UInt16.MAX_VALUE), new UInt16(i % UInt16.MAX_VALUE));
-
-        test(Tests.class, tests, "IdentityUInt32", new UInt32(0), new UInt32(0));
-        test(Tests.class, tests, "IdentityUInt32", new UInt32(1), new UInt32(1));
-        test(Tests.class, tests, "IdentityUInt32", new UInt32(UInt32.MAX_VALUE), new UInt32(UInt32.MAX_VALUE));
-        test(Tests.class, tests, "IdentityUInt32", new UInt32(UInt32.MIN_VALUE), new UInt32(UInt32.MIN_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt16", new UInt16(0), new UInt16(0));
+        test(Binding.Tests.class, tests, "IdentityUInt16", new UInt16(1), new UInt16(1));
+        test(Binding.Tests.class, tests, "IdentityUInt16", new UInt16(UInt16.MAX_VALUE), new UInt16(UInt16.MAX_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt16", new UInt16(UInt16.MIN_VALUE), new UInt16(UInt16.MIN_VALUE));
         i = r.nextInt();
         i = i > 0 ? i : -i;
-        test(Tests.class, tests, "IdentityUInt32", new UInt32(i % UInt32.MAX_VALUE), new UInt32(i % UInt32.MAX_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt16", new UInt16(i % UInt16.MAX_VALUE), new UInt16(i % UInt16.MAX_VALUE));
 
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(0), new UInt64(0));
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(1), new UInt64(1));
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MAX_LONG_VALUE), new UInt64(UInt64.MAX_LONG_VALUE));
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MAX_BIG_VALUE), new UInt64(UInt64.MAX_BIG_VALUE));
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MIN_VALUE), new UInt64(UInt64.MIN_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt32", new UInt32(0), new UInt32(0));
+        test(Binding.Tests.class, tests, "IdentityUInt32", new UInt32(1), new UInt32(1));
+        test(Binding.Tests.class, tests, "IdentityUInt32", new UInt32(UInt32.MAX_VALUE), new UInt32(UInt32.MAX_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt32", new UInt32(UInt32.MIN_VALUE), new UInt32(UInt32.MIN_VALUE));
         i = r.nextInt();
         i = i > 0 ? i : -i;
-        test(Tests.class, tests, "IdentityUInt64", new UInt64(i % UInt64.MAX_LONG_VALUE), new UInt64(i % UInt64.MAX_LONG_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt32", new UInt32(i % UInt32.MAX_VALUE), new UInt32(i % UInt32.MAX_VALUE));
 
-        test(Tests.class, tests, "IdentityDouble", 0.0, 0.0);
-        test(Tests.class, tests, "IdentityDouble", 1.0, 1.0);
-        test(Tests.class, tests, "IdentityDouble", -1.0, -1.0);
-        test(Tests.class, tests, "IdentityDouble", Double.MAX_VALUE, Double.MAX_VALUE);
-        test(Tests.class, tests, "IdentityDouble", Double.MIN_VALUE, Double.MIN_VALUE);
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(0), new UInt64(0));
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(1), new UInt64(1));
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MAX_LONG_VALUE), new UInt64(UInt64.MAX_LONG_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MAX_BIG_VALUE), new UInt64(UInt64.MAX_BIG_VALUE));
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(UInt64.MIN_VALUE), new UInt64(UInt64.MIN_VALUE));
         i = r.nextInt();
-        test(Tests.class, tests, "IdentityDouble", (double) i, (double) i);
+        i = i > 0 ? i : -i;
+        test(Binding.Tests.class, tests, "IdentityUInt64", new UInt64(i % UInt64.MAX_LONG_VALUE), new UInt64(i % UInt64.MAX_LONG_VALUE));
 
-        test(Tests.class, tests, "IdentityString", "", "");
-        test(Tests.class, tests, "IdentityString", "The Quick Brown Fox Jumped Over The Lazy Dog", "The Quick Brown Fox Jumped Over The Lazy Dog");
-        test(Tests.class, tests, "IdentityString", "ひらがなゲーム - かなぶん", "ひらがなゲーム - かなぶん");
+        test(Binding.Tests.class, tests, "IdentityDouble", 0.0, 0.0);
+        test(Binding.Tests.class, tests, "IdentityDouble", 1.0, 1.0);
+        test(Binding.Tests.class, tests, "IdentityDouble", -1.0, -1.0);
+        test(Binding.Tests.class, tests, "IdentityDouble", Double.MAX_VALUE, Double.MAX_VALUE);
+        test(Binding.Tests.class, tests, "IdentityDouble", Double.MIN_VALUE, Double.MIN_VALUE);
+        i = r.nextInt();
+        test(Binding.Tests.class, tests, "IdentityDouble", (double) i, (double) i);
 
-        testArray(Tests.class, tests, "IdentityBoolArray", Boolean.TYPE, null);
-        testArray(Tests.class, tests, "IdentityByteArray", Byte.TYPE, null);
-        testArray(Tests.class, tests, "IdentityInt16Array", Short.TYPE, null);
-        testArray(Tests.class, tests, "IdentityInt32Array", Integer.TYPE, null);
-        testArray(Tests.class, tests, "IdentityInt64Array", Long.TYPE, null);
-        testArray(Tests.class, tests, "IdentityDoubleArray", Double.TYPE, null);
+        test(Binding.Tests.class, tests, "IdentityString", "", "");
+        test(Binding.Tests.class, tests, "IdentityString", "The Quick Brown Fox Jumped Over The Lazy Dog", "The Quick Brown Fox Jumped Over The Lazy Dog");
+        test(Binding.Tests.class, tests, "IdentityString", "ひらがなゲーム - かなぶん", "ひらがなゲーム - かなぶん");
 
-        testArray(Tests.class, tests, "IdentityArray", Variant.class, new Variant<>("aoeu"));
-        testArray(Tests.class, tests, "IdentityUInt16Array", UInt16.class, new UInt16(12));
-        testArray(Tests.class, tests, "IdentityUInt32Array", UInt32.class, new UInt32(190));
-        testArray(Tests.class, tests, "IdentityUInt64Array", UInt64.class, new UInt64(103948));
-        testArray(Tests.class, tests, "IdentityStringArray", String.class, "asdf");
+        testArray(Binding.Tests.class, tests, "IdentityBoolArray", Boolean.TYPE, null);
+        testArray(Binding.Tests.class, tests, "IdentityByteArray", Byte.TYPE, null);
+        testArray(Binding.Tests.class, tests, "IdentityInt16Array", Short.TYPE, null);
+        testArray(Binding.Tests.class, tests, "IdentityInt32Array", Integer.TYPE, null);
+        testArray(Binding.Tests.class, tests, "IdentityInt64Array", Long.TYPE, null);
+        testArray(Binding.Tests.class, tests, "IdentityDoubleArray", Double.TYPE, null);
+
+        testArray(Binding.Tests.class, tests, "IdentityArray", Variant.class, new Variant<>("aoeu"));
+        testArray(Binding.Tests.class, tests, "IdentityUInt16Array", UInt16.class, new UInt16(12));
+        testArray(Binding.Tests.class, tests, "IdentityUInt32Array", UInt32.class, new UInt32(190));
+        testArray(Binding.Tests.class, tests, "IdentityUInt64Array", UInt64.class, new UInt64(103948));
+        testArray(Binding.Tests.class, tests, "IdentityStringArray", String.class, "asdf");
 
         int[] is = new int[0];
-        test(Tests.class, tests, "Sum", 0L, is);
+        test(Binding.Tests.class, tests, "Sum", 0L, is);
         r = new Random();
         int len = (r.nextInt() % 100) + 15;
         len = (len < 0 ? -len : len) + 15;
@@ -431,7 +431,7 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
             is[i] = r.nextInt();
             result += is[i];
         }
-        test(Tests.class, tests, "Sum", result, is);
+        test(Binding.Tests.class, tests, "Sum", result, is);
 
         byte[] bs = new byte[0];
         test(Binding.SingleTests.class, singletests, "Sum", new UInt32(0), bs);
@@ -445,11 +445,11 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
         }
         test(Binding.SingleTests.class, singletests, "Sum", new UInt32(res % (UInt32.MAX_VALUE + 1)), bs);
 
-        test(Tests.class, tests, "DeStruct", new Binding.Triplet<>("hi", new UInt32(12), new Short((short) 99)), new Binding.TestStruct("hi", new UInt32(12), new Short((short) 99)));
+        test(Binding.Tests.class, tests, "DeStruct", new Binding.Triplet<>("hi", new UInt32(12), new Short((short) 99)), new Binding.TestStruct("hi", new UInt32(12), new Short((short) 99)));
 
         Map<String, String> in = new HashMap<>();
         Map<String, List<String>> out = new HashMap<>();
-        test(Tests.class, tests, "InvertMapping", out, in);
+        test(Binding.Tests.class, tests, "InvertMapping", out, in);
 
         in.put("hi", "there");
         in.put("to", "there");
@@ -465,16 +465,16 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
         l = new Vector<>();
         l.add("in");
         out.put("out", l);
-        test(Tests.class, tests, "InvertMapping", out, in);
+        test(Binding.Tests.class, tests, "InvertMapping", out, in);
 
         primitizeTest(tests, new Integer(1));
         primitizeTest(tests, new Variant<>(new Variant<>(new Variant<>(new Variant<>("Hi")))));
         primitizeTest(tests, new Variant<>(in, new DBusMapType(String.class, String.class)));
 
-        test(Tests.class, tests, "Trigger", null, "/Test", new UInt64(21389479283L));
+        test(Binding.Tests.class, tests, "Trigger", null, "/Test", new UInt64(21389479283L));
 
         try {
-            CROSS_TEST_CLIENT_INSTANCE.conn.sendMessage(new Trigger("/Test", new UInt16(15), 12.5));
+            CROSS_TEST_CLIENT_INSTANCE.conn.sendMessage(new Binding.TestClient.Trigger("/Test", new UInt16(15), 12.5));
         } catch (DBusException dbe) {
 
             LOGGER.debug("", dbe);
@@ -487,7 +487,7 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
         } catch (InterruptedException ex) {
         }
 
-        test(Tests.class, tests, "Exit", null);
+        test(Binding.Tests.class, tests, "Exit", null);
     }
 
     public static void testArray(Class<? extends DBusInterface> iface, Object proxy, String method, Class<? extends Object> arrayType, Object content) {
@@ -543,12 +543,12 @@ public class CrossTestClient implements Binding.TestClient, DBusSigHandler<Bindi
             CROSS_TEST_CLIENT_INSTANCE = new CrossTestClient(conn);
             conn.exportObject("/Test", CROSS_TEST_CLIENT_INSTANCE);
             conn.addSigHandler(Binding.TestSignals.Triggered.class, CROSS_TEST_CLIENT_INSTANCE);
-            Tests tests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Tests.class);
-            Binding.SingleTests singletests = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Binding.SingleTests.class);
-            Peer peer = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Peer.class);
-            Introspectable intro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/Test", Introspectable.class);
+            Binding.Tests tests = conn.getRemoteObject("org.freedesktop.Binding.TestServer", "/Test", Binding.Tests.class);
+            Binding.SingleTests singletests = conn.getRemoteObject("org.freedesktop.Binding.TestServer", "/Test", Binding.SingleTests.class);
+            Peer peer = conn.getRemoteObject("org.freedesktop.Binding.TestServer", "/Test", Peer.class);
+            Introspectable intro = conn.getRemoteObject("org.freedesktop.Binding.TestServer", "/Test", Introspectable.class);
 
-            Introspectable rootintro = conn.getRemoteObject("org.freedesktop.DBus.Binding.TestServer", "/", Introspectable.class);
+            Introspectable rootintro = conn.getRemoteObject("org.freedesktop.Binding.TestServer", "/", Introspectable.class);
 
             doTests(peer, intro, rootintro, tests, singletests);
 

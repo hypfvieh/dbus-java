@@ -23,50 +23,48 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.test.Binding.SingleTests;
-import org.freedesktop.dbus.test.Binding.Triplet;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
 
-public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Binding.TestClient.Trigger> {
+public class CrossTestServer implements Binding.Tests, Binding.SingleTests, DBusSigHandler<Binding.TestClient.Trigger> {
     private DBusConnection conn;
     private boolean                run     = true;
     private Set<String>    done    = new TreeSet<>();
     private Set<String>    notdone = new TreeSet<>();
     {
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Identity");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityByte");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityBool");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityDouble");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityString");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityArray");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityByteArray");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityBoolArray");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64Array");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityDoubleArray");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityStringArray");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Sum");
-        notdone.add("org.freedesktop.DBus.Binding.SingleTests.Sum");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.InvertMapping");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.DeStruct");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Primitize");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Invert");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Trigger");
-        notdone.add("org.freedesktop.DBus.Binding.Tests.Exit");
-        notdone.add("org.freedesktop.DBus.Binding.TestClient.Trigger");
+        notdone.add("org.freedesktop.Binding.Tests.Identity");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityByte");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityBool");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt16");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt16");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt32");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt32");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt64");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt64");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityDouble");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityString");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityArray");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityByteArray");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityBoolArray");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt16Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt16Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt32Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt32Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityInt64Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityUInt64Array");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityDoubleArray");
+        notdone.add("org.freedesktop.Binding.Tests.IdentityStringArray");
+        notdone.add("org.freedesktop.Binding.Tests.Sum");
+        notdone.add("org.freedesktop.Binding.SingleTests.Sum");
+        notdone.add("org.freedesktop.Binding.Tests.InvertMapping");
+        notdone.add("org.freedesktop.Binding.Tests.DeStruct");
+        notdone.add("org.freedesktop.Binding.Tests.Primitize");
+        notdone.add("org.freedesktop.Binding.Tests.Invert");
+        notdone.add("org.freedesktop.Binding.Tests.Trigger");
+        notdone.add("org.freedesktop.Binding.Tests.Exit");
+        notdone.add("org.freedesktop.Binding.TestClient.Trigger");
     }
 
     public CrossTestServer(DBusConnection _conn) {
@@ -110,184 +108,184 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public <T> Variant<T> Identity(Variant<T> input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.Identity");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Identity");
+        done.add("org.freedesktop.Binding.Tests.Identity");
+        notdone.remove("org.freedesktop.Binding.Tests.Identity");
         return new Variant<>(input.getValue());
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public byte IdentityByte(byte input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityByte");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityByte");
+        done.add("org.freedesktop.Binding.Tests.IdentityByte");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityByte");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public boolean IdentityBool(boolean input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityBool");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityBool");
+        done.add("org.freedesktop.Binding.Tests.IdentityBool");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityBool");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public short IdentityInt16(short input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt16");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt16");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt16");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt16 IdentityUInt16(UInt16 input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt16");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt16");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt16");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public int IdentityInt32(int input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt32");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt32");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt32");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt32 IdentityUInt32(UInt32 input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt32");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt32");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt32");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public long IdentityInt64(long input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt64");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt64");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt64");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt64 IdentityUInt64(UInt64 input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt64");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt64");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt64");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public double IdentityDouble(double input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityDouble");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityDouble");
+        done.add("org.freedesktop.Binding.Tests.IdentityDouble");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityDouble");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public String IdentityString(String input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityString");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityString");
+        done.add("org.freedesktop.Binding.Tests.IdentityString");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityString");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public <T> Variant<T>[] IdentityArray(Variant<T>[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityArray");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityArray");
+        done.add("org.freedesktop.Binding.Tests.IdentityArray");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityArray");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public byte[] IdentityByteArray(byte[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityByteArray");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityByteArray");
+        done.add("org.freedesktop.Binding.Tests.IdentityByteArray");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityByteArray");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public boolean[] IdentityBoolArray(boolean[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityBoolArray");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityBoolArray");
+        done.add("org.freedesktop.Binding.Tests.IdentityBoolArray");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityBoolArray");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public short[] IdentityInt16Array(short[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt16Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt16Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt16Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt16Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt16[] IdentityUInt16Array(UInt16[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt16Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt16Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt16Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt16Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public int[] IdentityInt32Array(int[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt32Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt32Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt32Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt32Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt32[] IdentityUInt32Array(UInt32[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt32Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt32Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt32Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt32Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public long[] IdentityInt64Array(long[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityInt64Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityInt64Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityInt64Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityInt64Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public UInt64[] IdentityUInt64Array(UInt64[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityUInt64Array");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityUInt64Array");
+        done.add("org.freedesktop.Binding.Tests.IdentityUInt64Array");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityUInt64Array");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public double[] IdentityDoubleArray(double[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityDoubleArray");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityDoubleArray");
+        done.add("org.freedesktop.Binding.Tests.IdentityDoubleArray");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityDoubleArray");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns whatever it is passed")
     public String[] IdentityStringArray(String[] input) {
-        done.add("org.freedesktop.DBus.Binding.Tests.IdentityStringArray");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.IdentityStringArray");
+        done.add("org.freedesktop.Binding.Tests.IdentityStringArray");
+        notdone.remove("org.freedesktop.Binding.Tests.IdentityStringArray");
         return input;
     }
 
     @Override
     @IntrospectionDescription("Returns the sum of the values in the input list")
     public long Sum(int[] a) {
-        done.add("org.freedesktop.DBus.Binding.Tests.Sum");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Sum");
+        done.add("org.freedesktop.Binding.Tests.Sum");
+        notdone.remove("org.freedesktop.Binding.Tests.Sum");
         long sum = 0;
         for (int b : a) {
             sum += b;
@@ -298,8 +296,8 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     @Override
     @IntrospectionDescription("Returns the sum of the values in the input list")
     public UInt32 Sum(byte[] a) {
-        done.add("org.freedesktop.DBus.Binding.SingleTests.Sum");
-        notdone.remove("org.freedesktop.DBus.Binding.SingleTests.Sum");
+        done.add("org.freedesktop.Binding.SingleTests.Sum");
+        notdone.remove("org.freedesktop.Binding.SingleTests.Sum");
         int sum = 0;
         for (byte b : a) {
             sum += (b < 0 ? b + 256 : b);
@@ -310,8 +308,8 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     @Override
     @IntrospectionDescription("Given a map of A => B, should return a map of B => a list of all the As which mapped to B")
     public Map<String, List<String>> InvertMapping(Map<String, String> a) {
-        done.add("org.freedesktop.DBus.Binding.Tests.InvertMapping");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.InvertMapping");
+        done.add("org.freedesktop.Binding.Tests.InvertMapping");
+        notdone.remove("org.freedesktop.Binding.Tests.InvertMapping");
         HashMap<String, List<String>> m = new HashMap<>();
         for (String s : a.keySet()) {
             String b = a.get(s);
@@ -327,33 +325,33 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
 
     @Override
     @IntrospectionDescription("This method returns the contents of a struct as separate values")
-    public Triplet<String, UInt32, Variant<?>> DeStruct(TestStruct a) {
-        done.add("org.freedesktop.DBus.Binding.Tests.DeStruct");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.DeStruct");
-        return new Triplet<String, UInt32, Variant<?>>(a.a, a.b, a.c);
+    public Binding.Triplet<String, UInt32, Short> DeStruct(Binding.TestStruct a) {
+        done.add("org.freedesktop.Binding.Tests.DeStruct");
+        notdone.remove("org.freedesktop.Binding.Tests.DeStruct");
+        return new Binding.Triplet<>(a.a, a.b, a.c);
     }
 
     @Override
     @IntrospectionDescription("Given any compound type as a variant, return all the primitive types recursively contained within as an array of variants")
     public List<Variant<Object>> Primitize(Variant<Object> a) {
-        done.add("org.freedesktop.DBus.Binding.Tests.Primitize");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Primitize");
+        done.add("org.freedesktop.Binding.Tests.Primitize");
+        notdone.remove("org.freedesktop.Binding.Tests.Primitize");
         return CrossTestClient.primitizeRecurse(a.getValue(), a.getType());
     }
 
     @Override
     @IntrospectionDescription("inverts it's input")
     public boolean Invert(boolean a) {
-        done.add("org.freedesktop.DBus.Binding.Tests.Invert");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Invert");
+        done.add("org.freedesktop.Binding.Tests.Invert");
+        notdone.remove("org.freedesktop.Binding.Tests.Invert");
         return !a;
     }
 
     @Override
     @IntrospectionDescription("triggers sending of a signal from the supplied object with the given parameter")
     public void Trigger(String a, UInt64 b) {
-        done.add("org.freedesktop.DBus.Binding.Tests.Trigger");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Trigger");
+        done.add("org.freedesktop.Binding.Tests.Trigger");
+        notdone.remove("org.freedesktop.Binding.Tests.Trigger");
         try {
             conn.sendMessage(new Binding.TestSignals.Triggered(a, b));
         } catch (DBusException exD) {
@@ -363,8 +361,8 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
 
     @Override
     public void Exit() {
-        done.add("org.freedesktop.DBus.Binding.Tests.Exit");
-        notdone.remove("org.freedesktop.DBus.Binding.Tests.Exit");
+        done.add("org.freedesktop.Binding.Tests.Exit");
+        notdone.remove("org.freedesktop.Binding.Tests.Exit");
         run = false;
         synchronized (this) {
             notifyAll();
@@ -373,8 +371,8 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
 
     @Override
     public void handle(Binding.TestClient.Trigger t) {
-        done.add("org.freedesktop.DBus.Binding.TestClient.Trigger");
-        notdone.remove("org.freedesktop.DBus.Binding.TestClient.Trigger");
+        done.add("org.freedesktop.Binding.TestClient.Trigger");
+        notdone.remove("org.freedesktop.Binding.TestClient.Trigger");
         try {
             Binding.TestClient cb = conn.getRemoteObject(t.getSource(), "/Test", Binding.TestClient.class);
             cb.Response(t.a, t.b);
@@ -386,7 +384,7 @@ public class CrossTestServer implements Tests, SingleTests, DBusSigHandler<Bindi
     public static void main(String[] args) {
         try {
             DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
-            conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
+            conn.requestBusName("org.freedesktop.Binding.TestServer");
             CrossTestServer cts = new CrossTestServer(conn);
             conn.addSigHandler(Binding.TestClient.Trigger.class, cts);
             conn.exportObject("/Test", cts);

@@ -10,11 +10,11 @@
 */
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 
 /**

@@ -18,14 +18,14 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
-import org.freedesktop.dbus.exceptions.MessageTypeException;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cx.ath.matthew.utils.Hexdump;
+import cx.ath.matthew.unix.UnixIOException;
 
 public class MessageReader implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -53,9 +53,11 @@ public class MessageReader implements Closeable {
                 rv = inputStream.read(buf, len[0], 12 - len[0]);
             } catch (SocketTimeoutException exSt) {
                 return null;
+            } catch (UnixIOException _uxEx) {
+                throw new IOException(_uxEx);
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (1)");
             }
             len[0] += rv;
         }
@@ -88,7 +90,7 @@ public class MessageReader implements Closeable {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (2)");
             }
             len[1] += rv;
         }
@@ -121,7 +123,7 @@ public class MessageReader implements Closeable {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (3)");
             }
             len[2] += rv;
         }
@@ -146,7 +148,7 @@ public class MessageReader implements Closeable {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (4)");
             }
             len[3] += rv;
         }
@@ -156,30 +158,8 @@ public class MessageReader implements Closeable {
         }
 
         Message m;
-        switch (type) {
-        case Message.MessageType.METHOD_CALL:
-            m = new MethodCall();
-            break;
-        case Message.MessageType.METHOD_RETURN:
-            m = new MethodReturn();
-            break;
-        case Message.MessageType.SIGNAL:
-            m = new DBusSignal();
-            break;
-        case Message.MessageType.ERROR:
-            m = new Error();
-            break;
-        default:
-            throw new MessageTypeException(MessageFormat.format("Message type {0} unsupported", type));
-        }
-        if (logger.isTraceEnabled()) {
-            logger.trace(Hexdump.format(buf));
-            logger.trace(Hexdump.format(tbuf));
-            logger.trace(Hexdump.format(header));
-            logger.trace(Hexdump.format(body));
-        }
         try {
-            m.populate(buf, header, body);
+            m = MessageFactory.createMessage(type, buf, header, body);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
             buf = null;

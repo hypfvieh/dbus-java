@@ -12,7 +12,8 @@ package org.freedesktop.dbus.types;
 
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -90,7 +91,7 @@ public class Variant<T> {
         }
         this.sig = _sig;
         try {
-            Vector<Type> ts = new Vector<Type>();
+            List<Type> ts = new ArrayList<>();
             Marshalling.getJavaType(_sig, ts, 1);
             if (ts.size() != 1) {
                 throw new IllegalArgumentException("Can't wrap multiple or no types in a Variant: " + _sig);

@@ -2,7 +2,7 @@ package org.freedesktop.dbus.connections;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.freedesktop.dbus.Message;
+import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

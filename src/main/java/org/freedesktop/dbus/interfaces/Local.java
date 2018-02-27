@@ -1,8 +1,8 @@
 package org.freedesktop.dbus.interfaces;
 
-import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.DBusSignal;
 
 /**
 * Messages generated locally in the application.

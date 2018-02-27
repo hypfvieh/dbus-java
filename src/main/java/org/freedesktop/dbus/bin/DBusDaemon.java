@@ -22,21 +22,17 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
-import org.freedesktop.dbus.MethodCall;
-import org.freedesktop.dbus.MethodReturn;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
@@ -47,6 +43,10 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
@@ -654,7 +654,7 @@ public class DBusDaemon extends Thread {
     private MagicMap<Message, WeakReference<Connstruct>> outqueue    = new MagicMap<>("out");
     private MagicMap<Message, WeakReference<Connstruct>> inqueue     = new MagicMap<>("in");
     private MagicMap<Message, WeakReference<Connstruct>> localqueue  = new MagicMap<>("local");
-    private List<Connstruct>                             sigrecips   = new Vector<>();
+    private List<Connstruct>                             sigrecips   = new ArrayList<>();
     private boolean                                      run        = true;
     private int                                          nextUnique = 0;
     private Object                                       uniqueLock = new Object();
@@ -718,7 +718,7 @@ public class DBusDaemon extends Thread {
 
         List<Connstruct> l;
         synchronized (sigrecips) {
-            l = new Vector<>(sigrecips);
+            l = new ArrayList<>(sigrecips);
         }
 
         LOGGER.debug("exit");
@@ -821,7 +821,7 @@ public class DBusDaemon extends Thread {
             } catch (IOException exIo) {
             }
             synchronized (names) {
-                List<String> toRemove = new Vector<>();
+                List<String> toRemove = new ArrayList<>();
                 for (String name : names.keySet()) {
                     if (names.get(name) == c) {
                         toRemove.add(name);

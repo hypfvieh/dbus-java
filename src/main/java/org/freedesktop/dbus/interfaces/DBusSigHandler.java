@@ -10,7 +10,7 @@
 */
 package org.freedesktop.dbus.interfaces;
 
-import org.freedesktop.dbus.DBusSignal;
+import org.freedesktop.dbus.messages.DBusSignal;
 
 /** Handle a signal on DBus.
  *  All Signal handlers are run in their own Thread.

@@ -29,6 +29,8 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

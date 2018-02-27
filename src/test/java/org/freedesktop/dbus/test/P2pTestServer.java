@@ -117,9 +117,8 @@ public class P2pTestServer implements TestRemoteInterface {
         w.println(address);
         w.flush();
         w.close();
-        try (DirectConnection dc = new DirectConnection(address + ",listen=true")) {            
-            System.out.println("Connected");
-            dc.exportObject("/Test", new P2pTestServer());
-        }
+        DirectConnection dc = new DirectConnection(address + ",listen=true");
+        System.out.println("Connected");
+        dc.exportObject("/Test", new P2pTestServer());
     }
 }

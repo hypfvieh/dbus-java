@@ -10,13 +10,23 @@
 */
 package org.freedesktop.dbus;
 
-class ObjectPath extends Path {
+public class ObjectPath extends Path {
     // CHECKSTYLE:OFF
-    public String source;
+    private String source;
     // CHECKSTYLE:ON
 
-    ObjectPath(String _source, String _path) {
+    public ObjectPath(String _source, String _path) {
         super(_path);
         this.source = _source;
     }
+
+    protected String getSource() {
+        return source;
+    }
+
+    protected void setSource(String _source) {
+        source = _source;
+    }
+    
+    
 }

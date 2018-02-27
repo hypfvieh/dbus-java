@@ -13,12 +13,12 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 
 /**

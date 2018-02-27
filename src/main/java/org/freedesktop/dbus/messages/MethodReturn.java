@@ -8,13 +8,17 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 
 public class MethodReturn extends Message {
+    
+    private MethodCall call;
+    
     MethodReturn() {
     }
 
@@ -25,9 +29,9 @@ public class MethodReturn extends Message {
     public MethodReturn(String source, String dest, long replyserial, String sig, Object... args) throws DBusException {
         super(Message.Endian.BIG, Message.MessageType.METHOD_RETURN, (byte) 0);
 
-        headers.put(Message.HeaderField.REPLY_SERIAL, replyserial);
+        getHeaders().put(Message.HeaderField.REPLY_SERIAL, replyserial);
 
-        Vector<Object> hargs = new Vector<Object>();
+        List<Object> hargs = new ArrayList<>();
         hargs.add(new Object[] {
                 Message.HeaderField.REPLY_SERIAL, new Object[] {
                         ArgumentType.UINT32_STRING, replyserial
@@ -35,7 +39,7 @@ public class MethodReturn extends Message {
         });
 
         if (null != source) {
-            headers.put(Message.HeaderField.SENDER, source);
+            getHeaders().put(Message.HeaderField.SENDER, source);
             hargs.add(new Object[] {
                     Message.HeaderField.SENDER, new Object[] {
                             ArgumentType.STRING_STRING, source
@@ -44,7 +48,7 @@ public class MethodReturn extends Message {
         }
 
         if (null != dest) {
-            headers.put(Message.HeaderField.DESTINATION, dest);
+            getHeaders().put(Message.HeaderField.DESTINATION, dest);
             hargs.add(new Object[] {
                     Message.HeaderField.DESTINATION, new Object[] {
                             ArgumentType.STRING_STRING, dest
@@ -58,20 +62,20 @@ public class MethodReturn extends Message {
                             ArgumentType.SIGNATURE_STRING, sig
                     }
             });
-            headers.put(Message.HeaderField.SIGNATURE, sig);
+            getHeaders().put(Message.HeaderField.SIGNATURE, sig);
             setArgs(args);
         }
 
         byte[] blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", serial, hargs.toArray());
+        append("ua(yv)", getSerial(), hargs.toArray());
         pad((byte) 8);
 
-        long c = bytecounter;
+        long c = getByteCounter();
         if (null != sig) {
             append(sig, args);
         }
-        marshallint(bytecounter - c, blen, 0, 4);
+        marshallint(getByteCounter() - c, blen, 0, 4);
     }
 
     public MethodReturn(MethodCall mc, String sig, Object... args) throws DBusException {
@@ -83,10 +87,7 @@ public class MethodReturn extends Message {
         this.call = mc;
     }
 
-    // CHECKSTYLE:OFF
-    MethodCall call;
-    // CHECKSTYLE:ON
-
+    
     public MethodCall getCall() {
         return call;
     }

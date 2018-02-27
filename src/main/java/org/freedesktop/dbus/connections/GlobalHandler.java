@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.dbus.ExportedObject;
 import org.freedesktop.dbus.errors.UnknownObject;
+import org.freedesktop.dbus.messages.ExportedObject;
 
 public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.freedesktop.dbus.interfaces.Introspectable {
     /**
@@ -32,9 +32,9 @@ public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.
 
     @Override
     public String Introspect() {
-        String intro = connection.objectTree.Introspect(objectpath);
+        String intro = connection.getObjectTree().Introspect(objectpath);
         if (null == intro) {
-            ExportedObject eo = connection.fallbackContainer.get(objectpath);
+            ExportedObject eo = connection.getFallbackContainer().get(objectpath);
             if (null != eo) {
                 intro = eo.getIntrospectiondata();
             }

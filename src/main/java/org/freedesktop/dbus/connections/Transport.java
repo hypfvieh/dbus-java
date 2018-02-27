@@ -12,6 +12,7 @@ package org.freedesktop.dbus.connections;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,14 +28,15 @@ import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 
-import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +48,9 @@ import cx.ath.matthew.utils.Hexdump;
 public class Transport implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    // CHECKSTYLE:OFF
     private MessageReader min;
     private MessageWriter mout;
-    // CHECKSTYLE:ON
+
     private UnixServerSocket unixServerSocket;
 
     public Transport() {
@@ -87,7 +88,13 @@ public class Transport implements Closeable {
     
     public Message readMessage() throws IOException, DBusException {
         if (min != null) {
-            return min.readMessage();
+            try {
+                return min.readMessage();
+            } catch (Exception _ex) {
+                if (_ex instanceof EOFException) { return null; }
+                _ex.printStackTrace();
+                System.exit(1);
+            }
         }
         return null;
     }
@@ -175,6 +182,10 @@ public class Transport implements Closeable {
         }
     }
 
+    public boolean isConnected() {
+        return min.isClosed() || mout.isClosed();
+    }
+    
     @Override
     public void close() throws IOException {
         disconnect();
@@ -315,7 +326,7 @@ public class Transport implements Closeable {
             }
     
             // read old file
-            Vector<String> lines = new Vector<String>();
+            List<String> lines = new ArrayList<>();
             if (cookiefile.exists()) {
                 BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)));
                 String s = null;

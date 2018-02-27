@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
@@ -20,8 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.freedesktop.dbus.ArrayFrob;
+import org.freedesktop.dbus.Container;
+import org.freedesktop.dbus.DBusMap;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.ObjectPath;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.freedesktop.dbus.exceptions.UnknownTypeCodeException;
@@ -39,90 +43,8 @@ import cx.ath.matthew.utils.Hexdump;
  * This class deals with all the marshalling to/from the wire format.
  */
 public class Message {
-    /** Defines constants representing the endianness of the message. */
-    public interface Endian {
-        byte BIG    = 'B';
-        byte LITTLE = 'l';
-    }
-
-    /** Defines constants representing the flags which can be set on a message. */
-    public interface Flags {
-        byte NO_REPLY_EXPECTED = 0x01;
-        byte NO_AUTO_START     = 0x02;
-        byte ASYNC             = 0x40;
-    }
-
-    /** Defines constants for each message type. */
-    public interface MessageType {
-        byte METHOD_CALL   = 1;
-        byte METHOD_RETURN = 2;
-        byte ERROR         = 3;
-        byte SIGNAL        = 4;
-    }
-
     /** The current protocol major version. */
     public static final byte PROTOCOL = 1;
-
-    /** Defines constants for each valid header field type. */
-    public interface HeaderField {
-        byte PATH         = 1;
-        byte INTERFACE    = 2;
-        byte MEMBER       = 3;
-        byte ERROR_NAME   = 4;
-        byte REPLY_SERIAL = 5;
-        byte DESTINATION  = 6;
-        byte SENDER       = 7;
-        byte SIGNATURE    = 8;
-    }
-
-    /** Defines constants for each argument type.
-    * There are two constants for each argument type,
-    * as a byte or as a String (the _STRING version) */
-    public interface ArgumentType {
-        String BYTE_STRING        = "y";
-        String BOOLEAN_STRING     = "b";
-        String INT16_STRING       = "n";
-        String UINT16_STRING      = "q";
-        String INT32_STRING       = "i";
-        String UINT32_STRING      = "u";
-        String INT64_STRING       = "x";
-        String UINT64_STRING      = "t";
-        String DOUBLE_STRING      = "d";
-        String FLOAT_STRING       = "f";
-        String STRING_STRING      = "s";
-        String OBJECT_PATH_STRING = "o";
-        String SIGNATURE_STRING   = "g";
-        String ARRAY_STRING       = "a";
-        String VARIANT_STRING     = "v";
-        String STRUCT_STRING      = "r";
-        String STRUCT1_STRING     = "(";
-        String STRUCT2_STRING     = ")";
-        String DICT_ENTRY_STRING  = "e";
-        String DICT_ENTRY1_STRING = "{";
-        String DICT_ENTRY2_STRING = "}";
-
-        byte   BYTE               = 'y';
-        byte   BOOLEAN            = 'b';
-        byte   INT16              = 'n';
-        byte   UINT16             = 'q';
-        byte   INT32              = 'i';
-        byte   UINT32             = 'u';
-        byte   INT64              = 'x';
-        byte   UINT64             = 't';
-        byte   DOUBLE             = 'd';
-        byte   FLOAT              = 'f';
-        byte   STRING             = 's';
-        byte   OBJECT_PATH        = 'o';
-        byte   SIGNATURE          = 'g';
-        byte   ARRAY              = 'a';
-        byte   VARIANT            = 'v';
-        byte   STRUCT             = 'r';
-        byte   STRUCT1            = '(';
-        byte   STRUCT2            = ')';
-        byte   DICT_ENTRY         = 'e';
-        byte   DICT_ENTRY1        = '{';
-        byte   DICT_ENTRY2        = '}';
-    }
 
     /** Keep a static reference to each size of padding array to prevent allocation. */
     private static byte[][] padding;
@@ -136,17 +58,17 @@ public class Message {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-
-    // CHECKSTYLE:OFF
-    protected byte[][]          wiredata;
-    protected long              bytecounter;
-    protected Map<Byte, Object> headers;
     protected static long       globalserial    = 0;
-    protected long              serial;
-    protected byte              type;
-    protected byte              flags;
-    protected byte              protover;
-    // CHECKSTYLE:ON
+
+    private byte[][]            wiredata;
+    private long                bytecounter;
+    private Map<Byte, Object>   headers;
+    
+    private long                serial;
+    private byte              type;
+    private byte              flags;
+    private byte              protover;
+
     private boolean             big;
     private Object[]            args;
     private byte[]              body;
@@ -246,6 +168,30 @@ public class Message {
         for (Object o : (Vector<Object>) hs[0]) {
             this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());
         }
+    }
+    
+    protected Map<Byte, Object> getHeaders() {
+        return headers;
+    }
+
+    protected long getByteCounter() {
+        return bytecounter;
+    }
+        
+    protected void setByteCounter(long _bytecounter) {
+        bytecounter = _bytecounter;
+    }
+
+    protected void setSerial(long _serial) {
+        serial = _serial;
+    }
+    
+    protected byte[][] getWiredata() {
+        return wiredata;
+    }
+
+    protected void setWiredata(byte[][] _wiredata) {
+        wiredata = _wiredata;
     }
 
     /**
@@ -1185,7 +1131,7 @@ public class Message {
     * @return string
     */
     public String getName() {
-        if (this instanceof Error) {
+        if (this instanceof org.freedesktop.dbus.errors.Error) {
             return (String) headers.get(HeaderField.ERROR_NAME);
         } else {
             return (String) headers.get(HeaderField.MEMBER);
@@ -1274,5 +1220,87 @@ public class Message {
             pad((byte) 8);
             appendBytes(body);
         }
+    }
+
+    /** Defines constants representing the flags which can be set on a message. */
+    public interface Flags {
+        byte NO_REPLY_EXPECTED = 0x01;
+        byte NO_AUTO_START     = 0x02;
+        byte ASYNC             = 0x40;
+    }
+
+    /** Defines constants for each message type. */
+    public interface MessageType {
+        byte METHOD_CALL   = 1;
+        byte METHOD_RETURN = 2;
+        byte ERROR         = 3;
+        byte SIGNAL        = 4;
+    }
+
+    /** Defines constants for each valid header field type. */
+    public interface HeaderField {
+        byte PATH         = 1;
+        byte INTERFACE    = 2;
+        byte MEMBER       = 3;
+        byte ERROR_NAME   = 4;
+        byte REPLY_SERIAL = 5;
+        byte DESTINATION  = 6;
+        byte SENDER       = 7;
+        byte SIGNATURE    = 8;
+    }
+
+    /** Defines constants for each argument type.
+    * There are two constants for each argument type,
+    * as a byte or as a String (the _STRING version) */
+    public interface ArgumentType {
+        String BYTE_STRING        = "y";
+        String BOOLEAN_STRING     = "b";
+        String INT16_STRING       = "n";
+        String UINT16_STRING      = "q";
+        String INT32_STRING       = "i";
+        String UINT32_STRING      = "u";
+        String INT64_STRING       = "x";
+        String UINT64_STRING      = "t";
+        String DOUBLE_STRING      = "d";
+        String FLOAT_STRING       = "f";
+        String STRING_STRING      = "s";
+        String OBJECT_PATH_STRING = "o";
+        String SIGNATURE_STRING   = "g";
+        String ARRAY_STRING       = "a";
+        String VARIANT_STRING     = "v";
+        String STRUCT_STRING      = "r";
+        String STRUCT1_STRING     = "(";
+        String STRUCT2_STRING     = ")";
+        String DICT_ENTRY_STRING  = "e";
+        String DICT_ENTRY1_STRING = "{";
+        String DICT_ENTRY2_STRING = "}";
+    
+        byte   BYTE               = 'y';
+        byte   BOOLEAN            = 'b';
+        byte   INT16              = 'n';
+        byte   UINT16             = 'q';
+        byte   INT32              = 'i';
+        byte   UINT32             = 'u';
+        byte   INT64              = 'x';
+        byte   UINT64             = 't';
+        byte   DOUBLE             = 'd';
+        byte   FLOAT              = 'f';
+        byte   STRING             = 's';
+        byte   OBJECT_PATH        = 'o';
+        byte   SIGNATURE          = 'g';
+        byte   ARRAY              = 'a';
+        byte   VARIANT            = 'v';
+        byte   STRUCT             = 'r';
+        byte   STRUCT1            = '(';
+        byte   STRUCT2            = ')';
+        byte   DICT_ENTRY         = 'e';
+        byte   DICT_ENTRY1        = '{';
+        byte   DICT_ENTRY2        = '}';
+    }
+
+    /** Defines constants representing the endianness of the message. */
+    public interface Endian {
+        byte BIG    = 'B';
+        byte LITTLE = 'l';
     }
 }

@@ -2,19 +2,19 @@ package org.freedesktop.dbus.connections;
 
 import java.util.Objects;
 
-import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.FatalException;
+import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectionThread extends Thread {
+public class IncomingMessageThread extends Thread {
     private final Logger             logger = LoggerFactory.getLogger(getClass());
 
     private boolean                  terminate;
     private final AbstractConnection connection;
 
-    public ConnectionThread(AbstractConnection _connection) {
+    public IncomingMessageThread(AbstractConnection _connection) {
         Objects.requireNonNull(_connection);
         connection = _connection;
         setName("DBusConnection");
@@ -28,26 +28,28 @@ public class ConnectionThread extends Thread {
     @Override
     public void run() {
 
-        Message m = null;
+        Message msg = null;
         while (!terminate) {
-            m = null;
+            msg = null;
 
             // read from the wire
             try {
                 // this blocks on outgoing being non-empty or a message being available.
-                m = connection.readIncoming();
-                if (m != null) {
-                    logger.trace("Got Incoming Message: " + m);
+                msg = connection.readIncoming();
+                if (msg != null) {
+                    logger.trace("Got Incoming Message: {}", msg);
 
-                    connection.handleMessage(m);
+                    connection.handleMessage(msg);
 
-                    m = null;
+                    msg = null;
                 }
-            } catch (DBusException e) {
-                logger.error("Exception in connection thread.", e);
-                if (e instanceof FatalException) {
-                    connection.disconnect();
+            } catch (DBusException _ex) {
+                if (_ex instanceof FatalException) {
+                    if (connection.isConnected()) {
+                        connection.disconnect();
+                    }
                 }
+                logger.error("Exception in connection thread.", _ex);
             }
         }
     }

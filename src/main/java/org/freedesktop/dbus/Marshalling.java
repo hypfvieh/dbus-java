@@ -19,17 +19,18 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSerializable;
+import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.DBusStructType;
@@ -199,7 +200,7 @@ public final class Marshalling {
                 out[level].append((char) Message.ArgumentType.OBJECT_PATH);
             } else if (Tuple.class.isAssignableFrom((Class<? extends Object>) p.getRawType())) {
                 Type[] ts = p.getActualTypeArguments();
-                Vector<String> vs = new Vector<String>();
+                List<String> vs = new ArrayList<>();
                 for (Type t : ts) {
                     for (String s : recursiveGetDBusType(t, false, level + 1)) {
                         vs.add(s);
@@ -308,7 +309,7 @@ public final class Marshalling {
     /**
     * Converts a dbus type string into Java Type objects,
     * @param dbus The DBus type or types.
-    * @param rv Vector to return the types in.
+    * @param rv List to return the types in.
     * @param limit Maximum number of types to parse (-1 == nolimit).
     * @return number of characters parsed from the type string.
     * @throws DBusException on error
@@ -332,19 +333,19 @@ public final class Marshalling {
                         }
                     }
 
-                    Vector<Type> contained = new Vector<Type>();
+                    List<Type> contained = new ArrayList<>();
                     int c = getJavaType(dbus.substring(i + 1, j - 1), contained, -1);
                     rv.add(new DBusStructType(contained.toArray(new Type[0])));
                     i = j;
                     break;
                 case Message.ArgumentType.ARRAY:
                     if (Message.ArgumentType.DICT_ENTRY1 == dbus.charAt(i + 1)) {
-                        contained = new Vector<Type>();
+                        contained = new ArrayList<>();
                         c = getJavaType(dbus.substring(i + 2), contained, 2);
                         rv.add(new DBusMapType(contained.get(0), contained.get(1)));
                         i += (c + 2);
                     } else {
-                        contained = new Vector<Type>();
+                        contained = new ArrayList<>();
                         c = getJavaType(dbus.substring(i + 1), contained, 1);
                         rv.add(new DBusListType(contained.get(0)));
                         i += c;
@@ -394,7 +395,7 @@ public final class Marshalling {
                     break;
                 case Message.ArgumentType.DICT_ENTRY1:
                     rv.add(Map.Entry.class);
-                    contained = new Vector<Type>();
+                    contained = new ArrayList<>();
                     c = getJavaType(dbus.substring(i + 1), contained, 2);
                     i += c + 1;
                     break;
@@ -422,10 +423,10 @@ public final class Marshalling {
             return null;
         }
         for (int i = 0; i < parameters.length; i++) {
-            LOGGER.trace("Converting " + i + " from " + parameters[i] + " to " + types[i]);
             if (null == parameters[i]) {
                 continue;
             }
+            LOGGER.trace("Converting " + i + " from " + parameters[i] + " to " + types[i]);
 
             if (parameters[i] instanceof DBusSerializable) {
                 for (Method m : parameters[i].getClass().getDeclaredMethods()) {
@@ -481,7 +482,7 @@ public final class Marshalling {
 
         // Turn a signature into a Type[]
         if (type instanceof Class && ((Class<?>) type).isArray() && ((Class<?>) type).getComponentType().equals(Type.class) && parameter instanceof String) {
-            Vector<Type> rv = new Vector<Type>();
+            List<Type> rv = new ArrayList<>();
             getJavaType((String) parameter, rv, -1);
             parameter = rv.toArray(new Type[0]);
         }
@@ -489,7 +490,7 @@ public final class Marshalling {
         // its an object path, get/create the proxy
         if (parameter instanceof ObjectPath) {
             if (type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) type)) {
-                parameter = conn.getExportedObject(((ObjectPath) parameter).source, ((ObjectPath) parameter).path);
+                parameter = conn.getExportedObject(((ObjectPath) parameter).getSource(), ((ObjectPath) parameter).path);
             } else {
                 parameter = new Path(((ObjectPath) parameter).path);
             }

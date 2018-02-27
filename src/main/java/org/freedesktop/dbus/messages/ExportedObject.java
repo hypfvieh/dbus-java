@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.Reference;
@@ -23,6 +23,10 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.MethodTuple;
+import org.freedesktop.dbus.StrongReference;
+import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;

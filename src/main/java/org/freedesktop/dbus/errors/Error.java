@@ -11,14 +11,15 @@
 package org.freedesktop.dbus.errors;
 
 import java.lang.reflect.Constructor;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.freedesktop.dbus.Message;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +42,10 @@ public class Error extends Message {
         if (null == errorName) {
             throw new MessageFormatException("Must specify error name to Errors.");
         }
-        headers.put(Message.HeaderField.REPLY_SERIAL, replyserial);
-        headers.put(Message.HeaderField.ERROR_NAME, errorName);
+        getHeaders().put(Message.HeaderField.REPLY_SERIAL, replyserial);
+        getHeaders().put(Message.HeaderField.ERROR_NAME, errorName);
 
-        Vector<Object> hargs = new Vector<Object>();
+        List<Object> hargs = new ArrayList<>();
         hargs.add(new Object[] {
                 Message.HeaderField.ERROR_NAME, new Object[] {
                         ArgumentType.STRING_STRING, errorName
@@ -57,7 +58,7 @@ public class Error extends Message {
         });
 
         if (null != source) {
-            headers.put(Message.HeaderField.SENDER, source);
+            getHeaders().put(Message.HeaderField.SENDER, source);
             hargs.add(new Object[] {
                     Message.HeaderField.SENDER, new Object[] {
                             ArgumentType.STRING_STRING, source
@@ -66,7 +67,7 @@ public class Error extends Message {
         }
 
         if (null != dest) {
-            headers.put(Message.HeaderField.DESTINATION, dest);
+            getHeaders().put(Message.HeaderField.DESTINATION, dest);
             hargs.add(new Object[] {
                     Message.HeaderField.DESTINATION, new Object[] {
                             ArgumentType.STRING_STRING, dest
@@ -80,20 +81,20 @@ public class Error extends Message {
                             ArgumentType.SIGNATURE_STRING, sig
                     }
             });
-            headers.put(Message.HeaderField.SIGNATURE, sig);
+            getHeaders().put(Message.HeaderField.SIGNATURE, sig);
             setArgs(args);
         }
 
         byte[] blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", serial, hargs.toArray());
+        append("ua(yv)", getSerial(), hargs.toArray());
         pad((byte) 8);
 
-        long c = bytecounter;
+        long c = getByteCounter();
         if (null != sig) {
             append(sig, args);
         }
-        marshallint(bytecounter - c, blen, 0, 4);
+        marshallint(getByteCounter() - c, blen, 0, 4);
     }
 
     public Error(String source, Message m, Throwable e) throws DBusException {

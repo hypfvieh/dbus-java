@@ -8,7 +8,7 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
 import java.util.regex.Pattern;
 
@@ -116,12 +116,12 @@ public class ObjectTree {
         return current;
     }
 
-    public void add(String path, ExportedObject object, String data) {
+    public synchronized void add(String path, ExportedObject object, String data) {
         logger.debug("Adding " + path + " to object tree");
         root = recursiveAdd(root, path, object, data);
     }
 
-    public void remove(String path) {
+    public synchronized void remove(String path) {
         logger.debug("Removing " + path + " from object tree");
         TreeNode t = recursiveFind(root, path);
         t.object = null;

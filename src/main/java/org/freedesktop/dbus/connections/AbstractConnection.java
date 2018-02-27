@@ -20,13 +20,16 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,14 +38,9 @@ import java.util.regex.Pattern;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.ExportedObject;
+import org.freedesktop.dbus.InternalSignal;
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.Message;
-import org.freedesktop.dbus.MethodCall;
-import org.freedesktop.dbus.MethodReturn;
 import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.ObjectTree;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
@@ -56,6 +54,12 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.messages.ObjectTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,80 +69,80 @@ import com.github.hypfvieh.threads.NameableThreadFactory;
  * Handles a connection to DBus.
  */
 public abstract class AbstractConnection implements Closeable {
-    private final Logger        logger = LoggerFactory.getLogger(getClass());
 
-    public static final boolean FLOAT_SUPPORT;
+    private static final Map<Thread, DBusCallInfo> INFOMAP     = new ConcurrentHashMap<>();
+    /**
+     * Timeout in µs on checking the BUS for incoming messages and sending outgoing messages
+     */
+    private static final int                       TIMEOUT     = 100000;
+    /**
+     * Default thread pool size
+     */
+    private static final int                       THREADCOUNT = 4;
+
+    public static final boolean                    FLOAT_SUPPORT;
     static {
         FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
     }
 
-    public static final String                                               BUSNAME_REGEX    =
+    public static final String                                                 BUSNAME_REGEX    =
             "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
-    public static final String                                               CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
-    public static final String                                               OBJECT_REGEX     =
+    public static final String                                                 CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
+    public static final String                                                 OBJECT_REGEX     =
             "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
-    public static final Pattern                                              DOLLAR_PATTERN   = Pattern.compile("[$]");
+    public static final Pattern                                                DOLLAR_PATTERN   =
+            Pattern.compile("[$]");
 
-    public static final int                                                  MAX_ARRAY_LENGTH = 67108864;
-    public static final int                                                  MAX_NAME_LENGTH  = 255;
+    public static final int                                                    MAX_ARRAY_LENGTH = 67108864;
+    public static final int                                                    MAX_NAME_LENGTH  = 255;
 
-    /**
-     * Timeout in us on checking the BUS for incoming messages and sending outgoing messages
-     */
-    protected static final int                                               TIMEOUT          = 100000;
-    /** Initial size of the pending calls map */
-    static final byte                                                        THREADCOUNT      = 4;
+    private final Logger        logger = LoggerFactory.getLogger(getClass());
 
-    ObjectTree                                                               objectTree;
-    private GlobalHandler                                                    globalHandlerReference;
+    private final ObjectTree                                                   objectTree;
 
-    protected Map<String, ExportedObject>                                    exportedObjects;
-    protected Map<DBusInterface, RemoteObject>                               importedObjects;
+    private final Map<String, ExportedObject>                                  exportedObjects;
+    private final Map<DBusInterface, RemoteObject>                             importedObjects;
 
-    protected Map<SignalTuple, Vector<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    protected Map<Long, MethodCall>                                          pendingCalls;
+    private final PendingCallbackManager                                       callbackManager;
 
-    private PendingCallbackManager                                           callbackManager;
+    private final FallbackContainer                                            fallbackContainer;
 
-    private ExecutorService                                                  workerThreadPool;
-    FallbackContainer                                                        fallbackContainer;
-    private volatile boolean                                                 run;
+    private final Queue<Error>                                                 pendingErrorQueue;
 
-    protected LinkedList<Error>                                              pendingErrors;
+    private final Map<SignalTuple, List<DBusSigHandler<? extends DBusSignal>>> handledSignals;
+    private final Map<Long, MethodCall>                                        pendingCalls;
 
-    private final ConnectionThread                                           connectionThread;
-    private final SenderThread                                               senderThread;
-    private Transport                                                        transport;
+    private final IncomingMessageThread                                        readerThread;
+    private final SenderThread                                                 senderThread;
 
-    private boolean                                                          weakreferences   = false;
-    private boolean                                                          connected        = false;
+    private final BusAddress                                                   busAddress;
 
-    private static final Map<Thread, DBusCallInfo>                           INFOMAP          =
-            new ConcurrentHashMap<>();
+    private volatile boolean                                                   run;
 
-    private BusAddress                                                       busAddress;
+    private boolean                                                            weakreferences   = false;
+    private boolean                                                            connected        = false;
+
+    private Transport                                                          transport;
+    private ExecutorService                                                    workerThreadPool;
 
     protected AbstractConnection(String address) throws DBusException {
         exportedObjects = new HashMap<>();
-        importedObjects = new HashMap<>();
-        globalHandlerReference = new GlobalHandler(this);
-        synchronized (exportedObjects) {
-            exportedObjects.put(null, new ExportedObject(globalHandlerReference, weakreferences));
-        }
-        handledSignals = new HashMap<>();
-        pendingCalls = new ConcurrentSkipListMap<>(); // TODO: EfficentMap used insertion order, is natural order also
-                                                      // suitable?
+        importedObjects = new ConcurrentHashMap<>();
+
+        exportedObjects.put(null, new ExportedObject(new GlobalHandler(this), weakreferences));
+        
+        handledSignals = new ConcurrentHashMap<>();
+        pendingCalls = Collections.synchronizedMap(new LinkedHashMap<>());
         callbackManager = new PendingCallbackManager();
 
-        pendingErrors = new LinkedList<>();
+        pendingErrorQueue = new ConcurrentLinkedQueue<>();
         workerThreadPool =
-                Executors.newFixedThreadPool(THREADCOUNT, new NameableThreadFactory("DbusWorkerThreads", false));
+                Executors.newFixedThreadPool(THREADCOUNT, new NameableThreadFactory("DBus Worker Thread-", false));
 
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
-        run = true;
 
-        connectionThread = new ConnectionThread(this);
+        readerThread = new IncomingMessageThread(this);
         senderThread = new SenderThread(this);
 
         try {
@@ -150,11 +154,23 @@ public abstract class AbstractConnection implements Closeable {
             disconnect();
             throw new DBusException("Failed to connect to bus " + ioe.getMessage());
         }
+        run = true;
+
     }
 
+    public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
+
+    protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
+
+    protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
+
+    public abstract String getMachineId();
+
+    /**
+     * Start reading and sending messages.
+     */
     protected void listen() {
-        // start listening
-        connectionThread.start();
+        readerThread.start();
         senderThread.start();
     }
 
@@ -176,36 +192,20 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
-    private void addRunnable(Runnable r) {
-        workerThreadPool.execute(r);
-    }
-
-    public String getExportedObject(DBusInterface i) throws DBusException {
-        synchronized (exportedObjects) {
-            for (String s : exportedObjects.keySet()) {
-                if (i.equals(exportedObjects.get(s).getObject().get())) {
-                    return s;
-                }
+    public String getExportedObject(DBusInterface _interface) throws DBusException {
+        
+        Optional<Entry<String, ExportedObject>> foundInterface = getExportedObjects().entrySet().stream().filter(e -> _interface.equals(e.getValue().getObject().get())).findFirst();
+        if (foundInterface.isPresent()) {
+            return foundInterface.get().getKey();
+        } else {
+            String s = getImportedObjects().get(_interface).getObjectPath();
+            if (s != null) {
+                return s;
             }
+
+            throw new DBusException("Not an object exported or imported by this connection"); 
         }
-
-        String s = importedObjects.get(i).getObjectPath();
-        if (null != s) {
-            return s;
-        }
-
-        throw new DBusException("Not an object exported or imported by this connection");
-    }
-
-    public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
-
-    /**
-     * Returns a structure with information on the current method call.
-     * 
-     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
-     */
-    public static DBusCallInfo getCallInfo() {
-        return INFOMAP.get(Thread.currentThread());
+        
     }
 
     /**
@@ -239,13 +239,15 @@ public abstract class AbstractConnection implements Closeable {
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
-        synchronized (exportedObjects) {
-            if (null != exportedObjects.get(objectpath)) {
+        synchronized (getExportedObjects()) {
+            if (null != getExportedObjects().get(objectpath)) {
                 throw new DBusException("Object already exported");
             }
             ExportedObject eo = new ExportedObject(object, weakreferences);
-            exportedObjects.put(objectpath, eo);
-            objectTree.add(objectpath, eo, eo.getIntrospectiondata());
+            getExportedObjects().put(objectpath, eo);
+            synchronized (getObjectTree()) {
+                getObjectTree().add(objectpath, eo, eo.getIntrospectiondata());     
+            }            
         }
     }
 
@@ -289,9 +291,9 @@ public abstract class AbstractConnection implements Closeable {
      *            The objectpath to stop exporting.
      */
     public void unExportObject(String objectpath) {
-        synchronized (exportedObjects) {
-            exportedObjects.remove(objectpath);
-            objectTree.remove(objectpath);
+        synchronized (getExportedObjects()) {
+            getExportedObjects().remove(objectpath);
+            getObjectTree().remove(objectpath);
         }
     }
 
@@ -317,6 +319,7 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
+        
         removeSigHandler(new DBusMatchRule(type), handler);
     }
 
@@ -341,15 +344,12 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        String objectpath = importedObjects.get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         removeSigHandler(new DBusMatchRule(type, null, objectpath), handler);
     }
-
-    protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
-            throws DBusException;
 
     /**
      * Add a Signal Handler. Adds a signal handler to call when a signal is received which matches the specified type
@@ -395,63 +395,67 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        String objectpath = importedObjects.get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         addSigHandler(new DBusMatchRule(type, null, objectpath), handler);
     }
 
-    protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
-            throws DBusException;
-
     protected <T extends DBusSignal> void addSigHandlerWithoutMatch(Class<? extends DBusSignal> signal,
             DBusSigHandler<T> handler) throws DBusException {
         DBusMatchRule rule = new DBusMatchRule(signal);
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null == v) {
-                v = new Vector<>();
+                v = new ArrayList<>();
                 v.add(handler);
-                handledSignals.put(key, v);
+                getHandledSignals().put(key, v);
             } else {
                 v.add(handler);
             }
         }
     }
-
+    
     /**
      * Disconnect from the Bus.
      */
     public void disconnect() {
-        connected = false;
+
+        if (connected == false) { // already disconnected
+            return;
+        }
+        
         logger.debug("Sending disconnected signal");
         try {
-            handleMessage(new org.freedesktop.dbus.interfaces.Local.Disconnected("/"));
+            handleMessage(new org.freedesktop.dbus.interfaces.Local.Disconnected("/"), false);
         } catch (Exception ex) {
             logger.debug("Exception while disconnecting", ex);
         }
 
-        // stop sending messages
-        senderThread.terminate();
-
+       
         logger.debug("Disconnecting Abstract Connection");
 
         try {
             // try to wait for all pending tasks.
             workerThreadPool.shutdown();
             workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
+            
         } catch (InterruptedException _ex) {
             logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
         }
 
+        // stop sending messages
+        senderThread.terminate();
+        
         // stop the main thread
         run = false;
-
+        connected = false;
+        
         // disconnect from the transport layer
         try {
-            if (null != transport) {
+            if (transport != null) {
                 transport.disconnect();
                 transport = null;
             }
@@ -463,27 +467,12 @@ public abstract class AbstractConnection implements Closeable {
         if (!workerThreadPool.isTerminated()) { // try forceful shutdown
             workerThreadPool.shutdownNow();
         }
-
+        
     }
 
     @Override
     public void close() throws IOException {
         disconnect();
-    }
-
-    /**
-     * Return any DBus error which has been received.
-     * 
-     * @return A DBusExecutionException, or null if no error is pending.
-     */
-    public DBusExecutionException getError() {
-        synchronized (pendingErrors) {
-            if (pendingErrors.size() == 0) {
-                return null;
-            } else {
-                return pendingErrors.removeFirst().getException();
-            }
-        }
     }
 
     /**
@@ -507,7 +496,7 @@ public abstract class AbstractConnection implements Closeable {
         for (int i = 0; i < parameters.length; i++) {
             types[i] = parameters[i].getClass();
         }
-        RemoteObject ro = importedObjects.get(object);
+        RemoteObject ro = getImportedObjects().get(object);
 
         try {
             Method me;
@@ -543,7 +532,7 @@ public abstract class AbstractConnection implements Closeable {
         for (int i = 0; i < parameters.length; i++) {
             types[i] = parameters[i].getClass();
         }
-        RemoteObject ro = importedObjects.get(object);
+        RemoteObject ro = getImportedObjects().get(object);
 
         try {
             Method me;
@@ -563,18 +552,45 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
+    protected void handleException(AbstractConnection dbusConnection, Message methodOrSignal,
+            DBusExecutionException exception) {
+        if (dbusConnection == null) {
+            throw new NullPointerException("DBusConnection cannot be null");
+        }
+        try {
+            dbusConnection.queueOutgoing(new Error(methodOrSignal, exception));
+        } catch (DBusException ex) {
+            logger.warn("Exception caught while processing previous error.", ex);
+        }
+    }
+
+    /**
+     * Handle received message from DBus.
+     * @param _message
+     * @throws DBusException
+     */
+    void handleMessage(Message _message) throws DBusException {
+        if (_message instanceof DBusSignal) {
+            handleMessage((DBusSignal) _message, true);
+        } else if (_message instanceof MethodCall) {
+            handleMessage((MethodCall) _message);
+        } else if (_message instanceof MethodReturn) {
+            handleMessage((MethodReturn) _message);
+        } else if (_message instanceof Error) {
+            handleMessage((Error) _message);
+        }
+    }
+
     private void handleMessage(final MethodCall m) throws DBusException {
         logger.debug("Handling incoming method call: " + m);
-
+    
         ExportedObject eo = null;
         Method meth = null;
         Object o = null;
-
+    
         if (null == m.getInterface() || m.getInterface().equals("org.freedesktop.DBus.Peer")
                 || m.getInterface().equals("org.freedesktop.DBus.Introspectable")) {
-            synchronized (exportedObjects) {
-                eo = exportedObjects.get(null);
-            }
+            eo = getExportedObjects().get(null);
             if (null != eo && null == eo.getObject().get()) {
                 unExportObject(null);
                 eo = null;
@@ -590,20 +606,18 @@ public abstract class AbstractConnection implements Closeable {
         }
         if (null == o) {
             // now check for specific exported functions
-
-            synchronized (exportedObjects) {
-                eo = exportedObjects.get(m.getPath());
-            }
+    
+            eo = getExportedObjects().get(m.getPath());
             if (null != eo && null == eo.getObject().get()) {
                 logger.info("Unexporting " + m.getPath() + " implicitly");
                 unExportObject(m.getPath());
                 eo = null;
             }
-
+    
             if (null == eo) {
                 eo = fallbackContainer.get(m.getPath());
             }
-
+    
             if (null == eo) {
                 queueOutgoing(new Error(m,
                         new UnknownObject(m.getPath() + " is not an object provided by this process.")));
@@ -624,26 +638,21 @@ public abstract class AbstractConnection implements Closeable {
             }
             o = eo.getObject().get();
         }
-
+    
         // now execute it
         final Method me = meth;
         final Object ob = o;
         final boolean noreply = (1 == (m.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
         final DBusCallInfo info = new DBusCallInfo(m);
         final AbstractConnection conn = this;
-
+    
         logger.trace("Adding Runnable for method " + meth);
-        addRunnable(new Runnable() {
-            private boolean run = false;
-
+        Runnable r = new Runnable() {
+            
             @Override
-            public synchronized void run() {
-                if (run) {
-                    return;
-                }
-                run = true;
+            public void run() {
                 logger.debug("Running method " + me + " for remote call");
-
+    
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
@@ -654,7 +663,7 @@ public abstract class AbstractConnection implements Closeable {
                     handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));
                     return;
                 }
-
+    
                 try {
                     INFOMAP.put(Thread.currentThread(), info);
                     Object result;
@@ -681,7 +690,7 @@ public abstract class AbstractConnection implements Closeable {
                             }, new Type[] {
                                     me.getGenericReturnType()
                             }, conn);
-
+    
                             reply = new MethodReturn(m, sb.toString(), nr);
                         }
                         conn.queueOutgoing(reply);
@@ -696,54 +705,37 @@ public abstract class AbstractConnection implements Closeable {
                                     m.getInterface(), m.getName(), e.getMessage())));
                 }
             }
-        });
+        };
+        workerThreadPool.execute(r);
     }
 
-    protected void handleException(AbstractConnection dbusConnection, Message methodOrSignal,
-            DBusExecutionException exception) {
-        if (dbusConnection == null) {
-            throw new NullPointerException("DBusConnection cannot be null");
-        }
-        try {
-            dbusConnection.queueOutgoing(new Error(methodOrSignal, exception));
-        } catch (DBusException ex) {
-            logger.warn("Exception caught while processing previous error.", ex);
-        }
-    }
-
-    void handleMessage(Message _message) throws DBusException {
-        if (_message instanceof DBusSignal) {
-            handleMessage((DBusSignal) _message);
-        } else if (_message instanceof MethodCall) {
-            handleMessage((MethodCall) _message);
-        } else if (_message instanceof MethodReturn) {
-            handleMessage((MethodReturn) _message);
-        } else if (_message instanceof Error) {
-            handleMessage((Error) _message);
-        }
-    }
-
+    /**
+     * Handle a signal received on DBus.
+     * 
+     * @param _signal signal to handle
+     * @param _useThreadPool whether to handle this signal in another thread or handle it byself
+     */
     @SuppressWarnings({
             "unchecked"
     })
-    private void handleMessage(final DBusSignal s) {
-        logger.debug("Handling incoming signal: " + s);
+    private void handleMessage(final DBusSignal _signal, boolean _useThreadPool) {
+        logger.debug("Handling incoming signal: " + _signal);
         List<DBusSigHandler<? extends DBusSignal>> v = new ArrayList<>();
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> t;
-            t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), null, null));
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> t;
+            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
             if (null != t) {
                 v.addAll(t);
             }
-            t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), s.getPath(), null));
+            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
             if (null != t) {
                 v.addAll(t);
             }
-            t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), null, s.getSource()));
+            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
             if (null != t) {
                 v.addAll(t);
             }
-            t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), s.getPath(), s.getSource()));
+            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
             if (null != t) {
                 v.addAll(t);
             }
@@ -754,47 +746,43 @@ public abstract class AbstractConnection implements Closeable {
 
         final AbstractConnection conn = this;
         for (final DBusSigHandler<? extends DBusSignal> h : v) {
-            logger.trace("Adding Runnable for signal " + s + " with handler " + h);
-            addRunnable(new Runnable() {
-                private boolean run = false;
+            logger.trace("Adding Runnable for signal " + _signal + " with handler " + h);
+            Runnable command = new Runnable() {
 
                 @Override
-                public synchronized void run() {
-                    if (run) {
-                        return;
-                    }
-                    run = true;
+                public void run() {
                     try {
                         DBusSignal rs;
-                        if (s instanceof DBusSignal.internalsig || s.getClass().equals(DBusSignal.class)) {
-                            rs = s.createReal(conn);
+                        if (_signal instanceof InternalSignal || _signal.getClass().equals(DBusSignal.class)) {
+                            rs = _signal.createReal(conn);
                         } else {
-                            rs = s;
+                            rs = _signal;
                         }
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
                     } catch (DBusException exDe) {
                         logger.debug("", exDe);
-                        handleException(conn, s, new DBusExecutionException("Error handling signal " + s.getInterface()
-                                + "." + s.getName() + ": " + exDe.getMessage()));
+                        handleException(conn, _signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
+                                + "." + _signal.getName() + ": " + exDe.getMessage()));
                     }
                 }
-            });
+            };
+            if (_useThreadPool) {
+                workerThreadPool.execute(command);
+            } else {
+                command.run();
+            }
         }
-    }
-
-    public void queueCallback(MethodCall _call, Method _method, CallbackHandler<?> _callback) {
-        callbackManager.queueCallback(_call, _method, _callback, this);
     }
 
     private void handleMessage(final Error err) {
         logger.debug("Handling incoming error: " + err);
         MethodCall m = null;
-        if (pendingCalls == null) {
+        if (getPendingCalls() == null) {
             return;
         }
-        synchronized (pendingCalls) {
-            if (pendingCalls.containsKey(err.getReplySerial())) {
-                m = pendingCalls.remove(err.getReplySerial());
+        synchronized (getPendingCalls()) {
+            if (getPendingCalls().containsKey(err.getReplySerial())) {
+                m = getPendingCalls().remove(err.getReplySerial());
             }
         }
         if (m != null) {
@@ -807,15 +795,10 @@ public abstract class AbstractConnection implements Closeable {
             if (null != cbh) {
                 final CallbackHandler<?> fcbh = cbh;
                 logger.trace("Adding Error Runnable with callback handler " + fcbh);
-                addRunnable(new Runnable() {
-                    private boolean run = false;
+                Runnable command = new Runnable() {
 
                     @Override
                     public synchronized void run() {
-                        if (run) {
-                            return;
-                        }
-                        run = true;
                         try {
                             logger.trace("Running Error Callback for " + err);
                             DBusCallInfo info = new DBusCallInfo(err);
@@ -828,13 +811,12 @@ public abstract class AbstractConnection implements Closeable {
                             logger.debug("Exception while running error callback.", e);
                         }
                     }
-                });
+                };
+                workerThreadPool.execute(command);
             }
 
         } else {
-            synchronized (pendingErrors) {
-                pendingErrors.addLast(err);
-            }
+            getPendingErrorQueue().add(err);
         }
     }
 
@@ -842,12 +824,17 @@ public abstract class AbstractConnection implements Closeable {
     private void handleMessage(final MethodReturn mr) {
         logger.debug("Handling incoming method return: " + mr);
         MethodCall m = null;
-        if (null == pendingCalls)
+        
+        if (null == getPendingCalls()) {
             return;
-        synchronized (pendingCalls) {
-            if (pendingCalls.containsKey(mr.getReplySerial()))
-                m = pendingCalls.remove(mr.getReplySerial());
         }
+        
+        synchronized (getPendingCalls()) {
+            if (getPendingCalls().containsKey(mr.getReplySerial())) {
+                m = getPendingCalls().remove(mr.getReplySerial());
+            }
+        }
+        
         if (null != m) {
             m.setReply(mr);
             mr.setCall(m);
@@ -862,14 +849,10 @@ public abstract class AbstractConnection implements Closeable {
                 final DBusAsyncReply<?> fasr = asr;
                 logger.trace("Adding Runnable for method {} with callback handler {}", fcbh,
                         fasr != null ? fasr.getMethod() : null);
-                addRunnable(new Runnable() {
-                    private boolean run = false;
+                Runnable r = new Runnable() {
 
                     @Override
                     public synchronized void run() {
-                        if (run)
-                            return;
-                        run = true;
                         try {
                             logger.trace("Running Callback for " + mr);
                             DBusCallInfo info = new DBusCallInfo(mr);
@@ -883,7 +866,8 @@ public abstract class AbstractConnection implements Closeable {
                             logger.debug("Exception while running callback.", e);
                         }
                     }
-                });
+                };
+                workerThreadPool.execute(r);
             }
 
         } else
@@ -894,6 +878,14 @@ public abstract class AbstractConnection implements Closeable {
             }
     }
 
+    public void queueCallback(MethodCall _call, Method _method, CallbackHandler<?> _callback) {
+        callbackManager.queueCallback(_call, _method, _callback, this);
+    }
+
+    /**
+     * Send a message to DBus.
+     * @param m
+     */
     public void sendMessage(Message m) {
         try {
             if (!connected) {
@@ -905,12 +897,12 @@ public abstract class AbstractConnection implements Closeable {
 
             if (m instanceof MethodCall) {
                 if (0 == (m.getFlags() & Message.Flags.NO_REPLY_EXPECTED)) {
-                    if (null == pendingCalls) {
+                    if (null == getPendingCalls()) {
                         ((MethodCall) m).setReply(new Error("org.freedesktop.DBus.Local",
                                 "org.freedesktop.DBus.Local.Disconnected", 0, "s", "Disconnected"));
                     } else {
-                        synchronized (pendingCalls) {
-                            pendingCalls.put(m.getSerial(), (MethodCall) m);
+                        synchronized (getPendingCalls()) {
+                            getPendingCalls().put(m.getSerial(), (MethodCall) m);
                         }
                     }
                 }
@@ -956,7 +948,8 @@ public abstract class AbstractConnection implements Closeable {
 
     Message readIncoming() throws DBusException {
         if (!connected) {
-            throw new NotConnected("No transport present");
+            //throw new NotConnected("No transport present");
+            return null;
         }
         Message m = null;
         try {
@@ -968,6 +961,36 @@ public abstract class AbstractConnection implements Closeable {
             throw new FatalDBusException(exIo.getMessage());
         }
         return m;
+    }
+
+    protected Map<String, ExportedObject> getExportedObjects() {
+        return exportedObjects;
+    }
+    
+    FallbackContainer getFallbackContainer() {
+        return fallbackContainer;
+    }
+
+    /**
+     * Returns a structure with information on the current method call.
+     * 
+     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
+     */
+    public static DBusCallInfo getCallInfo() {
+        return INFOMAP.get(Thread.currentThread());
+    }
+
+    /**
+     * Return any DBus error which has been received.
+     * 
+     * @return A DBusExecutionException, or null if no error is pending.
+     */
+    public DBusExecutionException getError() {
+        Error poll = getPendingErrorQueue().poll();
+        if (poll != null) {
+            return poll.getException();
+        }                
+        return null; 
     }
 
     /**
@@ -985,5 +1008,23 @@ public abstract class AbstractConnection implements Closeable {
         return connected;
     }
     
-    public abstract String getMachineId();
+    protected Queue<Error> getPendingErrorQueue() {
+        return pendingErrorQueue;
+    }
+
+    protected Map<SignalTuple, List<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
+        return handledSignals;
+    }
+
+    protected Map<Long, MethodCall> getPendingCalls() {
+        return pendingCalls;
+    }
+
+    protected Map<DBusInterface, RemoteObject> getImportedObjects() {
+        return importedObjects;
+    }
+
+    protected ObjectTree getObjectTree() {
+        return objectTree;
+    }
 }

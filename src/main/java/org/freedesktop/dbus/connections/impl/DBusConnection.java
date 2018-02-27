@@ -14,20 +14,19 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.ExportedObject;
-import org.freedesktop.dbus.MethodCall;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
@@ -39,6 +38,9 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,10 @@ public final class DBusConnection extends AbstractConnection {
 
     private final String                             machineId;
 
+    /** Count how many 'connections' we manage internally.
+     * This is required because a {@link DBusConnection} to the same address will always return the same object and
+     * the 'real' disconnection should only occur when there is no second/third/whatever connection is left. */    
+    private final AtomicInteger                      concurrentConnections              = new AtomicInteger(1);
     
     
     /**
@@ -103,10 +109,13 @@ public final class DBusConnection extends AbstractConnection {
         //CONNECTIONS.getOrDefault(address, defaultValue)
         synchronized (CONNECTIONS) {
             DBusConnection c = CONNECTIONS.get(address);
-            if (null != c) {
+            if (c != null) {
+                c.concurrentConnections.incrementAndGet();
                 return c;
             } else {
                 c = new DBusConnection(address, registerSelf, getDbusMachineId());
+                // do not increment connection counter here, it always starts at 1 on new objects!
+                //c.getConcurrentConnections().incrementAndGet();
                 CONNECTIONS.put(address, c);
                 return c;
             }
@@ -142,17 +151,18 @@ public final class DBusConnection extends AbstractConnection {
 
         switch (bustype) {
             case SYSTEM:
-                return getConnection(() -> {
+                DBusConnection systemConnection = getConnection(() -> {
                     String bus = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
                     if (bus == null) {
                         bus = DEFAULT_SYSTEM_BUS_ADDRESS;
                     }
                     return bus;
                 }, true);
+                return systemConnection;
             case SESSION:
-                return getConnection(() -> {
+                DBusConnection sessionConnection = getConnection(() -> {
                     String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
-                    if (null == s) {
+                    if (s == null) {
                         // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
                         // $DISPLAY`
                         String display = System.getenv("DISPLAY");
@@ -182,13 +192,20 @@ public final class DBusConnection extends AbstractConnection {
                             throw new RuntimeException("Cannot Resolve Session Bus Address", _ex);
                         }
                     }
-                    return s;
+                    
+                    return s;                    
 
                 }, true);
+                
+                return sessionConnection;
             default:
                 throw new DBusException("Invalid Bus Type: " + bustype);
         }
         
+    }
+
+    private AtomicInteger getConcurrentConnections() {
+        return concurrentConnections;
     }
 
     /**
@@ -243,13 +260,13 @@ public final class DBusConnection extends AbstractConnection {
             logger.trace("Got introspection data: " + data);
 
             String[] tags = data.split("[<>]");
-            Vector<String> ifaces = new Vector<String>();
+            List<String> ifaces = new ArrayList<>();
             for (String tag : tags) {
                 if (tag.startsWith("interface")) {
                     ifaces.add(tag.replaceAll("^interface *name *= *['\"]([^'\"]*)['\"].*$", "$1"));
                 }
             }
-            Vector<Class<? extends Object>> ifcs = new Vector<Class<? extends Object>>();
+            List<Class<?>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
                 logger.debug("Trying interface " + iface);
                 int j = 0;
@@ -278,7 +295,7 @@ public final class DBusConnection extends AbstractConnection {
             RemoteObject ro = new RemoteObject(source, path, null, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
                     ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
-            importedObjects.put(newi, ro);
+            getImportedObjects().put(newi, ro);
             return newi;
         } catch (Exception e) {
             logger.debug("", e);
@@ -291,8 +308,8 @@ public final class DBusConnection extends AbstractConnection {
     @Override
     public DBusInterface getExportedObject(String source, String path) throws DBusException {
         ExportedObject o = null;
-        synchronized (exportedObjects) {
-            o = exportedObjects.get(path);
+        synchronized (getExportedObjects()) {
+            o = getExportedObjects().get(path);
         }
         if (null != o && null == o.getObject().get()) {
             unExportObject(path);
@@ -599,7 +616,7 @@ public final class DBusConnection extends AbstractConnection {
         I i = (I) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
                 type
         }, new RemoteInvocationHandler(this, ro));
-        importedObjects.put(i, ro);
+        getImportedObjects().put(i, ro);
         return i;
     }
 
@@ -664,7 +681,7 @@ public final class DBusConnection extends AbstractConnection {
         if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name: " + source);
         }
-        String objectpath = importedObjects.get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
@@ -676,12 +693,12 @@ public final class DBusConnection extends AbstractConnection {
             throws DBusException {
 
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null != v) {
                 v.remove(handler);
                 if (0 == v.size()) {
-                    handledSignals.remove(key);
+                    getHandledSignals().remove(key);
                     try {
                         dbus.RemoveMatch(rule.toString());
                     } catch (NotConnected exNc) {
@@ -760,7 +777,7 @@ public final class DBusConnection extends AbstractConnection {
         if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name: " + source);
         }
-        String objectpath = importedObjects.get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
@@ -768,7 +785,7 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     @Override
-    protected <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
+    public <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
             throws DBusException {
         try {
             dbus.AddMatch(rule.toString());
@@ -777,12 +794,12 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException(dbee.getMessage());
         }
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null == v) {
-                v = new Vector<DBusSigHandler<? extends DBusSignal>>();
+                v = new ArrayList<>();
                 v.add(handler);
-                handledSignals.put(key, v);
+                getHandledSignals().put(key, v);
             } else {
                 v.add(handler);
             }
@@ -790,41 +807,61 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     /**
-     * Disconnect from the Bus. This only disconnects when the last reference to the bus has disconnect called on it or
+     * Disconnect from the Bus. 
+     * This only disconnects when the last reference to the bus has disconnect called on it or
      * has been destroyed.
      */
     @Override
-    public void disconnect() {
-        DBusConnection removed = CONNECTIONS.remove(getAddress().getRawAddress());
-        if (removed != null) {
-            logger.debug("Disconnecting DBusConnection");
-            // Set all pending messages to have an error.
-            try {
-                Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
-                        0, "s", new Object[] {
-                                "Disconnected"
-                        });
-                synchronized (pendingCalls) {
-                    Set<Long> set = pendingCalls.keySet();
-                    for (long l : set) {
-                        if (-1 != l) {
-                            MethodCall m = pendingCalls.remove(l);
-                            if (null != m) {
-                                m.setReply(err);
-                            }
-                        }
+    public synchronized void disconnect() {
+        DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
+        if (connection != null) {
+            if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
+                logger.debug("Disconnecting DBusConnection");
+                // Set all pending messages to have an error.
+                try {
+                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
+                            0, "s", new Object[] {
+                                    "Disconnected"
+                            });
+                    cleanupPendingCalls(err, true);
+                    
+                    synchronized (getPendingErrorQueue()) {
+                        getPendingErrorQueue().add(err);
                     }
-                    pendingCalls = null;
+                } catch (DBusException dbe) {
                 }
-                synchronized (pendingErrors) {
-                    pendingErrors.add(err);
-                }
-            } catch (DBusException dbe) {
+                CONNECTIONS.remove(getAddress().getRawAddress());
+
+                super.disconnect();
+
+            } else {
+                connection.getConcurrentConnections().addAndGet(-1);
             }
-            super.disconnect();
         }
     }
 
+    private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {
+        
+        synchronized (getPendingCalls()) {
+            Iterator<Entry<Long, MethodCall>> iter = getPendingCalls().entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<Long, MethodCall> entry = iter.next();
+                if (entry.getKey() != -1) {
+                    MethodCall m = entry.getValue();
+                    
+                    iter.remove();
+                    
+                    if (m != null) {
+                        m.setReply(_err);
+                    }
+                }
+            }
+            if (_clearPendingCalls) {
+                getPendingCalls().clear();
+            }
+        }
+    }
+    
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal s) {
@@ -835,21 +872,10 @@ public final class DBusConnection extends AbstractConnection {
                             "s", new Object[] {
                                     "Disconnected"
                             });
-                    if (null != pendingCalls) {
-                        synchronized (pendingCalls) {
-                            Set<Long> set = pendingCalls.keySet();
-                            for (long l : set) {
-                                if (-1 != l) {
-                                    MethodCall m = pendingCalls.remove(l);
-                                    if (null != m) {
-                                        m.setReply(err);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    synchronized (pendingErrors) {
-                        pendingErrors.add(err);
+                    cleanupPendingCalls(err, false);
+                    
+                    synchronized (getPendingErrorQueue()) {
+                        getPendingErrorQueue().add(err);
                     }
                 } catch (DBusException exDb) {
                 }

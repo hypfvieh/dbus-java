@@ -18,12 +18,11 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusSignal;
-import org.freedesktop.dbus.ExportedObject;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
@@ -33,6 +32,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.ExportedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,13 +120,13 @@ public class DirectConnection extends AbstractConnection {
             Introspectable intro = (Introspectable) getRemoteObject(path, Introspectable.class);
             String data = intro.Introspect();
             String[] tags = data.split("[<>]");
-            Vector<String> ifaces = new Vector<String>();
+            List<String> ifaces = new ArrayList<>();
             for (String tag : tags) {
                 if (tag.startsWith("interface")) {
                     ifaces.add(tag.replaceAll("^interface *name *= *['\"]([^'\"]*)['\"].*$", "$1"));
                 }
             }
-            Vector<Class<? extends Object>> ifcs = new Vector<Class<? extends Object>>();
+            List<Class<? extends Object>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
                 int j = 0;
                 while (j >= 0) {
@@ -149,7 +150,7 @@ public class DirectConnection extends AbstractConnection {
 
             RemoteObject ro = new RemoteObject(null, path, null, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(), ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
-            importedObjects.put(newi, ro);
+            getImportedObjects().put(newi, ro);
             return newi;
         } catch (Exception e) {
             logger.debug("", e);
@@ -159,8 +160,8 @@ public class DirectConnection extends AbstractConnection {
 
     DBusInterface getExportedObject(String path) throws DBusException {
         ExportedObject o = null;
-        synchronized (exportedObjects) {
-            o = exportedObjects.get(path);
+        synchronized (getExportedObjects()) {
+            o = getExportedObjects().get(path);
         }
         if (null != o && null == o.getObject().get()) {
             unExportObject(path);
@@ -240,19 +241,19 @@ public class DirectConnection extends AbstractConnection {
         DBusInterface i = (DBusInterface) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
                 type
         }, new RemoteInvocationHandler(this, ro));
-        importedObjects.put(i, ro);
+        getImportedObjects().put(i, ro);
         return i;
     }
 
     @Override
     protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null != v) {
                 v.remove(handler);
                 if (0 == v.size()) {
-                    handledSignals.remove(key);
+                    getHandledSignals().remove(key);
                 }
             }
         }
@@ -261,12 +262,12 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (handledSignals) {
-            Vector<DBusSigHandler<? extends DBusSignal>> v = handledSignals.get(key);
+        synchronized (getHandledSignals()) {
+            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null == v) {
-                v = new Vector<DBusSigHandler<? extends DBusSignal>>();
+                v = new ArrayList<>();
                 v.add(handler);
-                handledSignals.put(key, v);
+                getHandledSignals().put(key, v);
             } else {
                 v.add(handler);
             }

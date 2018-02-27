@@ -17,15 +17,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusSignal;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.PeerSet;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
@@ -41,6 +42,7 @@ import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Local;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
@@ -701,11 +703,11 @@ public class TestAll {
             System.out.println("Got Introspection Data: \n" + data);
 
             // setup bus name set
-//            Set<String> peers = serverconn.new PeerSet();
-//            peers.add("org.freedesktop.DBus");
-//            clientconn.requestBusName("test.testclient");
-//            peers.add("test.testclient");
-//            clientconn.releaseBusName("test.testclient");
+            Set<String> peers = new PeerSet(serverconn);
+            peers.add("org.freedesktop.DBus");
+            clientconn.requestBusName("test.testclient");
+            peers.add("test.testclient");
+            clientconn.releaseBusName("test.testclient");
 
             System.out.println("Pinging ourselves");
             /** Call ping. */
@@ -1019,12 +1021,12 @@ public class TestAll {
             Thread.sleep(1000);
 
             // check that bus name set has been trimmed
-//            if (peers.size() != 1) {
-//                fail("peers hasn't been trimmed");
-//            }
-//            if (!peers.contains("org.freedesktop.DBus")) {
-//                fail("peers contains the wrong name");
-//            }
+            if (peers.size() != 1) {
+                fail("peers hasn't been trimmed");
+            }
+            if (!peers.contains("org.freedesktop.DBus")) {
+                fail("peers contains the wrong name");
+            }
 
             System.out.println("Checking for outstanding errors");
             DBusExecutionException dbee = serverconn.getError();
@@ -1036,6 +1038,8 @@ public class TestAll {
                 throw dbee;
             }
 
+            clientconn.removeSigHandler(TestSignalInterface.TestSignal.class, sigh);
+
             System.out.println("Disconnecting");
             /** Disconnect from the bus. */
             clientconn.disconnect();
@@ -1044,14 +1048,13 @@ public class TestAll {
             System.out.println("Trying to do things after disconnection");
 
             /** Remove sig handler */
-            clientconn.removeSigHandler(TestSignalInterface.TestSignal.class, sigh);
 
             /** Call a method when disconnected */
             try {
                 System.out.println("getName() suceeded and returned: " + tri.getName());
                 fail("Should not succeed when disconnected");
             } catch (NotConnected exnc) {
-                System.out.println("getName() failed with exception " + exnc);
+               // System.out.println("getName() failed with exception " + exnc);
             }
             clientconn = null;
             serverconn = null;

@@ -15,6 +15,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

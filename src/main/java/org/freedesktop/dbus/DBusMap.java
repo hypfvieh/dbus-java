@@ -10,19 +10,19 @@
 */
 package org.freedesktop.dbus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
-class DBusMap<K, V> implements Map<K, V> {
+public class DBusMap<K, V> implements Map<K, V> {
     // CHECKSTYLE:OFF
     Object[][] entries;
     // CHECKSTYLE:ON
-    DBusMap(Object[][] _entries) {
+    public DBusMap(Object[][] _entries) {
         this.entries = _entries;
     }
 
@@ -156,7 +156,7 @@ class DBusMap<K, V> implements Map<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public Collection<V> values() {
-        List<V> l = new Vector<V>();
+        List<V> l = new ArrayList<>();
         for (Object[] entry : entries) {
             l.add((V) entry[1]);
         }

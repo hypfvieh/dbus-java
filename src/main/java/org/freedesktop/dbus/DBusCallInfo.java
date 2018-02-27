@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.messages.Message;
+
 /**
  * Holds information on a method call
  */

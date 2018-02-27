@@ -8,9 +8,10 @@
 
    Full licence texts are included in the COPYING file with this program.
 */
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.messages;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
@@ -36,10 +37,10 @@ public class MethodCall extends Message {
         if (null == member || null == path) {
             throw new MessageFormatException("Must specify destination, path and function name to MethodCalls.");
         }
-        headers.put(Message.HeaderField.PATH, path);
-        headers.put(Message.HeaderField.MEMBER, member);
+        getHeaders().put(Message.HeaderField.PATH, path);
+        getHeaders().put(Message.HeaderField.MEMBER, member);
 
-        Vector<Object> hargs = new Vector<Object>();
+        List<Object> hargs = new ArrayList<>();
 
         hargs.add(new Object[] {
                 Message.HeaderField.PATH, new Object[] {
@@ -48,7 +49,7 @@ public class MethodCall extends Message {
         });
 
         if (null != source) {
-            headers.put(Message.HeaderField.SENDER, source);
+            getHeaders().put(Message.HeaderField.SENDER, source);
             hargs.add(new Object[] {
                     Message.HeaderField.SENDER, new Object[] {
                             ArgumentType.STRING_STRING, source
@@ -57,7 +58,7 @@ public class MethodCall extends Message {
         }
 
         if (null != dest) {
-            headers.put(Message.HeaderField.DESTINATION, dest);
+            getHeaders().put(Message.HeaderField.DESTINATION, dest);
             hargs.add(new Object[] {
                     Message.HeaderField.DESTINATION, new Object[] {
                             ArgumentType.STRING_STRING, dest
@@ -71,7 +72,7 @@ public class MethodCall extends Message {
                             ArgumentType.STRING_STRING, iface
                     }
             });
-            headers.put(Message.HeaderField.INTERFACE, iface);
+            getHeaders().put(Message.HeaderField.INTERFACE, iface);
         }
 
         hargs.add(new Object[] {
@@ -87,21 +88,21 @@ public class MethodCall extends Message {
                             ArgumentType.SIGNATURE_STRING, sig
                     }
             });
-            headers.put(Message.HeaderField.SIGNATURE, sig);
+            getHeaders().put(Message.HeaderField.SIGNATURE, sig);
             setArgs(args);
         }
 
         byte[] blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", serial, hargs.toArray());
+        append("ua(yv)", getSerial(), hargs.toArray());
         pad((byte) 8);
 
-        long c = bytecounter;
+        long c = getByteCounter();
         if (null != sig) {
             append(sig, args);
         }
-        logger.debug("Appended body, type: " + sig + " start: " + c + " end: " + bytecounter + " size: " + (bytecounter - c));
-        marshallint(bytecounter - c, blen, 0, 4);
+        logger.debug("Appended body, type: " + sig + " start: " + c + " end: " + getByteCounter() + " size: " + (getByteCounter() - c));
+        marshallint(getByteCounter() - c, blen, 0, 4);
         logger.debug("marshalled size (" + blen + "): " + Hexdump.format(blen));
     }
 

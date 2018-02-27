@@ -28,25 +28,24 @@ public final class P2pClientTest {
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream("address")));) {
 
             String address = r.readLine();
-            try (DirectConnection dc = new DirectConnection(address)) {
-                System.out.println("Connected");
-                TestRemoteInterface tri = (TestRemoteInterface) dc.getRemoteObject("/Test");
-                System.out.println(tri.getName());
-                System.out.println(tri.testfloat(new float[] {
-                        17.093f, -23f, 0.0f, 31.42f
-                }));
-    
-                try {
-                    tri.throwme();
-                } catch (TestException ex) {
-                    System.out.println("Caught TestException");
-                }
-                ((Peer) tri).Ping();
-                System.out.println(((Introspectable) tri).Introspect());
-                dc.disconnect();
-                System.out.println("Disconnected");
+            DirectConnection dc = new DirectConnection(address);
+            System.out.println("Connected");
+            TestRemoteInterface tri = (TestRemoteInterface) dc.getRemoteObject("/Test");
+            System.out.println(tri.getName());
+            System.out.println(tri.testfloat(new float[] {
+                    17.093f, -23f, 0.0f, 31.42f
+            }));
 
+            try {
+                tri.throwme();
+            } catch (TestException ex) {
+                System.out.println("Caught TestException");
             }
+            ((Peer) tri).Ping();
+            System.out.println(((Introspectable) tri).Introspect());
+            dc.disconnect();
+            System.out.println("Disconnected");
+
         }
     }
 }

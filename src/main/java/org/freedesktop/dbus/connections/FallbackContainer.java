@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.freedesktop.dbus.ExportedObject;
+import org.freedesktop.dbus.messages.ExportedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
