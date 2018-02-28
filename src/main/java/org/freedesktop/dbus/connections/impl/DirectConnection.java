@@ -57,8 +57,23 @@ public class DirectConnection extends AbstractConnection {
     public DirectConnection(String address) throws DBusException {
         super(address);
         machineId = createMachineId();
-        listen();
+        if (!getAddress().isServer()) {
+            super.listen();
+        }
     }
+
+    /**
+     * Use this method when running on server side. 
+     * Call will block.
+     */
+    @Override
+    public void listen() {
+        if (getAddress().isServer()) {
+            super.listen();
+        }
+    }
+
+
 
     private String createMachineId() {
         String ascii;

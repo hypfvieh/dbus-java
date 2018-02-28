@@ -338,7 +338,7 @@ public class TestAll extends Assert {
     }
 
     @Test
-    public void testCallWithCallback() throws DBusException {
+    public void testCallWithCallback() throws DBusException, InterruptedException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", "/Test");
 
         System.out.println("Doing stuff asynchronously with callback");
@@ -359,6 +359,8 @@ public class TestAll extends Assert {
                 TestAll.fail("Error message was not correct");
             }
         }
+        
+        Thread.sleep(500L); // wait some time to let the callbacks do their work
         
         assertEquals(1, cbWhichWorks.getTestHandleCalls());
         assertEquals(0, cbWhichThrows.getTestHandleCalls());
@@ -464,7 +466,7 @@ public class TestAll extends Assert {
     }
 
     @Test
-    public void testResponse() throws DBusException {
+    public void testResponse() throws DBusException, InterruptedException {
         SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
 
         System.out.println(tri2.Introspect());
@@ -481,6 +483,9 @@ public class TestAll extends Assert {
         DBusAsyncReply<Boolean> stuffreply = (DBusAsyncReply<Boolean>) clientconn.callMethodAsync(tri2, "dostuff",
                 new SampleStruct("bar", new UInt32(52), new Variant<>(new Boolean(true))));
 
+        // wait a bit to allow the async call to complete
+        Thread.sleep(500L);
+        
         assertFalse("bools are broken", tri2.check());
 
         assertTrue("dostuff return value incorrect", stuffreply.getReply());

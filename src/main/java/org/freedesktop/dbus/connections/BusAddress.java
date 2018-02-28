@@ -61,6 +61,11 @@ public class BusAddress {
         return type.getBusType();
     }
 
+    public AddressBusTypes getBusType() {
+        return type;
+    }
+
+    
     public String getParameter(String key) {
         return parameters.get(key);
     }
@@ -74,6 +79,10 @@ public class BusAddress {
         return rawAddress;
     }
 
+    public boolean isServer() {
+        return getParameter("listen") != null;
+    }
+    
     public static enum AddressBusTypes {
         UNIX,
         TCP;
@@ -91,4 +100,5 @@ public class BusAddress {
             return null;
         }
     }
+
 }

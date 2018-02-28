@@ -60,10 +60,13 @@ public class TestPeer2Peer extends Assert {
 
         @Override
         public void run() {
-            try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {            
-                System.out.println("Server: Connection established");
+            try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {                
                 dc.exportObject("/Test", new P2pTestServer());
                 System.out.println("Server: Export created");
+                
+                System.out.println("Server: Listening");
+                dc.listen();
+                
                 while (!finished) {
                     Thread.sleep(500L);
                 }
