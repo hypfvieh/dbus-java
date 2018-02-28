@@ -138,14 +138,14 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
         switch (syncmethod) {
             case CALL_TYPE_ASYNC:
-                conn.queueOutgoing(call);
+                conn.sendMessage(call);
                 return new DBusAsyncReply<>(call, m, conn);
             case CALL_TYPE_CALLBACK:
                 conn.queueCallback(call, m, callback);
-                conn.queueOutgoing(call);
+                conn.sendMessage(call);
                 return null;
             case CALL_TYPE_SYNC:
-                conn.queueOutgoing(call);
+                conn.sendMessage(call);
                 break;
         }
 

@@ -21,7 +21,7 @@ public class TestTwoPart extends Assert {
         twoPartServer.start();
         
         while (!serverReady) {
-            Thread.sleep(400L);
+            Thread.sleep(1000L);
         }
         
         try {

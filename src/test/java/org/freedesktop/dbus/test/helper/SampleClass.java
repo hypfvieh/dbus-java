@@ -252,7 +252,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         DBusCallInfo info = AbstractConnection.getCallInfo();
         if ("org.freedesktop.dbus.test.AlternateTestInterface".equals(info.getInterface())) {
             return 3;
-        } else if ("org.freedesktop.dbus.test.helper.interfaces.TestRemoteInterface".equals(info.getInterface())) {
+        } else if (SampleRemoteInterface.class.getName().equals(info.getInterface())) {
             return 4;
         } else {
             return -1;

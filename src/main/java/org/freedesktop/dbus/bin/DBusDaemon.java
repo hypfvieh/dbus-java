@@ -34,6 +34,7 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.errors.Error;
@@ -985,7 +986,7 @@ public class DBusDaemon extends Thread {
         // accept new connections
         while (d.run) {
             UnixSocket s = uss.accept();
-            if ((new Transport.SASL()).auth(Transport.SASL.MODE_SERVER, Transport.SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), s)) {
+            if ((new SASL()).auth(SASL.MODE_SERVER, SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), s)) {
                 // s.setBlocking(false);
                 d.addSock(s);
             } else {
@@ -1012,7 +1013,7 @@ public class DBusDaemon extends Thread {
                 Socket s = ss.accept();
                 boolean authOK = false;
                 try {
-                    authOK = (new Transport.SASL()).auth(Transport.SASL.MODE_SERVER, Transport.SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), null);
+                    authOK = (new SASL()).auth(SASL.MODE_SERVER, SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), null);
                 } catch (Exception e) {
                     LOGGER.debug("", e);
                 }

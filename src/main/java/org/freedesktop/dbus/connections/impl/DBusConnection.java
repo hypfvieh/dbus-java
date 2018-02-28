@@ -812,32 +812,35 @@ public final class DBusConnection extends AbstractConnection {
      * has been destroyed.
      */
     @Override
-    public synchronized void disconnect() {
-        DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
-        if (connection != null) {
-            if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
-                logger.debug("Disconnecting DBusConnection");
-                // Set all pending messages to have an error.
-                try {
-                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
-                            0, "s", new Object[] {
-                                    "Disconnected"
-                            });
-                    cleanupPendingCalls(err, true);
-                    
-                    synchronized (getPendingErrorQueue()) {
-                        getPendingErrorQueue().add(err);
-                    }
-                } catch (DBusException dbe) {
-                }
-                CONNECTIONS.remove(getAddress().getRawAddress());
-
-                super.disconnect();
-
-            } else {
-                connection.getConcurrentConnections().addAndGet(-1);
-            }
-        }
+    public void disconnect() {
+    	synchronized (CONNECTIONS) {
+	        DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
+	        if (connection != null) {
+	            if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
+	                logger.debug("Disconnecting DBusConnection");
+	                // Set all pending messages to have an error.
+	                try {
+	                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
+	                            0, "s", new Object[] {
+	                                    "Disconnected"
+	                            });
+	                    cleanupPendingCalls(err, true);
+	                    
+	                    synchronized (getPendingErrorQueue()) {
+	                        getPendingErrorQueue().add(err);
+	                    }
+	                } catch (DBusException dbe) {
+	                }
+	                CONNECTIONS.remove(getAddress().getRawAddress());
+	
+	                super.disconnect();
+	
+	            } else {
+	            	logger.debug("Still connections left, decreasing connection counter");
+	                connection.getConcurrentConnections().addAndGet(-1);
+	            }
+	        }
+    	}
     }
 
     private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {

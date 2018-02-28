@@ -106,7 +106,7 @@ public abstract class AbstractConnection implements Closeable {
     private final Map<Long, MethodCall>                                        pendingCalls;
 
     private final IncomingMessageThread                                        readerThread;
-    private final SenderThread                                                 senderThread;
+    //private final SenderThread                                                 senderThread;
 
     private final BusAddress                                                   busAddress;
 
@@ -117,6 +117,7 @@ public abstract class AbstractConnection implements Closeable {
 
     private Transport                                                          transport;
     private ExecutorService                                                    workerThreadPool;
+    private ExecutorService                                                    senderService;
 
     protected AbstractConnection(String address) throws DBusException {
         exportedObjects = new HashMap<>();
@@ -132,11 +133,13 @@ public abstract class AbstractConnection implements Closeable {
         workerThreadPool =
                 Executors.newFixedThreadPool(THREADCOUNT, new NameableThreadFactory("DBus Worker Thread-", false));
 
+        senderService =
+                Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
+        
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
 
         readerThread = new IncomingMessageThread(this);
-        senderThread = new SenderThread(this);
 
         try {
             busAddress = new BusAddress(address);
@@ -164,7 +167,6 @@ public abstract class AbstractConnection implements Closeable {
      */
     protected void listen() {
         readerThread.start();
-        senderThread.start();
     }
 
     /**
@@ -290,8 +292,19 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
-    public void queueOutgoing(Message _message) {
-        senderThread.getOutgoingQueue().add(_message);
+    /**
+     * Send a message to the DBus daemon.
+     * @param _message
+     */
+    public void sendMessage(Message _message) {
+    	Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				sendMessageInternally(_message);
+			}
+    	};
+
+    	senderService.execute(runnable);
     }
 
     /**
@@ -414,7 +427,7 @@ public abstract class AbstractConnection implements Closeable {
     /**
      * Disconnect from the Bus.
      */
-    public void disconnect() {
+    public synchronized void disconnect() {
 
         if (connected == false) { // already disconnected
             return;
@@ -439,8 +452,10 @@ public abstract class AbstractConnection implements Closeable {
             logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
         }
 
-        // stop sending messages
-        senderThread.terminate();
+        // shutdown sender executor service, send all remaining messages in main thread
+        for (Runnable runnable : senderService.shutdownNow()) {
+			runnable.run();
+		}        
         
         // stop the main thread
         run = false;
@@ -551,7 +566,7 @@ public abstract class AbstractConnection implements Closeable {
             throw new NullPointerException("DBusConnection cannot be null");
         }
         try {
-            dbusConnection.queueOutgoing(new Error(methodOrSignal, exception));
+            dbusConnection.sendMessage(new Error(methodOrSignal, exception));
         } catch (DBusException ex) {
             logger.warn("Exception caught while processing previous error.", ex);
         }
@@ -612,7 +627,7 @@ public abstract class AbstractConnection implements Closeable {
             }
     
             if (null == eo) {
-                queueOutgoing(new Error(m,
+                sendMessage(new Error(m,
                         new UnknownObject(m.getPath() + " is not an object provided by this process.")));
                 return;
             }
@@ -625,7 +640,7 @@ public abstract class AbstractConnection implements Closeable {
             }
             meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
             if (null == meth) {
-                queueOutgoing(new Error(m, new UnknownMethod(MessageFormat.format(
+                sendMessage(new Error(m, new UnknownMethod(MessageFormat.format(
                         "The method `{0}.{1}' does not exist on this object.", m.getInterface(), m.getName()))));
                 return;
             }
@@ -686,7 +701,7 @@ public abstract class AbstractConnection implements Closeable {
     
                             reply = new MethodReturn(m, sb.toString(), nr);
                         }
-                        conn.queueOutgoing(reply);
+                        conn.sendMessage(reply);
                     }
                 } catch (DBusExecutionException exDee) {
                     logger.debug("", exDee);
@@ -865,7 +880,7 @@ public abstract class AbstractConnection implements Closeable {
 
         } else
             try {
-                queueOutgoing(new Error(mr, new DBusExecutionException(
+                sendMessage(new Error(mr, new DBusExecutionException(
                         "Spurious reply. No message with the given serial id was awaiting a reply.")));
             } catch (DBusException exDe) {
             }
@@ -879,7 +894,7 @@ public abstract class AbstractConnection implements Closeable {
      * Send a message to DBus.
      * @param m
      */
-    public void sendMessage(Message m) {
+    private void sendMessageInternally(Message m) {
         try {
             if (!connected) {
                 throw new NotConnected("Disconnected");
