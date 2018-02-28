@@ -214,7 +214,7 @@ public final class DBusConnection extends AbstractConnection {
      * @return machine-id string, never null
      * @throws DBusException if machine-id could not be found
      */
-    private static String getDbusMachineId() throws DBusException {
+    public static String getDbusMachineId() throws DBusException {
         File uuidfile = new File("/var/lib/dbus/machine-id");
         if (!uuidfile.exists()) {
             throw new DBusException("Cannot Resolve Session Bus Address");

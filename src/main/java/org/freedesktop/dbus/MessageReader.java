@@ -186,7 +186,9 @@ public class MessageReader implements Closeable {
     @Override
     public void close() throws IOException {
         logger.trace("Closing Message Reader");
-        inputStream.close();
+        if (inputStream != null) {
+            inputStream.close();
+        }
         inputStream = null;
     }
     
