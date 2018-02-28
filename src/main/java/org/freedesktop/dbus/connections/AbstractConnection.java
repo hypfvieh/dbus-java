@@ -78,23 +78,16 @@ public abstract class AbstractConnection implements Closeable {
     /**
      * Default thread pool size
      */
-    private static final int                       THREADCOUNT = 4;
+    private static final int         THREADCOUNT = 4;
 
-    public static final boolean                    FLOAT_SUPPORT;
-    static {
-        FLOAT_SUPPORT = (null != System.getenv("DBUS_JAVA_FLOATS"));
-    }
+    public static final boolean      FLOAT_SUPPORT    =    (null != System.getenv("DBUS_JAVA_FLOATS"));
+    public static final String       BUSNAME_REGEX    = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
+    public static final String       CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
+    public static final String       OBJECT_REGEX     = "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
+    public static final Pattern      DOLLAR_PATTERN   = Pattern.compile("[$]");
 
-    public static final String                                                 BUSNAME_REGEX    =
-            "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
-    public static final String                                                 CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
-    public static final String                                                 OBJECT_REGEX     =
-            "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
-    public static final Pattern                                                DOLLAR_PATTERN   =
-            Pattern.compile("[$]");
-
-    public static final int                                                    MAX_ARRAY_LENGTH = 67108864;
-    public static final int                                                    MAX_NAME_LENGTH  = 255;
+    public static final int          MAX_ARRAY_LENGTH = 67108864;
+    public static final int          MAX_NAME_LENGTH  = 255;
 
     private final Logger        logger = LoggerFactory.getLogger(getClass());
 

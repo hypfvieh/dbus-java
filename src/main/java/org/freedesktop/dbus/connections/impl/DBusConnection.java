@@ -252,7 +252,7 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
-    DBusInterface dynamicProxy(String source, String path) throws DBusException {
+    protected DBusInterface dynamicProxy(String source, String path) throws DBusException {
         logger.debug("Introspecting " + path + " on " + source + " for dynamic proxy creation");
         try {
             Introspectable intro = getRemoteObject(source, path, Introspectable.class);

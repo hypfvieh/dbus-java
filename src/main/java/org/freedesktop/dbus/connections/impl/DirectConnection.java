@@ -69,7 +69,8 @@ public class DirectConnection extends AbstractConnection {
         } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
         }
         
-        return StringUtil.randomString(32);    }
+        return StringUtil.randomString(32);    
+    }
 
     /**
     * Creates a bus address for a randomly generated tcp port.
@@ -215,7 +216,7 @@ public class DirectConnection extends AbstractConnection {
        * @throws ClassCastException If type is not a sub-type of DBusInterface
        * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
     */
-    public DBusInterface getRemoteObject(String objectpath, Class<? extends DBusInterface> type) throws DBusException {
+    public <T extends DBusInterface> T getRemoteObject(String objectpath, Class<T> type) throws DBusException {
         if (null == objectpath) {
             throw new DBusException("Invalid object path: null");
         }
@@ -238,10 +239,13 @@ public class DirectConnection extends AbstractConnection {
         }
 
         RemoteObject ro = new RemoteObject(null, objectpath, type, false);
-        DBusInterface i = (DBusInterface) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
-                type
-        }, new RemoteInvocationHandler(this, ro));
+        
+        @SuppressWarnings("unchecked")
+        T i = (T) Proxy.newProxyInstance(type.getClassLoader(), 
+                new Class[] { type }, new RemoteInvocationHandler(this, ro));
+        
         getImportedObjects().put(i, ro);
+        
         return i;
     }
 

@@ -10,15 +10,18 @@
 */
 package org.freedesktop.dbus.test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.test.helper.interfaces.Profiler;
+import org.freedesktop.dbus.test.helper.structs.ProfileStruct;
 import org.freedesktop.dbus.types.UInt32;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
@@ -238,7 +241,7 @@ public final class Profile {
                 ProfilerInstance pi = new ProfilerInstance();
                 conn.exportObject("/Profiler", pi);
                 Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
-                Vector<String> v = new Vector<String>();
+                List<String> v = new ArrayList<>();
                 for (int i = 0; i < LIST_LENGTH; i++) {
                     v.add("hello " + i);
                 }

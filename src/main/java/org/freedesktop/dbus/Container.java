@@ -45,6 +45,10 @@ public abstract class Container {
         int diff = 0;
         for (Field f : fs) {
             Position p = f.getAnnotation(Position.class);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
+            
             if (null == p) {
                 diff++;
                 continue;

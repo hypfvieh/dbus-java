@@ -27,31 +27,31 @@ public class LowLevelTest extends Assert {
         BusAddress address = new BusAddress(addr);
         logger.debug(address + "");
 
-        Transport conn = new Transport(address);
-
-        Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
-        conn.writeMessage(m);
-        m = conn.readMessage();
-        logger.debug(m.getClass() + "");
-        logger.debug(m + "");
-        m = conn.readMessage();
-        logger.debug(m.getClass() + "");
-        logger.debug(m + "");
-        m = conn.readMessage();
-        logger.debug("" + m);
-        m = new MethodCall("org.freedesktop.DBus", "/", null, "Hello", (byte) 0, null);
-        conn.writeMessage(m);
-        m = conn.readMessage();
-        logger.debug(m + "");
-
-        m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", (byte) 0, "su", "org.testname", 0);
-        conn.writeMessage(m);
-        m = conn.readMessage();
-        logger.debug(m + "");
-        m = new DBusSignal(null, "/foo", "org.foo", "Foo", null);
-        conn.writeMessage(m);
-        m = conn.readMessage();
-        logger.debug(m + "");
-        conn.disconnect();
+        try (Transport conn = new Transport(address)) {
+            Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
+            conn.writeMessage(m);
+            m = conn.readMessage();
+            logger.debug(m.getClass() + "");
+            logger.debug(m + "");
+            m = conn.readMessage();
+            logger.debug(m.getClass() + "");
+            logger.debug(m + "");
+            m = conn.readMessage();
+            logger.debug("" + m);
+            m = new MethodCall("org.freedesktop.DBus", "/", null, "Hello", (byte) 0, null);
+            conn.writeMessage(m);
+            m = conn.readMessage();
+            logger.debug(m + "");
+    
+            m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", (byte) 0, "su", "org.testname", 0);
+            conn.writeMessage(m);
+            m = conn.readMessage();
+            logger.debug(m + "");
+            m = new DBusSignal(null, "/foo", "org.foo", "Foo", null);
+            conn.writeMessage(m);
+            m = conn.readMessage();
+            logger.debug(m + "");
+            conn.disconnect();
+        }
     }
 }
