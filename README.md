@@ -15,6 +15,9 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Better encapsulation in AbstractConnection
   - Use BlockingQueue instead of home grown solution
   - Removed EfficientMap and EfficientList, as they are not really efficient or better than the JDK provided Maps/Lists
+  - Merged UnixSocket stuff of libmatthew to this library, native library libunix-java.so is still compatible with older libmatthew;
+    Main reason is, that the unix socket library of libmatthew is very DBUS specific 
+    (like providing special features for SASL/DBUS\_COOKIE\_SHA)
 
 #### Older changes
 

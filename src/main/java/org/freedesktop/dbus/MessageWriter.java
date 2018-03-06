@@ -15,12 +15,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.unix.USOutputStream;
-import cx.ath.matthew.utils.Hexdump;
 
 public class MessageWriter implements Closeable {
 

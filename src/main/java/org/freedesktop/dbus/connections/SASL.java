@@ -18,12 +18,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cx.ath.matthew.unix.UnixSocket;
-import cx.ath.matthew.utils.Hexdump;
 
 public class SASL {
     private final Logger logger = LoggerFactory.getLogger(getClass());

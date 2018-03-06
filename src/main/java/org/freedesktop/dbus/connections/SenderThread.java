@@ -14,7 +14,7 @@ public class SenderThread extends Thread {
     private final LinkedBlockingQueue<Message> outgoingQueue = new LinkedBlockingQueue<>();
 
     private final AbstractConnection abstractConnection;
-    
+
 
     SenderThread(AbstractConnection _abstractConnection) {
         abstractConnection = _abstractConnection;
@@ -25,7 +25,7 @@ public class SenderThread extends Thread {
         terminate = true;
         interrupt();
     }
-    
+
     public LinkedBlockingQueue<Message> getOutgoingQueue() {
         return outgoingQueue;
     }

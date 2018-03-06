@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.ArrayFrob;
 import org.freedesktop.dbus.Container;
 import org.freedesktop.dbus.DBusMap;
@@ -35,8 +36,6 @@ import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cx.ath.matthew.utils.Hexdump;
 
 /**
  * Superclass of all messages which are sent over the Bus.
@@ -63,7 +62,7 @@ public class Message {
     private byte[][]            wiredata;
     private long                bytecounter;
     private Map<Byte, Object>   headers;
-    
+
     private long                serial;
     private byte              type;
     private byte              flags;
@@ -169,7 +168,7 @@ public class Message {
             this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());
         }
     }
-    
+
     protected Map<Byte, Object> getHeaders() {
         return headers;
     }
@@ -177,7 +176,7 @@ public class Message {
     protected long getByteCounter() {
         return bytecounter;
     }
-        
+
     protected void setByteCounter(long _bytecounter) {
         bytecounter = _bytecounter;
     }
@@ -185,7 +184,7 @@ public class Message {
     protected void setSerial(long _serial) {
         serial = _serial;
     }
-    
+
     protected byte[][] getWiredata() {
         return wiredata;
     }
@@ -1274,7 +1273,7 @@ public class Message {
         String DICT_ENTRY_STRING  = "e";
         String DICT_ENTRY1_STRING = "{";
         String DICT_ENTRY2_STRING = "}";
-    
+
         byte   BYTE               = 'y';
         byte   BOOLEAN            = 'b';
         byte   INT16              = 'n';

@@ -42,6 +42,29 @@
 					</archive>
 				</configuration>
 			</plugin>
+		    <plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+				    <execution>
+                        <id>compile-native</id>
+                        <phase>none</phase> <!-- set to 'compile' to build native library in target/native -->
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                          <workingDirectory>src/native</workingDirectory>
+                          <executable>./compile_native.sh</executable>
+                          <arguments>
+                            <argument>${project.build.directory}</argument>
+                            <argument>${project.basedir}</argument>
+                            <classpath />
+                          </arguments>                          
+                        </configuration>
+                    </execution>
+				</executions>
+			</plugin>			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -60,12 +83,6 @@
 			<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 	
-		<dependency>
-			<groupId>com.github.hypfvieh</groupId>
-			<artifactId>libmatthew</artifactId>
-			<version>0.8.3</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

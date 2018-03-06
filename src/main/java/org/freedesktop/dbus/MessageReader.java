@@ -187,7 +187,7 @@ public class MessageReader implements Closeable {
         }
         inputStream = null;
     }
-    
+
     public boolean isClosed() {
         return inputStream != null;
     }

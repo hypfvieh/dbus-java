@@ -13,12 +13,11 @@ package org.freedesktop.dbus.messages;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cx.ath.matthew.utils.Hexdump;
 
 public class MethodCall extends Message {
 

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.freedesktop.DBus;
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
@@ -56,7 +57,6 @@ import org.slf4j.LoggerFactory;
 import cx.ath.matthew.unix.UnixServerSocket;
 import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
-import cx.ath.matthew.utils.Hexdump;
 
 /**
  * A replacement DBusDaemon
@@ -151,23 +151,23 @@ public class DBusDaemon extends Thread {
     }
 
     public class DBusServer extends Thread implements DBus, Introspectable, Peer {
-        
+
         private final String machineId;
-        
+
         public DBusServer() {
             setName("Server");
             String ascii;
             try {
-                ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes())); 
+                ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
             } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
                 ascii = this.hashCode() + "";
             }
-            
+
             machineId = ascii;
         }
 
-        
-        
+
+
         // CHECKSTYLE:OFF
         public Connstruct c;
         public Message    m;
@@ -528,7 +528,7 @@ public class DBusDaemon extends Thread {
 
         @Override
         public void UpdateActivationEnvironment(Map<String, String>[] _environment) {
-            
+
         }
 
         @Override
@@ -540,7 +540,7 @@ public class DBusDaemon extends Thread {
         public String GetMachineId() {
             return machineId;
         }
-       
+
     }
 
     public class Sender extends Thread {

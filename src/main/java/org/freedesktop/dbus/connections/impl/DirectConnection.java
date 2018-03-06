@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -38,8 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.util.StringUtil;
-
-import cx.ath.matthew.utils.Hexdump;
 
 /** Handles a peer to peer connection between two applications withou a bus daemon.
  * <p>
@@ -63,7 +62,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     /**
-     * Use this method when running on server side. 
+     * Use this method when running on server side.
      * Call will block.
      */
     @Override
@@ -77,14 +76,14 @@ public class DirectConnection extends AbstractConnection {
 
     private String createMachineId() {
         String ascii;
-        
+
         try {
             ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
             return ascii;
         } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
         }
-        
-        return StringUtil.randomString(32);    
+
+        return StringUtil.randomString(32);
     }
 
     /**
@@ -133,7 +132,7 @@ public class DirectConnection extends AbstractConnection {
 
     DBusInterface dynamicProxy(String path) throws DBusException {
         try {
-            Introspectable intro = (Introspectable) getRemoteObject(path, Introspectable.class);
+            Introspectable intro = getRemoteObject(path, Introspectable.class);
             String data = intro.Introspect();
             String[] tags = data.split("[<>]");
             List<String> ifaces = new ArrayList<>();
@@ -254,13 +253,13 @@ public class DirectConnection extends AbstractConnection {
         }
 
         RemoteObject ro = new RemoteObject(null, objectpath, type, false);
-        
+
         @SuppressWarnings("unchecked")
-        T i = (T) Proxy.newProxyInstance(type.getClassLoader(), 
+        T i = (T) Proxy.newProxyInstance(type.getClassLoader(),
                 new Class[] { type }, new RemoteInvocationHandler(this, ro));
-        
+
         getImportedObjects().put(i, ro);
-        
+
         return i;
     }
 

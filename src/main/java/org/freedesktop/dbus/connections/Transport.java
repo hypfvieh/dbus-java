@@ -20,6 +20,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 
+import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress.AddressBusTypes;
@@ -31,11 +32,10 @@ import org.slf4j.LoggerFactory;
 import cx.ath.matthew.unix.UnixServerSocket;
 import cx.ath.matthew.unix.UnixSocket;
 import cx.ath.matthew.unix.UnixSocketAddress;
-import cx.ath.matthew.utils.Hexdump;
 
 public class Transport implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private MessageReader min;
     private MessageWriter mout;
 
@@ -67,13 +67,13 @@ public class Transport implements Closeable {
     public Transport(BusAddress address, int timeout) throws IOException, DBusException {
         connect(address, timeout);
     }
-    
+
     public void writeMessage(Message message) throws IOException {
         if (mout != null) {
             mout.writeMessage(message);
         }
     }
-    
+
     public Message readMessage() throws IOException, DBusException {
         if (min != null) {
             try {
@@ -86,7 +86,7 @@ public class Transport implements Closeable {
         }
         return null;
     }
-   
+
     private void connect(BusAddress address) throws IOException {
         connect(address, 0);
     }
@@ -99,7 +99,7 @@ public class Transport implements Closeable {
         Socket s = null;
         int mode = 0;
         int types = 0;
-        
+
         if (address.getBusType() == AddressBusTypes.UNIX) {
             types = SASL.AUTH_EXTERNAL;
             if (null != address.getParameter("listen")) {
@@ -113,6 +113,8 @@ public class Transport implements Closeable {
                 us = unixServerSocket.accept();
             } else {
                 mode = SASL.MODE_CLIENT;
+
+
                 us = new UnixSocket();
                 if (null != address.getParameter("abstract")) {
                     us.connect(new UnixSocketAddress(address.getParameter("abstract"), true));
@@ -174,7 +176,7 @@ public class Transport implements Closeable {
     public boolean isConnected() {
         return min.isClosed() || mout.isClosed();
     }
-    
+
     @Override
     public void close() throws IOException {
         disconnect();
