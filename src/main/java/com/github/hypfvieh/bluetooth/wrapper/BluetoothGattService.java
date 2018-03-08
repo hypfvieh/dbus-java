@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bluez.GattCharacteristic1;
 import org.bluez.GattService1;
 import org.bluez.exceptions.BluezNotImplementedException;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 import com.github.hypfvieh.DbusHelper;
 

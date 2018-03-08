@@ -1,5 +1,7 @@
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+
 import com.github.hypfvieh.bluetooth.DeviceManager;
 
 /**

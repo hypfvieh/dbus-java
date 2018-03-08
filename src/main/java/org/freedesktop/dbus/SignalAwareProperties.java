@@ -3,8 +3,11 @@ package org.freedesktop.dbus;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.DBus.Properties;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.types.Variant;
 
 /**
  * Extended DBus-Properties object which supports the PropertiesChanged signal of DBus.

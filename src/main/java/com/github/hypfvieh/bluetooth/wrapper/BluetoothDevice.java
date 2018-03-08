@@ -11,20 +11,25 @@ import java.util.Vector;
 import org.bluez.Device1;
 import org.bluez.GattService1;
 import org.bluez.exceptions.BluezAlreadyConnectedException;
+import org.bluez.exceptions.BluezAlreadyExistsException;
+import org.bluez.exceptions.BluezAuthenticationCanceledException;
 import org.bluez.exceptions.BluezAuthenticationFailedException;
-import org.bluez.exceptions.BluezConnectFailedException;
-import org.bluez.exceptions.BluezDoesNotExistsException;
+import org.bluez.exceptions.BluezAuthenticationRejectedException;
+import org.bluez.exceptions.BluezAuthenticationTimeoutException;
+import org.bluez.exceptions.BluezConnectionAttemptFailedException;
+import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
-import org.bluez.exceptions.BluezInvalidArgumentException;
+import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.bluez.exceptions.BluezNotAvailableException;
 import org.bluez.exceptions.BluezNotConnectedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
 
 import com.github.hypfvieh.DbusHelper;
 
@@ -447,14 +452,11 @@ public class BluetoothDevice extends AbstractBluetoothObject {
     public boolean connectProfile(String _uuid) {
         try {
             rawdevice.ConnectProfile(_uuid);
-        } catch (BluezDoesNotExistsException _ex) {
-            return false;
-        } catch (BluezAlreadyConnectedException _ex) {
             return true;
-        } catch (BluezConnectFailedException _ex) {
+        } catch (BluezFailedException | BluezInProgressException | BluezInvalidArgumentsException
+                | BluezNotAvailableException | BluezNotReadyException _ex) {
             return false;
         }
-        return true;
     }
 
     /**
@@ -474,15 +476,11 @@ public class BluetoothDevice extends AbstractBluetoothObject {
     public boolean disconnectProfile(String _uuid) {
         try {
             rawdevice.DisconnectProfile(_uuid);
-        } catch (BluezDoesNotExistsException _ex) {
-            return false;
-        } catch (BluezFailedException _ex) {
-            return false;
-        } catch (BluezNotConnectedException _ex) {
-            return false;
-        } catch (BluezNotSupportedException _ex) {
+        } catch (BluezFailedException | BluezInProgressException | BluezInvalidArgumentsException
+                | BluezNotSupportedException _ex) {
             return false;
         }
+
         return true;
     }
 
@@ -508,7 +506,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
         try {
             rawdevice.Pair();
             return true;
-        } catch (BluezInvalidArgumentException | BluezFailedException | BluezAuthenticationFailedException _ex) {
+        } catch (BluezInvalidArgumentsException | BluezFailedException | BluezAuthenticationFailedException | BluezAlreadyExistsException | BluezAuthenticationCanceledException | BluezAuthenticationRejectedException | BluezAuthenticationTimeoutException | BluezConnectionAttemptFailedException _ex) {
             return false;
         }
     }
@@ -526,7 +524,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
         try {
             rawdevice.CancelPairing();
             return true;
-        } catch (BluezDoesNotExistsException | BluezFailedException _ex) {
+        } catch (BluezDoesNotExistException | BluezFailedException _ex) {
             return false;
         }
     }

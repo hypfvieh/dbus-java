@@ -3,9 +3,9 @@ package org.bluez.exceptions;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 @SuppressWarnings("serial")
-public class BluezInvalidArgumentException extends DBusException {
+public class BluezNotFoundException extends DBusException {
 
-    public BluezInvalidArgumentException(String _message) {
+    public BluezNotFoundException(String _message) {
         super(_message);
     }
 

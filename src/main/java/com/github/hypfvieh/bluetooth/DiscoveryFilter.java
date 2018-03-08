@@ -1,6 +1,6 @@
 package com.github.hypfvieh.bluetooth;
 
-import org.freedesktop.dbus.UInt16;
+import org.freedesktop.dbus.types.UInt16;
 
 /**
  * Supported discovery filter values.

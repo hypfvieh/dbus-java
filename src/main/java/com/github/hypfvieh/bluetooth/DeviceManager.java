@@ -9,14 +9,15 @@ import java.util.Set;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
-import org.bluez.exceptions.BluezDoesNotExistsException;
+import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezFailedException;
-import org.bluez.exceptions.BluezInvalidArgumentException;
+import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.AbstractPropertiesHandler;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.SignalAwareProperties;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,7 @@ public class DeviceManager {
      */
     public static DeviceManager createInstance(boolean _sessionConnection) throws DBusException {
         loadLibrary();
-        INSTANCE = new DeviceManager(DBusConnection.getConnection(_sessionConnection ? DBusConnection.SESSION : DBusConnection.SYSTEM));
+        INSTANCE = new DeviceManager(DBusConnection.getConnection(_sessionConnection ? DBusBusType.SESSION : DBusBusType.SYSTEM));
         return INSTANCE;
     }
 
@@ -218,30 +219,30 @@ public class DeviceManager {
 
     /**
      * Setup bluetooth scan/discovery filter.
-     * 
+     *
      * @param _filter
-     * @throws BluezInvalidArgumentException
+     * @throws BluezInvalidArgumentsException
      * @throws BluezNotReadyException
      * @throws BluezNotSupportedException
      * @throws BluezFailedException
      */
-    public void setScanFilter(Map<DiscoveryFilter, Object> _filter) throws BluezInvalidArgumentException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
+    public void setScanFilter(Map<DiscoveryFilter, Object> _filter) throws BluezInvalidArgumentsException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
         Map<String, Object> filters = new LinkedHashMap<>();
         for (Entry<DiscoveryFilter, Object> entry : _filter.entrySet()) {
             if (!entry.getKey().getValueClass().isInstance(entry.getValue())) {
-                throw new BluezInvalidArgumentException("Filter value not of required type " + entry.getKey().getValueClass());
+                throw new BluezInvalidArgumentsException("Filter value not of required type " + entry.getKey().getValueClass());
             }
             if (entry.getValue() instanceof Enum<?>) {
-                filters.put(entry.getKey().name(), entry.getValue().toString());    
+                filters.put(entry.getKey().name(), entry.getValue().toString());
             } else {
                 filters.put(entry.getKey().name(), entry.getValue());
             }
-            
+
         }
-        
+
         getAdapter().setDiscoveryFilter(filters);
     }
-    
+
     /**
      * Get the current adapter in use.
      * @return the adapter currently in use, maybe null
@@ -253,7 +254,7 @@ public class DeviceManager {
             return scanForBluetoothAdapters().get(0);
         }
     }
-    
+
     /**
      * Find an adapter by the given identifier (either MAC or device name).
      * Will scan for devices if no default device is given and given ident is also null.
@@ -332,16 +333,16 @@ public class DeviceManager {
      * Setup the default bluetooth adapter to use by giving the adapters MAC address.
      *
      * @param _adapterMac MAC address of the bluetooth adapter
-     * @throws BluezDoesNotExistsException if there is no bluetooth adapter with the given MAC
+     * @throws BluezDoesNotExistException if there is no bluetooth adapter with the given MAC
      */
-    public void setDefaultAdapter(String _adapterMac) throws BluezDoesNotExistsException {
+    public void setDefaultAdapter(String _adapterMac) throws BluezDoesNotExistException {
         if (bluetoothAdaptersByMac.isEmpty()) {
             scanForBluetoothAdapters();
         }
         if (bluetoothAdaptersByMac.containsKey(_adapterMac)) {
             defaultAdapterMac = _adapterMac;
         } else {
-            throw new BluezDoesNotExistsException("Could not find bluetooth adapter with MAC address: " + _adapterMac);
+            throw new BluezDoesNotExistException("Could not find bluetooth adapter with MAC address: " + _adapterMac);
         }
     }
 
@@ -349,13 +350,13 @@ public class DeviceManager {
      * Setup the default bluetooth adapter to use by giving an adapter object.
      *
      * @param _adapter bluetooth adapter object
-     * @throws BluezDoesNotExistsException if there is no bluetooth adapter with the given MAC or adapter object was null
+     * @throws BluezDoesNotExistException if there is no bluetooth adapter with the given MAC or adapter object was null
      */
-    public void setDefaultAdapter(BluetoothAdapter _adapter) throws BluezDoesNotExistsException {
+    public void setDefaultAdapter(BluetoothAdapter _adapter) throws BluezDoesNotExistException {
         if (_adapter != null) {
             setDefaultAdapter(_adapter.getAddress());
         } else {
-            throw new BluezDoesNotExistsException("Null is not a valid bluetooth adapter");
+            throw new BluezDoesNotExistException("Null is not a valid bluetooth adapter");
         }
     }
 

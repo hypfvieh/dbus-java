@@ -9,14 +9,14 @@ import java.util.Vector;
 import org.bluez.Adapter1;
 import org.bluez.Device1;
 import org.bluez.exceptions.BluezFailedException;
-import org.bluez.exceptions.BluezInvalidArgumentException;
+import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.DBusInterface;
-import org.freedesktop.dbus.UInt16;
-import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
 
 /**
  * Wrapper class which represents an bluetooth adapter.
@@ -290,9 +290,9 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      *
      * @param _device device to remove
      * @throws BluezFailedException when something went wrong
-     * @throws BluezInvalidArgumentException when device was invalid
+     * @throws BluezInvalidArgumentsException when device was invalid
      */
-    public void removeDevice(Device1 _device) throws BluezFailedException, BluezInvalidArgumentException {
+    public void removeDevice(Device1 _device) throws BluezFailedException, BluezInvalidArgumentsException {
         adapter.RemoveDevice(_device);
     }
 
@@ -322,27 +322,27 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * If a transport mode is used which is not supported by the device, a {@link BluezNotSupportedException} is thrown.
      *
      * @param _filter filter to use
-     * @throws BluezInvalidArgumentException thrown if any arguments in the map are not supported
+     * @throws BluezInvalidArgumentsException thrown if any arguments in the map are not supported
      * @throws BluezNotReadyException if adapter not ready
      * @throws BluezNotSupportedException if operation not supported
      * @throws BluezFailedException any other error
      */
-    public void setDiscoveryFilter(Map<String, Object> _filter) throws BluezInvalidArgumentException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
+    public void setDiscoveryFilter(Map<String, Object> _filter) throws BluezInvalidArgumentsException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
 
         for (Entry<String, Object> entry : _filter.entrySet()) {
             if (!supportedFilterOptions.containsKey(entry.getKey())) {
-                throw new BluezInvalidArgumentException("Key " + entry.getKey() + " is not supported by Bluez library");
+                throw new BluezInvalidArgumentsException("Key " + entry.getKey() + " is not supported by Bluez library");
             }
             Class<?> typeClass = supportedFilterOptions.get(entry.getKey());
             if (!typeClass.isAssignableFrom(entry.getValue().getClass())) {
-                throw new BluezInvalidArgumentException("Key " + entry.getKey() + " uses unsupported data type "
+                throw new BluezInvalidArgumentsException("Key " + entry.getKey() + " uses unsupported data type "
                         + entry.getValue().getClass() + ", only "+ typeClass.getName() + " is supported.");
             }
         }
         if (_filter.containsKey("Transport")) {
             String transportType = (String) _filter.get("Transport");
             if (!Arrays.asList(supportedTransportValues).contains(transportType)) {
-                throw new BluezInvalidArgumentException("Transport option " + transportType + " is unsupported.");
+                throw new BluezInvalidArgumentsException("Transport option " + transportType + " is unsupported.");
             }
         }
 

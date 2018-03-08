@@ -12,11 +12,12 @@ import org.bluez.GattCharacteristic1;
 import org.bluez.GattDescriptor1;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
+import org.bluez.exceptions.BluezInvalidValueLengthException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 import com.github.hypfvieh.DbusHelper;
 
@@ -100,8 +101,9 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * @throws BluezNotPermittedException if operation is not permitted
      * @throws BluezNotAuthorizedException if not authorized
      * @throws BluezNotSupportedException if not supported
+     * @throws BluezInvalidValueLengthException
      */
-    public void writeValue(byte[] _value, Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException {
+    public void writeValue(byte[] _value, Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException, BluezInvalidValueLengthException {
         gattCharacteristic.WriteValue(_value, optionsToVariantMap(_options));
     }
 
@@ -221,8 +223,9 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * @throws BluezFailedException if operation failed
      * @throws BluezInProgressException if operation already in progress
      * @throws BluezNotSupportedException if operation is not supported
+     * @throws BluezNotPermittedException
      */
-    public void startNotify() throws BluezFailedException, BluezInProgressException, BluezNotSupportedException {
+    public void startNotify() throws BluezFailedException, BluezInProgressException, BluezNotSupportedException, BluezNotPermittedException {
         gattCharacteristic.StartNotify();
     }
 
