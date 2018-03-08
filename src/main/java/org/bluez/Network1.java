@@ -6,31 +6,31 @@ import org.bluez.exceptions.BluezConnectionAttemptFailedException;
 import org.bluez.exceptions.BluezFailedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: network-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.Network1
- * 
- * Object path: 
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
- * 
- * Supported properties: 
- * 
- * 		boolean Connected [readonly]
- * 
- * 			Indicates if the device is connected.
- * 
- * 		string Interface [readonly]
- * 
- * 			Indicates the network interface name when available.
- * 
- * 		string UUID [readonly]
- * 
- * 			Indicates the connection role when available.
- * 
- * 
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: network-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.Network1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		boolean Connected [readonly]<br>
+ * <br>
+ * 			Indicates if the device is connected.<br>
+ * <br>
+ * 		string Interface [readonly]<br>
+ * <br>
+ * 			Indicates the network interface name when available.<br>
+ * <br>
+ * 		string UUID [readonly]<br>
+ * <br>
+ * 			Indicates the connection role when available.<br>
+ * <br>
+ * <br>
+ * <br>
  */
 public interface Network1 extends DBusInterface {
 

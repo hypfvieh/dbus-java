@@ -7,15 +7,15 @@ import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: profile-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.ProfileManager1
- * 
- * Object path: 
- *             /org/bluez
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: profile-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.ProfileManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez<br>
+ * <br>
  */
 public interface ProfileManager1 extends DBusInterface {
 

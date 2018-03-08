@@ -6,15 +6,15 @@ import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotSupportedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.Media1
- * 
- * Object path: 
- *             [variable prefix]/{hci0,hci1,...}
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.Media1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}<br>
+ * <br>
  */
 public interface Media1 extends DBusInterface {
 

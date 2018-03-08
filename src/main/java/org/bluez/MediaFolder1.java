@@ -10,59 +10,59 @@ import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- *
- * Service: unique name (Target role)
- * Interface: org.bluez.MediaFolder1
- *
- * Object path:
- *             freely definable (Target role)
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
- *             (Controller role)
- *
- * Supported properties:
- *
- * 		uint32 NumberOfItems [readonly]
- *
- * 			Number of items in the folder
- *
- * 		string Name [readonly]
- *
- * 			Folder name:
- *
- * 			Possible values:
- * 				"/Filesystem/...": Filesystem scope
- * 				"/NowPlaying/...": NowPlaying scope
- *
- * 			Note: /NowPlaying folder might not be listed if player
- * 			is stopped, folders created by Search are virtual so
- * 			once another Search is perform or the folder is
- * 			changed using ChangeFolder it will no longer be listed.
- *
- *
- * 			Offset of the first item.
- *
- * 			Default value: 0
- *
- * 		uint32 End:
- *
- * 			Offset of the last item.
- *
- * 			Default value: NumbeOfItems
- *
- * 		array{string} Attributes
- *
- * 			Item properties that should be included in the list.
- *
- * 			Possible Values:
- *
- * 				"title", "artist", "album", "genre",
- * 				"number-of-tracks", "number", "duration"
- *
- * 			Default Value: All
- *
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name (Target role)<br>
+ * <b>Interface:</b> org.bluez.MediaFolder1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable (Target role)<br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX<br>
+ *             (Controller role)<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		uint32 NumberOfItems [readonly]<br>
+ * <br>
+ * 			Number of items in the folder<br>
+ * <br>
+ * 		string Name [readonly]<br>
+ * <br>
+ * 			Folder name:<br>
+ * <br>
+ * 			Possible values:<br>
+ * 				"/Filesystem/...": Filesystem scope<br>
+ * 				"/NowPlaying/...": NowPlaying scope<br>
+ * <br>
+ * 			Note: /NowPlaying folder might not be listed if player<br>
+ * 			is stopped, folders created by Search are virtual so<br>
+ * 			once another Search is perform or the folder is<br>
+ * 			changed using ChangeFolder it will no longer be listed.<br>
+ * <br>
+ * <br>
+ * 			Offset of the first item.<br>
+ * <br>
+ * 			Default value: 0<br>
+ * <br>
+ * 		uint32 End:<br>
+ * <br>
+ * 			Offset of the last item.<br>
+ * <br>
+ * 			Default value: NumbeOfItems<br>
+ * <br>
+ * 		array{string} Attributes<br>
+ * <br>
+ * 			Item properties that should be included in the list.<br>
+ * <br>
+ * 			Possible Values:<br>
+ * <br>
+ * 				"title", "artist", "album", "genre",<br>
+ * 				"number-of-tracks", "number", "duration"<br>
+ * <br>
+ * 			Default Value: All<br>
+ * <br>
+ * <br>
  */
 public interface MediaFolder1 extends DBusInterface {
 

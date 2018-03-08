@@ -4,15 +4,15 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- * 
- * Service: unique name
- * Interface: org.bluez.MediaEndpoint1
- * 
- * Object path: 
- *             freely definable
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name<br>
+ * <b>Interface:</b> org.bluez.MediaEndpoint1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable<br>
+ * <br>
  */
 public interface MediaEndpoint1 extends DBusInterface {
 

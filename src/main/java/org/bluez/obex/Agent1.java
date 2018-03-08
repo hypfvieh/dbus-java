@@ -5,15 +5,15 @@ import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-agent-api.txt.
- * 
- * Service: unique name
- * Interface: org.bluez.obex.Agent1
- * 
- * Object path: 
- *             freely definable
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-agent-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name<br>
+ * <b>Interface:</b> org.bluez.obex.Agent1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable<br>
+ * <br>
  */
 public interface Agent1 extends DBusInterface {
 

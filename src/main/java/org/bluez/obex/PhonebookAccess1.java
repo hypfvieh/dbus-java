@@ -11,50 +11,50 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt16;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-api.txt.
- *
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.PhonebookAccess1
- *
- * Object path:
- *             [Session object path]
- *
- * Supported properties:
- *
- * 		string Folder [readonly]
- *
- * 			Current folder.
- *
- * 		string DatabaseIdentifier [readonly, optional]
- *
- * 			128 bits persistent database identifier.
- *
- * 			Possible values: 32-character hexadecimal such
- * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
- *
- * 		string PrimaryCounter [readonly, optional]
- *
- * 			128 bits primary version counter.
- *
- * 			Possible values: 32-character hexadecimal such
- * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
- *
- * 		string SecondaryCounter [readonly, optional]
- *
- * 			128 bits secondary version counter.
- *
- * 			Possible values: 32-character hexadecimal such
- * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
- *
- * 		bool FixedImageSize [readonly, optional]
- *
- * 			Indicate support for fixed image size.
- *
- * 			Possible values: True if image is JPEG 300x300 pixels
- * 			otherwise False.
- *
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.PhonebookAccess1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [Session object path]<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string Folder [readonly]<br>
+ * <br>
+ * 			Current folder.<br>
+ * <br>
+ * 		string DatabaseIdentifier [readonly, optional]<br>
+ * <br>
+ * 			128 bits persistent database identifier.<br>
+ * <br>
+ * 			Possible values: 32-character hexadecimal such<br>
+ * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6<br>
+ * <br>
+ * 		string PrimaryCounter [readonly, optional]<br>
+ * <br>
+ * 			128 bits primary version counter.<br>
+ * <br>
+ * 			Possible values: 32-character hexadecimal such<br>
+ * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6<br>
+ * <br>
+ * 		string SecondaryCounter [readonly, optional]<br>
+ * <br>
+ * 			128 bits secondary version counter.<br>
+ * <br>
+ * 			Possible values: 32-character hexadecimal such<br>
+ * 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6<br>
+ * <br>
+ * 		bool FixedImageSize [readonly, optional]<br>
+ * <br>
+ * 			Indicate support for fixed image size.<br>
+ * <br>
+ * 			Possible values: True if image is JPEG 300x300 pixels<br>
+ * 			otherwise False.<br>
+ * <br>
+ * <br>
  */
 public interface PhonebookAccess1 extends DBusInterface {
 
@@ -134,7 +134,7 @@ public interface PhonebookAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezForbiddenException
      */
-    TwoTuple<String, String[]> List(Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
+    TwoTuple<String,String[]> List(Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
 
     /**
      * <b>From bluez documentation:</b><br>

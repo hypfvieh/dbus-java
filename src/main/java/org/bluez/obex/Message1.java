@@ -7,87 +7,87 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-api.txt.
- * 
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.Message1
- * 
- * Object path: 
- *             [Session object path]/{message0,...}
- * 
- * Supported properties: 
- * 
- * 		string Folder [readonly]
- * 
- * 			Folder which the message belongs to
- * 
- * 		string Subject [readonly]
- * 
- * 			Message subject
- * 
- * 		string Timestamp [readonly]
- * 
- * 			Message timestamp
- * 
- * 		string Sender [readonly]
- * 
- * 			Message sender name
- * 
- * 		string SenderAddress [readonly]
- * 
- * 			Message sender address
- * 
- * 		string ReplyTo [readonly]
- * 
- * 			Message Reply-To address
- * 
- * 		string Recipient [readonly]
- * 
- * 			Message recipient name
- * 
- * 		string RecipientAddress [readonly]
- * 
- * 			Message recipient address
- * 
- * 		string Type [readonly]
- * 
- * 			Message type
- * 
- * 			Possible values: "email", "sms-gsm",
- * 			"sms-cdma" and "mms"
- * 
- * 		uint64 Size [readonly]
- * 
- * 			Message size in bytes
- * 
- * 		string Status [readonly]
- * 
- * 			Message reception status
- * 
- * 			Possible values: "complete",
- * 			"fractioned" and "notification"
- * 
- * 		boolean Priority [readonly]
- * 
- * 			Message priority flag
- * 
- * 		boolean Read [read/write]
- * 
- * 			Message read flag
- * 
- * 		boolean Deleted [writeonly]
- * 
- * 			Message deleted flag
- * 
- * 		boolean Sent [readonly]
- * 
- * 			Message sent flag
- * 
- * 		boolean Protected [readonly]
- * 
- * 			Message protected flag
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.Message1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [Session object path]/{message0,...}<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string Folder [readonly]<br>
+ * <br>
+ * 			Folder which the message belongs to<br>
+ * <br>
+ * 		string Subject [readonly]<br>
+ * <br>
+ * 			Message subject<br>
+ * <br>
+ * 		string Timestamp [readonly]<br>
+ * <br>
+ * 			Message timestamp<br>
+ * <br>
+ * 		string Sender [readonly]<br>
+ * <br>
+ * 			Message sender name<br>
+ * <br>
+ * 		string SenderAddress [readonly]<br>
+ * <br>
+ * 			Message sender address<br>
+ * <br>
+ * 		string ReplyTo [readonly]<br>
+ * <br>
+ * 			Message Reply-To address<br>
+ * <br>
+ * 		string Recipient [readonly]<br>
+ * <br>
+ * 			Message recipient name<br>
+ * <br>
+ * 		string RecipientAddress [readonly]<br>
+ * <br>
+ * 			Message recipient address<br>
+ * <br>
+ * 		string Type [readonly]<br>
+ * <br>
+ * 			Message type<br>
+ * <br>
+ * 			Possible values: "email", "sms-gsm",<br>
+ * 			"sms-cdma" and "mms"<br>
+ * <br>
+ * 		uint64 Size [readonly]<br>
+ * <br>
+ * 			Message size in bytes<br>
+ * <br>
+ * 		string Status [readonly]<br>
+ * <br>
+ * 			Message reception status<br>
+ * <br>
+ * 			Possible values: "complete",<br>
+ * 			"fractioned" and "notification"<br>
+ * <br>
+ * 		boolean Priority [readonly]<br>
+ * <br>
+ * 			Message priority flag<br>
+ * <br>
+ * 		boolean Read [read/write]<br>
+ * <br>
+ * 			Message read flag<br>
+ * <br>
+ * 		boolean Deleted [writeonly]<br>
+ * <br>
+ * 			Message deleted flag<br>
+ * <br>
+ * 		boolean Sent [readonly]<br>
+ * <br>
+ * 			Message sent flag<br>
+ * <br>
+ * 		boolean Protected [readonly]<br>
+ * <br>
+ * 			Message protected flag<br>
+ * <br>
  */
 public interface Message1 extends DBusInterface {
 

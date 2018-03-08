@@ -15,84 +15,84 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: gatt-api.txt.
- *
- * Service: org.bluez
- * Interface: org.bluez.GattCharacteristic1
- *
- * Object path:
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY
- *
- * Supported properties:
- *
- * 		string UUID [read-only]
- *
- * 			128-bit characteristic UUID.
- *
- * 		object Service [read-only]
- *
- * 			Object path of the GATT service the characteristic
- * 			belongs to.
- *
- * 		array{byte} Value [read-only, optional]
- *
- * 			The cached value of the characteristic. This property
- * 			gets updated only after a successful read request and
- * 			when a notification or indication is received, upon
- * 			which a PropertiesChanged signal will be emitted.
- *
- * 		boolean WriteAcquired [read-only, optional]
- *
- * 			True, if this characteristic has been acquired by any
- * 			client using AcquireWrite.
- *
- * 			For client properties is ommited in case
- * 			'write-without-response' flag is not set.
- *
- * 			For server the presence of this property indicates
- * 			that AcquireWrite is supported.
- *
- * 		boolean NotifyAcquired [read-only, optional]
- *
- * 			True, if this characteristic has been acquired by any
- * 			client using AcquireNotify.
- *
- * 			For client this properties is ommited in case 'notify'
- * 			flag is not set.
- *
- * 			For server the presence of this property indicates
- * 			that AcquireNotify is supported.
- *
- * 		boolean Notifying [read-only, optional]
- *
- * 			True, if notifications or indications on this
- * 			characteristic are currently enabled.
- *
- * 		array{string} Flags [read-only]
- *
- * 			Defines how the characteristic value can be used. See
- * 			Core spec "Table 3.5: Characteristic Properties bit
- * 			field", and "Table 3.8: Characteristic Extended
- * 			Properties bit field". Allowed values:
- *
- * 				"broadcast"
- * 				"read"
- * 				"write-without-response"
- * 				"write"
- * 				"notify"
- * 				"indicate"
- * 				"authenticated-signed-writes"
- * 				"reliable-write"
- * 				"writable-auxiliaries"
- * 				"encrypt-read"
- * 				"encrypt-write"
- * 				"encrypt-authenticated-read"
- * 				"encrypt-authenticated-write"
- * 				"secure-read" (Server only)
- * 				"secure-write" (Server only)
- *
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: gatt-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.GattCharacteristic1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string UUID [read-only]<br>
+ * <br>
+ * 			128-bit characteristic UUID.<br>
+ * <br>
+ * 		object Service [read-only]<br>
+ * <br>
+ * 			Object path of the GATT service the characteristic<br>
+ * 			belongs to.<br>
+ * <br>
+ * 		array{byte} Value [read-only, optional]<br>
+ * <br>
+ * 			The cached value of the characteristic. This property<br>
+ * 			gets updated only after a successful read request and<br>
+ * 			when a notification or indication is received, upon<br>
+ * 			which a PropertiesChanged signal will be emitted.<br>
+ * <br>
+ * 		boolean WriteAcquired [read-only, optional]<br>
+ * <br>
+ * 			True, if this characteristic has been acquired by any<br>
+ * 			client using AcquireWrite.<br>
+ * <br>
+ * 			For client properties is ommited in case<br>
+ * 			'write-without-response' flag is not set.<br>
+ * <br>
+ * 			For server the presence of this property indicates<br>
+ * 			that AcquireWrite is supported.<br>
+ * <br>
+ * 		boolean NotifyAcquired [read-only, optional]<br>
+ * <br>
+ * 			True, if this characteristic has been acquired by any<br>
+ * 			client using AcquireNotify.<br>
+ * <br>
+ * 			For client this properties is ommited in case 'notify'<br>
+ * 			flag is not set.<br>
+ * <br>
+ * 			For server the presence of this property indicates<br>
+ * 			that AcquireNotify is supported.<br>
+ * <br>
+ * 		boolean Notifying [read-only, optional]<br>
+ * <br>
+ * 			True, if notifications or indications on this<br>
+ * 			characteristic are currently enabled.<br>
+ * <br>
+ * 		array{string} Flags [read-only]<br>
+ * <br>
+ * 			Defines how the characteristic value can be used. See<br>
+ * 			Core spec "Table 3.5: Characteristic Properties bit<br>
+ * 			field", and "Table 3.8: Characteristic Extended<br>
+ * 			Properties bit field". Allowed values:<br>
+ * <br>
+ * 				"broadcast"<br>
+ * 				"read"<br>
+ * 				"write-without-response"<br>
+ * 				"write"<br>
+ * 				"notify"<br>
+ * 				"indicate"<br>
+ * 				"authenticated-signed-writes"<br>
+ * 				"reliable-write"<br>
+ * 				"writable-auxiliaries"<br>
+ * 				"encrypt-read"<br>
+ * 				"encrypt-write"<br>
+ * 				"encrypt-authenticated-read"<br>
+ * 				"encrypt-authenticated-write"<br>
+ * 				"secure-read" (Server only)<br>
+ * 				"secure-write" (Server only)<br>
+ * <br>
+ * <br>
  */
 public interface GattCharacteristic1 extends DBusInterface {
 

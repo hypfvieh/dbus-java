@@ -5,147 +5,147 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- * 
- * Service: org.bluez (Controller role)
- * Interface: org.bluez.MediaPlayer1
- * 
- * Object path: 
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
- * 
- * Supported properties: 
- * 
- * 		string Equalizer [readwrite]
- * 
- * 			Possible values: "off" or "on"
- * 
- * 		string Repeat [readwrite]
- * 
- * 			Possible values: "off", "singletrack", "alltracks" or
- * 					"group"
- * 
- * 		string Shuffle [readwrite]
- * 
- * 			Possible values: "off", "alltracks" or "group"
- * 
- * 		string Scan [readwrite]
- * 
- * 			Possible values: "off", "alltracks" or "group"
- * 
- * 		string Status [readonly]
- * 
- * 			Possible status: "playing", "stopped", "paused",
- * 					"forward-seek", "reverse-seek"
- * 					or "error"
- * 
- * 		uint32 Position [readonly]
- * 
- * 			Playback position in milliseconds. Changing the
- * 			position may generate additional events that will be
- * 			sent to the remote device. When position is 0 it means
- * 			the track is starting and when it's greater than or
- * 			equal to track's duration the track has ended. Note
- * 			that even if duration is not available in metadata it's
- * 			possible to signal its end by setting position to the
- * 			maximum uint32 value.
- * 
- * 		dict Track [readonly]
- * 
- * 			Track metadata.
- * 
- * 			Possible values:
- * 
- * 				string Title:
- * 
- * 					Track title name
- * 
- * 				string Artist:
- * 
- * 					Track artist name
- * 
- * 				string Album:
- * 
- * 					Track album name
- * 
- * 				string Genre:
- * 
- * 					Track genre name
- * 
- * 				uint32 NumberOfTracks:
- * 
- * 					Number of tracks in total
- * 
- * 				uint32 TrackNumber:
- * 
- * 					Track number
- * 
- * 				uint32 Duration:
- * 
- * 					Track duration in milliseconds
- * 
- * 		object Device [readonly]
- * 
- * 			Device object path.
- * 
- * 		string Name [readonly]
- * 
- * 			Player name
- * 
- * 		string Type [readonly]
- * 
- * 			Player type
- * 
- * 			Possible values:
- * 
- * 				"Audio"
- * 				"Video"
- * 				"Audio Broadcasting"
- * 				"Video Broadcasting"
- * 
- * 		string Subtype [readonly]
- * 
- * 			Player subtype
- * 
- * 			Possible values:
- * 
- * 				"Audio Book"
- * 				"Podcast"
- * 
- * 		boolean Browsable [readonly]
- * 
- * 			If present indicates the player can be browsed using
- * 			MediaFolder interface.
- * 
- * 			Possible values:
- * 
- * 				True: Supported and active
- * 				False: Supported but inactive
- * 
- * 			Note: If supported but inactive clients can enable it
- * 			by using MediaFolder interface but it might interfere
- * 			in the playback of other players.
- * 
- * 
- * 		boolean Searchable [readonly]
- * 
- * 			If present indicates the player can be searched using
- * 			MediaFolder interface.
- * 
- * 			Possible values:
- * 
- * 				True: Supported and active
- * 				False: Supported but inactive
- * 
- * 			Note: If supported but inactive clients can enable it
- * 			by using MediaFolder interface but it might interfere
- * 			in the playback of other players.
- * 
- * 		object Playlist
- * 
- * 			Playlist object path.
- * 
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez (Controller role)<br>
+ * <b>Interface:</b> org.bluez.MediaPlayer1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string Equalizer [readwrite]<br>
+ * <br>
+ * 			Possible values: "off" or "on"<br>
+ * <br>
+ * 		string Repeat [readwrite]<br>
+ * <br>
+ * 			Possible values: "off", "singletrack", "alltracks" or<br>
+ * 					"group"<br>
+ * <br>
+ * 		string Shuffle [readwrite]<br>
+ * <br>
+ * 			Possible values: "off", "alltracks" or "group"<br>
+ * <br>
+ * 		string Scan [readwrite]<br>
+ * <br>
+ * 			Possible values: "off", "alltracks" or "group"<br>
+ * <br>
+ * 		string Status [readonly]<br>
+ * <br>
+ * 			Possible status: "playing", "stopped", "paused",<br>
+ * 					"forward-seek", "reverse-seek"<br>
+ * 					or "error"<br>
+ * <br>
+ * 		uint32 Position [readonly]<br>
+ * <br>
+ * 			Playback position in milliseconds. Changing the<br>
+ * 			position may generate additional events that will be<br>
+ * 			sent to the remote device. When position is 0 it means<br>
+ * 			the track is starting and when it's greater than or<br>
+ * 			equal to track's duration the track has ended. Note<br>
+ * 			that even if duration is not available in metadata it's<br>
+ * 			possible to signal its end by setting position to the<br>
+ * 			maximum uint32 value.<br>
+ * <br>
+ * 		dict Track [readonly]<br>
+ * <br>
+ * 			Track metadata.<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				string Title:<br>
+ * <br>
+ * 					Track title name<br>
+ * <br>
+ * 				string Artist:<br>
+ * <br>
+ * 					Track artist name<br>
+ * <br>
+ * 				string Album:<br>
+ * <br>
+ * 					Track album name<br>
+ * <br>
+ * 				string Genre:<br>
+ * <br>
+ * 					Track genre name<br>
+ * <br>
+ * 				uint32 NumberOfTracks:<br>
+ * <br>
+ * 					Number of tracks in total<br>
+ * <br>
+ * 				uint32 TrackNumber:<br>
+ * <br>
+ * 					Track number<br>
+ * <br>
+ * 				uint32 Duration:<br>
+ * <br>
+ * 					Track duration in milliseconds<br>
+ * <br>
+ * 		object Device [readonly]<br>
+ * <br>
+ * 			Device object path.<br>
+ * <br>
+ * 		string Name [readonly]<br>
+ * <br>
+ * 			Player name<br>
+ * <br>
+ * 		string Type [readonly]<br>
+ * <br>
+ * 			Player type<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				"Audio"<br>
+ * 				"Video"<br>
+ * 				"Audio Broadcasting"<br>
+ * 				"Video Broadcasting"<br>
+ * <br>
+ * 		string Subtype [readonly]<br>
+ * <br>
+ * 			Player subtype<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				"Audio Book"<br>
+ * 				"Podcast"<br>
+ * <br>
+ * 		boolean Browsable [readonly]<br>
+ * <br>
+ * 			If present indicates the player can be browsed using<br>
+ * 			MediaFolder interface.<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				True: Supported and active<br>
+ * 				False: Supported but inactive<br>
+ * <br>
+ * 			Note: If supported but inactive clients can enable it<br>
+ * 			by using MediaFolder interface but it might interfere<br>
+ * 			in the playback of other players.<br>
+ * <br>
+ * <br>
+ * 		boolean Searchable [readonly]<br>
+ * <br>
+ * 			If present indicates the player can be searched using<br>
+ * 			MediaFolder interface.<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				True: Supported and active<br>
+ * 				False: Supported but inactive<br>
+ * <br>
+ * 			Note: If supported but inactive clients can enable it<br>
+ * 			by using MediaFolder interface but it might interfere<br>
+ * 			in the playback of other players.<br>
+ * <br>
+ * 		object Playlist<br>
+ * <br>
+ * 			Playlist object path.<br>
+ * <br>
+ * <br>
  */
 public interface MediaPlayer1 extends DBusInterface {
 

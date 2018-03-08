@@ -3,23 +3,23 @@ package org.bluez;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: gatt-api.txt.
- * 
- * Service: <application dependent>
- * Interface: org.bluez.GattProfile1
- * 
- * Object path: 
- *             <application dependent>
- * 
- * Supported properties: 
- * 
- * 		array{string} UUIDs [read-only]
- * 
- * 			128-bit GATT service UUIDs to auto connect.
- * 
- * 
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: gatt-api.txt.<br>
+ * <br>
+ * <b>Service:</b> <application dependent><br>
+ * <b>Interface:</b> org.bluez.GattProfile1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             <application dependent><br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		array{string} UUIDs [read-only]<br>
+ * <br>
+ * 			128-bit GATT service UUIDs to auto connect.<br>
+ * <br>
+ * <br>
+ * <br>
  */
 public interface GattProfile1 extends DBusInterface {
 

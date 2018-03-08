@@ -7,15 +7,15 @@ import org.bluez.exceptions.BluezNotAllowedException;
 import org.bluez.exceptions.BluezNotFoundException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: health-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.HealthManager1
- * 
- * Object path: 
- *             /org/bluez/
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: health-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.HealthManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez/<br>
+ * <br>
  */
 public interface HealthManager1 extends DBusInterface {
 

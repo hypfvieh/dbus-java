@@ -7,15 +7,15 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: agent-api.txt.
- * 
- * Service: unique name
- * Interface: org.bluez.Agent1
- * 
- * Object path: 
- *             freely definable
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: agent-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name<br>
+ * <b>Interface:</b> org.bluez.Agent1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable<br>
+ * <br>
  */
 public interface Agent1 extends DBusInterface {
 

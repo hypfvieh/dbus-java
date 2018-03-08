@@ -9,33 +9,33 @@ import org.bluez.exceptions.BluezInvalidLengthException;
 import org.bluez.exceptions.BluezNotPermittedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: advertising-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.LEAdvertisingManager1
- * 
- * Object path: 
- *             /org/bluez/{hci0,hci1,...}
- * 
- * Supported properties: 
- * 
- * 		byte ActiveInstances
- * 
- * 			Number of active advertising instances.
- * 
- * 		byte SupportedInstances
- * 
- * 			Number of available advertising instances.
- * 
- * 		array{string} SupportedIncludes
- * 
- * 			List of supported system includes.
- * 
- * 			Possible values: "tx-power"
- * 					 "appearance"
- * 					 "local-name"
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: advertising-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.LEAdvertisingManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez/{hci0,hci1,...}<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		byte ActiveInstances<br>
+ * <br>
+ * 			Number of active advertising instances.<br>
+ * <br>
+ * 		byte SupportedInstances<br>
+ * <br>
+ * 			Number of available advertising instances.<br>
+ * <br>
+ * 		array{string} SupportedIncludes<br>
+ * <br>
+ * 			List of supported system includes.<br>
+ * <br>
+ * 			Possible values: "tx-power"<br>
+ * 					 "appearance"<br>
+ * 					 "local-name"<br>
+ * <br>
  */
 public interface LEAdvertisingManager1 extends DBusInterface {
 

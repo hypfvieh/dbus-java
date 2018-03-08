@@ -7,15 +7,15 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-api.txt.
- * 
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.ObjectPush1
- * 
- * Object path: 
- *             [Session object path]
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.ObjectPush1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [Session object path]<br>
+ * <br>
  */
 public interface ObjectPush1 extends DBusInterface {
 

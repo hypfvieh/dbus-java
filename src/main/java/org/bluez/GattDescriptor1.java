@@ -12,48 +12,48 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: gatt-api.txt.
- *
- * Service: org.bluez
- * Interface: org.bluez.GattDescriptor1
- *
- * Object path:
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY/descriptorZZZ
- *
- * Supported properties:
- *
- * 		string UUID [read-only]
- *
- * 			128-bit descriptor UUID.
- *
- * 		object Characteristic [read-only]
- *
- * 			Object path of the GATT characteristic the descriptor
- * 			belongs to.
- *
- * 		array{byte} Value [read-only, optional]
- *
- * 			The cached value of the descriptor. This property
- * 			gets updated only after a successful read request, upon
- * 			which a PropertiesChanged signal will be emitted.
- *
- * 		array{string} Flags [read-only]
- *
- * 			Defines how the descriptor value can be used.
- *
- * 			Possible values:
- *
- * 				"read"
- * 				"write"
- * 				"encrypt-read"
- * 				"encrypt-write"
- * 				"encrypt-authenticated-read"
- * 				"encrypt-authenticated-write"
- * 				"secure-read" (Server Only)
- * 				"secure-write" (Server Only)
- *
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: gatt-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.GattDescriptor1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY/descriptorZZZ<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string UUID [read-only]<br>
+ * <br>
+ * 			128-bit descriptor UUID.<br>
+ * <br>
+ * 		object Characteristic [read-only]<br>
+ * <br>
+ * 			Object path of the GATT characteristic the descriptor<br>
+ * 			belongs to.<br>
+ * <br>
+ * 		array{byte} Value [read-only, optional]<br>
+ * <br>
+ * 			The cached value of the descriptor. This property<br>
+ * 			gets updated only after a successful read request, upon<br>
+ * 			which a PropertiesChanged signal will be emitted.<br>
+ * <br>
+ * 		array{string} Flags [read-only]<br>
+ * <br>
+ * 			Defines how the descriptor value can be used.<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				"read"<br>
+ * 				"write"<br>
+ * 				"encrypt-read"<br>
+ * 				"encrypt-write"<br>
+ * 				"encrypt-authenticated-read"<br>
+ * 				"encrypt-authenticated-write"<br>
+ * 				"secure-read" (Server Only)<br>
+ * 				"secure-write" (Server Only)<br>
+ * <br>
+ * <br>
  */
 public interface GattDescriptor1 extends DBusInterface {
 

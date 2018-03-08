@@ -7,15 +7,15 @@ import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-api.txt.
- * 
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.Client1
- * 
- * Object path: 
- *             /org/bluez/obex
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.Client1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez/obex<br>
+ * <br>
  */
 public interface Client1 extends DBusInterface {
 

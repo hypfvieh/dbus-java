@@ -5,15 +5,15 @@ import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-agent-api.txt.
- * 
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.AgentManager1
- * 
- * Object path: 
- *             /org/bluez/obex
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-agent-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.AgentManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez/obex<br>
+ * <br>
  */
 public interface AgentManager1 extends DBusInterface {
 

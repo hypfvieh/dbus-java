@@ -3,27 +3,27 @@ package org.bluez;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.MediaControl1
- * 
- * Object path: 
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
- * 
- * Supported properties: 
- * 
- * 	
- * 
- * 		boolean Connected [readonly]
- * 
- * 		object Player [readonly, optional]
- * 
- * 			Addressed Player object path.
- * 
- * 
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.MediaControl1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 	<br>
+ * <br>
+ * 		boolean Connected [readonly]<br>
+ * <br>
+ * 		object Player [readonly, optional]<br>
+ * <br>
+ * 			Addressed Player object path.<br>
+ * <br>
+ * <br>
+ * <br>
  */
 public interface MediaControl1 extends DBusInterface {
 

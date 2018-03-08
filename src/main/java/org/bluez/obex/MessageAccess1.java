@@ -8,15 +8,15 @@ import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: obex-api.txt.
- *
- * Service: org.bluez.obex
- * Interface: org.bluez.obex.MessageAccess1
- *
- * Object path:
- *             [Session object path]
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: obex-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez.obex<br>
+ * <b>Interface:</b> org.bluez.obex.MessageAccess1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [Session object path]<br>
+ * <br>
  */
 public interface MessageAccess1 extends DBusInterface {
 
@@ -170,6 +170,8 @@ public interface MessageAccess1 extends DBusInterface {
      * <br>
      * Request remote to update its inbox.<br>
      * <br>
+     *
+     * @param void
      *
      * @throws BluezFailedException
      */

@@ -1,10 +1,11 @@
 package com.github.hypfvieh.bluetooth.wrapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Vector;
 
 import org.bluez.Adapter1;
 import org.bluez.Device1;
@@ -232,7 +233,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * @return String[], maybe null
      */
     public String[] getUuids() {
-        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        List<?> typed = getTyped("UUIDs", ArrayList.class);
         if (typed != null) {
             return typed.toArray(new String[]{});
         }

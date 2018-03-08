@@ -10,26 +10,26 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: health-api.txt.
- *
- * Service: org.bluez
- * Interface: org.bluez.HealthDevice1
- *
- * Object path:
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
- *
- * Supported properties:
- *
- * 		object MainChannel [readonly]
- *
- * 			The first reliable channel opened. It is needed by
- * 			upper applications in order to send specific protocol
- * 			data units. The first reliable can change after a
- * 			reconnection.
- *
- *
- *
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: health-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.HealthDevice1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		object MainChannel [readonly]<br>
+ * <br>
+ * 			The first reliable channel opened. It is needed by<br>
+ * 			upper applications in order to send specific protocol<br>
+ * 			data units. The first reliable can change after a<br>
+ * 			reconnection.<br>
+ * <br>
+ * <br>
+ * <br>
  */
 public interface HealthDevice1 extends DBusInterface {
 

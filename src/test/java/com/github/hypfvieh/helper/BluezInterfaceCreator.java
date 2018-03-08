@@ -139,32 +139,32 @@ public class BluezInterfaceCreator {
 
             // java doc on class
             sb.append("/**").append(nl);
-            sb.append(" * ").append("File generated - ").append(today).append(".").append(nl);
-            sb.append(" * ").append("Based on bluez Documentation: ").append(is.bluezDocFile).append(".").append(nl);
-            sb.append(" * ").append(nl);
+            sb.append(" * ").append("File generated - ").append(today).append(".<br>").append(nl);
+            sb.append(" * ").append("Based on bluez Documentation: ").append(is.bluezDocFile).append(".<br>").append(nl);
+            sb.append(" * <br>").append(nl);
             if (is.bluezService != null) {
-                sb.append(" * ").append("Service: ").append(is.bluezService).append(nl);
+                sb.append(" * ").append("<b>Service:</b> ").append(is.bluezService).append("<br>").append(nl);
             }
             if (is.bluezInterface != null) {
-                sb.append(" * ").append("Interface: ").append(is.bluezInterface).append(nl);
+                sb.append(" * ").append("<b>Interface:</b> ").append(is.bluezInterface).append("<br>").append(nl);
             }
             if (!is.bluezObjectPath.isEmpty()) {
-                sb.append(" * ").append(nl);
-                sb.append(" * ").append("Object path: ").append(nl);
+                sb.append(" * <br>").append(nl);
+                sb.append(" * <b>Object path:</b><br>").append(nl);
                 for (String objPath : is.bluezObjectPath) {
-                    sb.append(" * ").append(indent).append(indent).append(indent).append(objPath).append(nl);
+                    sb.append(" * ").append(indent).append(indent).append(indent).append(objPath).append("<br>").append(nl);
                 }
             }
-            sb.append(" * ").append(nl);
+            sb.append(" * <br>").append(nl);
 
             // add properties documentation
             if (!is.propertiesDoc.isEmpty()) {
-                sb.append(" * Supported properties: ").append(nl);
-                sb.append(" * ").append(nl);
+                sb.append(" * <b>Supported properties:</b> <br>").append(nl);
+                sb.append(" * <br>").append(nl);
                 for (String docLine : is.propertiesDoc) {
-                    sb.append(" * ").append(docLine).append(nl);
+                    sb.append(" * ").append(docLine).append("<br>").append(nl);
                 }
-                sb.append(" * ").append(nl);
+                sb.append(" * <br>").append(nl);
             }
             sb.append(" */").append(nl);
 

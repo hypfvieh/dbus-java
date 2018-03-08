@@ -6,15 +6,15 @@ import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: profile-api.txt.
- * 
- * Service: unique name
- * Interface: org.bluez.Profile1
- * 
- * Object path: 
- *             freely definable
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: profile-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name<br>
+ * <b>Interface:</b> org.bluez.Profile1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable<br>
+ * <br>
  */
 public interface Profile1 extends DBusInterface {
 

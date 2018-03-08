@@ -9,140 +9,140 @@ import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: adapter-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.Adapter1
- * 
- * Object path: 
- *             [variable prefix]/{hci0,hci1,...}
- * 
- * Supported properties: 
- * 
- * 		string Address [readonly]
- * 
- * 			The Bluetooth device address.
- * 
- * 		string AddressType [readonly]
- * 
- * 			The Bluetooth  Address Type. For dual-mode and BR/EDR
- * 			only adapter this defaults to "public". Single mode LE
- * 			adapters may have either value. With privacy enabled
- * 			this contains type of Identity Address and not type of
- * 			address used for connection.
- * 
- * 			Possible values:
- * 				"public" - Public address
- * 				"random" - Random address
- * 
- * 		string Name [readonly]
- * 
- * 			The Bluetooth system name (pretty hostname).
- * 
- * 			This property is either a static system default
- * 			or controlled by an external daemon providing
- * 			access to the pretty hostname configuration.
- * 
- * 		string Alias [readwrite]
- * 
- * 			The Bluetooth friendly name. This value can be
- * 			changed.
- * 
- * 			In case no alias is set, it will return the system
- * 			provided name. Setting an empty string as alias will
- * 			convert it back to the system provided name.
- * 
- * 			When resetting the alias with an empty string, the
- * 			property will default back to system name.
- * 
- * 			On a well configured system, this property never
- * 			needs to be changed since it defaults to the system
- * 			name and provides the pretty hostname. Only if the
- * 			local name needs to be different from the pretty
- * 			hostname, this property should be used as last
- * 			resort.
- * 
- * 		uint32 Class [readonly]
- * 
- * 			The Bluetooth class of device.
- * 
- * 			This property represents the value that is either
- * 			automatically configured by DMI/ACPI information
- * 			or provided as static configuration.
- * 
- * 		boolean Powered [readwrite]
- * 
- * 			Switch an adapter on or off. This will also set the
- * 			appropriate connectable state of the controller.
- * 
- * 			The value of this property is not persistent. After
- * 			restart or unplugging of the adapter it will reset
- * 			back to false.
- * 
- * 		boolean Discoverable [readwrite]
- * 
- * 			Switch an adapter to discoverable or non-discoverable
- * 			to either make it visible or hide it. This is a global
- * 			setting and should only be used by the settings
- * 			application.
- * 
- * 			If the DiscoverableTimeout is set to a non-zero
- * 			value then the system will set this value back to
- * 			false after the timer expired.
- * 
- * 			In case the adapter is switched off, setting this
- * 			value will fail.
- * 
- * 			When changing the Powered property the new state of
- * 			this property will be updated via a PropertiesChanged
- * 			signal.
- * 
- * 			For any new adapter this settings defaults to false.
- * 
- * 		boolean Pairable [readwrite]
- * 
- * 			Switch an adapter to pairable or non-pairable. This is
- * 			a global setting and should only be used by the
- * 			settings application.
- * 
- * 			Note that this property only affects incoming pairing
- * 			requests.
- * 
- * 			For any new adapter this settings defaults to true.
- * 
- * 		uint32 PairableTimeout [readwrite]
- * 
- * 			The pairable timeout in seconds. A value of zero
- * 			means that the timeout is disabled and it will stay in
- * 			pairable mode forever.
- * 
- * 			The default value for pairable timeout should be
- * 			disabled (value 0).
- * 
- * 		uint32 DiscoverableTimeout [readwrite]
- * 
- * 			The discoverable timeout in seconds. A value of zero
- * 			means that the timeout is disabled and it will stay in
- * 			discoverable/limited mode forever.
- * 
- * 			The default value for the discoverable timeout should
- * 			be 180 seconds (3 minutes).
- * 
- * 		boolean Discovering [readonly]
- * 
- * 			Indicates that a device discovery procedure is active.
- * 
- * 		array{string} UUIDs [readonly]
- * 
- * 			List of 128-bit UUIDs that represents the available
- * 			local services.
- * 
- * 		string Modalias [readonly, optional]
- * 
- * 			Local Device ID information in modalias format
- * 			used by the kernel and udev.
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: adapter-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.Adapter1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		string Address [readonly]<br>
+ * <br>
+ * 			The Bluetooth device address.<br>
+ * <br>
+ * 		string AddressType [readonly]<br>
+ * <br>
+ * 			The Bluetooth  Address Type. For dual-mode and BR/EDR<br>
+ * 			only adapter this defaults to "public". Single mode LE<br>
+ * 			adapters may have either value. With privacy enabled<br>
+ * 			this contains type of Identity Address and not type of<br>
+ * 			address used for connection.<br>
+ * <br>
+ * 			Possible values:<br>
+ * 				"public" - Public address<br>
+ * 				"random" - Random address<br>
+ * <br>
+ * 		string Name [readonly]<br>
+ * <br>
+ * 			The Bluetooth system name (pretty hostname).<br>
+ * <br>
+ * 			This property is either a static system default<br>
+ * 			or controlled by an external daemon providing<br>
+ * 			access to the pretty hostname configuration.<br>
+ * <br>
+ * 		string Alias [readwrite]<br>
+ * <br>
+ * 			The Bluetooth friendly name. This value can be<br>
+ * 			changed.<br>
+ * <br>
+ * 			In case no alias is set, it will return the system<br>
+ * 			provided name. Setting an empty string as alias will<br>
+ * 			convert it back to the system provided name.<br>
+ * <br>
+ * 			When resetting the alias with an empty string, the<br>
+ * 			property will default back to system name.<br>
+ * <br>
+ * 			On a well configured system, this property never<br>
+ * 			needs to be changed since it defaults to the system<br>
+ * 			name and provides the pretty hostname. Only if the<br>
+ * 			local name needs to be different from the pretty<br>
+ * 			hostname, this property should be used as last<br>
+ * 			resort.<br>
+ * <br>
+ * 		uint32 Class [readonly]<br>
+ * <br>
+ * 			The Bluetooth class of device.<br>
+ * <br>
+ * 			This property represents the value that is either<br>
+ * 			automatically configured by DMI/ACPI information<br>
+ * 			or provided as static configuration.<br>
+ * <br>
+ * 		boolean Powered [readwrite]<br>
+ * <br>
+ * 			Switch an adapter on or off. This will also set the<br>
+ * 			appropriate connectable state of the controller.<br>
+ * <br>
+ * 			The value of this property is not persistent. After<br>
+ * 			restart or unplugging of the adapter it will reset<br>
+ * 			back to false.<br>
+ * <br>
+ * 		boolean Discoverable [readwrite]<br>
+ * <br>
+ * 			Switch an adapter to discoverable or non-discoverable<br>
+ * 			to either make it visible or hide it. This is a global<br>
+ * 			setting and should only be used by the settings<br>
+ * 			application.<br>
+ * <br>
+ * 			If the DiscoverableTimeout is set to a non-zero<br>
+ * 			value then the system will set this value back to<br>
+ * 			false after the timer expired.<br>
+ * <br>
+ * 			In case the adapter is switched off, setting this<br>
+ * 			value will fail.<br>
+ * <br>
+ * 			When changing the Powered property the new state of<br>
+ * 			this property will be updated via a PropertiesChanged<br>
+ * 			signal.<br>
+ * <br>
+ * 			For any new adapter this settings defaults to false.<br>
+ * <br>
+ * 		boolean Pairable [readwrite]<br>
+ * <br>
+ * 			Switch an adapter to pairable or non-pairable. This is<br>
+ * 			a global setting and should only be used by the<br>
+ * 			settings application.<br>
+ * <br>
+ * 			Note that this property only affects incoming pairing<br>
+ * 			requests.<br>
+ * <br>
+ * 			For any new adapter this settings defaults to true.<br>
+ * <br>
+ * 		uint32 PairableTimeout [readwrite]<br>
+ * <br>
+ * 			The pairable timeout in seconds. A value of zero<br>
+ * 			means that the timeout is disabled and it will stay in<br>
+ * 			pairable mode forever.<br>
+ * <br>
+ * 			The default value for pairable timeout should be<br>
+ * 			disabled (value 0).<br>
+ * <br>
+ * 		uint32 DiscoverableTimeout [readwrite]<br>
+ * <br>
+ * 			The discoverable timeout in seconds. A value of zero<br>
+ * 			means that the timeout is disabled and it will stay in<br>
+ * 			discoverable/limited mode forever.<br>
+ * <br>
+ * 			The default value for the discoverable timeout should<br>
+ * 			be 180 seconds (3 minutes).<br>
+ * <br>
+ * 		boolean Discovering [readonly]<br>
+ * <br>
+ * 			Indicates that a device discovery procedure is active.<br>
+ * <br>
+ * 		array{string} UUIDs [readonly]<br>
+ * <br>
+ * 			List of 128-bit UUIDs that represents the available<br>
+ * 			local services.<br>
+ * <br>
+ * 		string Modalias [readonly, optional]<br>
+ * <br>
+ * 			Local Device ID information in modalias format<br>
+ * 			used by the kernel and udev.<br>
+ * <br>
  */
 public interface Adapter1 extends DBusInterface {
 

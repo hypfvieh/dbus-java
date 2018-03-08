@@ -3,15 +3,15 @@ package org.bluez;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: network-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.NetworkServer1
- * 
- * Object path: 
- *             /org/bluez/{hci0,hci1,...}
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: network-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.NetworkServer1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez/{hci0,hci1,...}<br>
+ * <br>
  */
 public interface NetworkServer1 extends DBusInterface {
 

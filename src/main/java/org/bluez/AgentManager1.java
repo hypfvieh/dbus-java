@@ -1,20 +1,20 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: agent-api.txt.
- * 
- * Service: org.bluez
- * Interface: org.bluez.AgentManager1
- * 
- * Object path: 
- *             /org/bluez
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: agent-api.txt.<br>
+ * <br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.AgentManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             /org/bluez<br>
+ *
  */
 public interface AgentManager1 extends DBusInterface {
 
@@ -49,10 +49,10 @@ public interface AgentManager1 extends DBusInterface {
      * If an empty string is used it will fallback to<br>
      * "KeyboardDisplay".<br>
      * <br>
-     * 
+     *
      * @param _agent
      * @param _capability
-     * 
+     *
      * @throws BluezInvalidArgumentsException
      * @throws BluezAlreadyExistsException
      */
@@ -65,9 +65,9 @@ public interface AgentManager1 extends DBusInterface {
      * registered. The object path parameter must match the<br>
      * same value that has been used on registration.<br>
      * <br>
-     * 
+     *
      * @param _agent
-     * 
+     *
      * @throws BluezDoesNotExistException
      */
     void UnregisterAgent(Object _agent) throws BluezDoesNotExistException;
@@ -82,9 +82,9 @@ public interface AgentManager1 extends DBusInterface {
      * Special permission might be required to become<br>
      * the default agent.<br>
      * <br>
-     * 
+     *
      * @param _agent
-     * 
+     *
      * @throws BluezDoesNotExistException
      */
     void RequestDefaultAgent(Object _agent) throws BluezDoesNotExistException;

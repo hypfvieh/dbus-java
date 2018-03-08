@@ -5,104 +5,104 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 
 /**
- * File generated - 2018-03-08.
- * Based on bluez Documentation: media-api.txt.
- * 
- * Service: unique name (Target role)
- * Interface: org.bluez.MediaItem1
- * 
- * Object path: 
- *             freely definable (Target role)
- *             [variable
- *             prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX/itemX
- *             (Controller role)
- * 
- * Supported properties: 
- * 
- * 		object Player [readonly]
- * 
- * 			Player object path the item belongs to
- * 
- * 		string Name [readonly]
- * 
- * 			Item displayable name
- * 
- * 		string Type [readonly]
- * 
- * 			Item type
- * 
- * 			Possible values: "video", "audio", "folder"
- * 
- * 		string FolderType [readonly, optional]
- * 
- * 			Folder type.
- * 
- * 			Possible values: "mixed", "titles", "albums", "artists"
- * 
- * 			Available if property Type is "Folder"
- * 
- * 		boolean Playable [readonly, optional]
- * 
- * 			Indicates if the item can be played
- * 
- * 			Available if property Type is "folder"
- * 
- * 		dict Metadata [readonly]
- * 
- * 			Item metadata.
- * 
- * 			Possible values:
- * 
- * 				string Title
- * 
- * 					Item title name
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				string Artist
- * 
- * 					Item artist name
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				string Album
- * 
- * 					Item album name
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				string Genre
- * 
- * 					Item genre name
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				uint32 NumberOfTracks
- * 
- * 					Item album number of tracks in total
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				uint32 Number
- * 
- * 					Item album number
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 				uint32 Duration
- * 
- * 					Item duration in milliseconds
- * 
- * 					Available if property Type is "audio"
- * 					or "video"
- * 
- * 
+ * File generated - 2018-03-08.<br>
+ * Based on bluez Documentation: media-api.txt.<br>
+ * <br>
+ * <b>Service:</b> unique name (Target role)<br>
+ * <b>Interface:</b> org.bluez.MediaItem1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             freely definable (Target role)<br>
+ *             [variable<br>
+ *             prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX/itemX<br>
+ *             (Controller role)<br>
+ * <br>
+ * <b>Supported properties:</b> <br>
+ * <br>
+ * 		object Player [readonly]<br>
+ * <br>
+ * 			Player object path the item belongs to<br>
+ * <br>
+ * 		string Name [readonly]<br>
+ * <br>
+ * 			Item displayable name<br>
+ * <br>
+ * 		string Type [readonly]<br>
+ * <br>
+ * 			Item type<br>
+ * <br>
+ * 			Possible values: "video", "audio", "folder"<br>
+ * <br>
+ * 		string FolderType [readonly, optional]<br>
+ * <br>
+ * 			Folder type.<br>
+ * <br>
+ * 			Possible values: "mixed", "titles", "albums", "artists"<br>
+ * <br>
+ * 			Available if property Type is "Folder"<br>
+ * <br>
+ * 		boolean Playable [readonly, optional]<br>
+ * <br>
+ * 			Indicates if the item can be played<br>
+ * <br>
+ * 			Available if property Type is "folder"<br>
+ * <br>
+ * 		dict Metadata [readonly]<br>
+ * <br>
+ * 			Item metadata.<br>
+ * <br>
+ * 			Possible values:<br>
+ * <br>
+ * 				string Title<br>
+ * <br>
+ * 					Item title name<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				string Artist<br>
+ * <br>
+ * 					Item artist name<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				string Album<br>
+ * <br>
+ * 					Item album name<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				string Genre<br>
+ * <br>
+ * 					Item genre name<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				uint32 NumberOfTracks<br>
+ * <br>
+ * 					Item album number of tracks in total<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				uint32 Number<br>
+ * <br>
+ * 					Item album number<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * 				uint32 Duration<br>
+ * <br>
+ * 					Item duration in milliseconds<br>
+ * <br>
+ * 					Available if property Type is "audio"<br>
+ * 					or "video"<br>
+ * <br>
+ * <br>
  */
 public interface MediaItem1 extends DBusInterface {
 
