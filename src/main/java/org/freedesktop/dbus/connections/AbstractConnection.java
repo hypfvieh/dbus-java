@@ -966,7 +966,9 @@ public abstract class AbstractConnection implements Closeable {
             if (!run && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
                 return null;
             }
-            throw new FatalDBusException(exIo.getMessage());
+            if (run) {
+                throw new FatalDBusException(exIo.getMessage());
+            } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
         }
         return m;
     }

@@ -15,6 +15,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.test.TestAll;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
@@ -229,7 +230,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public String recursionTest() {
         try {
-            SampleRemoteInterface tri = conn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface.class);
+            SampleRemoteInterface tri = conn.getRemoteObject("foo.bar.Test", TestAll.TEST_OBJECT_PATH, SampleRemoteInterface.class);
             return tri.getName();
         } catch (DBusException exDb) {
             Assert.fail("Failed with error: " + exDb);

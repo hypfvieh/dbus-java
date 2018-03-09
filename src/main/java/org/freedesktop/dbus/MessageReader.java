@@ -25,6 +25,10 @@ import org.freedesktop.dbus.messages.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.system.LibcErrorCodes;
+
+import cx.ath.matthew.unix.UnixIOException;
+
 public class MessageReader implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,6 +55,11 @@ public class MessageReader implements Closeable {
                 rv = inputStream.read(buf, len[0], 12 - len[0]);
             } catch (SocketTimeoutException exSt) {
                 return null;
+            } catch (UnixIOException _ex) {
+                if (_ex.getErrorAsEnum() == LibcErrorCodes.EBADF) { // socket (file descriptor) closed
+                    return null;
+                }
+                throw _ex;
             }
             if (-1 == rv) {
                 throw new EOFException("Underlying transport returned EOF (1)");

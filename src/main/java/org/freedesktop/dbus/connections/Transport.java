@@ -80,8 +80,7 @@ public class Transport implements Closeable {
                 return min.readMessage();
             } catch (Exception _ex) {
                 if (_ex instanceof EOFException) { return null; }
-                _ex.printStackTrace();
-                System.exit(1);
+                logger.warn("Error while waiting for message: ", _ex);
             }
         }
         return null;

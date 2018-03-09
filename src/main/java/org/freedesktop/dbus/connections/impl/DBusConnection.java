@@ -817,7 +817,7 @@ public final class DBusConnection extends AbstractConnection {
 	        DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
 	        if (connection != null) {
 	            if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
-	                logger.debug("Disconnecting DBusConnection");
+	                logger.debug("Disconnecting last remaining DBusConnection");
 	                // Set all pending messages to have an error.
 	                try {
 	                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
@@ -836,7 +836,7 @@ public final class DBusConnection extends AbstractConnection {
 	                super.disconnect();
 	
 	            } else {
-	            	logger.debug("Still connections left, decreasing connection counter");
+	            	logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
 	                connection.getConcurrentConnections().addAndGet(-1);
 	            }
 	        }

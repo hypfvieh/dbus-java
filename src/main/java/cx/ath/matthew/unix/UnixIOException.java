@@ -28,13 +28,26 @@ package cx.ath.matthew.unix;
 
 import java.io.IOException;
 
+import com.github.hypfvieh.system.LibcErrorCodes;
+
 /**
  * An IO Exception which occurred during UNIX Socket IO
  */
 public class UnixIOException extends IOException {
     private static final long serialVersionUID = -1L;
 
+    private int errorCode;
+    
     public UnixIOException(int _no, String _message) {
         super(_message);
+        errorCode = _no;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
+    
+    public LibcErrorCodes getErrorAsEnum() {
+        return LibcErrorCodes.errorCodeToEnum(errorCode);
     }
 }

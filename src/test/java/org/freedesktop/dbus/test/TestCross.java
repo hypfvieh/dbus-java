@@ -13,6 +13,7 @@ import org.freedesktop.dbus.test.helper.cross.CrossTestClient;
 import org.freedesktop.dbus.test.helper.cross.CrossTestServer;
 import org.freedesktop.dbus.test.helper.interfaces.Binding;
 import org.freedesktop.dbus.test.helper.interfaces.SamplesInterface;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +29,14 @@ public class TestCross extends Assert {
         serverThread = new ServerThread();
         serverThread.start();
     }
+   
+    @After
+    public void after() {
+        if (serverThread != null) {
+            serverThread.interrupt();
+        }
+    }
+   
     
 
     @Test

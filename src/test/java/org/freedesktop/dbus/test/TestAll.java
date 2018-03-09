@@ -73,6 +73,8 @@ import com.github.hypfvieh.util.TimeMeasure;
 // CHECKSTYLE:OFF
 public class TestAll extends Assert {
 
+    public static final String TEST_OBJECT_PATH = "/TestAll";
+    
     // CHECKSTYLE:OFF
     private static DBusConnection serverconn = null;
     private static DBusConnection clientconn = null;
@@ -90,7 +92,7 @@ public class TestAll extends Assert {
         tclass = new SampleClass(serverconn);
         
         /** This exports an instance of the test class as the object /Test. */
-        serverconn.exportObject("/Test", tclass);
+        serverconn.exportObject(TEST_OBJECT_PATH, tclass);
         serverconn.addFallback("/FallbackTest", tclass);
     }
 
@@ -121,7 +123,7 @@ public class TestAll extends Assert {
         ArraySignalHandler ash = new ArraySignalHandler(1);
 
         /** This gets a remote object matching our bus name and exported object path. */
-        Peer peer = clientconn.getRemoteObject("foo.bar.Test", "/Test", Peer.class);
+        Peer peer = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Peer.class);
 
         DBus dbus = clientconn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
 
@@ -171,7 +173,7 @@ public class TestAll extends Assert {
     @Test
     public void testPing() throws DBusException {
         System.out.println("Pinging ourselves");
-        Peer peer = clientconn.getRemoteObject("foo.bar.Test", "/Test", Peer.class);
+        Peer peer = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Peer.class);
 
         TimeMeasure timeMeasure = new TimeMeasure();
         for (int i = 0; i < 10; i++) {
@@ -207,7 +209,7 @@ public class TestAll extends Assert {
         System.out.println("Getting our introspection data");
         /** This gets a remote object matching our bus name and exported object path. */
         Introspectable intro = clientconn.getRemoteObject("foo.bar.Test", "/", Introspectable.class);
-        intro = clientconn.getRemoteObject("foo.bar.Test", "/Test", Introspectable.class);
+        intro = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Introspectable.class);
         /** Get introspection data */
         String data = intro.Introspect();
         assertNotNull(data);
@@ -218,7 +220,7 @@ public class TestAll extends Assert {
     public void testCallRemoteMethod() throws DBusException {
         System.out.println("Calling Method0/1");
         /** This gets a remote object matching our bus name and exported object path. */
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         System.out.println("Got Remote Object: " + tri);
         /** Call the remote object and get a response. */
         String rname = tri.getName();
@@ -251,7 +253,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testCallGetUtf8String() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         /** Call the remote object and get a response. */
         String rname = tri.getName();
 
@@ -266,7 +268,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testFloats() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         Path path = new Path("/nonexistantwooooooo");
         Path p = tri.pathrv(path);
@@ -281,7 +283,7 @@ public class TestAll extends Assert {
         Map<Path, Path> pathm = new HashMap<>();
         pathm.put(path, path);
 
-        serverconn.sendMessage(new TestPathSignal("/Test", path, paths, pathm));
+        serverconn.sendMessage(new TestPathSignal(TEST_OBJECT_PATH, path, paths, pathm));
 
         System.out.println("sending it to sleep");
         tri.waitawhile();
@@ -295,7 +297,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testStruct() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         List<List<Integer>> lli = new ArrayList<>();
         List<Integer> li = new ArrayList<>();
@@ -318,7 +320,7 @@ public class TestAll extends Assert {
     }
 
     public void testFrob() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         System.out.println("frobnicating");
         List<Long> ls = new ArrayList<>();
         ls.add(2L);
@@ -339,7 +341,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testCallWithCallback() throws DBusException, InterruptedException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         System.out.println("Doing stuff asynchronously with callback");
         CallbackHandlerImpl cbWhichWorks = new CallbackHandlerImpl(1, 0);
@@ -371,7 +373,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testException() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         /** call something that throws */
         try {
@@ -389,7 +391,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testFails() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", "/Test");
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 //        Vector<Type> ts = new Vector<>();
 //        Marshalling.getJavaType("ya{si}", ts, -1);
 //        tri.sig(ts.toArray(new Type[0]));
@@ -440,7 +442,7 @@ public class TestAll extends Assert {
     
     @Test
     public void testGetProperties() throws DBusException {
-        Properties prop = clientconn.getRemoteObject("foo.bar.Test", "/Test", Properties.class);
+        Properties prop = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Properties.class);
         Path prv = (Path) prop.Get("foo.bar", "foo");
         System.out.println("Got path " + prv);
 
@@ -451,7 +453,7 @@ public class TestAll extends Assert {
     @Test
     public void testExportPath() throws DBusException {
         /** This gets a remote object matching our bus name and exported object path. */
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         System.out.print("Calling the other introspect method: ");
         String intro2 = tri2.Introspect();
 
@@ -467,7 +469,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testResponse() throws DBusException, InterruptedException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
 
         System.out.println(tri2.Introspect());
         /** Call the remote object and get a response. */
@@ -494,7 +496,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testArrays() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
 
         List<String> l = new ArrayList<>();
         l.add("hi");
@@ -532,12 +534,12 @@ public class TestAll extends Assert {
         Map<UInt32, SampleStruct2> tsm = new HashMap<>();
         tsm.put(new UInt32(1), new SampleStruct2(l, new Variant<>(new UInt64(678))));
         tsm.put(new UInt32(42), new SampleStruct2(l, new Variant<>(new UInt64(789))));
-        serverconn.sendMessage(new TestArraySignal("/Test", tsl, tsm));
+        serverconn.sendMessage(new TestArraySignal(TEST_OBJECT_PATH, tsl, tsm));
 
     }
 
     public void testSerialization() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         List<Integer> v = new ArrayList<>();
         v.add(1);
         v.add(2);
@@ -553,7 +555,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testComplex() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         Collator col = Collator.getInstance();
         col.setDecomposition(Collator.FULL_DECOMPOSITION);
         col.setStrength(Collator.PRIMARY);
@@ -572,7 +574,7 @@ public class TestAll extends Assert {
         System.out.println("done");
 
         System.out.print("testing method overloading...");
-        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface.class);
+        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface.class);
         if (1 != tri2.overload("foo")) {
             TestAll.fail("wrong overloaded method called");
         }
@@ -590,8 +592,8 @@ public class TestAll extends Assert {
     @Test
     public void testOverload() throws DBusException {
         System.out.print("testing method overloading...");
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
-        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface.class);
 
         assertEquals(1, tri2.overload("foo"));
         assertEquals(2, tri2.overload((byte) 0));
@@ -601,7 +603,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testRegression13291() throws DBusException {
-        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface.class);
+        SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface.class);
 
         System.out.print("reg13291...");
         byte[] as = new byte[10];
@@ -615,7 +617,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testNestedLists() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         List<List<Integer>> lli = new ArrayList<>();
         List<Integer> li = new ArrayList<>();
         li.add(1);
@@ -629,7 +631,7 @@ public class TestAll extends Assert {
 
     @Test
     public void testDynamicObjectCreation() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", "/Test", SampleRemoteInterface2.class);
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
 
         SampleNewInterface tni = tri2.getNew();
 

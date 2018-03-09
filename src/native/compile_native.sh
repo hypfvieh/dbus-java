@@ -10,10 +10,10 @@ BASEDIR=$2
 EXTERNAL_CLASSES=$3
 
 read -r -d '' SCRIPT <<'EOM'
-JAVAC?=javac
-JAVADOC?=javadoc
-JAR?=jar
-JAVAH?=javah
+JAVAC?=$(JAVA_HOME)/bin/javac
+JAVADOC?=$(JAVA_HOME)/bin/javadoc
+JAR?=$(JAVA_HOME)/bin/jar
+JAVAH?=$(JAVA_HOME)/bin/javah
 GCJ?=gcj
 CC?=gcc
 LD?=gcc
