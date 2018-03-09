@@ -461,6 +461,8 @@ public abstract class AbstractConnection implements Closeable {
         run = false;
         connected = false;
         
+        readerThread.setTerminate(true);
+        
         // disconnect from the transport layer
         try {
             if (transport != null) {

@@ -18,6 +18,7 @@ public class IncomingMessageThread extends Thread {
         Objects.requireNonNull(_connection);
         connection = _connection;
         setName("DBusConnection");
+        setDaemon(true);
     }
 
     public void setTerminate(boolean _terminate) {
@@ -47,6 +48,7 @@ public class IncomingMessageThread extends Thread {
                 if (_ex instanceof FatalException) {
                     if (connection.isConnected()) {
                         connection.disconnect();
+                        setTerminate(true);
                     }
                 }
                 logger.error("Exception in connection thread.", _ex);
