@@ -111,7 +111,7 @@ public class DBusDaemon extends Thread {
         }
 
         public void putFirst(A a, B b) {
-            logger.debug("<" + name + "> Queueing {" + a + " => " + b + "}");
+            logger.debug("<{}> Queueing {{} => {}}", name, a, b);
 
             if (m.containsKey(a)) {
                 m.get(a).add(b);
@@ -124,8 +124,7 @@ public class DBusDaemon extends Thread {
         }
 
         public void putLast(A a, B b) {
-
-            logger.debug("<" + name + "> Queueing {" + a + " => " + b + "}");
+            logger.debug("<{}> Queueing {{} => {}}", name, a, b);
 
             if (m.containsKey(a)) {
                 m.get(a).add(b);
@@ -138,8 +137,7 @@ public class DBusDaemon extends Thread {
         }
 
         public List<B> remove(A a) {
-
-            logger.debug("<" + name + "> Removing {" + a + "}");
+            logger.debug("<{}> Removing {{}}", name, a);
 
             q.remove(a);
             return m.remove(a);
@@ -195,7 +193,7 @@ public class DBusDaemon extends Thread {
                 names.put(c.unique, c);
             }
 
-            LOGGER.warn("Client " + c.unique + " registered");
+            LOGGER.warn("Client {} registered", c.unique);
 
             try {
                 send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", c.unique));
@@ -288,7 +286,7 @@ public class DBusDaemon extends Thread {
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_EXISTS;
             } else {
 
-                LOGGER.warn("Client " + c.unique + " acquired name " + name);
+                LOGGER.warn("Client {} acquired name {}", c.unique, name);
 
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
                 try {
@@ -319,7 +317,7 @@ public class DBusDaemon extends Thread {
             if (!exists) {
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_NON_EXISTANT;
             } else {
-                LOGGER.warn("Client " + c.unique + " acquired name " + name);
+                LOGGER.warn("Client {} acquired name {}", c.unique, name);
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_RELEASED;
                 try {
                     send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameLost", "s", name));
@@ -339,7 +337,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            LOGGER.trace("Adding match rule: " + matchrule);
+            LOGGER.trace("Adding match rule: {}", matchrule);
 
             synchronized (sigrecips) {
                 if (!sigrecips.contains(c)) {
@@ -357,7 +355,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            LOGGER.trace("Removing match rule: " + matchrule);
+            LOGGER.trace("Removing match rule: {}", matchrule);
 
             LOGGER.debug("exit");
 
@@ -399,7 +397,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            LOGGER.trace("Handling message " + _m + " from " + _c.unique);
+            LOGGER.trace("Handling message {}  from {}", _m, _c.unique);
 
             if (!(_m instanceof MethodCall)) {
                 return;
@@ -494,7 +492,7 @@ public class DBusDaemon extends Thread {
                             Connstruct constructor = wc.get();
                             if (null != constructor) {
 
-                                LOGGER.trace("<localqueue> Got message " + msg + " from " + constructor);
+                                LOGGER.trace("<localqueue> Got message {} from {}", msg, constructor);
 
                                 handleMessage(constructor, msg);
                             }
@@ -503,7 +501,7 @@ public class DBusDaemon extends Thread {
                         LOGGER.debug("", dbe);
                     }
                 } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("Discarding " + msg + " connection reaped");
+                    LOGGER.info("Discarding {} connection reaped", msg);
                 }
             }
 
@@ -578,8 +576,8 @@ public class DBusDaemon extends Thread {
                         Connstruct c = wc.get();
                         if (null != c) {
 
-                            logger.trace("<outqueue> Got message " + m + " for " + c.unique);
-                            logger.info("Sending message " + m + " to " + c.unique);
+                            logger.trace("<outqueue> Got message {} for {}", m, c.unique);
+                            logger.info("Sending message {} to {}", m, c.unique);
 
                             try {
                                 c.mout.writeMessage(m);
@@ -590,7 +588,7 @@ public class DBusDaemon extends Thread {
                         }
                     }
                 } else {
-                    logger.info("Discarding " + m + " connection reaped");
+                    logger.info("Discarding {} connection reaped", m);
                 }
             }
 
@@ -635,7 +633,7 @@ public class DBusDaemon extends Thread {
                 }
 
                 if (null != m) {
-                    LOGGER.info("Read " + m + " from " + conn.unique);
+                    LOGGER.info("Read {} from {}", m, conn.unique);
 
                     synchronized (inqueue) {
                         inqueue.putLast(m, weakconn);
@@ -679,9 +677,9 @@ public class DBusDaemon extends Thread {
 
         LOGGER.debug("enter");
         if (null == c) {
-            LOGGER.trace("Queing message " + m + " for all connections");
+            LOGGER.trace("Queing message {} for all connections", m);
         } else {
-            LOGGER.trace("Queing message " + m + " for " + c.unique);
+            LOGGER.trace("Queing message {} for {}", m, c.unique);
         }
 
         // send to all connections
@@ -751,7 +749,7 @@ public class DBusDaemon extends Thread {
                     for (WeakReference<Connstruct> wc : wcs) {
                         Connstruct c = wc.get();
                         if (null != c) {
-                            LOGGER.info("<inqueue> Got message " + m + " from " + c.unique);
+                            LOGGER.info("<inqueue> Got message {} from {}", m, c.unique);
                             // check if they have hello'd
                             if (null == c.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
                                 send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
@@ -959,7 +957,7 @@ public class DBusDaemon extends Thread {
         }
 
         // start the daemon
-        LOGGER.warn("Binding to " + addr);
+        LOGGER.warn("Binding to {}", addr);
         if ("unix".equals(address.getType())) {
             doUnix(address);
         } else if ("tcp".equals(address.getType())) {

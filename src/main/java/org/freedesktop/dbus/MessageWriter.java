@@ -44,25 +44,25 @@ public class MessageWriter implements Closeable {
     }
 
     public void writeMessage(Message m) throws IOException {
-        logger.info("<= " + m);
+        logger.info("<= {}", m);
         if (null == m) {
             return;
         }
         if (null == m.getWireData()) {
-            logger.warn("Message " + m + " wire-data was null!");
+            logger.warn("Message {} wire-data was null!", m);
             return;
         }
         if (unixSocket) {
             if (logger.isTraceEnabled()) {
-                logger.debug("Writing all " + m.getWireData().length + " buffers simultaneously to Unix Socket");
+                logger.debug("Writing all {} buffers simultaneously to Unix Socket", m.getWireData().length );
                 for (byte[] buf : m.getWireData()) {
-                    logger.trace("(" + buf + "):" + (null == buf ? "" : Hexdump.format(buf)));
+                    logger.trace("({}):{}", buf, (null == buf ? "" : Hexdump.format(buf)));
                 }
             }
             ((USOutputStream) outputStream).write(m.getWireData());
         } else {
             for (byte[] buf : m.getWireData()) {
-                logger.trace("(" + buf + "):" + (null == buf ? "" : Hexdump.format(buf)));
+                logger.trace("({}):{}", buf, (null == buf ? "" : Hexdump.format(buf)));
                 if (null == buf) {
                     break;
                 }

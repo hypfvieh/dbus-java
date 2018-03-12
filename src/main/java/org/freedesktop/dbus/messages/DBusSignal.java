@@ -142,7 +142,7 @@ public class DBusSignal extends Message {
         s.clazz = c;
         return s;
     }
-
+    
     @SuppressWarnings("unchecked")
     private static Class<? extends DBusSignal> createSignalClass(String intname, String signame) throws DBusException {
         String name = intname + '$' + signame;
@@ -181,7 +181,7 @@ public class DBusSignal extends Message {
             clazz = createSignalClass(intname, signame);
         }
 
-        logger.debug("Converting signal to type: " + clazz);
+        logger.debug("Converting signal to type: {}", clazz);
         Type[] types = TYPE_CACHE.get(clazz);
         Constructor<? extends DBusSignal> con = CONSTRUCTOR_CACHE.get(clazz);
         if (null == types) {
@@ -211,16 +211,15 @@ public class DBusSignal extends Message {
                 params[0] = getPath();
                 System.arraycopy(args, 0, params, 1, args.length);
 
-                logger.debug("Creating signal of type " + clazz + " with parameters " + Arrays.deepToString(params));
+                logger.debug("Creating signal of type {} with parameters {}", clazz , Arrays.deepToString(params));
                 s = con.newInstance(params);
             }
             s.getHeaders().putAll(getHeaders());
             s.setWiredata(getWireData());
             s.setByteCounter(getWireData().length);
             return s;
-        } catch (Exception e) {
-            logger.debug("", e);
-            throw new DBusException(e.getMessage());
+        } catch (Exception _ex) {
+            throw new DBusException(_ex);
         }
     }
 
@@ -334,4 +333,11 @@ public class DBusSignal extends Message {
         marshallint(getByteCounter() - counter, blen, 0, 4);
         bodydone = true;
     }
+
+    @Override
+    public String toString() {
+        return "DBusSignal [clazz=" + clazz + "]";
+    }
+    
+    
 }

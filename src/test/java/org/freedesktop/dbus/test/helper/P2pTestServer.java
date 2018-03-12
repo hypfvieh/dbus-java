@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
@@ -74,7 +74,7 @@ public class P2pTestServer implements SampleRemoteInterface {
     }
 
     @Override
-    public void newpathtest(Path p) {
+    public void newpathtest(DBusPath p) {
     }
 
     @Override
@@ -82,17 +82,17 @@ public class P2pTestServer implements SampleRemoteInterface {
     }
 
     @Override
-    public Path pathrv(Path a) {
+    public DBusPath pathrv(DBusPath a) {
         return a;
     }
 
     @Override
-    public List<Path> pathlistrv(List<Path> a) {
+    public List<DBusPath> pathlistrv(List<DBusPath> a) {
         return a;
     }
 
     @Override
-    public Map<Path, Path> pathmaprv(Map<Path, Path> a) {
+    public Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> a) {
         return a;
     }
 

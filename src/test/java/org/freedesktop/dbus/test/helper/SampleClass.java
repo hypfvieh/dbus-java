@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -61,7 +61,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     }
 
     @Override
-    public void newpathtest(Path p) {
+    public void newpathtest(DBusPath p) {
         if (!p.toString().equals("/new/path/test")) {
             Assert.fail("new path test got wrong path");
         }
@@ -307,7 +307,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     @SuppressWarnings("unchecked")
     public <A> A Get(String interface_name, String property_name) {
-        return (A) new Path("/nonexistant/path");
+        return (A) new DBusPath("/nonexistant/path");
     }
 
     @Override
@@ -320,17 +320,17 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     }
 
     @Override
-    public Path pathrv(Path a) {
+    public DBusPath pathrv(DBusPath a) {
         return a;
     }
 
     @Override
-    public List<Path> pathlistrv(List<Path> list) {
+    public List<DBusPath> pathlistrv(List<DBusPath> list) {
         return list;
     }
 
     @Override
-    public Map<Path, Path> pathmaprv(Map<Path, Path> map) {
+    public Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> map) {
         return map;
     }
 }

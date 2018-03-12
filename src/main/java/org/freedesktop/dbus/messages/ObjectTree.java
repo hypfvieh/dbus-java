@@ -117,12 +117,12 @@ public class ObjectTree {
     }
 
     public synchronized void add(String path, ExportedObject object, String data) {
-        logger.debug("Adding " + path + " to object tree");
+        logger.debug("Adding {} to object tree", path);
         root = recursiveAdd(root, path, object, data);
     }
 
     public synchronized void remove(String path) {
-        logger.debug("Removing " + path + " from object tree");
+        logger.debug("Removing {} from object tree", path);
         TreeNode t = recursiveFind(root, path);
         t.object = null;
         t.data = null;

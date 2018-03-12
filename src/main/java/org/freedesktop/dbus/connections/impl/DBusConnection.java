@@ -253,11 +253,11 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     protected DBusInterface dynamicProxy(String source, String path) throws DBusException {
-        logger.debug("Introspecting " + path + " on " + source + " for dynamic proxy creation");
+        logger.debug("Introspecting {} on {} for dynamic proxy creation", path, source);
         try {
             Introspectable intro = getRemoteObject(source, path, Introspectable.class);
             String data = intro.Introspect();
-            logger.trace("Got introspection data: " + data);
+            logger.trace("Got introspection data: {}", data);
 
             String[] tags = data.split("[<>]");
             List<String> ifaces = new ArrayList<>();
@@ -268,7 +268,7 @@ public final class DBusConnection extends AbstractConnection {
             }
             List<Class<?>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
-                logger.debug("Trying interface " + iface);
+                logger.debug("Trying interface {}", iface);
                 int j = 0;
                 while (j >= 0) {
                     try {

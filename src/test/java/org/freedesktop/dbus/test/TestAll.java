@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.errors.ServiceUnknown;
@@ -226,22 +226,22 @@ public class TestAll extends Assert {
         String rname = tri.getName();
         System.out.println("Got Remote Name: " + rname);
 
-        Path path = new Path("/nonexistantwooooooo");
-        Path p = tri.pathrv(path);
+        DBusPath path = new DBusPath("/nonexistantwooooooo");
+        DBusPath p = tri.pathrv(path);
         System.out.println(path.toString() + " => " + p.toString());
         assertEquals("pathrv incorrect", path, p);
 
-        List<Path> paths = new ArrayList<>();
+        List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
         
-        List<Path> ps = tri.pathlistrv(paths);
+        List<DBusPath> ps = tri.pathlistrv(paths);
         System.out.println(paths.toString() + " => " + ps.toString());
 
         assertEquals("pathlistrv incorrect", paths, ps);
 
-        Map<Path, Path> pathm = new HashMap<>();
+        Map<DBusPath, DBusPath> pathm = new HashMap<>();
         pathm.put(path, path);
-        Map<Path, Path> pm = tri.pathmaprv(pathm);
+        Map<DBusPath, DBusPath> pm = tri.pathmaprv(pathm);
 
         System.out.println(pathm.toString() + " => " + pm.toString());
         System.out.println(pm.containsKey(path) + " " + pm.get(path) + " " + path.equals(pm.get(path)));
@@ -270,17 +270,17 @@ public class TestAll extends Assert {
     public void testFloats() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
-        Path path = new Path("/nonexistantwooooooo");
-        Path p = tri.pathrv(path);
+        DBusPath path = new DBusPath("/nonexistantwooooooo");
+        DBusPath p = tri.pathrv(path);
         System.out.println(path.toString() + " => " + p.toString());
         assertEquals("pathrv incorrect", path, p);
 
-        List<Path> paths = new ArrayList<>();
+        List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
-        List<Path> ps = tri.pathlistrv(paths);
+        List<DBusPath> ps = tri.pathlistrv(paths);
         System.out.println(paths.toString() + " => " + ps.toString());
 
-        Map<Path, Path> pathm = new HashMap<>();
+        Map<DBusPath, DBusPath> pathm = new HashMap<>();
         pathm.put(path, path);
 
         serverconn.sendMessage(new TestPathSignal(TEST_OBJECT_PATH, path, paths, pathm));
@@ -392,11 +392,6 @@ public class TestAll extends Assert {
     @Test
     public void testFails() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
-//        Vector<Type> ts = new Vector<>();
-//        Marshalling.getJavaType("ya{si}", ts, -1);
-//        tri.sig(ts.toArray(new Type[0]));
-//
-//        tri.newpathtest(new Path("/new/path/test"));
 
         /** Try and call an invalid remote object */
         try {
@@ -443,7 +438,7 @@ public class TestAll extends Assert {
     @Test
     public void testGetProperties() throws DBusException {
         Properties prop = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Properties.class);
-        Path prv = (Path) prop.Get("foo.bar", "foo");
+        DBusPath prv = (DBusPath) prop.Get("foo.bar", "foo");
         System.out.println("Got path " + prv);
 
         assertEquals(prv.getPath(), "/nonexistant/path");

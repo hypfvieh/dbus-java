@@ -26,7 +26,7 @@ public class MethodTuple {
         } else {
             this.sig = "";
         }
-        logger.trace("new MethodTuple(" + this.name + ", " + this.sig + ")");
+        logger.trace("new MethodTuple({}, {})", this.name, this.sig);
     }
 
     @Override

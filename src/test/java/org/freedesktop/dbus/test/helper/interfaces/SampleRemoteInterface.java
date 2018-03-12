@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -51,7 +51,7 @@ public interface SampleRemoteInterface extends DBusInterface {
     void sig(Type[] s);
 
     @IntrospectionDescription("Testing object paths as Path objects")
-    void newpathtest(Path p);
+    void newpathtest(DBusPath p);
 
     @IntrospectionDescription("Testing the float type")
     float testfloat(float[] f);
@@ -63,9 +63,9 @@ public interface SampleRemoteInterface extends DBusInterface {
     void reg13291(byte[] as, byte[] bs);
 
     /* test lots of things involving Path */
-    Path pathrv(Path a);
+    DBusPath pathrv(DBusPath a);
 
-    List<Path> pathlistrv(List<Path> a);
+    List<DBusPath> pathlistrv(List<DBusPath> a);
 
-    Map<Path, Path> pathmaprv(Map<Path, Path> a);
+    Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> a);
 }

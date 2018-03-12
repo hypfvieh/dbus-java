@@ -39,7 +39,7 @@ public class SASL {
 
         public Command(String s) throws IOException {
             String[] ss = s.split(" ");
-            logger.trace("Creating command from: " + Arrays.toString(ss));
+            logger.trace("Creating command from: {}", Arrays.toString(ss));
             if (0 == col.compare(ss[0], "OK")) {
                 command = COMMAND_OK;
                 data = ss[1];
@@ -81,7 +81,7 @@ public class SASL {
             } else {
                 throw new IOException("Invalid Command " + ss[0]);
             }
-            logger.trace("Created command: " + this);
+            logger.trace("Created command: {}", this);
         }
 
         public int getCommand() {
@@ -298,7 +298,7 @@ public class SASL {
                 sb.append((char) c);
             }
         }
-        logger.trace("received: " + sb);
+        logger.trace("received: {}", sb);
         try {
             return new Command(sb.toString());
         } catch (Exception e) {
@@ -340,7 +340,7 @@ public class SASL {
         }
         sb.append('\r');
         sb.append('\n');
-        logger.trace("sending: " + sb);
+        logger.trace("sending: {}", sb);
         out.write(sb.toString().getBytes());
     }
     // CHECKSTYLE:OFF
@@ -374,13 +374,13 @@ public class SASL {
                 lCookie = findCookie(context, id);
             }
             if (null == lCookie) {
-                logger.debug("Did not find a cookie in context " + context + " with ID " + id);
+                logger.debug("Did not find a cookie in context {}  with ID {}",context, id);
                 return ERROR;
             }
             String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
             buf = md.digest(response.getBytes());
 
-            logger.trace("Response: " + response + " hash: " + Hexdump.format(buf));
+            logger.trace("Response: {} hash: {}", response, Hexdump.format(buf));
 
             response = stupidlyEncode(buf);
             c.setResponse(stupidlyEncode(clientchallenge + " " + response));
@@ -430,7 +430,7 @@ public class SASL {
                     logger.debug("", ioe);
                 }
 
-                logger.debug("Sending challenge: " + context + ' ' + id + ' ' + challenge);
+                logger.debug("Sending challenge: {} {} {}", context, id, challenge);
 
                 _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
                 return CONTINUE;
@@ -447,7 +447,7 @@ public class SASL {
             String prehash = challenge + ":" + cchal + ":" + cookie;
             byte[] buf = md.digest(prehash.getBytes());
             String posthash = stupidlyEncode(buf);
-            logger.debug("Authenticating Hash; data=" + prehash + " remote hash=" + hash + " local hash=" + posthash);
+            logger.debug("Authenticating Hash; data={} remote-hash={} local-hash={}",prehash, hash, posthash);
             if (0 == col.compare(posthash, hash)) {
                 return OK;
             } else {
@@ -527,7 +527,7 @@ public class SASL {
 
         while (state != AUTHENTICATED && state != FAILED) {
 
-            logger.trace("AUTH state: " + state);
+            logger.trace("AUTH state: {}", state);
 
             switch (mode) {
             case MODE_CLIENT:

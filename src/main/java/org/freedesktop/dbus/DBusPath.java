@@ -10,13 +10,11 @@
 */
 package org.freedesktop.dbus;
 
-public class Path implements Comparable<Path> {
-    // CHECKSTYLE:OFF
-    protected String path;
-    // CHECKSTYLE:ON
+public class DBusPath implements Comparable<DBusPath> {
+    private String path;
 
-    public Path(String _path) {
-        this.path = _path;
+    public DBusPath(String _path) {
+        this.setPath(_path);
     }
 
     public String getPath() {
@@ -25,21 +23,25 @@ public class Path implements Comparable<Path> {
 
     @Override
     public String toString() {
-        return path;
+        return getPath();
     }
 
     @Override
     public boolean equals(Object other) {
-        return (other instanceof Path) && path.equals(((Path) other).path);
+        return (other instanceof DBusPath) && getPath().equals(((DBusPath) other).getPath());
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return getPath().hashCode();
     }
 
     @Override
-    public int compareTo(Path that) {
-        return path.compareTo(that.path);
+    public int compareTo(DBusPath that) {
+        return getPath().compareTo(that.getPath());
+    }
+
+    public void setPath(String _path) {
+        path = _path;
     }
 }

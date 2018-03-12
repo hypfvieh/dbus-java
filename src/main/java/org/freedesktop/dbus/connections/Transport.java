@@ -91,7 +91,7 @@ public class Transport implements Closeable {
     }
 
     private void connect(BusAddress address, int timeout) throws IOException {
-        logger.debug("Connecting to " + address);
+        logger.debug("Connecting to {}", address);
         OutputStream out = null;
         InputStream in = null;
         UnixSocket us = null;
@@ -148,7 +148,7 @@ public class Transport implements Closeable {
             throw new IOException("Failed to auth");
         }
         if (null != us) {
-            logger.trace("Setting timeout to " + timeout + " on Socket");
+            logger.trace("Setting timeout to {} on Socket", timeout);
             if (timeout == 1) {
                 us.setBlocking(false);
             } else {
@@ -156,7 +156,7 @@ public class Transport implements Closeable {
             }
         }
         if (null != s) {
-            logger.trace("Setting timeout to " + timeout + " on Socket");
+            logger.trace("Setting timeout to {} on Socket", timeout);
             s.setSoTimeout(timeout);
         }
         mout = new MessageWriter(out);

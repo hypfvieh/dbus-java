@@ -193,9 +193,12 @@ public abstract class AbstractConnection implements Closeable {
         if (foundInterface.isPresent()) {
             return foundInterface.get().getKey();
         } else {
-            String s = getImportedObjects().get(_interface).getObjectPath();
-            if (s != null) {
-                return s;
+            RemoteObject rObj = getImportedObjects().get(_interface);
+            if (rObj != null) {
+                String s = rObj.getObjectPath();
+                if (s != null) {
+                    return s;
+                }
             }
 
             throw new DBusException("Not an object exported or imported by this connection"); 
@@ -401,7 +404,11 @@ public abstract class AbstractConnection implements Closeable {
         if (!DBusSignal.class.isAssignableFrom(type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        String objectpath = getImportedObjects().get(object).getObjectPath();
+        RemoteObject rObj = getImportedObjects().get(object);
+        if (rObj == null) {
+            throw new DBusException("Not an object exported or imported by this connection");
+        }
+        String objectpath = rObj.getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
@@ -501,7 +508,7 @@ public abstract class AbstractConnection implements Closeable {
      */
     public <A> void callWithCallback(DBusInterface object, String m, CallbackHandler<A> callback,
             Object... parameters) {
-        logger.trace("callWithCallback(" + object + "," + m + ", " + callback);
+        logger.trace("callWithCallback({}, {}, {})", object, m, callback);
         Class<?>[] types = new Class[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             types[i] = parameters[i].getClass();
@@ -592,7 +599,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     private void handleMessage(final MethodCall m) throws DBusException {
-        logger.debug("Handling incoming method call: " + m);
+        logger.debug("Handling incoming method call: {}", m);
     
         ExportedObject eo = null;
         Method meth = null;
@@ -619,7 +626,7 @@ public abstract class AbstractConnection implements Closeable {
     
             eo = getExportedObjects().get(m.getPath());
             if (null != eo && null == eo.getObject().get()) {
-                logger.info("Unexporting " + m.getPath() + " implicitly");
+                logger.info("Unexporting {} implicitly", m.getPath());
                 unExportObject(m.getPath());
                 eo = null;
             }
@@ -634,10 +641,10 @@ public abstract class AbstractConnection implements Closeable {
                 return;
             }
             if (logger.isTraceEnabled()) {
-                logger.trace("Searching for method " + m.getName() + " with signature " + m.getSig());
-                logger.trace("List of methods on " + eo + ":");
+                logger.trace("Searching for method {}  with signature {}", m.getName(), m.getSig());
+                logger.trace("List of methods on {}: ", eo);
                 for (MethodTuple mt : eo.getMethods().keySet()) {
-                    logger.trace("   " + mt + " => " + eo.getMethods().get(mt));
+                    logger.trace("   {} => {}", mt, eo.getMethods().get(mt));
                 }
             }
             meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
@@ -656,18 +663,17 @@ public abstract class AbstractConnection implements Closeable {
         final DBusCallInfo info = new DBusCallInfo(m);
         final AbstractConnection conn = this;
     
-        logger.trace("Adding Runnable for method " + meth);
+        logger.trace("Adding Runnable for method {}", meth);
         Runnable r = new Runnable() {
             
             @Override
             public void run() {
-                logger.debug("Running method " + me + " for remote call");
+                logger.debug("Running method {} for remote call", me);
     
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
-                    logger.trace("Deserialised " + Arrays.deepToString(m.getParameters()) + " to types "
-                            + Arrays.deepToString(ts));
+                    logger.trace("Deserialised {} to types {}", Arrays.deepToString(m.getParameters()), Arrays.deepToString(ts));
                 } catch (Exception e) {
                     logger.debug("", e);
                     handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));
@@ -678,8 +684,7 @@ public abstract class AbstractConnection implements Closeable {
                     INFOMAP.put(Thread.currentThread(), info);
                     Object result;
                     try {
-                        logger.trace("Invoking Method: " + me + " on " + ob + " with parameters "
-                                + Arrays.deepToString(m.getParameters()));
+                        logger.trace("Invoking Method: {} on {} with parameters {}", me, ob, Arrays.deepToString(m.getParameters()));
                         result = me.invoke(ob, m.getParameters());
                     } catch (InvocationTargetException ite) {
                         logger.debug(ite.getMessage(), ite);
@@ -729,7 +734,7 @@ public abstract class AbstractConnection implements Closeable {
             "unchecked"
     })
     private void handleMessage(final DBusSignal _signal, boolean _useThreadPool) {
-        logger.debug("Handling incoming signal: " + _signal);
+        logger.debug("Handling incoming signal: ", _signal);
         List<DBusSigHandler<? extends DBusSignal>> v = new ArrayList<>();
         synchronized (getHandledSignals()) {
             List<DBusSigHandler<? extends DBusSignal>> t;
@@ -756,7 +761,7 @@ public abstract class AbstractConnection implements Closeable {
 
         final AbstractConnection conn = this;
         for (final DBusSigHandler<? extends DBusSignal> h : v) {
-            logger.trace("Adding Runnable for signal " + _signal + " with handler " + h);
+            logger.trace("Adding Runnable for signal {} with handler {}",  _signal, h);
             Runnable command = new Runnable() {
 
                 @Override
@@ -769,10 +774,10 @@ public abstract class AbstractConnection implements Closeable {
                             rs = _signal;
                         }
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
-                    } catch (DBusException exDe) {
-                        logger.debug("", exDe);
+                    } catch (DBusException _ex) {
+                        logger.warn("Exception while running signal handler '{}' for signal '{}': {}", h, _signal, _ex);
                         handleException(conn, _signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
-                                + "." + _signal.getName() + ": " + exDe.getMessage()));
+                                + "." + _signal.getName() + ": " + _ex.getMessage()));
                     }
                 }
             };
@@ -785,7 +790,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     private void handleMessage(final Error err) {
-        logger.debug("Handling incoming error: " + err);
+        logger.debug("Handling incoming error: {}", err);
         MethodCall m = null;
         if (getPendingCalls() == null) {
             return;
@@ -799,18 +804,18 @@ public abstract class AbstractConnection implements Closeable {
             m.setReply(err);
             CallbackHandler<?> cbh = null;
             cbh = callbackManager.removeCallback(m);
-            logger.trace(cbh + " = pendingCallbacks.remove(" + m + ")");
+            logger.trace("{} = pendingCallbacks.remove({})", cbh, m);
 
             // queue callback for execution
             if (null != cbh) {
                 final CallbackHandler<?> fcbh = cbh;
-                logger.trace("Adding Error Runnable with callback handler " + fcbh);
+                logger.trace("Adding Error Runnable with callback handler {}", fcbh);
                 Runnable command = new Runnable() {
 
                     @Override
                     public synchronized void run() {
                         try {
-                            logger.trace("Running Error Callback for " + err);
+                            logger.trace("Running Error Callback for {}", err);
                             DBusCallInfo info = new DBusCallInfo(err);
                             INFOMAP.put(Thread.currentThread(), info);
 
@@ -832,7 +837,7 @@ public abstract class AbstractConnection implements Closeable {
 
     @SuppressWarnings("unchecked")
     private void handleMessage(final MethodReturn mr) {
-        logger.debug("Handling incoming method return: " + mr);
+        logger.debug("Handling incoming method return: {}", mr);
         MethodCall m = null;
         
         if (null == getPendingCalls()) {
@@ -864,7 +869,7 @@ public abstract class AbstractConnection implements Closeable {
                     @Override
                     public synchronized void run() {
                         try {
-                            logger.trace("Running Callback for " + mr);
+                            logger.trace("Running Callback for {}", mr);
                             DBusCallInfo info = new DBusCallInfo(mr);
                             INFOMAP.put(Thread.currentThread(), info);
                             Object convertRV = RemoteInvocationHandler.convertRV(mr.getSig(), mr.getParameters(),
@@ -936,7 +941,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             } else if (m instanceof MethodCall) {
                 try {
-                    logger.info("Setting reply to " + m + " as an error");
+                    logger.info("Setting reply to {} as an error", m);
                     ((MethodCall) m).setReply(
                             new Error(m, new DBusExecutionException("Message Failed to Send: " + e.getMessage())));
                 } catch (DBusException exDe) {

@@ -70,7 +70,7 @@ public class MessageReader implements Closeable {
             return null;
         }
         if (len[0] < 12) {
-            logger.debug("Only got " + len[0] + " of 12 bytes of header");
+            logger.debug("Only got {} of 12 bytes of header", len[0]);
             return null;
         }
 
@@ -100,7 +100,7 @@ public class MessageReader implements Closeable {
             len[1] += rv;
         }
         if (len[1] < 4) {
-            logger.debug("Only got " + len[1] + " of 4 bytes of header");
+            logger.debug("Only got {} of 4 bytes of header", len[1]);
             return null;
         }
 
@@ -133,7 +133,7 @@ public class MessageReader implements Closeable {
             len[2] += rv;
         }
         if (len[2] < headerlen) {
-            logger.debug("Only got " + len[2] + " of " + headerlen + " bytes of header");
+            logger.debug("Only got {} of {} bytes of header", len[2], headerlen);
             return null;
         }
 
@@ -158,7 +158,7 @@ public class MessageReader implements Closeable {
             len[3] += rv;
         }
         if (len[3] < body.length) {
-            logger.debug("Only got " + len[3] + " of " + body.length + " bytes of body");
+            logger.debug("Only got {} of {} bytes of body", len[3], body.length);
             return null;
         }
 
@@ -180,7 +180,7 @@ public class MessageReader implements Closeable {
             header = null;
             throw exRe;
         }
-        logger.debug("=> " + m);
+        logger.debug("=> {}", m);
         buf = null;
         tbuf = null;
         body = null;

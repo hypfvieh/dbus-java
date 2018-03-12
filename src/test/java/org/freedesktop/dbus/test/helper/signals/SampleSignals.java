@@ -3,7 +3,7 @@ package org.freedesktop.dbus.test.helper.signals;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -71,11 +71,11 @@ public interface SampleSignals extends DBusInterface {
     }
     
     public class TestPathSignal extends DBusSignal {
-        public final Path            otherpath;
-        public final List<Path>      pathlist;
-        public final Map<Path, Path> pathmap;
+        public final DBusPath            otherpath;
+        public final List<DBusPath>      pathlist;
+        public final Map<DBusPath, DBusPath> pathmap;
 
-        public TestPathSignal(String _path, Path _otherpath, List<Path> _pathlist, Map<Path, Path> _pathmap) throws DBusException {
+        public TestPathSignal(String _path, DBusPath _otherpath, List<DBusPath> _pathlist, Map<DBusPath, DBusPath> _pathmap) throws DBusException {
             super(_path, _otherpath, _pathlist, _pathmap);
             this.otherpath = _otherpath;
             this.pathlist = _pathlist;

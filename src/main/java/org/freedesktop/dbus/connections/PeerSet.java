@@ -32,7 +32,7 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
 
     @Override
     public void handle(DBus.NameOwnerChanged noc) {
-        logger.debug("Received NameOwnerChanged(" + noc.name + "," + noc.oldOwner + "," + noc.newOwner + ")");
+        logger.debug("Received NameOwnerChanged({}, {}, {})", noc.name, noc.oldOwner, noc.newOwner);
         if ("".equals(noc.newOwner) && addresses.contains(noc.name)) {
             remove(noc.name);
         }
@@ -40,7 +40,7 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
 
     @Override
     public boolean add(String address) {
-        logger.debug("Adding " + address);
+        logger.debug("Adding {}", address);
         synchronized (addresses) {
             return addresses.add(address);
         }
@@ -96,7 +96,7 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
 
     @Override
     public boolean remove(Object o) {
-        logger.debug("Removing " + o);
+        logger.debug("Removing {}", o);
         synchronized (addresses) {
             return addresses.remove(o);
         }

@@ -20,12 +20,12 @@ public class FallbackContainer {
     private Map<String[], ExportedObject> fallbacks = new HashMap<>();
 
     public synchronized void add(String path, ExportedObject eo) {
-        logger.debug("Adding fallback on " + path + " of " + eo);
+        logger.debug("Adding fallback on {} of {}", path, eo);
         fallbacks.put(path.split("/"), eo);
     }
 
     public synchronized void remove(String path) {
-        logger.debug("Removing fallback on " + path);
+        logger.debug("Removing fallback on {}", path);
         fallbacks.remove(path.split("/"));
     }
 
@@ -35,8 +35,8 @@ public class FallbackContainer {
         ExportedObject bestobject = null;
         String[] pathel = path.split("/");
         for (String[] fbpath : fallbacks.keySet()) {
-            logger.trace("Trying fallback path " + Arrays.deepToString(fbpath) + " to match "
-                    + Arrays.deepToString(pathel));
+            logger.trace("Trying fallback path {} to match {}",
+                    Arrays.deepToString(fbpath), Arrays.deepToString(pathel));
             for (i = 0; i < pathel.length && i < fbpath.length; i++) {
                 if (!pathel[i].equals(fbpath[i])) {
                     break;
@@ -45,10 +45,10 @@ public class FallbackContainer {
             if (i > 0 && i == fbpath.length && i > best) {
                 bestobject = fallbacks.get(fbpath);
             }
-            logger.trace("Matches " + i + " bestobject now " + bestobject);
+            logger.trace("Matches {} bestobject now {}", i, bestobject);
         }
 
-        logger.debug("Found fallback for " + path + " of " + bestobject);
+        logger.debug("Found fallback for {} of {}", path, bestobject);
         return bestobject;
     }
 }

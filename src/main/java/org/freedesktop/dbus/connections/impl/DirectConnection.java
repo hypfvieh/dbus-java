@@ -104,7 +104,7 @@ public class DirectConnection extends AbstractConnection {
         }
         address += ",port=" + port;
         address += ",guid=" + Transport.genGUID();
-        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: " + address);
+        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
         return address;
     }
 
@@ -122,11 +122,11 @@ public class DirectConnection extends AbstractConnection {
                 sb.append((char) ((Math.abs(r.nextInt()) % 26) + 65));
             }
             path = path.replaceAll("..........$", sb.toString());
-            LoggerFactory.getLogger(DirectConnection.class).trace("Trying path " + path);
+            LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
         address += "abstract=" + path;
         address += ",guid=" + Transport.genGUID();
-        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: " + address);
+        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
         return address;
     }
 

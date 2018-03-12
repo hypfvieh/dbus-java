@@ -31,7 +31,7 @@ public class BusAddress {
             throw new DBusException("Bus address is blank");
         }
 
-        logger.trace("Parsing bus address: " + address);
+        logger.trace("Parsing bus address: {}", address);
 
         String[] ss = address.split(":", 2);
         if (ss.length < 2) {
@@ -43,7 +43,7 @@ public class BusAddress {
             throw new DBusException("Unsupported transport type: " + ss[0]);
         }
 
-        logger.trace("Transport type: " + type);
+        logger.trace("Transport type: {}", type);
 
         rawAddress = address;
         
@@ -53,7 +53,7 @@ public class BusAddress {
             parameters.put(kv[0], kv[1]);
         }
 
-        logger.trace("Transport options: " + parameters);
+        logger.trace("Transport options: {}", parameters);
 
     }
 

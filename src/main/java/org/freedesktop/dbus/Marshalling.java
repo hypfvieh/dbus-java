@@ -256,7 +256,7 @@ public final class Marshalling {
             out[level].append((char) Message.ArgumentType.VARIANT);
         } else if (c instanceof Class && DBusInterface.class.isAssignableFrom((Class<? extends Object>) c)) {
             out[level].append((char) Message.ArgumentType.OBJECT_PATH);
-        } else if (c instanceof Class && Path.class.equals(c)) {
+        } else if (c instanceof Class && DBusPath.class.equals(c)) {
             out[level].append((char) Message.ArgumentType.OBJECT_PATH);
         } else if (c instanceof Class && ObjectPath.class.equals(c)) {
             out[level].append((char) Message.ArgumentType.OBJECT_PATH);
@@ -299,7 +299,7 @@ public final class Marshalling {
             throw new DBusException("Exporting non-exportable type " + c);
         }
 
-        LOGGER.trace("Converted Java type: " + c + " to D-Bus Type: " + out[level]);
+        LOGGER.trace("Converted Java type: {} to D-Bus Type: {}", c, out[level]);
 
         return new String[] {
                 out[level].toString()
@@ -426,7 +426,7 @@ public final class Marshalling {
             if (null == parameters[i]) {
                 continue;
             }
-            LOGGER.trace("Converting " + i + " from " + parameters[i] + " to " + types[i]);
+            LOGGER.trace("Converting {} from {} to {}", i, parameters[i], types[i]);
 
             if (parameters[i] instanceof DBusSerializable) {
                 for (Method m : parameters[i].getClass().getDeclaredMethods()) {
@@ -459,7 +459,7 @@ public final class Marshalling {
                 System.arraycopy(newparams, 0, exparams, i, newparams.length);
                 System.arraycopy(parameters, i + 1, exparams, i + newparams.length, parameters.length - i - 1);
                 parameters = exparams;
-                LOGGER.trace("New params: " + Arrays.deepToString(parameters) + " new types: " + Arrays.deepToString(types));
+                LOGGER.trace("New params: {}, new types: {}", Arrays.deepToString(parameters), Arrays.deepToString(types));
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
@@ -473,7 +473,7 @@ public final class Marshalling {
 
     @SuppressWarnings("unchecked")
     static Object deSerializeParameter(Object parameter, Type type, AbstractConnection conn) throws Exception {
-        LOGGER.trace("Deserializing from " + parameter.getClass() + " to " + type.getClass());
+        LOGGER.trace("Deserializing from {} to {}", parameter.getClass(), type.getClass());
 
         // its a wrapped variant, unwrap it
         if (type instanceof TypeVariable && parameter instanceof Variant) {
@@ -490,15 +490,15 @@ public final class Marshalling {
         // its an object path, get/create the proxy
         if (parameter instanceof ObjectPath) {
             if (type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) type)) {
-                parameter = conn.getExportedObject(((ObjectPath) parameter).getSource(), ((ObjectPath) parameter).path);
+                parameter = conn.getExportedObject(((ObjectPath) parameter).getSource(), ((ObjectPath) parameter).getPath());
             } else {
-                parameter = new Path(((ObjectPath) parameter).path);
+                parameter = new DBusPath(((ObjectPath) parameter).getPath());
             }
         }
 
         // it should be a struct. create it
         if (parameter instanceof Object[] && type instanceof Class && Struct.class.isAssignableFrom((Class<?>) type)) {
-            LOGGER.trace("Creating Struct " + type + " from " + parameter);
+            LOGGER.trace("Creating Struct {} from {}", type, parameter);
             Type[] ts = Container.getTypeCache(type);
             if (null == ts) {
                 Field[] fs = ((Class<?>) type).getDeclaredFields();
@@ -595,7 +595,7 @@ public final class Marshalling {
     }
 
     static List<Object> deSerializeParameters(List<Object> parameters, Type type, AbstractConnection conn) throws Exception {
-        LOGGER.trace("Deserializing from " + parameters + " to " + type);
+        LOGGER.trace("Deserializing from {} to {}",parameters, type);
         if (null == parameters) {
             return null;
         }
@@ -634,7 +634,7 @@ public final class Marshalling {
 
     @SuppressWarnings("unchecked")
     public static Object[] deSerializeParameters(Object[] parameters, Type[] types, AbstractConnection conn) throws Exception {
-        LOGGER.trace("Deserializing from " + Arrays.deepToString(parameters) + " to " + Arrays.deepToString(types));
+        LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(parameters), Arrays.deepToString(types));
         if (null == parameters) {
             return null;
         }
@@ -647,8 +647,9 @@ public final class Marshalling {
             // CHECK IF ARRAYS HAVE THE SAME LENGTH <-- has to happen after expanding parameters
             if (i >= types.length) {
                 if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error("Parameter length differs, expected {} but got {}", parameters.length, types.length);
                     for (int j = 0; j < parameters.length; j++) {
-                        LOGGER.error(String.format("Error, Parameters difference (%1d, '%2s')", j, parameters[j].toString()));
+                        LOGGER.error("Error, Parameters differ: {}, '{}'", j, parameters[j].toString());
                     }
                 }
                 throw new DBusException("Error deserializing message: number of parameters didn't match receiving signature");
