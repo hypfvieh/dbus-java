@@ -41,18 +41,45 @@ public interface Properties extends DBusInterface {
     /**
      * Signal generated when a property changes.
      */
-    public class PropertiesChanged extends DBusSignal {
-        public final String interfaceName;
-        public final Map<String, Variant<?>> changedProperties;
-        public final List<String> invalidatedProperties;
+    public static class PropertiesChanged extends DBusSignal {
+        private final Map<String, Variant<?>> propertiesChanged;
+        private final List<String>         propertiesRemoved;
+        
+        private final String interfaceName;
+        
 
-        public PropertiesChanged(final String path, final String _interfaceName,
-                final Map<String, Variant<?>> _changedProperties, final List<String> _invalidatedProperties)
-                throws DBusException {
-            super(path, _interfaceName, _changedProperties, _invalidatedProperties);
+        public PropertiesChanged(String _path, String _interfaceName, Map<String, Variant<?>> _propertiesChanged, List<String> _propertiesRemoved) throws DBusException {
+            super(_path, _interfaceName, _propertiesChanged, _propertiesRemoved);
+
+            this.propertiesChanged = _propertiesChanged;
+            this.propertiesRemoved = _propertiesRemoved;
             this.interfaceName = _interfaceName;
-            this.changedProperties = _changedProperties;
-            this.invalidatedProperties = _invalidatedProperties;
+        }
+
+        /**
+         * Get name of the interface created this signal (e.g. org.bluez.Adapter1).
+         * @return
+         */
+        public String getInterfaceName() {
+            return interfaceName;
+        }
+
+        
+        /**
+         * Return the changed properties.
+         * Key is the properties name, value is Variant containing any type.
+         * @return
+         */
+        public Map<String, Variant<?>> getPropertiesChanged() {
+            return propertiesChanged;
+        }
+
+        /**
+         * Returns a list of removed property keys.        
+         * @return
+         */
+        public List<String> getPropertiesRemoved() {
+            return propertiesRemoved;
         }
     }
 }
