@@ -50,7 +50,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
             if (null == c || Void.TYPE.equals(c)) {
                 return null;
             } else {
-                throw new DBusExecutionException("Wrong return type (got void, expected a value)");
+                throw new DBusException("Wrong return type (got void, expected a value)");
             }
         } else {
             try {
@@ -60,7 +60,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 }, conn);
             } catch (Exception e) {
                 LOGGER.debug("Wrong return type.", e);
-                throw new DBusExecutionException(MessageFormat.format("Wrong return type (failed to de-serialize correct types: {0} )", e.getMessage()));
+                throw new DBusException(MessageFormat.format("Wrong return type (failed to de-serialize correct types: {0} )", e.getMessage()));
             }
         }
 
@@ -69,7 +69,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
             if (null == c || Void.TYPE.equals(c)) {
                 return null;
             } else {
-                throw new DBusExecutionException("Wrong return type (got void, expected a value)");
+                throw new DBusException("Wrong return type (got void, expected a value)");
             }
         case 1:
             return rp[0];
@@ -77,7 +77,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
             // check we are meant to return multiple values
             if (!Tuple.class.isAssignableFrom(c)) {
-                throw new DBusExecutionException("Wrong return type (not expecting Tuple)");
+                throw new DBusException("Wrong return type (not expecting Tuple)");
             }
 
             Constructor<? extends Object> cons = c.getConstructors()[0];
@@ -90,7 +90,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
     }
 
-    public static Object executeRemoteMethod(RemoteObject ro, Method m, AbstractConnection conn, int syncmethod, CallbackHandler<?> callback, Object... args) throws DBusExecutionException {
+    public static Object executeRemoteMethod(RemoteObject ro, Method m, AbstractConnection conn, int syncmethod, CallbackHandler<?> callback, Object... args) throws DBusException {
         Type[] ts = m.getGenericParameterTypes();
         String sig = null;
         if (ts.length > 0) {

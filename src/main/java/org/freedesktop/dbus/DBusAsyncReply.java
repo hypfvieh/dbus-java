@@ -100,7 +100,7 @@ public class DBusAsyncReply<T> {
     * @throws DBusExecutionException if the reply to the method was an error.
     * @throws NoReply if the method hasn't had a reply yet
     */
-    public T getReply() throws DBusExecutionException {
+    public T getReply() throws DBusException {
         if (null != rval) {
             return rval;
         } else if (null != error) {

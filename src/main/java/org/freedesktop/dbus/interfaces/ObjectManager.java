@@ -23,21 +23,25 @@ public interface ObjectManager extends DBusInterface {
      * Signal generated when a new interface is added
      */
     public static class InterfacesAdded extends DBusSignal {
-        public final DBusPath                             dbusInterface;
+        public final DBusPath                             signalSource;
         public final String                               objectPath;
 
         public final Map<String, Map<String, Variant<?>>> interfaces;
 
-        public InterfacesAdded(String _objectPath, DBusPath _interface, Map<String, Map<String, Variant<?>>> interfaces)
+        public InterfacesAdded(String _objectPath, DBusPath _source, Map<String, Map<String, Variant<?>>> interfaces)
                 throws DBusException {
-            super(_objectPath, _interface, interfaces);
+            super(_objectPath, _source, interfaces);
             this.objectPath = _objectPath;
-            this.dbusInterface = _interface;
+            this.signalSource = _source;
             this.interfaces = interfaces;
         }
 
-        public DBusPath getDbusInterface() {
-            return dbusInterface;
+        /**
+         * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
+         * @return
+         */
+        public DBusPath getSignalSource() {
+            return signalSource;
 
         }
 
@@ -45,6 +49,12 @@ public interface ObjectManager extends DBusInterface {
             return objectPath;
         }
 
+        /**
+         * Returns the added interfaces.
+         * Key is a DBus interface name (like org.bluez.Device1).
+         * Value is a Map with properties known for the new device.
+         * @return
+         */
         public Map<String, Map<String, Variant<?>>> getInterfaces() {
             return interfaces;
         }
@@ -55,27 +65,35 @@ public interface ObjectManager extends DBusInterface {
      * Signal generated when an interface is removed
      */
     public static class InterfacesRemoved extends DBusSignal {
-        public final DBusPath     dbusInterface;
+        public final DBusPath     signalSource;
         public final String       objectPath;
 
         public final List<String> interfaces;
 
-        public InterfacesRemoved(String _objectPath, DBusPath _interface, List<String> interfaces)
+        public InterfacesRemoved(String _objectPath, DBusPath _source, List<String> interfaces)
                 throws DBusException {
-            super(_objectPath, _interface, interfaces);
+            super(_objectPath, _source, interfaces);
             this.objectPath = _objectPath;
-            this.dbusInterface = _interface;
+            this.signalSource = _source;
             this.interfaces = interfaces;
         }
 
-        public DBusPath getDbusInterface() {
-            return dbusInterface;
+        /**
+         * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
+         * @return
+         */
+        public DBusPath getSignalSource() {
+            return signalSource;
         }
 
         public String getObjectPath() {
             return objectPath;
         }
 
+        /**
+         * Returns list of removed DBus interfaces (like org.bluez.Device1).
+         * @return
+         */
         public List<String> getInterfaces() {
             return interfaces;
         }
