@@ -315,9 +315,13 @@ class TestClass implements TestRemoteInterface, TestRemoteInterface2, TestSignal
 
     @Override
     public void sig(Type[] s) {
-        if (s.length != 2 || !s[0].equals(Byte.class) || !(s[1] instanceof ParameterizedType) || !Map.class.equals(((ParameterizedType) s[1]).getRawType()) || ((ParameterizedType) s[1]).getActualTypeArguments().length != 2 || !String.class.equals(((ParameterizedType) s[1]).getActualTypeArguments()[0])
+        if (s.length != 2 || !s[0].equals(Byte.class) 
+                || !(s[1] instanceof ParameterizedType) 
+                || !Map.class.equals(((ParameterizedType) s[1]).getRawType()) 
+                || ((ParameterizedType) s[1]).getActualTypeArguments().length != 2 
+                || !CharSequence.class.equals(((ParameterizedType) s[1]).getActualTypeArguments()[0])
                 || !Integer.class.equals(((ParameterizedType) s[1]).getActualTypeArguments()[1])) {
-            TestAll.fail("Didn't send types correctly");
+            TestAll.fail("Didn't send types correctly:" + Arrays.toString(s));
         }
     }
 

@@ -135,9 +135,8 @@ public class Variant<T> {
      * @return boolean
      */
     @Override
-    @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
-        return null != other && other instanceof Variant && this.value.equals(((Variant) other).value);
+        return null != other && other instanceof Variant && this.value.equals(((Variant<?>) other).value);
     }
 
 }
