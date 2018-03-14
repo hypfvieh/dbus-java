@@ -25,88 +25,89 @@ import org.slf4j.LoggerFactory;
  * The Variant may be parameterized to restrict the types it may accept.
  */
 public class Variant<T> {
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final T      o;
+    private final T value;
     private final Type   type;
     private final String sig;
 
     /**
     * Create a Variant from a basic type object.
-    * @param _o The wrapped value.
+    * @param value The wrapped value.
     * @throws IllegalArgumentException If you try and wrap Null or an object of a non-basic type.
     */
-    public Variant(T _o) throws IllegalArgumentException {
-        if (null == _o) {
+    public Variant(T value) throws IllegalArgumentException {
+        if (null == value) {
             throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
-        type = _o.getClass();
+        type = value.getClass();
         try {
-            String[] ss = Marshalling.getDBusType(_o.getClass(), true);
+            String[] ss = Marshalling.getDBusType(value.getClass(), true);
             if (ss.length != 1) {
                 throw new IllegalArgumentException("Can't wrap a multi-valued type in a Variant: " + type);
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _o.getClass(), dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", value.getClass(), dbe.getMessage()));
         }
-        this.o = _o;
+        this.value = value;
     }
 
     /**
     * Create a Variant.
-    * @param _o The wrapped value.
-    * @param _type The explicit type of the value.
+    * @param value The wrapped value.
+    * @param type The explicit type of the value.
     * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
-    public Variant(T _o, Type _type) throws IllegalArgumentException {
-        if (null == _o) {
+    public Variant(T value, Type type) throws IllegalArgumentException {
+        if (null == value) {
             throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
-        this.type = _type;
+        this.type = type;
         try {
-            String[] ss = Marshalling.getDBusType(_type);
+            String[] ss = Marshalling.getDBusType(type);
             if (ss.length != 1) {
-                throw new IllegalArgumentException("Can't wrap a multi-valued type in a Variant: " + _type);
+                throw new IllegalArgumentException("Can't wrap a multi-valued type in a Variant: " + type);
             }
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _type, dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", type, dbe.getMessage()));
         }
-        this.o = _o;
+        this.value = value;
     }
 
     /**
     * Create a Variant.
-    * @param _o The wrapped value.
-    * @param _sig The explicit type of the value, as a dbus type string.
+    * @param value The wrapped value.
+    * @param type The explicit type of the value, as a DBus type string.
     * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
-    public Variant(T _o, String _sig) throws IllegalArgumentException {
-        if (null == _o) {
+    public Variant(T value, String type) throws IllegalArgumentException {
+        if (null == value) {
             throw new IllegalArgumentException("Can't wrap Null in a Variant");
         }
-        this.sig = _sig;
+        this.sig = type;
         try {
-            Vector<Type> ts = new Vector<Type>();
-            Marshalling.getJavaType(_sig, ts, 1);
+            Vector<Type> ts = new Vector<>();
+            Marshalling.getJavaType(type, ts, 1);
             if (ts.size() != 1) {
-                throw new IllegalArgumentException("Can't wrap multiple or no types in a Variant: " + _sig);
+                throw new IllegalArgumentException("Can't wrap multiple or no types in a Variant: " + type);
             }
             this.type = ts.get(0);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can''t wrap {0} in an unqualified Variant ({1}).", _sig, dbe.getMessage()));
+            throw new IllegalArgumentException(MessageFormat.format("Can''t wrap {0} in an unqualified Variant ({1}).", type, dbe.getMessage()));
         }
-        this.o = _o;
+        this.value = value;
     }
 
     /** Return the wrapped value.
      * @return value
      */
     public T getValue() {
-        return o;
+        return value;
     }
 
     /** Return the type of the wrapped value.
@@ -126,7 +127,7 @@ public class Variant<T> {
     /** Format the Variant as a string. */
     @Override
     public String toString() {
-        return "[" + o + "]";
+        return "[" + value + "]";
     }
 
     /** Compare this Variant with another by comparing contents.
@@ -136,12 +137,7 @@ public class Variant<T> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
-        if (null == other) {
-            return false;
-        }
-        if (!(other instanceof Variant)) {
-            return false;
-        }
-        return this.o.equals(((Variant<? extends Object>) other).o);
+        return null != other && other instanceof Variant && this.value.equals(((Variant) other).value);
     }
+
 }

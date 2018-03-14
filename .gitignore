@@ -1,5 +1,9 @@
 /target/
 .settings/
+.checkstyle
+
 .classpath
 .project
-.checkstyle
+
+.idea
+build
