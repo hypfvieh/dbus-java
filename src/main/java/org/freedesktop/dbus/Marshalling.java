@@ -49,28 +49,28 @@ import org.slf4j.LoggerFactory;
 public final class Marshalling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Marshalling.class);
 
-    private static final Map<Type, String[]> TYPE_CACHE = new HashMap<Type, String[]>();
+    private static final Map<Type, String[]> TYPE_CACHE = new HashMap<>();
 
     private static final Map<Class<?>, Byte> CLASS_TO_ARGUMENTTYPE = new LinkedHashMap<>();
     static {
         CLASS_TO_ARGUMENTTYPE.put(Boolean.class, Message.ArgumentType.BOOLEAN); // class
         CLASS_TO_ARGUMENTTYPE.put(Boolean.TYPE, Message.ArgumentType.BOOLEAN); // primitive type
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Byte.class, Message.ArgumentType.BYTE);
         CLASS_TO_ARGUMENTTYPE.put(Byte.TYPE, Message.ArgumentType.BYTE);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Short.class, Message.ArgumentType.INT16);
         CLASS_TO_ARGUMENTTYPE.put(Short.TYPE, Message.ArgumentType.INT16);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Integer.class, Message.ArgumentType.INT32);
         CLASS_TO_ARGUMENTTYPE.put(Integer.TYPE, Message.ArgumentType.INT32);
 
         CLASS_TO_ARGUMENTTYPE.put(Long.class, Message.ArgumentType.INT64);
         CLASS_TO_ARGUMENTTYPE.put(Long.TYPE, Message.ArgumentType.INT64);
-        
-        CLASS_TO_ARGUMENTTYPE.put(Double.class, Message.ArgumentType.DOUBLE);        
+
+        CLASS_TO_ARGUMENTTYPE.put(Double.class, Message.ArgumentType.DOUBLE);
         CLASS_TO_ARGUMENTTYPE.put(Double.TYPE, Message.ArgumentType.DOUBLE);
-        
+
         if (AbstractConnection.FLOAT_SUPPORT) {
             CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.FLOAT);
             CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.FLOAT);
@@ -78,18 +78,18 @@ public final class Marshalling {
             CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.DOUBLE);
             CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.DOUBLE);
         }
-        
-        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, Message.ArgumentType.UINT16);        
+
+        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, Message.ArgumentType.UINT16);
         CLASS_TO_ARGUMENTTYPE.put(UInt32.class, Message.ArgumentType.UINT32);
         CLASS_TO_ARGUMENTTYPE.put(UInt64.class, Message.ArgumentType.UINT64);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(CharSequence.class, Message.ArgumentType.STRING);
         CLASS_TO_ARGUMENTTYPE.put(Variant.class, Message.ArgumentType.VARIANT);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, Message.ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, Message.ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, Message.ArgumentType.OBJECT_PATH);
-        
+
     }
 
     private Marshalling() {
@@ -251,7 +251,7 @@ public final class Marshalling {
             }
         } else if (_dataType instanceof Class<?>) {
             Class<?> dataTypeClazz = (Class<?>) _dataType;
-            
+
             if (dataTypeClazz.isArray()) {
                 if (Type.class.equals(((Class<?>) _dataType).getComponentType())) {
                     _out[_level].append((char) Message.ArgumentType.SIGNATURE);
@@ -287,14 +287,14 @@ public final class Marshalling {
                     }
                 }
                 _out[_level].append(')');
-                
+
             } else {
                 if (dataTypeClazz.isPrimitive()) {
-                    
+
                 }
-                
+
                 boolean found = false;
-                
+
                 for (Entry<Class<?>, Byte> entry : CLASS_TO_ARGUMENTTYPE.entrySet()) {
                     if (entry.getKey().isAssignableFrom(dataTypeClazz)) {
                         _out[_level].append((char) entry.getValue().byteValue());
@@ -472,7 +472,7 @@ public final class Marshalling {
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
-                parameters[i] = new Variant<Object>(parameters[i]);
+                parameters[i] = new Variant<>(parameters[i]);
             } else if (parameters[i] instanceof DBusInterface) {
                 parameters[i] = conn.getExportedObject((DBusInterface) parameters[i]);
             }
