@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public final class Marshalling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Marshalling.class);
 
-    private static Map<Type, String[]> typeCache = new HashMap<Type, String[]>();
+    private static Map<Type, String[]> typeCache = new HashMap<>();
 
     private Marshalling() {
 
@@ -241,7 +241,7 @@ public final class Marshalling {
             out[level].append((char) Message.ArgumentType.FLOAT);
         } else if (c.equals(Float.TYPE)) {
             out[level].append((char) Message.ArgumentType.DOUBLE);
-        } else if (c.equals(String.class)) {
+        } else if (c.equals(CharSequence.class)) {
             out[level].append((char) Message.ArgumentType.STRING);
         } else if (c.equals(Variant.class)) {
             out[level].append((char) Message.ArgumentType.VARIANT);
