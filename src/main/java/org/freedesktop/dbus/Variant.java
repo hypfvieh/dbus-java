@@ -15,6 +15,7 @@ import java.text.MessageFormat;
 import java.util.Vector;
 
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +138,7 @@ public class Variant<T> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
-        return null != other && other instanceof Variant && this.value.equals(((Variant) other).value);
+        return null != other && other instanceof Variant && this.value.equals(((Variant<? extends Object>) other).value);
     }
 
 }
