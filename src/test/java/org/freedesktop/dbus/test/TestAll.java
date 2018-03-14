@@ -10,6 +10,7 @@
 */
 package org.freedesktop.dbus.test;
 
+import java.lang.reflect.Type;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import java.util.Map;
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.errors.ServiceUnknown;
@@ -226,6 +228,11 @@ public class TestAll extends Assert {
         String rname = tri.getName();
         System.out.println("Got Remote Name: " + rname);
 
+        List<Type> ts = new ArrayList<>();
+        Marshalling.getJavaType("ya{si}", ts, -1);
+        tri.sig(ts.toArray(new Type[0]));
+
+        
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = tri.pathrv(path);
         System.out.println(path.toString() + " => " + p.toString());
