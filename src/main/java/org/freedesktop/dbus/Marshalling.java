@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public final class Marshalling {
     private static final Logger LOGGER = LoggerFactory.getLogger(Marshalling.class);
 
-    private static Map<Type, String[]> typeCache = new HashMap<>();
+    private static final Map<Type, String[]> TYPE_CACHE = new HashMap<>();
 
     private Marshalling() {
 
@@ -71,12 +71,12 @@ public final class Marshalling {
     * @throws DBusException If the given type cannot be converted to a DBus type.
     */
     public static String[] getDBusType(Type c) throws DBusException {
-        String[] cached = typeCache.get(c);
+        String[] cached = TYPE_CACHE.get(c);
         if (null != cached) {
             return cached;
         }
         cached = getDBusType(c, false);
-        typeCache.put(c, cached);
+        TYPE_CACHE.put(c, cached);
         return cached;
     }
 
@@ -84,13 +84,13 @@ public final class Marshalling {
     * Will return the DBus type corresponding to the given Java type.
     * Note, container type should have their ParameterizedType not their
     * Class passed in here.
-    * @param c The Java type.
-    * @param basic If true enforces this to be a non-compound type. (compound types are Maps, Structs and Lists/arrays).
+    * @param _dataTypec The Java type.
+    * @param _basic If true enforces this to be a non-compound type. (compound types are Maps, Structs and Lists/arrays).
     * @return The DBus type.
     * @throws DBusException If the given type cannot be converted to a DBus type.
     */
-    public static String[] getDBusType(Type c, boolean basic) throws DBusException {
-        return recursiveGetDBusType(c, basic, 0);
+    public static String[] getDBusType(Type _dataType, boolean _basic) throws DBusException {
+        return recursiveGetDBusType(_dataType, _basic, 0);
     }
 
     private static StringBuffer[] out = new StringBuffer[10];
