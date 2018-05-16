@@ -276,7 +276,15 @@ public final class DBusConnection extends AbstractConnection {
                 }
                 break;
             case SESSION:
-                s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+                // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
+                s = System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
+                if (s != null) {
+                    s = "unix:path=" + s;
+                }
+                // default
+                if (s == null) {
+                    s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+                }
                 if (null == s) {
                     // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<< $DISPLAY`
                     String display = System.getenv("DISPLAY");
