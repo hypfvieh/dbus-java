@@ -8,9 +8,6 @@ unix-domain-socket library of [Matthew Johnson](http://www.matthew.ath.cx/projec
 This wrapper library is included in debian based systems (can be installed with: apt-get install libmatthew-io-java), so
 no self-compiling of any stuff is required.
 
-For convenient use, this library will provide native versions of libmatthew-io-java for x86, x86_64 and ARMv6 which will
-be used if libmatthew-io-java is not installed on the system.
-
 This library has been tested with Ubuntu 16.04.4 (AMD64) and bluez library 5.48.
 
 Starting with version 0.1.0 of this library Java 8 is required (previous version used Java 7).

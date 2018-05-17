@@ -14,18 +14,18 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.freedesktop.dbus.AbstractPropertiesHandler;
-import org.freedesktop.dbus.SignalAwareProperties;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
+import org.freedesktop.dbus.handlers.AbstractSignalHandlerBase;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.DbusHelper;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothAdapter;
 import com.github.hypfvieh.bluetooth.wrapper.BluetoothDevice;
-import com.github.hypfvieh.system.NativeLibraryLoader;
 
 /**
  * The 'main' class to get access to all DBus/bluez related objects.
@@ -48,25 +48,7 @@ public class DeviceManager {
 
     private String defaultAdapterMac;
 
-    private static boolean libraryLoaded = false;
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    static {
-        // disable automatic loading of unix-socket library, we will load it if we need it
-        NativeLibraryLoader.setEnabled(false);
-    }
-
-    /**
-     * Load native library is necessary.
-     */
-    private static void loadLibrary() {
-        if (!libraryLoaded) {
-            NativeLibraryLoader.setEnabled(true);
-            NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "lib/");
-            libraryLoaded = true;
-        }
-    }
 
     /**
      * Private constructor for singleton pattern.
@@ -87,7 +69,6 @@ public class DeviceManager {
      * @throws DBusException on error
      */
     public static DeviceManager createInstance(boolean _sessionConnection) throws DBusException {
-        loadLibrary();
         INSTANCE = new DeviceManager(DBusConnection.getConnection(_sessionConnection ? DBusBusType.SESSION : DBusBusType.SYSTEM));
         return INSTANCE;
     }
@@ -109,9 +90,6 @@ public class DeviceManager {
     public static DeviceManager createInstance(String _address) throws DBusException {
         if (_address == null) {
             throw new DBusException("Null is not a valid address");
-        }
-        if (_address.contains("unix://")) {
-            loadLibrary();
         }
         INSTANCE = new DeviceManager(DBusConnection.getConnection(_address));
         return INSTANCE;
@@ -366,7 +344,17 @@ public class DeviceManager {
      * @param _handler callback class instance
      * @throws DBusException on error
      */
-    public void registerPropertyHandler(AbstractPropertiesHandler _handler) throws DBusException {
-        dbusConnection.addSigHandler(SignalAwareProperties.PropertiesChanged.class, _handler);
+    public void registerPropertyHandler(AbstractPropertiesChangedHandler _handler) throws DBusException {
+        dbusConnection.addSigHandler(_handler.getImplementationClass(), _handler);
     }
+
+    /**
+     * Register a signal handler callback on the connection.
+     * @param _handler callback class extending {@link AbstractSignalHandlerBase}
+     * @throws DBusException on DBus error
+     */
+    public <T extends DBusSignal> void registerSignalHandler(AbstractSignalHandlerBase<T> _handler) throws DBusException {
+        dbusConnection.addSigHandler(_handler.getImplementationClass(), _handler);
+    }
+
 }
