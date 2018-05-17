@@ -33,6 +33,8 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.util.SystemUtil;
+
 /** Handles a connection to DBus.
  * <p>
  * This is a Singleton class, only 1 connection to the SYSTEM or SESSION busses can be made.
@@ -276,7 +278,15 @@ public final class DBusConnection extends AbstractConnection {
                 }
                 break;
             case SESSION:
-                s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+
+                // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
+                if (SystemUtil.isMacOs()) {
+                    s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");;
+
+                } else { // all others (linux)
+                    s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+                }
+
                 if (null == s) {
                     // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<< $DISPLAY`
                     String display = System.getenv("DISPLAY");
