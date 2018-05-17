@@ -28,17 +28,28 @@ package cx.ath.matthew.unix;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import com.github.hypfvieh.system.NativeLibraryLoader;
+import com.github.hypfvieh.util.SystemUtil;
 
 /**
  * Represents a listening UNIX Socket.
  */
 public class UnixServerSocket implements Closeable {
     static {
-        //System.loadLibrary("unix-java");
-        NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "lib/");
+        if (SystemUtil.isMacOs()) {
+            String macOsMajorVersion = SystemUtil.getMacOsMajorVersion();
+            List<String> osVersionsWithSameLib = Arrays.asList("10.6", "10.7", "10.8", "10.9", "10.10", "10.11", "10.12", "10.13");
+            if (osVersionsWithSameLib.contains(macOsMajorVersion)) {
+                NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "macos/" + macOsMajorVersion + "/");
+            }
+        } else {
+            NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "lib/");
+        }
     }
+
 
     private UnixSocketAddress address = null;
     private boolean           bound   = false;

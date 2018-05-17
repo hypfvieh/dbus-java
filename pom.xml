@@ -47,17 +47,6 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.github.hypfvieh</groupId>
-			<artifactId>libmatthew</artifactId>
-			<version>0.8.4-SNAPSHOT</version>
-			<exclusions>
-	           <exclusion>
-	               <groupId>com.github.hypfvieh</groupId>
-	               <artifactId>java-utils</artifactId>
-	           </exclusion>	
-			</exclusions>
-        </dependency>
 		
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
