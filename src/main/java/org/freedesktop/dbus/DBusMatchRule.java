@@ -11,21 +11,32 @@
 package org.freedesktop.dbus;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MethodReturn;
 
 public class DBusMatchRule {
+    private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new HashMap<String, Class<? extends DBusSignal>>();
+    
     /* signal, error, method_call, method_reply */
     private String                                              type;
     private String                                              iface;
     private String                                              member;
     private String                                              object;
     private String                                              source;
-    private static HashMap<String, Class<? extends DBusSignal>> signalTypeMap = new HashMap<String, Class<? extends DBusSignal>>();
 
-    static Class<? extends DBusSignal> getCachedSignalType(String type) {
-        return signalTypeMap.get(type);
+    public static Class<? extends DBusSignal> getCachedSignalType(String type) {
+        return SIGNALTYPEMAP.get(type);
     }
 
     public DBusMatchRule(String _type, String _iface, String _member) {
@@ -97,7 +108,7 @@ public class DBusMatchRule {
             } else {
                 member = c.getSimpleName();
             }
-            signalTypeMap.put(iface + '$' + member, (Class<? extends DBusSignal>) c);
+            SIGNALTYPEMAP.put(iface + '$' + member, (Class<? extends DBusSignal>) c);
             type = "signal";
         } else if (Error.class.isAssignableFrom(c)) {
             if (null != c.getAnnotation(DBusInterfaceName.class)) {

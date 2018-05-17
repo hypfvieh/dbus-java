@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus.exceptions;
 
+import org.freedesktop.dbus.interfaces.FatalException;
+
 /**
  * Thrown if a DBus action is called when not connected to the Bus.
  */

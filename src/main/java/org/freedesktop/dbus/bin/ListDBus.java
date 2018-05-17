@@ -11,7 +11,8 @@
 package org.freedesktop.dbus.bin;
 
 import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
 /**
@@ -35,7 +36,7 @@ public final class ListDBus {
     public static void main(String[] args) throws Exception {
         boolean owners = false;
         boolean users = false;
-        int connection = DBusConnection.SESSION;
+        DBusBusType connection = DBusBusType.SESSION;
 
         for (String a : args) {
             if ("--help".equals(a)) {
@@ -55,13 +56,13 @@ public final class ListDBus {
             } else if ("--owners".equals(a)) {
                 owners = true;
             } else if ("--session".equals(a)) {
-                connection = DBusConnection.SESSION;
+                connection = DBusBusType.SESSION;
             } else if ("-s".equals(a)) {
-                connection = DBusConnection.SESSION;
+                connection = DBusBusType.SESSION;
             } else if ("--system".equals(a)) {
-                connection = DBusConnection.SYSTEM;
+                connection = DBusBusType.SYSTEM;
             } else if ("-y".equals(a)) {
-                connection = DBusConnection.SYSTEM;
+                connection = DBusBusType.SYSTEM;
             } else {
                 syntax();
             }

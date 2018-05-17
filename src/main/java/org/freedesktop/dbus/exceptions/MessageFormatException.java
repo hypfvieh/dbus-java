@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus.exceptions;
 
+import org.freedesktop.dbus.interfaces.NonFatalException;
+
 /**
  * Thrown if a message is formatted incorrectly.
  */

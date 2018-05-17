@@ -10,15 +10,19 @@
 */
 package org.freedesktop.dbus.test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.DBus.Peer;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.DBusSigHandler;
-import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.test.helper.interfaces.Profiler;
+import org.freedesktop.dbus.test.helper.structs.ProfileStruct;
+import org.freedesktop.dbus.types.UInt32;
 
 class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
     private int count = 0;
@@ -133,7 +137,7 @@ public final class Profile {
                 System.out.println("Syntax: profile <pings|arrays|introspect|maps|bytes|lists|structs|signals|rate|strings>");
                 System.exit(1);
             }
-            DBusConnection conn = DBusConnection.getConnection(DBusConnection.SESSION);
+            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             conn.requestBusName("org.freedesktop.DBus.java.profiler");
             if ("pings".equals(args[0])) {
                 int count = PING_INNER * PING_OUTER;
@@ -237,7 +241,7 @@ public final class Profile {
                 ProfilerInstance pi = new ProfilerInstance();
                 conn.exportObject("/Profiler", pi);
                 Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
-                Vector<String> v = new Vector<String>();
+                List<String> v = new ArrayList<>();
                 for (int i = 0; i < LIST_LENGTH; i++) {
                     v.add("hello " + i);
                 }
@@ -383,7 +387,7 @@ public final class Profile {
                 for (int i = 0; i < SIGNAL_OUTER; i++) {
                     for (int j = 0; j < SIGNAL_INNER; j++) {
                         l.start();
-                        conn.sendSignal(ps);
+                        conn.sendMessage(ps);
                         l.stop();
                     }
                     System.out.print(".");

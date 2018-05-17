@@ -11,10 +11,10 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.DBusSignal;
 
-class InternalSignal extends DBusSignal {
-    InternalSignal(String _source, String _objectpath, String _name, String _iface, String _sig, long _serial, Object... _parameters) throws DBusException {
-        super(_objectpath, _iface, _name, _sig, _parameters);
-        this.serial = _serial;
+public class InternalSignal extends DBusSignal {
+    public InternalSignal(String _source, String _objectpath, String _name, String _iface, String _sig, long _serial, Object... _parameters) throws DBusException {
+        super(_source, _objectpath, _iface, _name, _sig, _parameters, _serial);
     }
 }

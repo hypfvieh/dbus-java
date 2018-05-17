@@ -10,15 +10,15 @@
 */
 package org.freedesktop.dbus;
 
-class RemoteObject {
-    // CHECKSTYLE:OFF
-    String                         busname;
-    String                         objectpath;
-    Class<? extends DBusInterface> iface;
-    boolean                        autostart;
-    // CHECKSTYLE:ON
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
-    RemoteObject(String _busname, String _objectpath, Class<? extends DBusInterface> _iface, boolean _autostart) {
+public class RemoteObject {
+    private String                         busname;
+    private String                         objectpath;
+    private Class<? extends DBusInterface> iface;
+    private boolean                        autostart;
+
+    public RemoteObject(String _busname, String _objectpath, Class<? extends DBusInterface> _iface, boolean _autostart) {
         this.busname = _busname;
         this.objectpath = _objectpath;
         this.iface = _iface;
@@ -64,7 +64,7 @@ class RemoteObject {
         return (null == busname ? 0 : busname.hashCode()) + objectpath.hashCode() + (null == iface ? 0 : iface.hashCode());
     }
 
-    public boolean autoStarting() {
+    public boolean isAutostart() {
         return autostart;
     }
 
