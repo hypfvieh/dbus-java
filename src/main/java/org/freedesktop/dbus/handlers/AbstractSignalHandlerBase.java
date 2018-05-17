@@ -8,11 +8,11 @@ import org.freedesktop.dbus.messages.DBusSignal;
  * @author hypfvieh
  */
 public abstract class AbstractSignalHandlerBase<T extends DBusSignal> implements DBusSigHandler<T> {
-    
+
     /**
      * Signal-Class which is implemented in subclasses of this class.
      * @return
      */
     public abstract Class<T> getImplementationClass();
-    
+
 }
