@@ -19,18 +19,27 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Vector;
 
+import org.freedesktop.dbus.annotations.Position;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSerializable;
+import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.DBusStructType;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,22 +55,22 @@ public final class Marshalling {
     static {
         CLASS_TO_ARGUMENTTYPE.put(Boolean.class, Message.ArgumentType.BOOLEAN); // class
         CLASS_TO_ARGUMENTTYPE.put(Boolean.TYPE, Message.ArgumentType.BOOLEAN); // primitive type
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Byte.class, Message.ArgumentType.BYTE);
         CLASS_TO_ARGUMENTTYPE.put(Byte.TYPE, Message.ArgumentType.BYTE);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Short.class, Message.ArgumentType.INT16);
         CLASS_TO_ARGUMENTTYPE.put(Short.TYPE, Message.ArgumentType.INT16);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(Integer.class, Message.ArgumentType.INT32);
         CLASS_TO_ARGUMENTTYPE.put(Integer.TYPE, Message.ArgumentType.INT32);
 
         CLASS_TO_ARGUMENTTYPE.put(Long.class, Message.ArgumentType.INT64);
         CLASS_TO_ARGUMENTTYPE.put(Long.TYPE, Message.ArgumentType.INT64);
-        
-        CLASS_TO_ARGUMENTTYPE.put(Double.class, Message.ArgumentType.DOUBLE);        
+
+        CLASS_TO_ARGUMENTTYPE.put(Double.class, Message.ArgumentType.DOUBLE);
         CLASS_TO_ARGUMENTTYPE.put(Double.TYPE, Message.ArgumentType.DOUBLE);
-        
+
         if (AbstractConnection.FLOAT_SUPPORT) {
             CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.FLOAT);
             CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.FLOAT);
@@ -69,18 +78,18 @@ public final class Marshalling {
             CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.DOUBLE);
             CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.DOUBLE);
         }
-        
-        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, Message.ArgumentType.UINT16);        
+
+        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, Message.ArgumentType.UINT16);
         CLASS_TO_ARGUMENTTYPE.put(UInt32.class, Message.ArgumentType.UINT32);
         CLASS_TO_ARGUMENTTYPE.put(UInt64.class, Message.ArgumentType.UINT64);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(CharSequence.class, Message.ArgumentType.STRING);
         CLASS_TO_ARGUMENTTYPE.put(Variant.class, Message.ArgumentType.VARIANT);
-        
+
         CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, Message.ArgumentType.OBJECT_PATH);
-        CLASS_TO_ARGUMENTTYPE.put(Path.class, Message.ArgumentType.OBJECT_PATH);
+        CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, Message.ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, Message.ArgumentType.OBJECT_PATH);
-        
+
     }
 
     private Marshalling() {
@@ -230,7 +239,7 @@ public final class Marshalling {
                 _out[_level].append((char) Message.ArgumentType.OBJECT_PATH);
             } else if (Tuple.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 Type[] ts = p.getActualTypeArguments();
-                Vector<String> vs = new Vector<>();
+                List<String> vs = new ArrayList<>();
                 for (Type t : ts) {
                     for (String s : recursiveGetDBusType(_out, t, false, _level + 1)) {
                         vs.add(s);
@@ -242,7 +251,7 @@ public final class Marshalling {
             }
         } else if (_dataType instanceof Class<?>) {
             Class<?> dataTypeClazz = (Class<?>) _dataType;
-            
+
             if (dataTypeClazz.isArray()) {
                 if (Type.class.equals(((Class<?>) _dataType).getComponentType())) {
                     _out[_level].append((char) Message.ArgumentType.SIGNATURE);
@@ -278,14 +287,14 @@ public final class Marshalling {
                     }
                 }
                 _out[_level].append(')');
-                
+
             } else {
                 if (dataTypeClazz.isPrimitive()) {
-                    
+
                 }
-                
+
                 boolean found = false;
-                
+
                 for (Entry<Class<?>, Byte> entry : CLASS_TO_ARGUMENTTYPE.entrySet()) {
                     if (entry.getKey().isAssignableFrom(dataTypeClazz)) {
                         _out[_level].append((char) entry.getValue().byteValue());
@@ -333,19 +342,19 @@ public final class Marshalling {
                         }
                     }
 
-                    Vector<Type> contained = new Vector<Type>();
+                    List<Type> contained = new ArrayList<>();
                     int c = getJavaType(dbus.substring(i + 1, j - 1), contained, -1);
                     rv.add(new DBusStructType(contained.toArray(new Type[0])));
                     i = j;
                     break;
                 case Message.ArgumentType.ARRAY:
                     if (Message.ArgumentType.DICT_ENTRY1 == dbus.charAt(i + 1)) {
-                        contained = new Vector<Type>();
+                        contained = new ArrayList<>();
                         c = getJavaType(dbus.substring(i + 2), contained, 2);
                         rv.add(new DBusMapType(contained.get(0), contained.get(1)));
                         i += (c + 2);
                     } else {
-                        contained = new Vector<Type>();
+                        contained = new ArrayList<>();
                         c = getJavaType(dbus.substring(i + 1), contained, 1);
                         rv.add(new DBusListType(contained.get(0)));
                         i += c;
@@ -395,7 +404,7 @@ public final class Marshalling {
                     break;
                 case Message.ArgumentType.DICT_ENTRY1:
                     rv.add(Map.Entry.class);
-                    contained = new Vector<Type>();
+                    contained = new ArrayList<>();
                     c = getJavaType(dbus.substring(i + 1), contained, 2);
                     i += c + 1;
                     break;
@@ -463,7 +472,7 @@ public final class Marshalling {
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
-                parameters[i] = new Variant<Object>(parameters[i]);
+                parameters[i] = new Variant<>(parameters[i]);
             } else if (parameters[i] instanceof DBusInterface) {
                 parameters[i] = conn.getExportedObject((DBusInterface) parameters[i]);
             }
@@ -482,7 +491,7 @@ public final class Marshalling {
 
         // Turn a signature into a Type[]
         if (type instanceof Class && ((Class<?>) type).isArray() && ((Class<?>) type).getComponentType().equals(Type.class) && parameter instanceof String) {
-            Vector<Type> rv = new Vector<Type>();
+            List<Type> rv = new ArrayList<>();
             getJavaType((String) parameter, rv, -1);
             parameter = rv.toArray(new Type[0]);
         }
@@ -490,9 +499,9 @@ public final class Marshalling {
         // its an object path, get/create the proxy
         if (parameter instanceof ObjectPath) {
             if (type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) type)) {
-                parameter = conn.getExportedObject(((ObjectPath) parameter).source, ((ObjectPath) parameter).path);
+                parameter = conn.getExportedObject(((ObjectPath) parameter).getSource(), ((ObjectPath) parameter).getPath());
             } else {
-                parameter = new Path(((ObjectPath) parameter).path);
+                parameter = new DBusPath(((ObjectPath) parameter).getPath());
             }
         }
 
@@ -633,7 +642,7 @@ public final class Marshalling {
     }
 
     @SuppressWarnings("unchecked")
-    static Object[] deSerializeParameters(Object[] parameters, Type[] types, AbstractConnection conn) throws Exception {
+    public static Object[] deSerializeParameters(Object[] parameters, Type[] types, AbstractConnection conn) throws Exception {
         LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(parameters), Arrays.deepToString(types));
         if (null == parameters) {
             return null;

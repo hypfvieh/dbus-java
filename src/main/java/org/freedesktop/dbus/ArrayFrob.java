@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-final class ArrayFrob {
-    private static Hashtable<Class<? extends Object>, Class<? extends Object>> PRIMITIVE_TO_WRAPPER = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
-    private static Hashtable<Class<? extends Object>, Class<? extends Object>> WRAPPER_TO_PRIMITIVE = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+public final class ArrayFrob {
+    private static final Hashtable<Class<? extends Object>, Class<? extends Object>> PRIMITIVE_TO_WRAPPER = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+    private static final Hashtable<Class<? extends Object>, Class<? extends Object>> WRAPPER_TO_PRIMITIVE = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
     static {
         PRIMITIVE_TO_WRAPPER.put(Boolean.TYPE, Boolean.class);
         PRIMITIVE_TO_WRAPPER.put(Byte.TYPE, Byte.class);

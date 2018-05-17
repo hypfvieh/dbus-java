@@ -25,21 +25,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.types.DBusStructType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -115,7 +117,7 @@ public class CreateInterface {
         if (null == dbus || "".equals(dbus)) {
             return "";
         }
-        Vector<Type> v = new Vector<Type>();
+        List<Type> v = new ArrayList<>();
         Marshalling.getJavaType(dbus, v, 1);
         Type t = v.get(0);
         return collapseType(t, imports, structs, container, fullnames);
@@ -131,7 +133,7 @@ public class CreateInterface {
         this.builtin = _builtin;
     }
 
-    String parseReturns(Vector<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs) throws DBusException {
+    String parseReturns(List<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs) throws DBusException {
         String[] names = new String[] {
                 "Pair", "Triplet", "Quad", "Quintuple", "Sextuple", "Septuple"
         };
@@ -168,8 +170,8 @@ public class CreateInterface {
     }
 
     String parseMethod(Element meth, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
-        Vector<Element> in = new Vector<Element>();
-        Vector<Element> out = new Vector<Element>();
+        List<Element> in = new ArrayList<>();
+        List<Element> out = new ArrayList<>();
         if (null == meth.getAttribute("name") || "".equals(meth.getAttribute("name"))) {
             System.err.println("ERROR: Method name was blank, failed");
             System.exit(1);
@@ -230,7 +232,7 @@ public class CreateInterface {
 
     String parseSignal(Element signal, Set<String> imports, Map<StructStruct, Type[]> structs, Set<String> anns) throws DBusException {
         Map<String, String> params = new HashMap<String, String>();
-        Vector<String> porder = new Vector<String>();
+        List<String> porder = new ArrayList<>();
         char defaultname = 'a';
         imports.add("org.freedesktop.dbus.DBusSignal");
         imports.add("org.freedesktop.dbus.exceptions.DBusException");
@@ -611,7 +613,7 @@ public class CreateInterface {
 
     static class Config {
         // CHECKSTYLE:OFF
-        int     bus       = DBusConnection.SESSION;
+        DBusBusType     bus       = DBusBusType.SESSION;
         String  busname   = null;
         String  object    = null;
         File    datafile  = null;
@@ -640,9 +642,9 @@ public class CreateInterface {
         Config config = new Config();
         for (String p : args) {
             if ("--system".equals(p) || "-y".equals(p)) {
-                config.bus = DBusConnection.SYSTEM;
+                config.bus = DBusBusType.SYSTEM;
             } else if ("--session".equals(p) || "-s".equals(p)) {
-                config.bus = DBusConnection.SESSION;
+                config.bus = DBusBusType.SESSION;
             } else if ("--no-ignore-builtin".equals(p)) {
                 config.builtin = true;
             } else if ("--create-files".equals(p) || "-f".equals(p)) {

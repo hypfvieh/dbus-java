@@ -16,11 +16,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.annotations.Position;
+
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
  */
-abstract class Container {
+public abstract class Container {
     private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
 
     static void putTypeCache(Type k, Type[] v) {
@@ -43,6 +45,10 @@ abstract class Container {
         int diff = 0;
         for (Field f : fs) {
             Position p = f.getAnnotation(Position.class);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
+            
             if (null == p) {
                 diff++;
                 continue;

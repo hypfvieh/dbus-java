@@ -13,6 +13,9 @@ package org.freedesktop.dbus.test;
 import java.util.List;
 import java.util.Map;
 
+import org.freedesktop.dbus.test.helper.interfaces.Profiler;
+import org.freedesktop.dbus.test.helper.structs.ProfileStruct;
+
 public class ProfilerInstance implements Profiler {
     @Override
     public boolean isRemote() {

@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.messages.Message;
+
 /**
  * Holds information on a method call
  */
@@ -26,7 +28,7 @@ public class DBusCallInfo {
     private String          method;
     private int             flags;
 
-    DBusCallInfo(Message m) {
+    public DBusCallInfo(Message m) {
         this.source = m.getSource();
         this.destination = m.getDestination();
         this.objectpath = m.getPath();

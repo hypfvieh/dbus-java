@@ -17,9 +17,7 @@ import java.lang.ref.WeakReference;
  * that behaviour.
  */
 public class StrongReference<T> extends WeakReference<T> {
-    // CHECKSTYLE:OFF
-    T referant;
-    // CHECKSTYLE:ON
+    private T referant;
 
     public StrongReference(T _referant) {
         super(_referant);

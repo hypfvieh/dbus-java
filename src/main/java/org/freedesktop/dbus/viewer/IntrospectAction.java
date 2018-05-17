@@ -29,8 +29,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.freedesktop.DBus.Introspectable;
 import org.freedesktop.dbus.bin.CreateInterface;
+import org.freedesktop.dbus.interfaces.Introspectable;
 
 @SuppressWarnings("serial")
 final class IntrospectAction extends AbstractAction implements ListSelectionListener {

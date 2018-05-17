@@ -11,6 +11,7 @@
 package org.freedesktop.dbus;
 
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,16 +20,19 @@ import java.text.MessageFormat;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
-import org.freedesktop.dbus.exceptions.MessageTypeException;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cx.ath.matthew.utils.Hexdump;
+import com.github.hypfvieh.system.LibcErrorCodes;
 
-public class MessageReader {
+import cx.ath.matthew.unix.UnixIOException;
+
+public class MessageReader implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private InputStream in;
+    private InputStream inputStream;
     private byte[]      buf    = null;
     private byte[]      tbuf   = null;
     private byte[]      header = null;
@@ -36,7 +40,7 @@ public class MessageReader {
     private int[]       len    = new int[4];
 
     public MessageReader(InputStream _in) {
-        this.in = new BufferedInputStream(_in);
+        this.inputStream = new BufferedInputStream(_in);
     }
 
     public Message readMessage() throws IOException, DBusException {
@@ -48,12 +52,17 @@ public class MessageReader {
         }
         if (len[0] < 12) {
             try {
-                rv = in.read(buf, len[0], 12 - len[0]);
+                rv = inputStream.read(buf, len[0], 12 - len[0]);
             } catch (SocketTimeoutException exSt) {
                 return null;
+            } catch (UnixIOException _ex) {
+                if (_ex.getErrorAsEnum() == LibcErrorCodes.EBADF) { // socket (file descriptor) closed
+                    return null;
+                }
+                throw _ex;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (1)");
             }
             len[0] += rv;
         }
@@ -61,7 +70,7 @@ public class MessageReader {
             return null;
         }
         if (len[0] < 12) {
-            logger.debug("Only got " + len[0] + " of 12 bytes of header");
+            logger.debug("Only got {} of 12 bytes of header", len[0]);
             return null;
         }
 
@@ -81,17 +90,17 @@ public class MessageReader {
         }
         if (len[1] < 4) {
             try {
-                rv = in.read(tbuf, len[1], 4 - len[1]);
+                rv = inputStream.read(tbuf, len[1], 4 - len[1]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (2)");
             }
             len[1] += rv;
         }
         if (len[1] < 4) {
-            logger.debug("Only got " + len[1] + " of 4 bytes of header");
+            logger.debug("Only got {} of 4 bytes of header", len[1]);
             return null;
         }
 
@@ -114,17 +123,17 @@ public class MessageReader {
         }
         if (len[2] < headerlen) {
             try {
-                rv = in.read(header, 8 + len[2], headerlen - len[2]);
+                rv = inputStream.read(header, 8 + len[2], headerlen - len[2]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (3)");
             }
             len[2] += rv;
         }
         if (len[2] < headerlen) {
-            logger.debug("Only got " + len[2] + " of " + headerlen + " bytes of header");
+            logger.debug("Only got {} of {} bytes of header", len[2], headerlen);
             return null;
         }
 
@@ -139,45 +148,23 @@ public class MessageReader {
         }
         if (len[3] < body.length) {
             try {
-                rv = in.read(body, len[3], body.length - len[3]);
+                rv = inputStream.read(body, len[3], body.length - len[3]);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
             if (-1 == rv) {
-                throw new EOFException("Underlying transport returned EOF");
+                throw new EOFException("Underlying transport returned EOF (4)");
             }
             len[3] += rv;
         }
         if (len[3] < body.length) {
-            logger.debug("Only got " + len[3] + " of " + body.length + " bytes of body");
+            logger.debug("Only got {} of {} bytes of body", len[3], body.length);
             return null;
         }
 
         Message m;
-        switch (type) {
-        case Message.MessageType.METHOD_CALL:
-            m = new MethodCall();
-            break;
-        case Message.MessageType.METHOD_RETURN:
-            m = new MethodReturn();
-            break;
-        case Message.MessageType.SIGNAL:
-            m = new DBusSignal();
-            break;
-        case Message.MessageType.ERROR:
-            m = new Error();
-            break;
-        default:
-            throw new MessageTypeException(MessageFormat.format("Message type {0} unsupported", type));
-        }
-        if (logger.isTraceEnabled()) {
-            logger.trace(Hexdump.format(buf));
-            logger.trace(Hexdump.format(tbuf));
-            logger.trace(Hexdump.format(header));
-            logger.trace(Hexdump.format(body));
-        }
         try {
-            m.populate(buf, header, body);
+            m = MessageFactory.createMessage(type, buf, header, body);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
             buf = null;
@@ -193,7 +180,7 @@ public class MessageReader {
             header = null;
             throw exRe;
         }
-        logger.debug("=> " + m);
+        logger.debug("=> {}", m);
         buf = null;
         tbuf = null;
         body = null;
@@ -201,8 +188,16 @@ public class MessageReader {
         return m;
     }
 
+    @Override
     public void close() throws IOException {
         logger.trace("Closing Message Reader");
-        in.close();
+        if (inputStream != null) {
+            inputStream.close();
+        }
+        inputStream = null;
+    }
+
+    public boolean isClosed() {
+        return inputStream != null;
     }
 }

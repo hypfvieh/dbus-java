@@ -34,11 +34,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.freedesktop.DBus;
-import org.freedesktop.DBus.Introspectable;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.UInt32;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.types.UInt32;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -55,18 +56,18 @@ import org.xml.sax.SAXException;
  * @since 29/01/2006
  */
 public class DBusViewer {
-    private static final Map<String, Integer> CONNECTION_TYPES = new HashMap<String, Integer>();
+    private static final Map<String, DBusBusType> CONNECTION_TYPES = new HashMap<>();
 
     static {
-        CONNECTION_TYPES.put("System", DBusConnection.SYSTEM);
-        CONNECTION_TYPES.put("Session", DBusConnection.SESSION);
+        CONNECTION_TYPES.put("System", DBusBusType.SYSTEM);
+        CONNECTION_TYPES.put("Session", DBusBusType.SESSION);
     }
 
     /** Create the DBusViewer
      *
      * @param connectionTypes The map of connection types
      */
-    public DBusViewer(final Map<String, Integer> connectionTypes) {
+    public DBusViewer(final Map<String, DBusBusType> connectionTypes) {
         connections = new ArrayList<DBusConnection>(connectionTypes.size());
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -106,7 +107,7 @@ public class DBusViewer {
      * @param tabbedPane The tabbed pane
      * @param connectionTypes The connection
      */
-    private void addTabs(final JTabbedPane tabbedPane, final Map<String, Integer> connectionTypes) {
+    private void addTabs(final JTabbedPane tabbedPane, final Map<String, DBusBusType> connectionTypes) {
         for (final String key : connectionTypes.keySet()) {
             final JLabel label = new JLabel("Processing DBus for " + key);
             tabbedPane.addTab(key, label);
