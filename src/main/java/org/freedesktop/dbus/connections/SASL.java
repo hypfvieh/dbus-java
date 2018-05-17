@@ -413,7 +413,7 @@ public class SASL {
                 if (0 == col.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == col.compare(_uid, _kernelUid))) {
                     return OK;
                 } else {
-                    return ERROR;
+                    return REJECT;
                 }
             case AUTH_SHA:
                 String context = COOKIE_CONTEXT;
@@ -674,9 +674,9 @@ public class SASL {
                     c = receive(in);
                     switch (c.getCommand()) {
                     case COMMAND_AUTH:
-                        if (null == c.getData()) {
-                            send(out, COMMAND_REJECTED, getTypes(types));
-                        } else {
+//                        if (null == c.getData()) {
+//                            send(out, COMMAND_REJECTED, getTypes(types));
+//                        } else {
                             switch (do_response(current, luid, kernelUid, c)) {
                             case CONTINUE:
                                 send(out, COMMAND_DATA, c.getResponse());
@@ -693,7 +693,7 @@ public class SASL {
                                 current = 0;
                                 break;
                             }
-                        }
+//                        }
                         break;
                     case COMMAND_ERROR:
                         send(out, COMMAND_REJECTED, getTypes(types));
