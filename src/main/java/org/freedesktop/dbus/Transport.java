@@ -430,7 +430,7 @@ public class Transport implements Closeable {
                     if (0 == col.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == col.compare(_uid, _kernelUid))) {
                         return OK;
                     } else {
-                        return ERROR;
+                        return REJECT;
                     }
                 case AUTH_SHA:
                     String context = COOKIE_CONTEXT;
