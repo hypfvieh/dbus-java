@@ -31,14 +31,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.common.SearchOrder;
 import com.github.hypfvieh.system.NativeLibraryLoader;
 import com.github.hypfvieh.util.SystemUtil;
+import com.github.hypfvieh.util.TypeUtil;
 
 /**
  * Represents a UnixSocket.
@@ -48,15 +48,18 @@ public class UnixSocket extends Socket implements Closeable {
     static {
         if (SystemUtil.isMacOs()) {
             String macOsMajorVersion = SystemUtil.getMacOsMajorVersion();
-            List<String> osVersionsWithSameLib = Arrays.asList("10.6", "10.7", "10.8", "10.9", "10.10", "10.11", "10.12", "10.13");
-            if (osVersionsWithSameLib.contains(macOsMajorVersion)) {
-                NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "macos/" + macOsMajorVersion + "/");
+            String[] split = macOsMajorVersion.split("\\.");
+            if (split.length == 2 && TypeUtil.isInteger(split[1])) {
+                if (Integer.parseInt(split[1]) >= 6) {
+                    NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "macos/" + macOsMajorVersion + "/");    
+                }
+            } else { // cannot determine version, try to load the one hopefully provided by the OS
+                NativeLibraryLoader.loadLibrary("libunix-java.so", new SearchOrder[] {SearchOrder.SYSTEM_PATH});
             }
         } else {
             NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "lib/");
         }
     }
-
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
