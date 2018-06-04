@@ -50,18 +50,22 @@ public class ExportedObject {
         introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n" + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
         introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n" + "  </method>\n" + " </interface>\n";
     }
-    
+
     private String getAnnotations(AnnotatedElement c) {
         String ans = "";
         for (Annotation a : c.getDeclaredAnnotations()) {
+            if (!(a instanceof DBusInterface)) { // skip all interfaces not compatible with DBusInterface (mother of all DBus related interfaces)
+                continue;
+            }
             Class<?> t = a.annotationType();
             String value = "";
             try {
                 Method m = t.getMethod("value");
-                value = m.invoke(a).toString();
-            } catch (NoSuchMethodException exNsm) {
-            } catch (InvocationTargetException exIt) {
-            } catch (IllegalAccessException exIa) {
+                if (m != null) {
+                    value = m.invoke(a).toString();
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException _ex) {
+                // ignore
             }
 
             ans += "  <annotation name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(t.getName()).replaceAll(".") + "\" value=\"" + value + "\" />\n";
@@ -78,7 +82,7 @@ public class ExportedObject {
             if (DBusInterface.class.equals(i)) {
                 // add this class's public methods
                 if (null != c.getAnnotation(DBusInterfaceName.class)) {
-                    String name = ((DBusInterfaceName) c.getAnnotation(DBusInterfaceName.class)).value();
+                    String name = c.getAnnotation(DBusInterfaceName.class).value();
                     introspectiondata += " <interface name=\"" + name + "\">\n";
                     DBusSignal.addInterfaceMap(c.getName(), name);
                 } else {
@@ -147,7 +151,7 @@ public class ExportedObject {
                     if (DBusSignal.class.isAssignableFrom(sig)) {
                         String name;
                         if (sig.isAnnotationPresent(DBusMemberName.class)) {
-                            name = ((DBusMemberName) sig.getAnnotation(DBusMemberName.class)).value();
+                            name = sig.getAnnotation(DBusMemberName.class).value();
                             DBusSignal.addSignalMap(sig.getSimpleName(), name);
                         } else {
                             name = sig.getSimpleName();
