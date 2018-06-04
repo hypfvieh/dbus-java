@@ -167,25 +167,7 @@ public class DeviceManager {
             }
             adapter.stopDiscovery();
 
-            Set<String> scanObjectManager = DbusHelper.findNodes(dbusConnection, adapter.getDbusPath());
-
-            String adapterMac = adapter.getAddress();
-
-            for (String path : scanObjectManager) {
-                String devicePath = "/org/bluez/" + adapter.getDeviceName() + "/" + path;
-                Device1 device = DbusHelper.getRemoteObject(dbusConnection, devicePath, Device1.class);
-                if (device != null) {
-                    BluetoothDevice btDev = new BluetoothDevice(device, adapter, devicePath, dbusConnection);
-                    logger.debug("Found bluetooth device {} on adapter {}", btDev.getAddress(), adapterMac);
-                    if (bluetoothDeviceByAdapterMac.containsKey(adapterMac)) {
-                        bluetoothDeviceByAdapterMac.get(adapterMac).add(btDev);
-                    } else {
-                        List<BluetoothDevice> list = new ArrayList<>();
-                        list.add(btDev);
-                        bluetoothDeviceByAdapterMac.put(adapterMac, list);
-                    }
-                }
-            }
+            findBtDevicesByIntrospection(adapter);
         }
 
         List<BluetoothDevice> devicelist = bluetoothDeviceByAdapterMac.get(_adapter);
@@ -193,6 +175,32 @@ public class DeviceManager {
             return new ArrayList<>(devicelist);
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Gets all devices found by the given adapter and published by bluez using DBus Introspection API.
+     * @param adapter bluetooth adapter
+     */
+    private void findBtDevicesByIntrospection(BluetoothAdapter adapter) {
+        Set<String> scanObjectManager = DbusHelper.findNodes(dbusConnection, adapter.getDbusPath());
+
+        String adapterMac = adapter.getAddress();
+
+        for (String path : scanObjectManager) {
+            String devicePath = "/org/bluez/" + adapter.getDeviceName() + "/" + path;
+            Device1 device = DbusHelper.getRemoteObject(dbusConnection, devicePath, Device1.class);
+            if (device != null) {
+                BluetoothDevice btDev = new BluetoothDevice(device, adapter, devicePath, dbusConnection);
+                logger.debug("Found bluetooth device {} on adapter {}", btDev.getAddress(), adapterMac);
+                if (bluetoothDeviceByAdapterMac.containsKey(adapterMac)) {
+                    bluetoothDeviceByAdapterMac.get(adapterMac).add(btDev);
+                } else {
+                    List<BluetoothDevice> list = new ArrayList<>();
+                    list.add(btDev);
+                    bluetoothDeviceByAdapterMac.put(adapterMac, list);
+                }
+            }
+        }
     }
 
     /**
@@ -292,19 +300,39 @@ public class DeviceManager {
     }
 
     /**
+     * Get all bluetooth devices connected to the defaultAdapter.
+     * @param _doNotScan true to disable new device recovery, just return all devices already known by bluez, false to scan before returning devices
+     * @return list - maybe empty
+     */
+    public List<BluetoothDevice> getDevices(boolean _doNotScan) {
+        return getDevices(defaultAdapterMac, _doNotScan);
+    }
+
+    /**
      * Get all bluetooth devices connected to the adapter with the given MAC address.
      * @param _adapterMac adapters MAC address
      * @return list - maybe empty
      */
     public List<BluetoothDevice> getDevices(String _adapterMac) {
-        if (bluetoothDeviceByAdapterMac.isEmpty()) {
-            scanForBluetoothDevices(_adapterMac, 5000);
+        return getDevices(_adapterMac, false);
+    }
+
+    /**
+     * Get all bluetooth devices connected to the adapter with the given MAC address.
+     * @param _adapterMac adapters MAC address
+     * @param _doNotScan true to disable new device recovery, just return all devices already known by bluez, false to scan before returning devices
+     * @return list - maybe empty
+     */
+    public List<BluetoothDevice> getDevices(String _adapterMac, boolean _doNotScan) {
+        if (_doNotScan) {
+            findBtDevicesByIntrospection(getAdapter(_adapterMac));
+        } else {
+            if (bluetoothDeviceByAdapterMac.isEmpty()) {
+                scanForBluetoothDevices(_adapterMac, 5000);
+            }
         }
-        List<BluetoothDevice> list = bluetoothDeviceByAdapterMac.get(_adapterMac);
-        if (list == null) {
-            return new ArrayList<>();
-        }
-        return list;
+
+        return bluetoothDeviceByAdapterMac.getOrDefault(_adapterMac, new ArrayList<>());
     }
 
     /**
