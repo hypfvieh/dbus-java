@@ -1,10 +1,11 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
-import org.junit.Assert;
 
 /**
  * Base class for all signals which are tested.
@@ -13,7 +14,7 @@ import org.junit.Assert;
  */
 public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBusSigHandler<T> {
     private final AtomicInteger testRuns = new AtomicInteger(0);
-    
+
     private final int expectedRuns;
 
     public AbstractSignalHandler(int _expectedRuns) {
@@ -22,12 +23,12 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
     /** Implemented by subclasses */
     protected abstract void handleImpl(T _s);
-    
+
     /** Check that we do no run to often, then call handleImpl to do the real work. */
     @Override
     public final void handle(T _s) { // should not be implemented by subclasses
         getTestRuns().incrementAndGet();
-        Assert.assertTrue("Signal received to often.", getExpectedRuns() <= getActualTestRuns());
+        assertTrue(getExpectedRuns() <= getActualTestRuns(), "Signal received to often.");
 
         System.out.println(getClass().getSimpleName() + " running");
 
@@ -37,7 +38,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
     protected AtomicInteger getTestRuns() {
         return testRuns;
     }
-    
+
     public int getActualTestRuns() {
         return testRuns.get();
     }
@@ -45,5 +46,5 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
     public int getExpectedRuns() {
         return expectedRuns;
     }
-    
+
 }

@@ -1,5 +1,8 @@
 package org.freedesktop.dbus.test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DirectConnection;
@@ -9,21 +12,20 @@ import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.test.helper.P2pTestServer;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TestPeer2Peer extends Assert {
+public class TestPeer2Peer {
 
     private volatile boolean finished = false;
-    
+
     private static final String CONNECTION_ADDRESS = DirectConnection.createDynamicSession();
-    
+
     @Test
     public void testP2p() throws InterruptedException {
         P2pServer p2pServer = new P2pServer();
         p2pServer.start();
         Thread.sleep(500L);
-        
+
         try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS)) {
             Thread.sleep(500L);
             System.out.println("Client: Connected");
@@ -37,15 +39,15 @@ public class TestPeer2Peer extends Assert {
                 tri.throwme();
             } catch (SampleException ex) {
             }
-            
+
             Peer peer = dc.getRemoteObject("/Test", Peer.class);
             peer.Ping();
-            
+
             Introspectable intro = dc.getRemoteObject("/Test", Introspectable.class);
-            
+
             String introspect = intro.Introspect();
             assertTrue(introspect.startsWith("<!DOCTYPE"));
-            
+
             dc.disconnect();
             System.out.println("Client: Disconnected");
             finished = true;
@@ -54,19 +56,19 @@ public class TestPeer2Peer extends Assert {
             fail("Exception in client");
         }
     }
-    
-    
+
+
     private class P2pServer extends Thread {
 
         @Override
         public void run() {
-            try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {                
+            try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {
                 dc.exportObject("/Test", new P2pTestServer());
                 System.out.println("Server: Export created");
-                
+
                 System.out.println("Server: Listening");
                 dc.listen();
-                
+
                 while (!finished) {
                     Thread.sleep(500L);
                 }
@@ -75,6 +77,6 @@ public class TestPeer2Peer extends Assert {
                 fail("Exception in server");
             }
         }
-        
+
     }
 }

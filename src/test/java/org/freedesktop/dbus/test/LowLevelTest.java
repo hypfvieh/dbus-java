@@ -12,15 +12,14 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.util.FileIoUtil;
 import com.github.hypfvieh.util.StringUtil;
 
-public class LowLevelTest extends Assert {
+public class LowLevelTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Test
@@ -43,7 +42,7 @@ public class LowLevelTest extends Assert {
             conn.writeMessage(m);
             m = conn.readMessage();
             logger.debug(m + "");
-    
+
             m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", (byte) 0, "su", "org.testname", 0);
             conn.writeMessage(m);
             m = conn.readMessage();
@@ -54,7 +53,7 @@ public class LowLevelTest extends Assert {
             logger.debug(m + "");
         }
     }
-    
+
     static String getAddress() throws DBusException {
         String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
         if (s == null) {
@@ -68,7 +67,7 @@ public class LowLevelTest extends Assert {
                                                                      // (e.g. X forward through SSH)
                 display = display.substring(display.indexOf(':'));
             }
-           
+
             String uuid = DBusConnection.getDbusMachineId();
             String homedir = System.getProperty("user.home");
             File addressfile = new File(homedir + "/.dbus/session-bus",
@@ -83,7 +82,7 @@ public class LowLevelTest extends Assert {
             }
             return sessionAddress;
         }
-        
-        return s;    
+
+        return s;
     }
 }

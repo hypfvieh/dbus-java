@@ -1,10 +1,11 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Local;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
-import org.junit.Assert;
 
 /**
  * Disconnect handler
@@ -26,7 +27,7 @@ public class DisconnectHandler extends AbstractSignalHandler<Local.Disconnected>
         try {
             conn.removeSigHandler(SampleSignals.TestRenamedSignal.class, sh);
         } catch (DBusException ex) {
-            Assert.fail("Could not remove signal handler");
+            fail("Could not remove signal handler");
         }
     }
 }

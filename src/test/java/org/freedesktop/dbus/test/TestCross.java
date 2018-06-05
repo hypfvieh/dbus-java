@@ -1,5 +1,9 @@
 package org.freedesktop.dbus.test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -13,38 +17,37 @@ import org.freedesktop.dbus.test.helper.cross.CrossTestClient;
 import org.freedesktop.dbus.test.helper.cross.CrossTestServer;
 import org.freedesktop.dbus.test.helper.interfaces.Binding;
 import org.freedesktop.dbus.test.helper.interfaces.SamplesInterface;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestCross extends Assert {
-    
+public class TestCross {
+
     private ServerThread serverThread;
 
     private volatile boolean serverReady = false;
-    
-    @Before
+
+    @BeforeEach
     public void before() {
         serverThread = new ServerThread();
         serverThread.start();
     }
-   
-    @After
+
+    @AfterEach
     public void after() {
         if (serverThread != null) {
             serverThread.interrupt();
         }
     }
-   
-    
+
+
 
     @Test
     public void testCross() throws InterruptedException {
         while (!serverReady) {
             Thread.sleep(500L);
         }
-        
+
         try {
             /* init */
             DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
@@ -64,7 +67,7 @@ public class TestCross extends Assert {
             for (String s : client.getPassed()) {
                 System.out.println(s + " pass");
             }
-            
+
             for (Entry<String, List<String>> s : client.getFailed().entrySet()) {
                 for (String msg : s.getValue()) {
                     System.out.println(s.getKey() + " failed: " + msg);
@@ -75,17 +78,17 @@ public class TestCross extends Assert {
         } catch (DBusException exDbe) {
             exDbe.printStackTrace();
         }
-        
+
         assertTrue(serverThread.getCts().getNotdone().isEmpty()); // all tests should have been run
     }
-    
-    
+
+
     private class ServerThread extends Thread {
         private CrossTestServer cts;
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION)) {
-                
+
                 conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
                 cts = new CrossTestServer(conn);
                 conn.addSigHandler(Binding.SampleClient.Trigger.class, cts);
@@ -103,19 +106,19 @@ public class TestCross extends Assert {
                 }
                 for (String s : cts.getNotdone()) {
                     System.out.println(s + " untested");
-                }                
+                }
                 conn.disconnect();
-                assertFalse("All tests should have been run", cts.getNotdone().isEmpty());
+                assertFalse(cts.getNotdone().isEmpty(), "All tests should have been run");
             } catch (DBusException | IOException exDe) {
                 exDe.printStackTrace();
-                fail("Exception while server running");                
+                fail("Exception while server running");
             }
         }
-        
+
         CrossTestServer getCts() {
             return cts;
         }
-        
-        
+
+
     }
 }
