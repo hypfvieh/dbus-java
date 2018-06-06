@@ -54,7 +54,8 @@ public class ExportedObject {
     private String getAnnotations(AnnotatedElement c) {
         String ans = "";
         for (Annotation a : c.getDeclaredAnnotations()) {
-            if (!(a instanceof DBusInterface)) { // skip all interfaces not compatible with DBusInterface (mother of all DBus related interfaces)
+
+            if (!a.annotationType().isAssignableFrom(DBusInterface.class)) { // skip all interfaces not compatible with DBusInterface (mother of all DBus related interfaces)
                 continue;
             }
             Class<?> t = a.annotationType();
