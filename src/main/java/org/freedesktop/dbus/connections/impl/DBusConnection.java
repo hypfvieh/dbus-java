@@ -278,6 +278,11 @@ public final class DBusConnection extends AbstractConnection {
             }
             List<Class<?>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
+                // if this is a default DBus interface, look for it in our package structure
+                if (iface.startsWith("org.freedesktop.DBus.")) {
+                    iface = iface.replaceAll("^.*\\.([^\\.]+)$", DBusInterface.class.getPackage().getName() + ".$1");
+                }
+
                 logger.debug("Trying interface {}", iface);
                 int j = 0;
                 while (j >= 0) {
@@ -298,8 +303,10 @@ public final class DBusConnection extends AbstractConnection {
                 }
             }
 
-            if (ifcs.size() == 0) {
-                throw new DBusException("Could not find an interface to cast to");
+            // interface could not be found, we guess that this exported object at least support DBusInterface
+            if (ifcs.isEmpty()) {
+                // throw new DBusException("Could not find an interface to cast to");
+                ifcs.add(DBusInterface.class);
             }
 
             RemoteObject ro = new RemoteObject(source, path, null, false);
