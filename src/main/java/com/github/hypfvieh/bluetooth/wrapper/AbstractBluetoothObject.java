@@ -1,10 +1,10 @@
 package com.github.hypfvieh.bluetooth.wrapper;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.bluez.Adapter1;
@@ -139,22 +139,21 @@ public abstract class AbstractBluetoothObject {
         return optionMap;
     }
 
-
-    protected byte[] byteVectorToByteArray(Vector<?> _vector) {
-        if (_vector == null) {
+    protected byte[] byteListToByteArray(List<?> _list) {
+        if (_list == null) {
             return null;
         }
-        if (_vector.isEmpty()) {
+        if (_list.isEmpty()) {
             return new byte[] {};
         }
 
-        if (!ClassUtils.isAssignable(byte.class, _vector.get(0).getClass())) {
+        if (!ClassUtils.isAssignable(byte.class, _list.get(0).getClass())) {
             return null;
         }
 
-        byte[] result = new byte[_vector.size()];
-        for (int i = 0; i < _vector.size(); i++) {
-            Object x = _vector.get(i);
+        byte[] result = new byte[_list.size()];
+        for (int i = 0; i < _list.size(); i++) {
+            Object x = _list.get(i);
             result[i] = (byte) x;
         }
 

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 
 import org.bluez.Device1;
 import org.bluez.GattService1;
@@ -186,9 +185,9 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * @return byte array maybe null
      */
     public byte[] getAdvertisingFlags() {
-        Vector<?> typed = getTyped("AdvertisingFlags", Vector.class);
+        List<?> typed = getTyped("AdvertisingFlags", ArrayList.class);
         if (typed != null) {
-            return byteVectorToByteArray(typed);
+            return byteListToByteArray(typed);
         }
         return null;
     }
@@ -202,7 +201,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * @return string array of UUIDs, maybe null
      */
     public String[] getUuids() {
-        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        List<?> typed = getTyped("UUIDs", ArrayList.class);
         if (typed != null) {
             return typed.toArray(new String[]{});
         }

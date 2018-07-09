@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Vector;
 
 import org.bluez.GattCharacteristic1;
 import org.bluez.GattDescriptor1;
@@ -164,9 +163,9 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * @return cached characteristics value, maybe null
      */
     public byte[] getValue() {
-        Vector<?> typed = getTyped("UUIDs", Vector.class);
+        List<?> typed = getTyped("UUIDs", ArrayList.class);
         if (typed != null) {
-            return byteVectorToByteArray(typed);
+            return byteListToByteArray(typed);
         }
         return null;
     }
