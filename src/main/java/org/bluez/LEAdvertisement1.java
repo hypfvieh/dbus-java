@@ -1,6 +1,7 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
  * File generated - 2018-03-08.<br>
@@ -77,7 +78,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
  * <br>
  * <br>
  */
-public interface LEAdvertisement1 extends DBusInterface {
+public interface LEAdvertisement1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
