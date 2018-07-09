@@ -597,9 +597,9 @@ public class BluezInterfaceCreator {
 //            }
             _dataType = convertDataType(replaceAll) + "[]";
         } else if (_dataType.equals("dict")) {
-            _dataType = "Map<?, ?>";
+            _dataType = "Map<String, Variant<Object>";
         } else if (_dataType.equals("variant")) {
-            _dataType = "Variant<?>";
+            _dataType = "Variant<Object>";
         } else if (_dataType.equals("void")) {
             _dataType = "void";
         } else if (_dataType.equals("uint16")) {

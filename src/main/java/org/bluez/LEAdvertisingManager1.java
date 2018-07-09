@@ -1,12 +1,15 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
+
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezInvalidLengthException;
 import org.bluez.exceptions.BluezNotPermittedException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
 /**
  * File generated - 2018-03-08.<br>
@@ -62,7 +65,7 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * reached it will result in NotPermitted error.<br>
      * <br>
      * 
-     * @param _advertisement
+     * @param _objectPath
      * @param _options
      * 
      * @throws BluezInvalidArgumentsException
@@ -70,7 +73,7 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * @throws BluezInvalidLengthException
      * @throws BluezNotPermittedException
      */
-    void RegisterAdvertisement(Object _advertisement, Map<?, ?> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezInvalidLengthException, BluezNotPermittedException;
+    void RegisterAdvertisement(DBusPath _objectPath, Map<String, Variant<Object>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezInvalidLengthException, BluezNotPermittedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -80,11 +83,11 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * match the same value that has been used on registration.<br>
      * <br>
      * 
-     * @param _advertisement
+     * @param _objectPath
      * 
      * @throws BluezInvalidArgumentsException
      * @throws BluezDoesNotExistException
      */
-    void UnregisterAdvertisement(Object _advertisement) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
+    void UnregisterAdvertisement(DBusPath _objectPath) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
 
 }
