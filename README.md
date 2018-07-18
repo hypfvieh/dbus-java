@@ -1,4 +1,4 @@
-# bluez-dbus
+# bluez-dbus [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/bluez-dbus/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/bluez-dbus)
 bluetooth library for linux OSes using [DBus](https://dbus.freedesktop.org/) and [bluez](http://www.bluez.org/).
 
 This project was inspired by [tinyb](https://github.com/intel-iot-devkit/tinyb),
