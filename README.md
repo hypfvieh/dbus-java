@@ -1,4 +1,4 @@
-# dbus-java
+# dbus-java [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with compatibility to Java 8.
 
 Please note this version is not compatible with 2.7.x versions as classes have been moved in other packages or were completly removed.
