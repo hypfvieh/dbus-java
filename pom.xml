@@ -45,13 +45,20 @@
 
 		</plugins>
 	</build>
-
+	
+	<repositories>
+		<repository>
+			<id>jitpack</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>java-utils</artifactId>
-			<version>1.0.4-SNAPSHOT</version>
+			<version>master-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
@@ -59,8 +66,15 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.25</version>
 		</dependency>
+		
+		<!-- Testing -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.25</version>
+			<scope>test</scope>
+		</dependency>
 
-		<!-- JUnit testing framework. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -81,15 +95,7 @@
             <version>1.2.0</version>
             <scope>test</scope>
         </dependency>
-		
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-simple</artifactId>
-		    <version>1.7.25</version>
-		    <scope>test</scope>
-        	</dependency>
        	
-        <!-- Mockito mocking framework. -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

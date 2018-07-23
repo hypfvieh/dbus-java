@@ -21,7 +21,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -111,7 +110,7 @@ public class DBusDaemon extends Thread {
         }
 
         public void putFirst(A a, B b) {
-            logger.debug("<{}> Queueing {{} => {}}", name, a, b);
+            logger.debug("<{}> Queueing %s => %s", name, a, b);
 
             if (m.containsKey(a)) {
                 m.get(a).add(b);
@@ -124,7 +123,7 @@ public class DBusDaemon extends Thread {
         }
 
         public void putLast(A a, B b) {
-            logger.debug("<{}> Queueing {{} => {}}", name, a, b);
+            logger.debug("<{}> Queueing %s => %s", name, a, b);
 
             if (m.containsKey(a)) {
                 m.get(a).add(b);
@@ -137,7 +136,7 @@ public class DBusDaemon extends Thread {
         }
 
         public List<B> remove(A a) {
-            logger.debug("<{}> Removing {{}}", name, a);
+            logger.debug("<{}> Removing %s}", name, a);
 
             q.remove(a);
             return m.remove(a);
@@ -778,7 +777,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format("The name `{0}' does not exist", m.getDestination())));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }

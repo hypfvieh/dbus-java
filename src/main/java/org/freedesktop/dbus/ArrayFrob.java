@@ -11,7 +11,6 @@
 package org.freedesktop.dbus;
 
 import java.lang.reflect.Array;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -171,7 +170,7 @@ public final class ArrayFrob {
             throw new IllegalArgumentException(e);
         }
 
-        throw new IllegalArgumentException(MessageFormat.format("Not An Expected Convertion type from {0} to {1}", o.getClass(), c));
+        throw new IllegalArgumentException(String.format("Not An Expected Convertion type from %s to %s", o.getClass(), c));
     }
 
     public static Object[] type(Object[] old, Class<Object> c) {

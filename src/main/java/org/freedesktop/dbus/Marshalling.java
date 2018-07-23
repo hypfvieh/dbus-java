@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -409,7 +408,7 @@ public final class Marshalling {
                     i += c + 1;
                     break;
                 default:
-                    throw new DBusException(MessageFormat.format("Failed to parse DBus type signature: {0} ({1}).", dbus, dbus.charAt(i)));
+                    throw new DBusException(String.format("Failed to parse DBus type signature: %s (%s).", dbus, dbus.charAt(i)));
                 }
             }
             return i;
@@ -690,7 +689,7 @@ public final class Marshalling {
                             parameters = compress;
                         } catch (ArrayIndexOutOfBoundsException aioobe) {
                             LOGGER.debug("", aioobe);
-                            throw new DBusException(MessageFormat.format("Not enough elements to create custom object from serialized data ({0} < {1}).", parameters.length - i, newtypes.length));
+                            throw new DBusException(String.format("Not enough elements to create custom object from serialized data (%s < %s).", parameters.length - i, newtypes.length));
                         }
                     }
                 }

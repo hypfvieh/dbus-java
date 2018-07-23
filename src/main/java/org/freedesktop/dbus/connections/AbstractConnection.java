@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -649,8 +648,8 @@ public abstract class AbstractConnection implements Closeable {
             }
             meth = eo.getMethods().get(new MethodTuple(m.getName(), m.getSig()));
             if (null == meth) {
-                sendMessage(new Error(m, new UnknownMethod(MessageFormat.format(
-                        "The method `{0}.{1}' does not exist on this object.", m.getInterface(), m.getName()))));
+                sendMessage(new Error(m, new UnknownMethod(String.format(
+                        "The method `%s.%s' does not exist on this object.", m.getInterface(), m.getName()))));
                 return;
             }
             o = eo.getObject().get();
@@ -716,7 +715,7 @@ public abstract class AbstractConnection implements Closeable {
                 } catch (Throwable e) {
                     logger.debug("", e);
                     handleException(conn, m,
-                            new DBusExecutionException(MessageFormat.format("Error Executing Method {0}.{1}: {2}",
+                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
                                     m.getInterface(), m.getName(), e.getMessage())));
                 }
             }
