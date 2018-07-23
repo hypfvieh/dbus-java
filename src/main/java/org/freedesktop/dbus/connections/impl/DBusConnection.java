@@ -12,7 +12,6 @@ package org.freedesktop.dbus.connections.impl;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -317,7 +316,7 @@ public final class DBusConnection extends AbstractConnection {
         } catch (Exception e) {
             logger.debug("", e);
             throw new DBusException(
-                    MessageFormat.format("Failed to create proxy object for {0} exported by {1}. Reason: {2}", path,
+                    String.format("Failed to create proxy object for %s exported by %s. Reason: %s", path,
                             source, e.getMessage()));
         }
     }

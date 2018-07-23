@@ -13,7 +13,6 @@ package org.freedesktop.dbus.messages;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -234,7 +233,7 @@ public class Message {
         }
         if (preallocated > 0) {
             if (paofs + buf.length > pabuf.length) {
-                throw new ArrayIndexOutOfBoundsException(MessageFormat.format("Array index out of bounds, paofs={0}, pabuf.length={1}, buf.length={2}.",
+                throw new ArrayIndexOutOfBoundsException(String.format("Array index out of bounds, paofs=%s, pabuf.length=%s, buf.length=%s.",
                         paofs, pabuf.length, buf.length
                 ));
             }
@@ -722,7 +721,7 @@ public class Message {
             return i;
         } catch (ClassCastException cce) {
             logger.debug("Trying to marshall to unconvertible type.", cce);
-            throw new MarshallingException(MessageFormat.format("Trying to marshall to unconvertible type (from {0} to {1}).",
+            throw new MarshallingException(String.format("Trying to marshall to unconvertible type (from %s to %s).",
                 data.getClass().getName(), (char) sigb[sigofs]
             ));
         }
@@ -1081,7 +1080,7 @@ public class Message {
     * @throws DBusException on error
     */
     public Object[] extract(String sig, byte[] buf, int[] ofs) throws DBusException {
-        logger.trace("extract({},#{}, {{},{}}", sig, buf.length, ofs[0], ofs[1]);
+        logger.trace("extract({},#{}, %s,%s", sig, buf.length, ofs[0], ofs[1]);
         List<Object> rv = new ArrayList<>();
         byte[] sigb = sig.getBytes();
         for (int[] i = ofs; i[0] < sigb.length; i[0]++) {
