@@ -13,6 +13,7 @@ package org.freedesktop.dbus.messages;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class Message {
     private static final int OFFSET_DATA = 1;
     /** Position of signature offset in int array. */
     private static final int OFFSET_SIG = 0;
-
+    
     /** Keep a static reference to each size of padding array to prevent allocation. */
     private static byte[][] padding;
     static {
@@ -238,7 +239,7 @@ public class Message {
         }
         if (preallocated > 0) {
             if (paofs + buf.length > pabuf.length) {
-                throw new ArrayIndexOutOfBoundsException(String.format("Array index out of bounds, paofs=%s, pabuf.length=%s, buf.length=%s.",
+                throw new ArrayIndexOutOfBoundsException(MessageFormat.format("Array index out of bounds, paofs={0}, pabuf.length={1}, buf.length={2}.",
                         paofs, pabuf.length, buf.length
                 ));
             }
@@ -726,7 +727,7 @@ public class Message {
             return i;
         } catch (ClassCastException cce) {
             logger.debug("Trying to marshall to unconvertible type.", cce);
-            throw new MarshallingException(String.format("Trying to marshall to unconvertible type (from %s to %s).",
+            throw new MarshallingException(MessageFormat.format("Trying to marshall to unconvertible type (from {0} to {1}).",
                 data.getClass().getName(), (char) sigb[sigofs]
             ));
         }
@@ -752,7 +753,7 @@ public class Message {
             appendBytes(padding[a]);
         }
         logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
-
+        
     }
 
     /**
@@ -829,165 +830,142 @@ public class Message {
 
     /**
     * Demarshall one value from a buffer.
-    *
-    * @param _sigBuf A buffer of the D-Bus signature.
+    * @param _signatureBuf A buffer of the D-Bus signature.
     * @param _dataBuf The buffer to demarshall from.
-    * @param _offsets An array of two ints, the offset into the signature buffer
-    *            and the offset into the data buffer. These values will be
-    *            updated to the start of the next value ofter demarshalling.
+    * @param _offsets An array of two ints, which holds the position of the current signature offset
+    *            and the current offset of the data buffer.
     * @param _contained converts nested arrays to Lists
     * @return The demarshalled value.
     */
-    private Object extractOne(byte[] _sigBuf, byte[] _dataBuf, int[] _offsets, boolean _contained) throws DBusException {
+    private Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained) throws DBusException {
 
-        logger.trace("Extracting type: {} from offset {}", ((char) _sigBuf[_offsets[OFFSET_SIG]]), _offsets[OFFSET_DATA]);
+        logger.trace("Extracting type: {} from offset {}", ((char) _signatureBuf[_offsets[OFFSET_SIG]]), _offsets[OFFSET_DATA]);
 
         Object rv = null;
-        _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _sigBuf[_offsets[OFFSET_SIG]]);
-        switch (_sigBuf[_offsets[OFFSET_SIG]]) {
-            case ArgumentType.BYTE:
-                rv = _dataBuf[_offsets[OFFSET_DATA]++];
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.UINT32:
-                rv = new UInt32(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+        _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
+        switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
+        case ArgumentType.BYTE:
+            rv = _dataBuf[_offsets[OFFSET_DATA]++];
+            break;
+        case ArgumentType.UINT32:
+            rv = new UInt32(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+            _offsets[OFFSET_DATA] += 4;
+            break;
+        case ArgumentType.INT32:
+            rv = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            _offsets[OFFSET_DATA] += 4;
+            break;
+        case ArgumentType.INT16:
+            rv = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2);
+            _offsets[OFFSET_DATA] += 2;
+            break;
+        case ArgumentType.UINT16:
+            rv = new UInt16((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2));
+            _offsets[OFFSET_DATA] += 2;
+            break;
+        case ArgumentType.INT64:
+            rv = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
+            _offsets[OFFSET_DATA] += 8;
+            break;
+        case ArgumentType.UINT64:
+            long top;
+            long bottom;
+            if (big) {
+                top = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT32:
-                rv = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                bottom = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            } else {
+                bottom = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT16:
-                rv = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2);
-                _offsets[OFFSET_DATA] += 2;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.UINT16:
-                rv = new UInt16((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2));
-                _offsets[OFFSET_DATA] += 2;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT64:
-                rv = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
-                _offsets[OFFSET_DATA] += 8;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.UINT64:
-                long top;
-                long bottom;
-                if (big) {
-                    top = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                    _offsets[OFFSET_DATA] += 4;
-                    bottom = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                } else {
-                    bottom = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                    _offsets[OFFSET_DATA] += 4;
-                    top = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                }
-                rv = new UInt64(top, bottom);
-                _offsets[OFFSET_DATA] += 4;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.DOUBLE:
-                long l = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
-                _offsets[OFFSET_DATA] += 8;
-                rv = Double.longBitsToDouble(l);
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.FLOAT:
-                int rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                _offsets[OFFSET_DATA] += 4;
-                rv = Float.intBitsToFloat(rf);
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.BOOLEAN:
-                rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                _offsets[OFFSET_DATA] += 4;
-                rv = (1 == rf) ? Boolean.TRUE : Boolean.FALSE;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.ARRAY:
-                long size = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                top = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            }
+            rv = new UInt64(top, bottom);
+            _offsets[OFFSET_DATA] += 4;
+            break;
+        case ArgumentType.DOUBLE:
+            long l = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
+            _offsets[OFFSET_DATA] += 8;
+            rv = Double.longBitsToDouble(l);
+            break;
+        case ArgumentType.FLOAT:
+            int rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            _offsets[OFFSET_DATA] += 4;
+            rv = Float.intBitsToFloat(rf);
+            break;
+        case ArgumentType.BOOLEAN:
+            rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            _offsets[OFFSET_DATA] += 4;
+            rv = (1 == rf) ? Boolean.TRUE : Boolean.FALSE;
+            break;
+        case ArgumentType.ARRAY:
+            long size = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
 
-                logger.trace("Reading array of size: {}", size);
-                _offsets[OFFSET_DATA] += 4;
-                _offsets[OFFSET_SIG]++;
-
-                byte algn = (byte) getAlignment(_sigBuf[_offsets[OFFSET_SIG]]);
-
-                _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _sigBuf[_offsets[OFFSET_SIG]]);
-                int length = (int) (size / algn);
-
-                if (length > AbstractConnection.MAX_ARRAY_LENGTH) {
-                    throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
-                }
-
-                // optimize primitives
-                rv = optimizePrimitives(_sigBuf, _dataBuf, _offsets, size, algn, length);
-                if (_contained && !(rv instanceof List) && !(rv instanceof Map)) {
-                    rv = ArrayFrob.listify(rv);
-                }
-                break;
-            case ArgumentType.STRUCT1:
-                List<Object> contents = new ArrayList<>();
-                while (_sigBuf[++_offsets[OFFSET_SIG]] != ArgumentType.STRUCT2) {
-                    contents.add(extractOne(_sigBuf, _dataBuf, _offsets, true));
-                }
-                rv = contents.toArray();
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.DICT_ENTRY1:
-                Object[] decontents = new Object[2];
-                logger.trace("Extracting Dict Entry ({}) from: {}",Hexdump.toAscii(_sigBuf, _offsets[OFFSET_SIG], _sigBuf.length - _offsets[OFFSET_SIG]), Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA]));
-                _offsets[OFFSET_SIG]++;
-                decontents[0] = extractOne(_sigBuf, _dataBuf, _offsets, true);
-                _offsets[OFFSET_SIG]++;
-                decontents[1] = extractOne(_sigBuf, _dataBuf, _offsets, true);
-                _offsets[OFFSET_SIG]++;
-                rv = decontents;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.VARIANT:
-                int[] newofs = new int[] {
-                        0, _offsets[OFFSET_DATA]
-                };
-                String sig = (String) extract(ArgumentType.SIGNATURE_STRING, _dataBuf, newofs)[0];
-                newofs[OFFSET_SIG] = 0;
-                rv = new Variant<>(extract(sig, _dataBuf, newofs)[0], sig);
-                _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.STRING:
-                length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                _offsets[OFFSET_DATA] += 4;
-                try {
-                    rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    logger.debug("System does not support UTF-8 encoding", uee);
-                    throw new DBusException("System does not support UTF-8 encoding");
-                }
-                _offsets[OFFSET_DATA] += length + 1;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.OBJECT_PATH:
-                length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
-                _offsets[OFFSET_DATA] += 4;
-                rv = new ObjectPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
-                _offsets[OFFSET_DATA] += length + 1;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.SIGNATURE:
-                length = (_dataBuf[_offsets[OFFSET_DATA]++] & 0xFF);
-                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length);
-                _offsets[OFFSET_DATA] += length + 1;
-                _offsets[OFFSET_SIG]++;
-                break;
-            default:
-                throw new UnknownTypeCodeException(_sigBuf[_offsets[OFFSET_SIG]]);
+            logger.trace("Reading array of size: {}", size);
+            _offsets[OFFSET_DATA] += 4;
+            byte algn = (byte) getAlignment(_signatureBuf[++_offsets[OFFSET_SIG]]);
+            _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
+            int length = (int) (size / algn);
+            if (length > AbstractConnection.MAX_ARRAY_LENGTH) {
+                throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
+            }
+            
+            rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length);
+            
+            if (_contained && !(rv instanceof List) && !(rv instanceof Map)) {
+                rv = ArrayFrob.listify(rv);
+            }
+            break;
+        case ArgumentType.STRUCT1:
+            List<Object> contents = new ArrayList<>();
+            while (_signatureBuf[++_offsets[OFFSET_SIG]] != ArgumentType.STRUCT2) {
+                contents.add(extractOne(_signatureBuf, _dataBuf, _offsets, true));
+            }
+            rv = contents.toArray();
+            break;
+        case ArgumentType.DICT_ENTRY1:
+            Object[] decontents = new Object[2];
+            logger.trace("Extracting Dict Entry ({}) from: {}",Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]), Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA]));
+            _offsets[OFFSET_SIG]++;
+            decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
+            _offsets[OFFSET_SIG]++;
+            decontents[1] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
+            _offsets[OFFSET_SIG]++;
+            rv = decontents;
+            break;
+        case ArgumentType.VARIANT:
+            int[] newofs = new int[] {
+                    0, _offsets[OFFSET_DATA]
+            };
+            String sig = (String) extract(ArgumentType.SIGNATURE_STRING, _dataBuf, newofs)[0];
+            newofs[OFFSET_SIG] = 0;
+            rv = new Variant<>(extract(sig, _dataBuf, newofs)[0], sig);
+            _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
+            break;
+        case ArgumentType.STRING:
+            length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            _offsets[OFFSET_DATA] += 4;
+            try {
+                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+                logger.debug("System does not support UTF-8 encoding", uee);
+                throw new DBusException("System does not support UTF-8 encoding");
+            }
+            _offsets[OFFSET_DATA] += length + 1;
+            break;
+        case ArgumentType.OBJECT_PATH:
+            length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+            _offsets[OFFSET_DATA] += 4;
+            rv = new ObjectPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
+            _offsets[OFFSET_DATA] += length + 1;
+            break;
+        case ArgumentType.SIGNATURE:
+            length = (_dataBuf[_offsets[OFFSET_DATA]++] & 0xFF);
+            rv = new String(_dataBuf, _offsets[OFFSET_DATA], length);
+            _offsets[OFFSET_DATA] += length + 1;
+            break;
+        default:
+            throw new UnknownTypeCodeException(_signatureBuf[_offsets[OFFSET_SIG]]);
         }
-
         if (logger.isTraceEnabled()) {
             if (rv instanceof Object[]) {
                 logger.trace("Extracted: {} (now at {})", Arrays.deepToString((Object[]) rv), _offsets[OFFSET_DATA]);
@@ -998,102 +976,92 @@ public class Message {
         return rv;
     }
 
-    private Object optimizePrimitives(byte[] _sigBuf, byte[] _dataBuf, int[] _offsets, long size, byte algn, int length)
+    private Object optimizePrimitives(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, long size, byte algn, int length)
             throws DBusException {
-
         Object rv;
-        switch (_sigBuf[_offsets[OFFSET_SIG]]) {
-            case ArgumentType.BYTE:
-                rv = new byte[length];
-                System.arraycopy(_dataBuf, _offsets[OFFSET_DATA], rv, 0, length);
-                _offsets[OFFSET_DATA] += size;
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT16:
-                rv = new short[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((short[]) rv)[j] = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT32:
-                rv = new int[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((int[]) rv)[j] = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.INT64:
-                rv = new long[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((long[]) rv)[j] = demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.BOOLEAN:
-                rv = new boolean[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((boolean[]) rv)[j] = (1 == demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.FLOAT:
-                rv = new float[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((float[]) rv)[j] = Float.intBitsToFloat((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.DOUBLE:
-                rv = new double[length];
-                for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
-                    ((double[]) rv)[j] = Double.longBitsToDouble(demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
-                }
-                _offsets[OFFSET_SIG]++;
-                break;
-            case ArgumentType.DICT_ENTRY1:
-                if (0 == size) {
-                    // advance the type parser even on 0-size arrays.
-                    List<Type> temp = new ArrayList<>();
-                    byte[] temp2 = new byte[_sigBuf.length - _offsets[OFFSET_SIG]];
-                    System.arraycopy(_sigBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
-                    String temp3 = new String(temp2);
-
-                    int temp4 = Marshalling.getJavaType(temp3, temp, 1);
-                    _offsets[OFFSET_SIG] += temp4 - 1;
-                    logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
-                }
-                int ofssave = _offsets[OFFSET_SIG];
-                long end = _offsets[OFFSET_DATA] + size;
-                List<Object[]> entries = new ArrayList<>();
-                while (_offsets[OFFSET_DATA] < end) {
-                    _offsets[OFFSET_SIG] = ofssave;
-                    entries.add((Object[]) extractOne(_sigBuf, _dataBuf, _offsets, true));
-                }
-                rv = new DBusMap<>(entries.toArray(new Object[0][]));
-
-                break;
-            default:
-                if (0 == size) {
-                    // advance the type parser even on 0-size arrays.
-                    List<Type> temp = new ArrayList<>();
-                    byte[] temp2 = new byte[_sigBuf.length - _offsets[OFFSET_SIG]];
-                    System.arraycopy(_sigBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
-                    String temp3 = new String(temp2);
-                    int temp4 = Marshalling.getJavaType(temp3, temp, 1);
-                    _offsets[OFFSET_SIG] += temp4 - 1;
-
-                    logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
-                }
-                ofssave = _offsets[OFFSET_SIG];
-                end = _offsets[OFFSET_DATA] + size;
-                List<Object> contents = new ArrayList<>();
-                while (_offsets[OFFSET_DATA] < end) {
-                    _offsets[OFFSET_SIG] = ofssave;
-                    contents.add(extractOne(_sigBuf, _dataBuf, _offsets, true));
-                }
-                rv = contents;
-
+        switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
+        case ArgumentType.BYTE:
+            rv = new byte[length];
+            System.arraycopy(_dataBuf, _offsets[OFFSET_DATA], rv, 0, length);
+            _offsets[OFFSET_DATA] += size;
+            break;
+        case ArgumentType.INT16:
+            rv = new short[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((short[]) rv)[j] = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
+            }
+            break;
+        case ArgumentType.INT32:
+            rv = new int[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((int[]) rv)[j] = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
+            }
+            break;
+        case ArgumentType.INT64:
+            rv = new long[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((long[]) rv)[j] = demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn);
+            }
+            break;
+        case ArgumentType.BOOLEAN:
+            rv = new boolean[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((boolean[]) rv)[j] = (1 == demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
+            }
+            break;
+        case ArgumentType.FLOAT:
+            rv = new float[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((float[]) rv)[j] = Float.intBitsToFloat((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
+            }
+            break;
+        case ArgumentType.DOUBLE:
+            rv = new double[length];
+            for (int j = 0; j < length; j++, _offsets[OFFSET_DATA] += algn) {
+                ((double[]) rv)[j] = Double.longBitsToDouble(demarshallint(_dataBuf, _offsets[OFFSET_DATA], algn));
+            }
+            break;
+        case ArgumentType.DICT_ENTRY1:
+            if (0 == size) {
+                // advance the type parser even on 0-size arrays.
+                List<Type> temp = new ArrayList<>();
+                byte[] temp2 = new byte[_signatureBuf.length - _offsets[OFFSET_SIG]];
+                System.arraycopy(_signatureBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
+                String temp3 = new String(temp2);
+                // ofs[OFFSET_SIG] gets incremented anyway. Leave one character on the stack
+                int temp4 = Marshalling.getJavaType(temp3, temp, 1) - 1;
+                _offsets[OFFSET_SIG] += temp4;
+                logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
+            }
+            int ofssave = _offsets[OFFSET_SIG];
+            long end = _offsets[OFFSET_DATA] + size;
+            List<Object[]> entries = new ArrayList<>();
+            while (_offsets[OFFSET_DATA] < end) {
+                _offsets[OFFSET_SIG] = ofssave;
+                entries.add((Object[]) extractOne(_signatureBuf, _dataBuf, _offsets, true));
+            }
+            rv = new DBusMap<>(entries.toArray(new Object[0][]));
+            break;
+        default:
+            if (0 == size) {
+                // advance the type parser even on 0-size arrays.
+                List<Type> temp = new ArrayList<>();
+                byte[] temp2 = new byte[_signatureBuf.length - _offsets[OFFSET_SIG]];
+                System.arraycopy(_signatureBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
+                String temp3 = new String(temp2);
+                // ofs[OFFSET_SIG] gets incremented anyway. Leave one character on the stack
+                int temp4 = Marshalling.getJavaType(temp3, temp, 1) - 1;
+                _offsets[OFFSET_SIG] += temp4;
+                logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
+            }
+            ofssave = _offsets[OFFSET_SIG];
+            end = _offsets[OFFSET_DATA] + size;
+            List<Object> contents = new ArrayList<>();
+            while (_offsets[OFFSET_DATA] < end) {
+                _offsets[OFFSET_SIG] = ofssave;
+                contents.add(extractOne(_signatureBuf, _dataBuf, _offsets, true));
+            }
+            rv = contents;
         }
         return rv;
     }
@@ -1102,31 +1070,33 @@ public class Message {
     * Demarshall values from a buffer.
     * @param _signature The D-Bus signature(s) of the value(s).
     * @param _dataBuf The buffer to demarshall from.
-    * @param _dataOffset The offset in the data buffer to start from.
+    * @param _offsets The offset into the data buffer to start.
     * @return The demarshalled value(s).
     *
     * @throws DBusException on error
     */
-    public Object[] extract(String _signature, byte[] _dataBuf, int _dataOffset) throws DBusException {
-        return extract(_signature, _dataBuf, new int[] {0, _dataOffset});
+    public Object[] extract(String _signature, byte[] _dataBuf, int _offsets) throws DBusException {
+        return extract(_signature, _dataBuf, new int[] {
+                0, _offsets
+        });
     }
 
     /**
     * Demarshall values from a buffer.
     * @param _signature The D-Bus signature(s) of the value(s).
     * @param _dataBuf The buffer to demarshall from.
-    * @param _offsets An array of two ints, which holds the current positions in the signature (index 0) and the data buffer (index 1).
+    * @param _offsets An array of two ints, which holds the position of the current signature offset
+    *            and the current offset of the data buffer. These values will be
+    *            updated to the start of the next value after demarshalling.
     * @return The demarshalled value(s).
     *
     * @throws DBusException on error
     */
     public Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets) throws DBusException {
         logger.trace("extract({},#{}, {{},{}}", _signature, _dataBuf.length, _offsets[OFFSET_SIG], _offsets[OFFSET_DATA]);
-
         List<Object> rv = new ArrayList<>();
-
         byte[] sigb = _signature.getBytes();
-        for (int[] i = _offsets; i[OFFSET_SIG] < sigb.length;) {
+        for (int[] i = _offsets; i[0] < sigb.length; i[0]++) {
             rv.add(extractOne(sigb, _dataBuf, i, false));
         }
         return rv.toArray();
@@ -1345,6 +1315,4 @@ public class Message {
         byte BIG    = 'B';
         byte LITTLE = 'l';
     }
-
-
 }
