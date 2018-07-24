@@ -21,7 +21,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -778,7 +777,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format("The name `{0}' does not exist", m.getDestination())));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }

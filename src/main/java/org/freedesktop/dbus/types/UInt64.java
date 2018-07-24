@@ -11,7 +11,6 @@
 package org.freedesktop.dbus.types;
 
 import java.math.BigInteger;
-import java.text.MessageFormat;
 
 /**
  * Class to represent unsigned 64-bit numbers.
@@ -38,7 +37,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     */
     public UInt64(long _value) {
         if (_value < MIN_VALUE || _value > MAX_LONG_VALUE) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", _value, MIN_VALUE, MAX_LONG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_LONG_VALUE));
         }
         this.value = new BigInteger("" + _value);
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
@@ -55,10 +54,10 @@ public class UInt64 extends Number implements Comparable<UInt64> {
         a = a.shiftLeft(32);
         a = a.add(new BigInteger("" + _bottom));
         if (0 > a.compareTo(BigInteger.ZERO)) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", a, MIN_VALUE, MAX_BIG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", a, MIN_VALUE, MAX_BIG_VALUE));
         }
         if (0 < a.compareTo(MAX_BIG_VALUE)) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", a, MIN_VALUE, MAX_BIG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", a, MIN_VALUE, MAX_BIG_VALUE));
         }
         this.value = a;
         this.top = _top;
@@ -71,7 +70,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     */
     public UInt64(BigInteger _value) {
         if (null == _value || 0 > _value.compareTo(BigInteger.ZERO) || 0 < _value.compareTo(MAX_BIG_VALUE)) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", _value, MIN_VALUE, MAX_BIG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_BIG_VALUE));
         }
         this.value = _value;
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
@@ -84,11 +83,11 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     */
     public UInt64(String _value) {
         if (null == _value) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", _value, MIN_VALUE, MAX_BIG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_BIG_VALUE));
         }
         BigInteger a = new BigInteger(_value);
         if (0 > a.compareTo(BigInteger.ZERO) || 0 < a.compareTo(MAX_BIG_VALUE)) {
-            throw new NumberFormatException(MessageFormat.format("{0} is not between {1} and {2}.", _value, MIN_VALUE, MAX_BIG_VALUE));
+            throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_BIG_VALUE));
         }
         this.value = a;
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
