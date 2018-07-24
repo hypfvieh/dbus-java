@@ -335,7 +335,7 @@ public final class Marshalling {
                 case Message.ArgumentType.STRUCT1:
                     int j = i + 1;
                     for (int c = 1; c > 0; j++) {
-                        if (')' == dbus.charAt(j)) {
+                        if (Message.ArgumentType.STRUCT2 == dbus.charAt(j)) {
                             c--;
                         } else if (Message.ArgumentType.STRUCT1 == dbus.charAt(j)) {
                             c++;
