@@ -28,8 +28,6 @@ package cx.ath.matthew.unix;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import com.github.hypfvieh.common.SearchOrder;
 import com.github.hypfvieh.system.NativeLibraryLoader;
@@ -46,7 +44,7 @@ public class UnixServerSocket implements Closeable {
             String[] split = macOsMajorVersion.split("\\.");
             if (split.length == 2 && TypeUtil.isInteger(split[1])) {
                 if (Integer.parseInt(split[1]) >= 6) {
-                    NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "macos/" + macOsMajorVersion + "/");    
+                    NativeLibraryLoader.loadLibrary(true, "libunix-java.so", "macos/" + macOsMajorVersion + "/");
                 }
             } else { // cannot determine version, try to load the one hopefully provided by the OS
                 NativeLibraryLoader.loadLibrary("libunix-java.so", new SearchOrder[] {SearchOrder.SYSTEM_PATH});
