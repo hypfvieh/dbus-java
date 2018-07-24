@@ -12,6 +12,7 @@ import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.test.helper.P2pTestServer;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class TestPeer2Peer {
@@ -21,6 +22,7 @@ public class TestPeer2Peer {
     private static final String CONNECTION_ADDRESS = DirectConnection.createDynamicSession();
 
     @Test
+    @Disabled
     public void testP2p() throws InterruptedException {
         P2pServer p2pServer = new P2pServer();
         p2pServer.start();
