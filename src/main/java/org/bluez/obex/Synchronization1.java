@@ -1,13 +1,16 @@
 package org.bluez.obex;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
+
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -62,7 +65,7 @@ public interface Synchronization1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> GetPhonebook(String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> GetPhonebook(String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -82,6 +85,6 @@ public interface Synchronization1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> PutPhonebook(String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> PutPhonebook(String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
 
 }

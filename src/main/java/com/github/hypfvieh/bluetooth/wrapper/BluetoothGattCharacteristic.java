@@ -11,6 +11,7 @@ import org.bluez.GattCharacteristic1;
 import org.bluez.GattDescriptor1;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
+import org.bluez.exceptions.BluezInvalidOffsetException;
 import org.bluez.exceptions.BluezInvalidValueLengthException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
@@ -120,8 +121,9 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * @throws BluezNotPermittedException if not permitted
      * @throws BluezNotAuthorizedException if not authorized
      * @throws BluezNotSupportedException if not supported
+     * @throws BluezInvalidOffsetException if offset is invalid
      */
-    public byte[] readValue(Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException  {
+    public byte[] readValue(Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException, BluezInvalidOffsetException  {
         return gattCharacteristic.ReadValue(optionsToVariantMap(_options));
     }
 

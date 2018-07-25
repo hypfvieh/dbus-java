@@ -1,9 +1,10 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> <application dependent><br>
@@ -21,7 +22,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
  * <br>
  * <br>
  */
-public interface GattProfile1 extends DBusInterface {
+public interface GattProfile1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>

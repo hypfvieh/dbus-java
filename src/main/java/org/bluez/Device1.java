@@ -1,6 +1,5 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezAlreadyConnectedException;
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezAuthenticationCanceledException;
@@ -16,9 +15,11 @@ import org.bluez.exceptions.BluezNotAvailableException;
 import org.bluez.exceptions.BluezNotConnectedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: device-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -161,8 +162,24 @@ import org.bluez.exceptions.BluezNotSupportedException;
  * <br>
  * 			The Advertising Data Flags of the remote device.<br>
  * <br>
+ * 		dict AdvertisingData [readonly, experimental]<br>
+ * <br>
+ * 			The Advertising Data of the remote device. Keys are<br>
+ * 			are 8 bits AD Type followed by data as byte array.<br>
+ * <br>
+ * 			Note: Only types considered safe to be handled by<br>
+ * 			application are exposed.<br>
+ * <br>
+ * 			Possible values:<br>
+ * 				<type> <byte array><br>
+ * 				...<br>
+ * <br>
+ * 			Example:<br>
+ * 				<Transport Discovery> <Organization Flags...><br>
+ * 				0x26                   0x01         0x01...<br>
+ * <br>
  */
-public interface Device1 extends DBusInterface {
+public interface Device1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>

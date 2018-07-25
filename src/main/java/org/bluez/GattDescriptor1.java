@@ -9,10 +9,11 @@ import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -52,10 +53,11 @@ import org.freedesktop.dbus.types.Variant;
  * 				"encrypt-authenticated-write"<br>
  * 				"secure-read" (Server Only)<br>
  * 				"secure-write" (Server Only)<br>
+ * 				"authorize"<br>
  * <br>
  * <br>
  */
-public interface GattDescriptor1 extends DBusInterface {
+public interface GattDescriptor1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -68,9 +70,9 @@ public interface GattDescriptor1 extends DBusInterface {
      * 		  "device": Device path (Server only)<br>
      * 		  "link": Link type (Server only)<br>
      * <br>
-     *
+     * 
      * @param _flags
-     *
+     * 
      * @throws BluezFailedException
      * @throws BluezInProgressException
      * @throws BluezNotPermittedException
@@ -88,11 +90,12 @@ public interface GattDescriptor1 extends DBusInterface {
      * Possible options: "offset": Start offset<br>
      * 		  "device": Device path (Server only)<br>
      * 		  "link": Link type (Server only)<br>
+     * 		  "prepare-authorize": boolean Is prepare authorization request<br>
      * <br>
-     *
+     * 
      * @param _value
      * @param _flags
-     *
+     * 
      * @throws BluezFailedException
      * @throws BluezInProgressException
      * @throws BluezNotPermittedException
@@ -101,4 +104,5 @@ public interface GattDescriptor1 extends DBusInterface {
      * @throws BluezNotSupportedException
      */
     void WriteValue(byte[] _value, Map<String, Variant<?>> _flags) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezInvalidValueLengthException, BluezNotAuthorizedException, BluezNotSupportedException;
+
 }

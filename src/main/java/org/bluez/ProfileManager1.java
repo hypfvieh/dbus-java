@@ -1,13 +1,16 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
+
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: profile-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -108,7 +111,7 @@ public interface ProfileManager1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezAlreadyExistsException
      */
-    void RegisterProfile(Object _profile, String _uuid, Map<?, ?> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
+    void RegisterProfile(DBusPath _profile, String _uuid, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -122,6 +125,6 @@ public interface ProfileManager1 extends DBusInterface {
      * 
      * @throws BluezDoesNotExistException
      */
-    void UnregisterProfile(Object _profile) throws BluezDoesNotExistException;
+    void UnregisterProfile(DBusPath _profile) throws BluezDoesNotExistException;
 
 }

@@ -20,6 +20,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
 import org.freedesktop.dbus.handlers.AbstractSignalHandlerBase;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,18 +214,20 @@ public class DeviceManager {
      * @throws BluezFailedException
      */
     public void setScanFilter(Map<DiscoveryFilter, Object> _filter) throws BluezInvalidArgumentsException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
-        Map<String, Object> filters = new LinkedHashMap<>();
+        Map<String, Variant<?>> filters = new LinkedHashMap<>();
         for (Entry<DiscoveryFilter, Object> entry : _filter.entrySet()) {
             if (!entry.getKey().getValueClass().isInstance(entry.getValue())) {
                 throw new BluezInvalidArgumentsException("Filter value not of required type " + entry.getKey().getValueClass());
             }
             if (entry.getValue() instanceof Enum<?>) {
-                filters.put(entry.getKey().name(), entry.getValue().toString());
+                filters.put(entry.getKey().name(), new Variant<>(entry.getValue().toString()));
             } else {
-                filters.put(entry.getKey().name(), entry.getValue());
+                filters.put(entry.getKey().name(), new Variant<>(entry.getValue()));
             }
 
         }
+
+
 
         getAdapter().setDiscoveryFilter(filters);
     }

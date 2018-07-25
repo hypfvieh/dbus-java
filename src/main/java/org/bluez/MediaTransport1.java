@@ -1,15 +1,17 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.io.FileDescriptor;
+
 import org.bluez.datatypes.ThreeTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotAvailableException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -62,7 +64,7 @@ import org.freedesktop.dbus.types.UInt16;
  * 			Possible Values: 0-127<br>
  * <br>
  */
-public interface MediaTransport1 extends DBusInterface {
+public interface MediaTransport1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>

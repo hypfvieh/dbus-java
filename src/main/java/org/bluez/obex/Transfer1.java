@@ -1,13 +1,14 @@
 package org.bluez.obex;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotInProgressException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -67,7 +68,7 @@ import org.bluez.exceptions.BluezNotInProgressException;
  * <br>
  * <br>
  */
-public interface Transfer1 extends DBusInterface {
+public interface Transfer1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>

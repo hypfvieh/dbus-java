@@ -1,11 +1,12 @@
 package org.bluez.obex;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-agent-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name<br>
@@ -46,7 +47,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    String AuthorizePush(Object _transfer) throws BluezRejectedException, BluezCanceledException;
+    String AuthorizePush(DBusPath _transfer) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>

@@ -6,16 +6,18 @@ import java.util.Map;
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
+import org.bluez.exceptions.BluezInvalidOffsetException;
 import org.bluez.exceptions.BluezInvalidValueLengthException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -91,10 +93,11 @@ import org.freedesktop.dbus.types.Variant;
  * 				"encrypt-authenticated-write"<br>
  * 				"secure-read" (Server only)<br>
  * 				"secure-write" (Server only)<br>
+ * 				"authorize"<br>
  * <br>
  * <br>
  */
-public interface GattCharacteristic1 extends DBusInterface {
+public interface GattCharacteristic1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -113,9 +116,10 @@ public interface GattCharacteristic1 extends DBusInterface {
      * @throws BluezInProgressException
      * @throws BluezNotPermittedException
      * @throws BluezNotAuthorizedException
+     * @throws BluezInvalidOffsetException
      * @throws BluezNotSupportedException
      */
-    byte[] ReadValue(Map<String,Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException;
+    byte[] ReadValue(Map<String, Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezInvalidOffsetException, BluezNotSupportedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -125,6 +129,8 @@ public interface GattCharacteristic1 extends DBusInterface {
      * <br>
      * Possible options: "offset": Start offset<br>
      * 		  "device": Device path (Server only)<br>
+     * 		  "link": Link type (Server only)<br>
+     * 		  "prepare-authorize": boolean Is prepare request<br>
      * <br>
      *
      * @param _value
@@ -137,7 +143,7 @@ public interface GattCharacteristic1 extends DBusInterface {
      * @throws BluezNotAuthorizedException
      * @throws BluezNotSupportedException
      */
-    void WriteValue(byte[] _value, Map<String,Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezInvalidValueLengthException, BluezNotAuthorizedException, BluezNotSupportedException;
+    void WriteValue(byte[] _value, Map<String, Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezInvalidValueLengthException, BluezNotAuthorizedException, BluezNotSupportedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -165,6 +171,7 @@ public interface GattCharacteristic1 extends DBusInterface {
      * <br>
      * Possible options: "device": Object Device (Server only)<br>
      * 		  "MTU": Exchanged MTU (Server only)<br>
+     * 		  "link": Link type (Server only)<br>
      * <br>
      *
      * @param _options
@@ -172,7 +179,7 @@ public interface GattCharacteristic1 extends DBusInterface {
      * @throws BluezFailedException
      * @throws BluezNotSupportedException
      */
-    TwoTuple<FileDescriptor, UInt16> AcquireWrite(Map<?, ?> _options) throws BluezFailedException, BluezNotSupportedException;
+    TwoTuple<FileDescriptor, UInt16> AcquireWrite(Map<String, Variant<?>> _options) throws BluezFailedException, BluezNotSupportedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -206,6 +213,7 @@ public interface GattCharacteristic1 extends DBusInterface {
      * <br>
      * Possible options: "device": Object Device (Server only)<br>
      * 		  "MTU": Exchanged MTU (Server only)<br>
+     * 		  "link": Link type (Server only)<br>
      * <br>
      *
      * @param _options
@@ -213,7 +221,7 @@ public interface GattCharacteristic1 extends DBusInterface {
      * @throws BluezFailedException
      * @throws BluezNotSupportedException
      */
-    TwoTuple<FileDescriptor, UInt16> AcquireNotify(Map<?, ?> _options) throws BluezFailedException, BluezNotSupportedException;
+    TwoTuple<FileDescriptor, UInt16> AcquireNotify(Map<String, Variant<?>> _options) throws BluezFailedException, BluezNotSupportedException;
 
     /**
      * <b>From bluez documentation:</b><br>

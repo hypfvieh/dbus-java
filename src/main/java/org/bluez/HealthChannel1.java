@@ -1,13 +1,15 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.io.FileDescriptor;
+
 import org.bluez.exceptions.BluezNotAcquiredException;
 import org.bluez.exceptions.BluezNotAllowedException;
 import org.bluez.exceptions.BluezNotConnectedException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: health-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -35,7 +37,7 @@ import org.bluez.exceptions.BluezNotConnectedException;
  * 			data type).<br>
  * <br>
  */
-public interface HealthChannel1 extends DBusInterface {
+public interface HealthChannel1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>

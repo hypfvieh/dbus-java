@@ -1,13 +1,14 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: agent-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name<br>
@@ -46,7 +47,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    String RequestPinCode(Object _device) throws BluezRejectedException, BluezCanceledException;
+    String RequestPinCode(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -77,7 +78,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    void DisplayPinCode(Object _device, String _pincode) throws BluezRejectedException, BluezCanceledException;
+    void DisplayPinCode(DBusPath _device, String _pincode) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -94,7 +95,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    UInt32 RequestPasskey(Object _device) throws BluezRejectedException, BluezCanceledException;
+    UInt32 RequestPasskey(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -121,7 +122,7 @@ public interface Agent1 extends DBusInterface {
      * @param _passkey
      * @param _entered
      */
-    void DisplayPasskey(Object _device, UInt32 _passkey, UInt16 _entered);
+    void DisplayPasskey(DBusPath _device, UInt32 _passkey, UInt16 _entered);
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -143,7 +144,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    void RequestConfirmation(Object _device, UInt32 _passkey) throws BluezRejectedException, BluezCanceledException;
+    void RequestConfirmation(DBusPath _device, UInt32 _passkey) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -162,7 +163,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    void RequestAuthorization(Object _device) throws BluezRejectedException, BluezCanceledException;
+    void RequestAuthorization(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -177,7 +178,7 @@ public interface Agent1 extends DBusInterface {
      * @throws BluezRejectedException
      * @throws BluezCanceledException
      */
-    void AuthorizeService(Object _device, String _uuid) throws BluezRejectedException, BluezCanceledException;
+    void AuthorizeService(DBusPath _device, String _uuid) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>

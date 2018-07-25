@@ -1,10 +1,13 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
 
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
+
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name<br>
@@ -25,7 +28,7 @@ public interface MediaEndpoint1 extends DBusInterface {
      * @param _transport
      * @param _properties
      */
-    void SetConfiguration(Object _transport, Map<?, ?> _properties);
+    void SetConfiguration(DBusPath _transport, Map<String, Variant<?>> _properties);
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -53,7 +56,7 @@ public interface MediaEndpoint1 extends DBusInterface {
      * 
      * @param _transport
      */
-    void ClearConfiguration(Object _transport);
+    void ClearConfiguration(DBusPath _transport);
 
     /**
      * <b>From bluez documentation:</b><br>

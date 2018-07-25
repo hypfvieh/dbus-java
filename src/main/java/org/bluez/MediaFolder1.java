@@ -1,16 +1,18 @@
 package org.bluez;
 
 import java.util.Map;
-import java.util.Properties;
 
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name (Target role)<br>
@@ -64,7 +66,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
  * <br>
  * <br>
  */
-public interface MediaFolder1 extends DBusInterface {
+public interface MediaFolder1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -81,7 +83,7 @@ public interface MediaFolder1 extends DBusInterface {
      * @throws BluezNotSupportedException
      * @throws BluezFailedException
      */
-    Object Search(String _value, Map<?, ?> _filter) throws BluezNotSupportedException, BluezFailedException;
+    DBusPath Search(String _value, Map<String, Variant<?>> _filter) throws BluezNotSupportedException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -95,7 +97,7 @@ public interface MediaFolder1 extends DBusInterface {
      * @throws BluezNotSupportedException
      * @throws BluezFailedException
      */
-    TwoTuple<Object, Properties>[] ListItems(Map<?, ?> _filter) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
+    TwoTuple<DBusPath, Properties>[] ListItems(Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -114,6 +116,6 @@ public interface MediaFolder1 extends DBusInterface {
      * @throws BluezNotSupportedException
      * @throws BluezFailedException
      */
-    void ChangeFolder(Object _folder) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
+    void ChangeFolder(DBusPath _folder) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
 
 }

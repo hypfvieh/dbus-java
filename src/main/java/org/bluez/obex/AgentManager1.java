@@ -1,11 +1,12 @@
 package org.bluez.obex;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-agent-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -29,7 +30,7 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @throws BluezAlreadyExistsException
      */
-    void RegisterAgent(Object _agent) throws BluezAlreadyExistsException;
+    void RegisterAgent(DBusPath _agent) throws BluezAlreadyExistsException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -43,6 +44,6 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @throws BluezDoesNotExistException
      */
-    void UnregisterAgent(Object _agent) throws BluezDoesNotExistException;
+    void UnregisterAgent(DBusPath _agent) throws BluezDoesNotExistException;
 
 }

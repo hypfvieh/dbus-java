@@ -1,9 +1,10 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -29,7 +30,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
  * 			belongs to. Only present on services from remote<br>
  * 			devices.<br>
  * <br>
- * 		array{object} Includes [read-only]: Not implemented<br>
+ * 		array{object} Includes [read-only, optional]<br>
  * <br>
  * 			Array of object paths representing the included<br>
  * 			services of this service.<br>
@@ -37,6 +38,6 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
  * <br>
  * <br>
  */
-public interface GattService1 extends DBusInterface {
+public interface GattService1 extends DBusInterface, Properties {
 
 }

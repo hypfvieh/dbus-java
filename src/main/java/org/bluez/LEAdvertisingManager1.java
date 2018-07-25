@@ -9,10 +9,11 @@ import org.bluez.exceptions.BluezInvalidLengthException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: advertising-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -40,7 +41,7 @@ import org.freedesktop.dbus.types.Variant;
  * 					 "local-name"<br>
  * <br>
  */
-public interface LEAdvertisingManager1 extends DBusInterface {
+public interface LEAdvertisingManager1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -65,7 +66,7 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * reached it will result in NotPermitted error.<br>
      * <br>
      * 
-     * @param _objectPath
+     * @param _advertisement
      * @param _options
      * 
      * @throws BluezInvalidArgumentsException
@@ -73,7 +74,7 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * @throws BluezInvalidLengthException
      * @throws BluezNotPermittedException
      */
-    void RegisterAdvertisement(DBusPath _objectPath, Map<String, Variant<Object>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezInvalidLengthException, BluezNotPermittedException;
+    void RegisterAdvertisement(DBusPath _advertisement, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezInvalidLengthException, BluezNotPermittedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -83,11 +84,11 @@ public interface LEAdvertisingManager1 extends DBusInterface {
      * match the same value that has been used on registration.<br>
      * <br>
      * 
-     * @param _objectPath
+     * @param _advertisement
      * 
      * @throws BluezInvalidArgumentsException
      * @throws BluezDoesNotExistException
      */
-    void UnregisterAdvertisement(DBusPath _objectPath) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
+    void UnregisterAdvertisement(DBusPath _advertisement) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
 
 }

@@ -7,11 +7,14 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezForbiddenException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -56,7 +59,7 @@ import org.freedesktop.dbus.types.UInt16;
  * <br>
  * <br>
  */
-public interface PhonebookAccess1 extends DBusInterface {
+public interface PhonebookAccess1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -116,7 +119,7 @@ public interface PhonebookAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezForbiddenException
      */
-    TwoTuple<Object,Map<?,?>> PullAll(String _targetfile, Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> PullAll(String _targetfile, Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -134,7 +137,7 @@ public interface PhonebookAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezForbiddenException
      */
-    TwoTuple<String,String[]> List(Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
+    TwoTuple<String,String[]> List(Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -163,7 +166,7 @@ public interface PhonebookAccess1 extends DBusInterface {
      * @throws BluezForbiddenException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> Pull(String _vcard, String _targetfile, Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> Pull(String _vcard, String _targetfile, Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>

@@ -1,15 +1,20 @@
 package org.bluez;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
+
+import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: adapter-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -144,7 +149,7 @@ import org.bluez.exceptions.BluezNotSupportedException;
  * 			used by the kernel and udev.<br>
  * <br>
  */
-public interface Adapter1 extends DBusInterface {
+public interface Adapter1 extends DBusInterface, Properties {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -194,7 +199,7 @@ public interface Adapter1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    void RemoveDevice(Object _device) throws BluezInvalidArgumentsException, BluezFailedException;
+    void RemoveDevice(DBusPath _device) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -293,7 +298,7 @@ public interface Adapter1 extends DBusInterface {
      * @throws BluezNotSupportedException
      * @throws BluezFailedException
      */
-    void SetDiscoveryFilter(Map<?, ?> _filter) throws BluezNotReadyException, BluezNotSupportedException, BluezFailedException;
+    void SetDiscoveryFilter(Map<String, Variant<?>> _filter) throws BluezNotReadyException, BluezNotSupportedException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -303,5 +308,49 @@ public interface Adapter1 extends DBusInterface {
      * <br>
      */
     String[] GetDiscoveryFilters();
+
+    /**
+     * <b>From bluez documentation:</b><br>
+     * <br>
+     * This method connects to device without need of<br>
+     * performing General Discovery. Connection mechanism is<br>
+     * similar to Connect method from Device1 interface with<br>
+     * exception that this method returns success when physical<br>
+     * connection is established. After this method returns,<br>
+     * services discovery will continue and any supported<br>
+     * profile will be connected. There is no need for calling<br>
+     * Connect on Device1 after this call. If connection was<br>
+     * successful this method returns object path to created<br>
+     * device object.<br>
+     * <br>
+     * Parameters that may be set in the filter dictionary<br>
+     * include the following:<br>
+     * <br>
+     * string Address<br>
+     * <br>
+     * 	The Bluetooth device address of the remote<br>
+     * 	device. This parameter is mandatory.<br>
+     * <br>
+     * string AddressType<br>
+     * <br>
+     * 	The Bluetooth device Address Type. This is<br>
+     * 	address type that should be used for initial<br>
+     * 	connection. If this parameter is not present<br>
+     * 	BR/EDR device is created.<br>
+     * <br>
+     * 	Possible values:<br>
+     * 		"public" - Public address<br>
+     * 		"random" - Random address<br>
+     * <br>
+     * 
+     * @param _properties
+     * 
+     * @throws BluezInvalidArgumentsException
+     * @throws BluezAlreadyExistsException
+     * @throws BluezNotSupportedException
+     * @throws BluezNotReadyException
+     * @throws BluezFailedException
+     */
+    DBusPath ConnectDevice(Map<String, Variant<?>> _properties) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezNotSupportedException, BluezNotReadyException, BluezFailedException;
 
 }

@@ -4,7 +4,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: advertising-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -41,6 +41,40 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * 			Service Data elements to include. The keys are the<br>
  * 			UUID to associate with the data.<br>
+ * <br>
+ * 		dict Data [Experimental]<br>
+ * <br>
+ * 			Advertising Type to include in the Advertising<br>
+ * 			Data. Key is the advertising type and value is the<br>
+ * 			data as byte array.<br>
+ * <br>
+ * 			Note: Types already handled by other properties shall<br>
+ * 			not be used.<br>
+ * <br>
+ * 			Possible values:<br>
+ * 				<type> <byte array><br>
+ * 				...<br>
+ * <br>
+ * 			Example:<br>
+ * 				<Transport Discovery> <Organization Flags...><br>
+ * 				0x26                   0x01         0x01...<br>
+ * <br>
+ * 		bool Discoverable [Experimental]<br>
+ * <br>
+ * 			Advertise as general discoverable. When present this<br>
+ * 			will override adapter Discoverable property.<br>
+ * <br>
+ * 			Note: This property shall not be set when Type is set<br>
+ * 			to broadcast.<br>
+ * <br>
+ * 		uint16 DiscoverableTimeout [Experimental]<br>
+ * <br>
+ * 			The discoverable timeout in seconds. A value of zero<br>
+ * 			means that the timeout is disabled and it will stay in<br>
+ * 			discoverable/limited mode forever.<br>
+ * <br>
+ * 			Note: This property shall not be set when Type is set<br>
+ * 			to broadcast.<br>
  * <br>
  * 		array{string} Includes<br>
  * <br>

@@ -20,8 +20,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bluez.datatypes.ThreeTuple;
 import org.bluez.datatypes.TwoTuple;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -83,7 +85,7 @@ public class BluezInterfaceCreator {
 
                     if (is != null) {
 
-                        if (line.startsWith("Interface")) {
+                        if (line.matches("^Interface[^a-zA-Z0-9]+.+")) {
                             String interfaceName = line.replaceAll(".+\\s+(.+)", "$1");
                             String[] split = interfaceName.split("\\.");
 
@@ -99,7 +101,6 @@ public class BluezInterfaceCreator {
                         } else if (line.startsWith("Object path")) {
                             is.bluezObjectPath.add(line.replaceAll("Object path\\s*", ""));
                             objectPath = true;
-                            continue;
                         } else if (objectPath && !StringUtil.isBlank(line)) {
                             is.bluezObjectPath.add(line.trim());
                             continue;
@@ -135,6 +136,9 @@ public class BluezInterfaceCreator {
             sb.append("package ").append(is.packageName).append(";").append(nl);
             sb.append(nl);
             sb.append("import ").append(DBusInterface.class.getName()).append(";").append(nl);
+            if (is.additionalInterfaces.contains("Properties")) {
+                sb.append("import ").append(org.freedesktop.dbus.interfaces.Properties.class.getName()).append(";").append(nl);
+            }
             sb.append("IMPORTS_PLACEHOLDER");
 
             // java doc on class
@@ -169,7 +173,11 @@ public class BluezInterfaceCreator {
             sb.append(" */").append(nl);
 
             // interface class
-            sb.append("public interface ").append(is.interfaceName).append(" extends DBusInterface {").append(nl);
+
+            sb.append("public interface ").append(is.interfaceName).append(" extends ");
+            sb.append(String.join(", ", is.additionalInterfaces));
+            sb.append(" {").append(nl);
+
             sb.append(nl);
             for (InterfaceMethod im : is.methods) {
                 sb.append(indent).append("/**").append(nl);
@@ -265,11 +273,21 @@ public class BluezInterfaceCreator {
                     imports.add(UInt64.class.getName());
                 }
 
+                if (type.contains("DBusPath")) {
+                    imports.add(DBusPath.class.getName());
+                }
 
                 if (type.startsWith("ThreeTuple")) {
                     imports.add(ThreeTuple.class.getName());
+                    imports.add(Variant.class.getName());
+                    imports.add(Map.class.getName());
+                    imports.add(DBusPath.class.getName());
+
                 } else if (type.startsWith("TwoTuple")) {
                     imports.add(TwoTuple.class.getName());
+                    imports.add(Variant.class.getName());
+                    imports.add(Map.class.getName());
+                    imports.add(DBusPath.class.getName());
                 }
             }
 
@@ -355,6 +373,7 @@ public class BluezInterfaceCreator {
             }
 
             if (line.startsWith("Properties")) {
+                _is.additionalInterfaces.add("Properties");
                 i += readProperties(_is, _list.subList(i, _list.size()));
                 continue;
             } else if (line.startsWith("Signal")) {
@@ -577,13 +596,23 @@ public class BluezInterfaceCreator {
             dataType = split[0];
             varname = "_" + StringUtil.lowerCaseFirstChar(split[1]);
         } else {
-            dataType = "Object";
-            varname = _string;
+            if (_string.trim().equals("void")) {
+                dataType = "";
+                varname = "";
+            } else {
+                dataType = "Object";
+                varname = _string;
+            }
+
         }
 
-        dataType = convertDataType(dataType);
+        if (!StringUtils.isBlank(dataType)) {
+            dataType = convertDataType(dataType);
+        }
 
-        m.put(dataType, varname);
+        if (!StringUtils.isBlank(varname) && !StringUtils.isBlank(dataType)) {
+            m.put(dataType, varname);
+        }
 
         return m;
     }
@@ -597,9 +626,9 @@ public class BluezInterfaceCreator {
 //            }
             _dataType = convertDataType(replaceAll) + "[]";
         } else if (_dataType.equals("dict")) {
-            _dataType = "Map<String, Variant<Object>";
+            _dataType = "Map<String, Variant<?>>";
         } else if (_dataType.equals("variant")) {
-            _dataType = "Variant<Object>";
+            _dataType = "Variant<?>";
         } else if (_dataType.equals("void")) {
             _dataType = "void";
         } else if (_dataType.equals("uint16")) {
@@ -616,11 +645,13 @@ public class BluezInterfaceCreator {
             _dataType = "int";
         } else if (_dataType.equals("long")) {
             _dataType = "long";
+        } else if (_dataType.equals("object")) {
+            _dataType = "DBusPath";
         } else if (_dataType.equals("fd")) {
             _dataType = "FileDescriptor";
         } else if (_dataType.contains(",")) { // tuple
             if (_dataType.equals("object, dict")) {
-                _dataType = "TwoTuple<Object,Map<?,?>>";
+                _dataType = "TwoTuple<DBusPath, Map<String,Variant<?>>>";
             } else {
                 String[] split = _dataType.split(",");
                 List<String> data = new ArrayList<>();
@@ -658,6 +689,9 @@ public class BluezInterfaceCreator {
         private String bluezDocFile;
         private String bluezService;
         private String bluezInterface;
+
+        private Set<String> additionalInterfaces = new LinkedHashSet<>();
+
         private List<String> bluezObjectPath = new ArrayList<>();
 
         private List<String> propertiesDoc = new ArrayList<>();
@@ -665,6 +699,14 @@ public class BluezInterfaceCreator {
         private List<InterfaceMethod> methods = new ArrayList<>();
 
         private List<InterfaceSignal> signals = new ArrayList<>();
+
+
+
+        public InterfaceStructure() {
+            additionalInterfaces.add("DBusInterface"); // all created interfaces will extend the general DBusInterface
+        }
+
+
 
         @Override
         public String toString() {

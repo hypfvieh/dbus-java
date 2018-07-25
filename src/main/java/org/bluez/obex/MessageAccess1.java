@@ -5,10 +5,12 @@ import java.util.Map;
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -52,7 +54,7 @@ public interface MessageAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    Map<?, ?>[] ListFolders(Map<?, ?> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
+    Map<String, Variant<?>>[] ListFolders(Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -163,15 +165,13 @@ public interface MessageAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>>[] ListMessages(String _folder, Map<?, ?> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>>[] ListMessages(String _folder, Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
      * <br>
      * Request remote to update its inbox.<br>
      * <br>
-     *
-     * @param void
      *
      * @throws BluezFailedException
      */
@@ -204,6 +204,6 @@ public interface MessageAccess1 extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> PushMessage(String _sourcefile, String _folder, Map<?, ?> _args) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> PushMessage(String _sourcefile, String _folder, Map<String, Variant<?>> _args) throws BluezInvalidArgumentsException, BluezFailedException;
 
 }

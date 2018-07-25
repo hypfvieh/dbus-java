@@ -5,15 +5,20 @@ import java.util.Map;
 import org.bluez.exceptions.BluezAlreadyExistsException;
 import org.bluez.exceptions.BluezDoesNotExistException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
-/**<br>
- * File generated - 2018-03-08.<br>
+/**
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
- * Interface: org.bluez.GattManager1<br>
- * Object path: [variable prefix]/{hci0,hci1,...}<br>
- *<br>
+ * <b>Service:</b> org.bluez<br>
+ * <b>Interface:</b> org.bluez.GattManager1<br>
+ * <br>
+ * <b>Object path:</b><br>
+ *             [variable prefix]/{hci0,hci1,...}<br>
+ * <br>
  * GATT Manager hierarchy<br>
  * ======================<br>
  <br>
@@ -95,14 +100,14 @@ public interface GattManager1 extends DBusInterface {
      * the application registering a GATT based<br>
      * service or profile.<br>
      * <br>
-     *
+     * 
      * @param _application
      * @param _options
-     *
+     * 
      * @throws BluezInvalidArgumentsException
      * @throws BluezAlreadyExistsException
      */
-    void RegisterApplication(Object _application, Map<?, ?> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
+    void RegisterApplication(DBusPath _application, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -112,12 +117,12 @@ public interface GattManager1 extends DBusInterface {
      * must match the same value that has been used<br>
      * on registration.<br>
      * <br>
-     *
+     * 
      * @param _application
-     *
+     * 
      * @throws BluezInvalidArgumentsException
      * @throws BluezDoesNotExistException
      */
-    void UnregisterApplication(Object _application) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
+    void UnregisterApplication(DBusPath _application) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
 
 }

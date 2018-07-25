@@ -1,13 +1,16 @@
 package org.bluez.obex;
 
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
+
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-03-08.<br>
+ * File generated - 2018-07-25.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -66,7 +69,7 @@ public interface FileTransfer extends DBusInterface {
      * 
      * @throws BluezFailedException
      */
-    Map<?, ?>[] ListFolder() throws BluezFailedException;
+    Map<String, Variant<?>>[] ListFolder() throws BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -91,7 +94,7 @@ public interface FileTransfer extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> GetFile(String _targetfile, String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> GetFile(String _targetfile, String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -113,7 +116,7 @@ public interface FileTransfer extends DBusInterface {
      * @throws BluezInvalidArgumentsException
      * @throws BluezFailedException
      */
-    TwoTuple<Object,Map<?,?>> PutFile(String _sourcefile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
+    TwoTuple<DBusPath, Map<String,Variant<?>>> PutFile(String _sourcefile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
     /**
      * <b>From bluez documentation:</b><br>
