@@ -29,7 +29,7 @@ public class TestTwoPart {
 
         try {
             System.out.println("get conn");
-            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
+            DBusConnection conn = DBusConnection.newConnection(DBusBusType.SESSION);
 
             System.out.println("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
@@ -65,7 +65,7 @@ public class TestTwoPart {
         public void run() {
             DBusConnection conn;
             try {
-                conn = DBusConnection.getConnection(DBusBusType.SESSION);
+                conn = DBusConnection.newConnection(DBusBusType.SESSION);
                 conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
                 TwoPartTestServer server = new TwoPartTestServer(conn);
                 conn.exportObject("/", server);

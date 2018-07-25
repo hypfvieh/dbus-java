@@ -82,47 +82,49 @@ public final class DBusConnection extends AbstractConnection {
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
      * always register our own session to Dbus.
      *
-     * @param address
-     *            The address of the bus to connect to
-     * @throws DBusException
-     *             If there is a problem connecting to the Bus.
+     * @param _address The address of the bus to connect to
+     * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
      */
-    public static DBusConnection getConnection(String address) throws DBusException {
-        return getConnection(address, true);
+    public static DBusConnection getConnection(String _address) throws DBusException {
+        return getConnection(_address, true, true);
     }
 
     /**
-     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
-     * register our own session to DBus if registerSelf is true (default).
-     *
-     * @param address
-     *            The address of the bus to connect to
-     * @param registerSelf
-     *            register own session in dbus
-     * @throws DBusException
-     *             If there is a problem connecting to the Bus.
+     * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned. 
+     * Will register our own session to DBus if registerSelf is true (default).
+     * A new connection is created every time if shared-flag is false.
+     * 
+     * @param _address The address of the bus to connect to
+     * @param _registerSelf register own session in dbus
+     * @param _shared use a shared connections
+     * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
      */
-    public static DBusConnection getConnection(String address, boolean registerSelf) throws DBusException {
+    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
+            throws DBusException {
 
-        //CONNECTIONS.getOrDefault(address, defaultValue)
-        synchronized (CONNECTIONS) {
-            DBusConnection c = CONNECTIONS.get(address);
-            if (c != null) {
-                c.concurrentConnections.incrementAndGet();
-                return c;
-            } else {
-                c = new DBusConnection(address, registerSelf, getDbusMachineId());
-                // do not increment connection counter here, it always starts at 1 on new objects!
-                //c.getConcurrentConnections().incrementAndGet();
-                CONNECTIONS.put(address, c);
-                return c;
+        // CONNECTIONS.getOrDefault(address, defaultValue)
+        if (_shared) {
+            synchronized (CONNECTIONS) {
+                DBusConnection c = CONNECTIONS.get(_address);
+                if (c != null) {
+                    c.concurrentConnections.incrementAndGet();
+                    return c;
+                } else {
+                    c = new DBusConnection(_address, _registerSelf, getDbusMachineId());
+                    // do not increment connection counter here, it always starts at 1 on new objects!
+                    // c.getConcurrentConnections().incrementAndGet();
+                    CONNECTIONS.put(_address, c);
+                    return c;
+                }
             }
+        } else {
+            return new DBusConnection(_address, _registerSelf, getDbusMachineId());
         }
     }
 
-    private static DBusConnection getConnection(Supplier<String> _addressGenerator, boolean _registerSelf) throws DBusException {
+    private static DBusConnection getConnection(Supplier<String> _addressGenerator, boolean _registerSelf, boolean _shared) throws DBusException {
         if (_addressGenerator == null) {
             throw new DBusException("Invalid address generator");
         }
@@ -130,26 +132,54 @@ public final class DBusConnection extends AbstractConnection {
         if (address == null) {
             throw new DBusException("null is not a valid DBUS address");
         }
-        return getConnection(address, _registerSelf);
+        return getConnection(address, _registerSelf, _shared);
     }
 
     /**
-     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned.
+     * Connect to DBus. 
+     * If a connection already exists to the specified Bus, a reference to it is returned.
      *
-     * @param bustype
-     *            The Bus to connect to.
-     * @see #SYSTEM
-     * @see #SESSION
+     * @param _bustype The Bus to connect to.
+
+     * @return {@link DBusConnection}
+     *
+     * @throws DBusException If there is a problem connecting to the Bus.
+     *
+     */
+    public static DBusConnection getConnection(DBusBusType _bustype) throws DBusException {
+        return getConnection(_bustype, true);
+    }
+
+    /**
+     * Connect to DBus using a new connection even if there is already a connection established.
+     *
+     * @param _bustype The Bus to connect to.
      *
      * @return {@link DBusConnection}
      *
-     * @throws DBusException
-     *             If there is a problem connecting to the Bus.
+     * @throws DBusException If there is a problem connecting to the Bus.
      *
      */
-    public static DBusConnection getConnection(DBusBusType bustype) throws DBusException {
+    public static DBusConnection newConnection(DBusBusType _bustype) throws DBusException {
+        return getConnection(_bustype, false);
+    }
 
-        switch (bustype) {
+    /**
+     * Connect to the BUS. 
+     * If a connection to the specified Bus already exists and shared-flag is true, a reference to it is returned.
+     * Otherwise a new connection will be created.
+     *
+     * @param _bustype The Bus to connect to.
+     * @param _shared use shared connection
+     *          
+     * @return {@link DBusConnection}
+     *
+     * @throws DBusException If there is a problem connecting to the Bus.
+     *
+     */
+    public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared) throws DBusException {
+
+        switch (_bustype) {
             case SYSTEM:
                 DBusConnection systemConnection = getConnection(() -> {
                     String bus = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
@@ -157,7 +187,7 @@ public final class DBusConnection extends AbstractConnection {
                         bus = DEFAULT_SYSTEM_BUS_ADDRESS;
                     }
                     return bus;
-                }, true);
+                }, true, _shared);
                 return systemConnection;
             case SESSION:
                 DBusConnection sessionConnection = getConnection(() -> {
@@ -165,7 +195,7 @@ public final class DBusConnection extends AbstractConnection {
 
                     // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
                     if (SystemUtil.isMacOs()) {
-                        s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");;
+                        s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
 
                     } else { // all others (linux)
                         s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
@@ -204,11 +234,11 @@ public final class DBusConnection extends AbstractConnection {
 
                     return s;
 
-                }, true);
+                }, true, _shared);
 
                 return sessionConnection;
             default:
-                throw new DBusException("Invalid Bus Type: " + bustype);
+                throw new DBusException("Invalid Bus Type: " + _bustype);
         }
 
     }
@@ -226,6 +256,9 @@ public final class DBusConnection extends AbstractConnection {
     public static String getDbusMachineId() throws DBusException {
         File uuidfile = new File("/var/lib/dbus/machine-id");
         if (!uuidfile.exists()) {
+            uuidfile = new File("/usr/local/var/lib/dbus/machine-id");
+        }
+        if (!uuidfile.exists()) {
             throw new DBusException("Cannot Resolve Session Bus Address");
         }
 
@@ -237,8 +270,8 @@ public final class DBusConnection extends AbstractConnection {
         return uuid;
     }
 
-    private DBusConnection(String address, boolean registerSelf, String _machineId) throws DBusException {
-        super(address);
+    private DBusConnection(String _address, boolean _registerSelf, String _machineId) throws DBusException {
+        super(_address);
         busnames = new ArrayList<>();
         machineId = _machineId;
         // start listening for calls
@@ -250,7 +283,7 @@ public final class DBusConnection extends AbstractConnection {
         addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
-        if (registerSelf) {
+        if (_registerSelf) {
             dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
             try {
                 busnames.add(dbus.Hello());
@@ -261,10 +294,10 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
-    protected DBusInterface dynamicProxy(String source, String path) throws DBusException {
-        logger.debug("Introspecting {} on {} for dynamic proxy creation", path, source);
+    protected DBusInterface dynamicProxy(String _source, String _path) throws DBusException {
+        logger.debug("Introspecting {} on {} for dynamic proxy creation", _path, _source);
         try {
-            Introspectable intro = getRemoteObject(source, path, Introspectable.class);
+            Introspectable intro = getRemoteObject(_source, _path, Introspectable.class);
             String data = intro.Introspect();
             logger.trace("Got introspection data: {}", data);
 
@@ -308,7 +341,7 @@ public final class DBusConnection extends AbstractConnection {
                 ifcs.add(DBusInterface.class);
             }
 
-            RemoteObject ro = new RemoteObject(source, path, null, false);
+            RemoteObject ro = new RemoteObject(_source, _path, null, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
                     ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
@@ -316,70 +349,70 @@ public final class DBusConnection extends AbstractConnection {
         } catch (Exception e) {
             logger.debug("", e);
             throw new DBusException(
-                    String.format("Failed to create proxy object for %s exported by %s. Reason: %s", path,
-                            source, e.getMessage()));
+                    String.format("Failed to create proxy object for %s exported by %s. Reason: %s", _path,
+                            _source, e.getMessage()));
         }
     }
 
     @Override
-    public DBusInterface getExportedObject(String source, String path) throws DBusException {
+    public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
         ExportedObject o = null;
         synchronized (getExportedObjects()) {
-            o = getExportedObjects().get(path);
+            o = getExportedObjects().get(_path);
         }
         if (null != o && null == o.getObject().get()) {
-            unExportObject(path);
+            unExportObject(_path);
             o = null;
         }
         if (null != o) {
             return o.getObject().get();
         }
-        if (null == source) {
+        if (null == _source) {
             throw new DBusException("Not an object exported by this connection and no remote specified");
         }
-        return dynamicProxy(source, path);
+        return dynamicProxy(_source, _path);
     }
 
     /**
      * Release a bus name. Releases the name so that other people can use it
      *
-     * @param busname
+     * @param _busname
      *            The name to release. MUST be in dot-notation like "org.freedesktop.local"
      * @throws DBusException
      *             If the busname is incorrectly formatted.
      */
-    public void releaseBusName(String busname) throws DBusException {
-        if (!busname.matches(BUSNAME_REGEX) || busname.length() > MAX_NAME_LENGTH) {
+    public void releaseBusName(String _busname) throws DBusException {
+        if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name");
         }
         synchronized (this.busnames) {
             try {
-                dbus.ReleaseName(busname);
+                dbus.ReleaseName(_busname);
             } catch (DBusExecutionException dbee) {
                 logger.debug("", dbee);
                 throw new DBusException(dbee.getMessage());
             }
-            this.busnames.remove(busname);
+            this.busnames.remove(_busname);
         }
     }
 
     /**
      * Request a bus name. Request the well known name that this should respond to on the Bus.
      *
-     * @param busname
+     * @param _busname
      *            The name to respond to. MUST be in dot-notation like "org.freedesktop.local"
      * @throws DBusException
      *             If the register name failed, or our name already exists on the bus. or if busname is incorrectly
      *             formatted.
      */
-    public void requestBusName(String busname) throws DBusException {
-        if (!busname.matches(BUSNAME_REGEX) || busname.length() > MAX_NAME_LENGTH) {
+    public void requestBusName(String _busname) throws DBusException {
+        if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name");
         }
         synchronized (this.busnames) {
             UInt32 rv;
             try {
-                rv = dbus.RequestName(busname,
+                rv = dbus.RequestName(_busname,
                         new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
             } catch (DBusExecutionException dbee) {
                 logger.debug("", dbee);
@@ -397,7 +430,7 @@ public final class DBusConnection extends AbstractConnection {
             default:
                 break;
             }
-            this.busnames.add(busname);
+            this.busnames.add(_busname);
         }
     }
 
@@ -421,9 +454,9 @@ public final class DBusConnection extends AbstractConnection {
         return names.toArray(new String[0]);
     }
 
-    public <I extends DBusInterface> I getPeerRemoteObject(String busname, String objectpath, Class<I> type)
+    public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type)
             throws DBusException {
-        return getPeerRemoteObject(busname, objectpath, type, true);
+        return getPeerRemoteObject(_busname, _objectpath, _type, true);
     }
 
     /**
@@ -437,10 +470,10 @@ public final class DBusConnection extends AbstractConnection {
      * method with overloaded methods and that complex types may fail in interesting ways. Basically, if something odd
      * happens, try specifying the interface explicitly.
      *
-     * @param busname
+     * @param _busname
      *            The bus name to connect to. Usually a well known bus name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param objectpath
+     * @param _objectpath
      *            The path on which the process is exporting the object.$
      * @return A reference to a remote object.
      * @throws ClassCastException
@@ -448,18 +481,18 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException
      *             If busname or objectpath are incorrectly formatted.
      */
-    public DBusInterface getPeerRemoteObject(String busname, String objectpath) throws DBusException {
-        if (null == busname) {
+    public DBusInterface getPeerRemoteObject(String _busname, String _objectpath) throws DBusException {
+        if (null == _busname) {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if ((!busname.matches(BUSNAME_REGEX) && !busname.matches(CONNID_REGEX)) || busname.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + busname);
+        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        String unique = dbus.GetNameOwner(busname);
+        String unique = dbus.GetNameOwner(_busname);
 
-        return dynamicProxy(unique, objectpath);
+        return dynamicProxy(unique, _objectpath);
     }
 
     /**
@@ -474,10 +507,10 @@ public final class DBusConnection extends AbstractConnection {
      * method with overloaded methods and that complex types may fail in interesting ways. Basically, if something odd
      * happens, try specifying the interface explicitly.
      *
-     * @param busname
+     * @param _busname
      *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param objectpath
+     * @param _objectpath
      *            The path on which the process is exporting the object.
      * @return A reference to a remote object.
      * @throws ClassCastException
@@ -485,23 +518,23 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException
      *             If busname or objectpath are incorrectly formatted.
      */
-    public DBusInterface getRemoteObject(String busname, String objectpath) throws DBusException {
-        if (null == busname) {
+    public DBusInterface getRemoteObject(String _busname, String _objectpath) throws DBusException {
+        if (null == _busname) {
             throw new DBusException("Invalid bus name: null");
         }
-        if (null == objectpath) {
+        if (null == _objectpath) {
             throw new DBusException("Invalid object path: null");
         }
 
-        if ((!busname.matches(BUSNAME_REGEX) && !busname.matches(CONNID_REGEX)) || busname.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + busname);
+        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid object path: " + objectpath);
+        if (!_objectpath.matches(OBJECT_REGEX) || _objectpath.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid object path: " + _objectpath);
         }
 
-        return dynamicProxy(busname, objectpath);
+        return dynamicProxy(_busname, _objectpath);
     }
 
     /**
@@ -511,15 +544,15 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <I>
      *            class extending {@link DBusInterface}
-     * @param busname
+     * @param _busname
      *            The bus name to connect to. Usually a well known bus name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param objectpath
+     * @param _objectpath
      *            The path on which the process is exporting the object.$
-     * @param type
+     * @param _type
      *            The interface they are exporting it on. This type must have the same full class name and exposed
      *            method signatures as the interface the remote object is exporting.
-     * @param autostart
+     * @param _autostart
      *            Disable/Enable auto-starting of services in response to calls on this object. Default is enabled; when
      *            calling a method with auto-start enabled, if the destination is a well-known name and is not owned the
      *            bus will attempt to start a process to take the name. When disabled an error is returned immediately.
@@ -529,19 +562,19 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException
      *             If busname or objectpath are incorrectly formatted or type is not in a package.
      */
-    public <I extends DBusInterface> I getPeerRemoteObject(String busname, String objectpath, Class<I> type,
-            boolean autostart) throws DBusException {
-        if (null == busname) {
+    public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type,
+            boolean _autostart) throws DBusException {
+        if (null == _busname) {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if ((!busname.matches(BUSNAME_REGEX) && !busname.matches(CONNID_REGEX)) || busname.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + busname);
+        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        String unique = dbus.GetNameOwner(busname);
+        String unique = dbus.GetNameOwner(_busname);
 
-        return getRemoteObject(unique, objectpath, type, autostart);
+        return getRemoteObject(unique, _objectpath, _type, _autostart);
     }
 
     /**
@@ -552,12 +585,12 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <I>
      *            class extending {@link DBusInterface}
-     * @param busname
+     * @param _busname
      *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param objectpath
+     * @param _objectpath
      *            The path on which the process is exporting the object.
-     * @param type
+     * @param _type
      *            The interface they are exporting it on. This type must have the same full class name and exposed
      *            method signatures as the interface the remote object is exporting.
      * @return A reference to a remote object.
@@ -566,9 +599,9 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException
      *             If busname or objectpath are incorrectly formatted or type is not in a package.
      */
-    public <I extends DBusInterface> I getRemoteObject(String busname, String objectpath, Class<I> type)
+    public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type)
             throws DBusException {
-        return getRemoteObject(busname, objectpath, type, true);
+        return getRemoteObject(_busname, _objectpath, _type, true);
     }
 
     /**
@@ -579,15 +612,15 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <I>
      *            class extending {@link DBusInterface}
-     * @param busname
+     * @param _busname
      *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param objectpath
+     * @param _objectpath
      *            The path on which the process is exporting the object.
-     * @param type
+     * @param _type
      *            The interface they are exporting it on. This type must have the same full class name and exposed
      *            method signatures as the interface the remote object is exporting.
-     * @param autostart
+     * @param _autostart
      *            Disable/Enable auto-starting of services in response to calls on this object. Default is enabled; when
      *            calling a method with auto-start enabled, if the destination is a well-known name and is not owned the
      *            bus will attempt to start a process to take the name. When disabled an error is returned immediately.
@@ -598,39 +631,39 @@ public final class DBusConnection extends AbstractConnection {
      *             If busname or objectpath are incorrectly formatted or type is not in a package.
      */
     @SuppressWarnings("unchecked")
-    public <I extends DBusInterface> I getRemoteObject(String busname, String objectpath, Class<I> type,
-            boolean autostart) throws DBusException {
-        if (null == busname) {
+    public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type,
+            boolean _autostart) throws DBusException {
+        if (null == _busname) {
             throw new DBusException("Invalid bus name: null");
         }
-        if (null == objectpath) {
+        if (null == _objectpath) {
             throw new DBusException("Invalid object path: null");
         }
-        if (null == type) {
+        if (null == _type) {
             throw new ClassCastException("Not A DBus Interface");
         }
 
-        if ((!busname.matches(BUSNAME_REGEX) && !busname.matches(CONNID_REGEX)) || busname.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + busname);
+        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid object path: " + objectpath);
+        if (!_objectpath.matches(OBJECT_REGEX) || _objectpath.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid object path: " + _objectpath);
         }
 
-        if (!DBusInterface.class.isAssignableFrom(type)) {
+        if (!DBusInterface.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Interface");
         }
 
         // don't let people import things which don't have a
         // valid D-Bus interface name
-        if (type.getName().equals(type.getSimpleName())) {
+        if (_type.getName().equals(_type.getSimpleName())) {
             throw new DBusException("DBusInterfaces cannot be declared outside a package");
         }
 
-        RemoteObject ro = new RemoteObject(busname, objectpath, type, autostart);
-        I i = (I) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
-                type
+        RemoteObject ro = new RemoteObject(_busname, _objectpath, _type, _autostart);
+        I i = (I) Proxy.newProxyInstance(_type.getClassLoader(), new Class[] {
+                _type
         }, new RemoteInvocationHandler(this, ro));
         getImportedObjects().put(i, ro);
         return i;
@@ -641,30 +674,30 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <T>
      *            class extending {@link DBusSignal}
-     * @param type
+     * @param _type
      *            The signal to watch for.
-     * @param source
+     * @param _source
      *            The source of the signal.
-     * @param handler
+     * @param _handler
      *            the handler
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void removeSigHandler(Class<T> type, String source, DBusSigHandler<T> handler)
+    public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(type)) {
+        if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (source.matches(BUSNAME_REGEX)) {
+        if (_source.matches(BUSNAME_REGEX)) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + source);
+        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _source);
         }
-        removeSigHandler(new DBusMatchRule(type, source, null), handler);
+        removeSigHandler(new DBusMatchRule(_type, _source, null), _handler);
     }
 
     /**
@@ -672,51 +705,51 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <T>
      *            class extending {@link DBusSignal}
-     * @param type
+     * @param _type
      *            The signal to watch for.
-     * @param source
+     * @param _source
      *            The source of the signal.
-     * @param object
+     * @param _object
      *            The object emitting the signal.
-     * @param handler
+     * @param _handler
      *            the handler
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void removeSigHandler(Class<T> type, String source, DBusInterface object,
-            DBusSigHandler<T> handler) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(type)) {
+    public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusInterface _object,
+            DBusSigHandler<T> _handler) throws DBusException {
+        if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (source.matches(BUSNAME_REGEX)) {
+        if (_source.matches(BUSNAME_REGEX)) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + source);
+        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _source);
         }
-        String objectpath = getImportedObjects().get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(_object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
-        removeSigHandler(new DBusMatchRule(type, source, objectpath), handler);
+        removeSigHandler(new DBusMatchRule(_type, _source, objectpath), _handler);
     }
 
     @Override
-    protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
+    protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
-        SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
+        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
         synchronized (getHandledSignals()) {
             List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null != v) {
-                v.remove(handler);
+                v.remove(_handler);
                 if (0 == v.size()) {
                     getHandledSignals().remove(key);
                     try {
-                        dbus.RemoveMatch(rule.toString());
+                        dbus.RemoveMatch(_rule.toString());
                     } catch (NotConnected exNc) {
                         logger.debug("No connection.", exNc);
                     } catch (DBusExecutionException dbee) {
@@ -734,31 +767,31 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <T>
      *            class extending {@link DBusSignal}
-     * @param type
+     * @param _type
      *            The signal to watch for.
-     * @param source
+     * @param _source
      *            The process which will send the signal. This <b>MUST</b> be a unique bus name and not a well known
      *            name.
-     * @param handler
+     * @param _handler
      *            The handler to call when a signal is received.
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> type, String source, DBusSigHandler<T> handler)
+    public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(type)) {
+        if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (source.matches(BUSNAME_REGEX)) {
+        if (_source.matches(BUSNAME_REGEX)) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + source);
+        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _source);
         }
-        addSigHandler(new DBusMatchRule(type, source, null), (DBusSigHandler<? extends DBusSignal>) handler);
+        addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
     }
 
     /**
@@ -767,57 +800,57 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param <T>
      *            class extending {@link DBusSignal}
-     * @param type
+     * @param _type
      *            The signal to watch for.
-     * @param source
+     * @param _source
      *            The process which will send the signal. This <b>MUST</b> be a unique bus name and not a well known
      *            name.
-     * @param object
+     * @param _object
      *            The object from which the signal will be emitted
-     * @param handler
+     * @param _handler
      *            The handler to call when a signal is received.
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> type, String source, DBusInterface object,
-            DBusSigHandler<T> handler) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(type)) {
+    public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusInterface _object,
+            DBusSigHandler<T> _handler) throws DBusException {
+        if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (source.matches(BUSNAME_REGEX)) {
+        if (_source.matches(BUSNAME_REGEX)) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!source.matches(CONNID_REGEX) || source.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid bus name: " + source);
+        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid bus name: " + _source);
         }
-        String objectpath = getImportedObjects().get(object).getObjectPath();
+        String objectpath = getImportedObjects().get(_object).getObjectPath();
         if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
-        addSigHandler(new DBusMatchRule(type, source, objectpath), (DBusSigHandler<? extends DBusSignal>) handler);
+        addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
     }
 
     @Override
-    public <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler)
+    public <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
         try {
-            dbus.AddMatch(rule.toString());
+            dbus.AddMatch(_rule.toString());
         } catch (DBusExecutionException dbee) {
             logger.debug("", dbee);
             throw new DBusException(dbee.getMessage());
         }
-        SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
+        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
         synchronized (getHandledSignals()) {
             List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null == v) {
                 v = new ArrayList<>();
-                v.add(handler);
+                v.add(_handler);
                 getHandledSignals().put(key, v);
             } else {
-                v.add(handler);
+                v.add(_handler);
             }
         }
     }
@@ -829,34 +862,34 @@ public final class DBusConnection extends AbstractConnection {
      */
     @Override
     public void disconnect() {
-    	synchronized (CONNECTIONS) {
-	        DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
-	        if (connection != null) {
-	            if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
-	                logger.debug("Disconnecting last remaining DBusConnection");
-	                // Set all pending messages to have an error.
-	                try {
-	                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
-	                            0, "s", new Object[] {
-	                                    "Disconnected"
-	                            });
-	                    cleanupPendingCalls(err, true);
+        synchronized (CONNECTIONS) {
+            DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
+            if (connection != null) {
+                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
+                    logger.debug("Disconnecting last remaining DBusConnection");
+                    // Set all pending messages to have an error.
+                    try {
+                        Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
+                                0, "s", new Object[] {
+                                        "Disconnected"
+                                });
+                        cleanupPendingCalls(err, true);
 
-	                    synchronized (getPendingErrorQueue()) {
-	                        getPendingErrorQueue().add(err);
-	                    }
-	                } catch (DBusException dbe) {
-	                }
-	                CONNECTIONS.remove(getAddress().getRawAddress());
+                        synchronized (getPendingErrorQueue()) {
+                            getPendingErrorQueue().add(err);
+                        }
+                    } catch (DBusException dbe) {
+                    }
+                    CONNECTIONS.remove(getAddress().getRawAddress());
 
-	                super.disconnect();
+                    super.disconnect();
 
-	            } else {
-	            	logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
-	                connection.getConcurrentConnections().addAndGet(-1);
-	            }
-	        }
-    	}
+                } else {
+                    logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
+                    connection.getConcurrentConnections().addAndGet(-1);
+                }
+            }
+        }
     }
 
     private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {
@@ -883,8 +916,8 @@ public final class DBusConnection extends AbstractConnection {
 
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
-        public void handle(DBusSignal s) {
-            if (s instanceof org.freedesktop.dbus.interfaces.Local.Disconnected) {
+        public void handle(DBusSignal _signal) {
+            if (_signal instanceof org.freedesktop.dbus.interfaces.Local.Disconnected) {
                 logger.debug("Handling Disconnected signal from bus");
                 try {
                     Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0,
@@ -898,8 +931,8 @@ public final class DBusConnection extends AbstractConnection {
                     }
                 } catch (DBusException exDb) {
                 }
-            } else if (s instanceof org.freedesktop.DBus.NameAcquired) {
-                busnames.add(((org.freedesktop.DBus.NameAcquired) s).name);
+            } else if (_signal instanceof org.freedesktop.DBus.NameAcquired) {
+                busnames.add(((org.freedesktop.DBus.NameAcquired) _signal).name);
             }
         }
     }
@@ -908,8 +941,6 @@ public final class DBusConnection extends AbstractConnection {
     public String getMachineId() {
         return machineId;
     }
-
-
 
     public static enum DBusBusType {
         /**
