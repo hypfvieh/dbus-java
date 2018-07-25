@@ -31,3 +31,4 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes by others:
   - Thanks to [thjomnx](https://github.com/thjomnx) for support of PropertiesChanged signal class
   - Thanks to [RafalSumislawski](https://github.com/RafalSumislawski) for support of org.freedesktop.DBus.ObjectManager
+  - Thanks to [lbeuster](https://github.com/lbeuster) for improvments and Mac support
