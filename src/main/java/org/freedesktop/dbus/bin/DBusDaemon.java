@@ -478,6 +478,7 @@ public class DBusDaemon extends Thread implements Closeable {
                         try {
                             localqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
                     msg = localqueue.head();
@@ -562,6 +563,7 @@ public class DBusDaemon extends Thread implements Closeable {
                         try {
                             outqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
 
@@ -736,6 +738,7 @@ public class DBusDaemon extends Thread implements Closeable {
                         try {
                             inqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
 
