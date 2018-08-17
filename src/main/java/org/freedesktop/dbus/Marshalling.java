@@ -344,7 +344,7 @@ public final class Marshalling {
                     List<Type> contained = new ArrayList<>();
                     int c = getJavaType(dbus.substring(i + 1, j - 1), contained, -1);
                     rv.add(new DBusStructType(contained.toArray(new Type[0])));
-                    i = j;
+                    i = j-1; //-1 because j already points to the next signature char
                     break;
                 case Message.ArgumentType.ARRAY:
                     if (Message.ArgumentType.DICT_ENTRY1 == dbus.charAt(i + 1)) {
