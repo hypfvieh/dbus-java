@@ -24,7 +24,7 @@ public class TestTwoPart {
         twoPartServer.start();
 
         while (!serverReady) {
-            Thread.sleep(1000L);
+            Thread.sleep(500L);
         }
 
         try {

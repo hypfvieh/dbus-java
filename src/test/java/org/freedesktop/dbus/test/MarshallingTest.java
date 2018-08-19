@@ -9,6 +9,7 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +24,31 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
+import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MarshallingTest {
     
+	@Test
+	public void parseComplexMessageReturnsCorrectTypes() throws DBusException {
+		List<Type> temp = new ArrayList<>();
+		Marshalling.getJavaType("a(oa{sv})ao", temp, -1);
+
+		Assertions.assertEquals(2, temp.size(), "result must contain two types");
+		Assertions.assertTrue(temp.get(0) instanceof DBusListType);
+		Assertions.assertTrue(temp.get(1) instanceof DBusListType);
+	}
+
+	@Test
+	public void parseStructReturnsCorrectParsedCharsCount() throws Exception {
+		List<Type> temp = new ArrayList<>();
+		int parsedCharsCount = Marshalling.getJavaType("(oa{sv})ao", temp, 1);
+
+		Assertions.assertEquals(8, parsedCharsCount);
+	}
+
     private static byte[] streamReader(String _file) throws IOException {
        return Files.readAllBytes(new File(_file).toPath());
     }
