@@ -44,7 +44,7 @@ public class MessageWriter implements Closeable {
     }
 
     public void writeMessage(Message m) throws IOException {
-        logger.info("<= {}", m);
+        logger.debug("<= {}", m);
         if (null == m) {
             return;
         }
