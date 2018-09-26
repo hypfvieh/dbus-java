@@ -6,7 +6,7 @@
 	<groupId>com.github.hypfvieh</groupId>
 	<artifactId>bluez-dbus</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.0</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 
