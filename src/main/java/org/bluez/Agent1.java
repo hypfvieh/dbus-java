@@ -44,8 +44,8 @@ public interface Agent1 extends DBusInterface {
      * 
      * @param _device
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     String RequestPinCode(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
@@ -75,8 +75,8 @@ public interface Agent1 extends DBusInterface {
      * @param _device
      * @param _pincode
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void DisplayPinCode(DBusPath _device, String _pincode) throws BluezRejectedException, BluezCanceledException;
 
@@ -92,8 +92,8 @@ public interface Agent1 extends DBusInterface {
      * 
      * @param _device
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     UInt32 RequestPasskey(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
@@ -141,8 +141,8 @@ public interface Agent1 extends DBusInterface {
      * @param _device
      * @param _passkey
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void RequestConfirmation(DBusPath _device, UInt32 _passkey) throws BluezRejectedException, BluezCanceledException;
 
@@ -160,8 +160,8 @@ public interface Agent1 extends DBusInterface {
      * 
      * @param _device
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void RequestAuthorization(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 
@@ -175,8 +175,8 @@ public interface Agent1 extends DBusInterface {
      * @param _device
      * @param _uuid
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void AuthorizeService(DBusPath _device, String _uuid) throws BluezRejectedException, BluezCanceledException;
 

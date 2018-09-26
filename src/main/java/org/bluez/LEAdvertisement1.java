@@ -52,11 +52,11 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			not be used.<br>
  * <br>
  * 			Possible values:<br>
- * 				<type> <byte array><br>
+ * 				&lt;type&gt; &lt;byte array&gt;<br>
  * 				...<br>
  * <br>
  * 			Example:<br>
- * 				<Transport Discovery> <Organization Flags...><br>
+ * 				&lt;Transport Discovery&gt; &lt;Organization Flags...&gt;<br>
  * 				0x26                   0x01         0x01...<br>
  * <br>
  * 		bool Discoverable [Experimental]<br>

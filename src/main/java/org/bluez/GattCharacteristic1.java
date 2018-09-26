@@ -112,12 +112,12 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      *
      * @param _options
      *
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
      * @throws BluezNotPermittedException
-     * @throws BluezNotAuthorizedException
+     * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezInvalidOffsetException
-     * @throws BluezNotSupportedException
+     * @throws BluezNotSupportedException when operation not supported
      */
     byte[] ReadValue(Map<String, Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezInvalidOffsetException, BluezNotSupportedException;
 
@@ -136,12 +136,12 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * @param _value
      * @param _options
      *
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
      * @throws BluezNotPermittedException
      * @throws BluezInvalidValueLengthException
-     * @throws BluezNotAuthorizedException
-     * @throws BluezNotSupportedException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezNotSupportedException when operation not supported
      */
     void WriteValue(byte[] _value, Map<String, Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezInvalidValueLengthException, BluezNotAuthorizedException, BluezNotSupportedException;
 
@@ -176,8 +176,8 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      *
      * @param _options
      *
-     * @throws BluezFailedException
-     * @throws BluezNotSupportedException
+     * @throws BluezFailedException on failure
+     * @throws BluezNotSupportedException when operation not supported
      */
     TwoTuple<FileDescriptor, UInt16> AcquireWrite(Map<String, Variant<?>> _options) throws BluezFailedException, BluezNotSupportedException;
 
@@ -218,8 +218,8 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      *
      * @param _options
      *
-     * @throws BluezFailedException
-     * @throws BluezNotSupportedException
+     * @throws BluezFailedException on failure
+     * @throws BluezNotSupportedException when operation not supported
      */
     TwoTuple<FileDescriptor, UInt16> AcquireNotify(Map<String, Variant<?>> _options) throws BluezFailedException, BluezNotSupportedException;
 
@@ -230,10 +230,10 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * if it supports value notifications or indications.<br>
      * <br>
      *
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      * @throws BluezNotPermittedException
-     * @throws BluezInProgressException
-     * @throws BluezNotSupportedException
+     * @throws BluezInProgressException when operation already in progress
+     * @throws BluezNotSupportedException when operation not supported
      */
     void StartNotify() throws BluezFailedException, BluezNotPermittedException, BluezInProgressException, BluezNotSupportedException;
 
@@ -246,7 +246,7 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * calling StopNotify will release a single session.<br>
      * <br>
      *
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     void StopNotify() throws BluezFailedException;
 
@@ -257,7 +257,7 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * confirmation that value was received.<br>
      * <br>
      *
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     void Confirm() throws BluezFailedException;
 

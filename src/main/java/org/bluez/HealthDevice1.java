@@ -43,8 +43,8 @@ public interface HealthDevice1 extends DBusInterface, Properties {
      * error is detected False value is returned.<br>
      * <br>
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezOutOfRangeException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezOutOfRangeException when value is out of range
      */
     boolean Echo() throws BluezInvalidArgumentsException, BluezOutOfRangeException;
 
@@ -62,8 +62,8 @@ public interface HealthDevice1 extends DBusInterface, Properties {
      * @param _application
      * @param _configuration
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezHealthErrorException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezHealthErrorException when operation fails
      */
     DBusPath CreateChannel(DBusPath _application, String _configuration) throws BluezInvalidArgumentsException, BluezHealthErrorException;
 
@@ -78,9 +78,9 @@ public interface HealthDevice1 extends DBusInterface, Properties {
      * 
      * @param _channel
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotFoundException
-     * @throws BluezNotAllowedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotFoundException when item not found
+     * @throws BluezNotAllowedException when operation not allowed
      */
     void DestroyChannel(DBusPath _channel) throws BluezInvalidArgumentsException, BluezNotFoundException, BluezNotAllowedException;
 

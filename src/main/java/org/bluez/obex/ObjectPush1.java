@@ -37,8 +37,8 @@ public interface ObjectPush1 extends DBusInterface {
      * 
      * @param _sourcefile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> SendFile(String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -61,8 +61,8 @@ public interface ObjectPush1 extends DBusInterface {
      * 
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> PullBusinessCard(String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -87,8 +87,8 @@ public interface ObjectPush1 extends DBusInterface {
      * @param _clientfile
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> ExchangeBusinessCards(String _clientfile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 

@@ -28,7 +28,7 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @param _agent
      * 
-     * @throws BluezAlreadyExistsException
+     * @throws BluezAlreadyExistsException when item already exists
      */
     void RegisterAgent(DBusPath _agent) throws BluezAlreadyExistsException;
 
@@ -42,7 +42,7 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @param _agent
      * 
-     * @throws BluezDoesNotExistException
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void UnregisterAgent(DBusPath _agent) throws BluezDoesNotExistException;
 

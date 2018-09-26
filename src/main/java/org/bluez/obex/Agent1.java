@@ -44,8 +44,8 @@ public interface Agent1 extends DBusInterface {
      * 
      * @param _transfer
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     String AuthorizePush(DBusPath _transfer) throws BluezRejectedException, BluezCanceledException;
 

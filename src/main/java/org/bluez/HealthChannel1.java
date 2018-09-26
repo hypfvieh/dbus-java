@@ -47,8 +47,8 @@ public interface HealthChannel1 extends DBusInterface, Properties {
      * reconnect.<br>
      * <br>
      * 
-     * @throws BluezNotConnectedException
-     * @throws BluezNotAllowedException
+     * @throws BluezNotConnectedException when bluez not connected
+     * @throws BluezNotAllowedException when operation not allowed
      */
     FileDescriptor Acquire() throws BluezNotConnectedException, BluezNotAllowedException;
 
@@ -59,8 +59,8 @@ public interface HealthChannel1 extends DBusInterface, Properties {
      * close() it.<br>
      * <br>
      * 
-     * @throws BluezNotAcquiredException
-     * @throws BluezNotAllowedException
+     * @throws BluezNotAcquiredException when item is not acquired
+     * @throws BluezNotAllowedException when operation not allowed
      */
     void Release() throws BluezNotAcquiredException, BluezNotAllowedException;
 

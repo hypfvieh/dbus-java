@@ -47,8 +47,8 @@ public interface Client1 extends DBusInterface {
      * @param _destination
      * @param _args
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     DBusPath CreateSession(String _destination, Map<String, Variant<?>> _args) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -60,8 +60,8 @@ public interface Client1 extends DBusInterface {
      * 
      * @param _session
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotAuthorizedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotAuthorizedException when not authorized
      */
     void RemoveSession(DBusPath _session) throws BluezInvalidArgumentsException, BluezNotAuthorizedException;
 

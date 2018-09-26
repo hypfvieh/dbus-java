@@ -69,8 +69,8 @@ public interface LEAdvertisingManager1 extends DBusInterface, Properties {
      * @param _advertisement
      * @param _options
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezAlreadyExistsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezAlreadyExistsException when item already exists
      * @throws BluezInvalidLengthException
      * @throws BluezNotPermittedException
      */
@@ -86,8 +86,8 @@ public interface LEAdvertisingManager1 extends DBusInterface, Properties {
      * 
      * @param _advertisement
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezDoesNotExistException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void UnregisterAdvertisement(DBusPath _advertisement) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
 

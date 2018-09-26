@@ -47,6 +47,33 @@ public class BluezInterfaceCreator {
     private static final Pattern METHOD_REGEX_3PARTS = Pattern.compile("([^A-Z]+)\\s*([^\\(]*)\\(([^\\)]*)\\)(?:.*)");
     private static final Pattern METHOD_REGEX_2PARTS = Pattern.compile("([A-Za-z]+)\\s*\\(([^\\)]*)\\)(?:.*)");
 
+    private static final Map<String,String> EXCEPTION_DESCRIPTIONS = new HashMap<>();
+    static {
+        EXCEPTION_DESCRIPTIONS.put("BluezNotReadyException", "when bluez not ready");
+        EXCEPTION_DESCRIPTIONS.put("BluezInvalidArgumentsException", "when argument is invalid");
+        EXCEPTION_DESCRIPTIONS.put("BluezAlreadyExistsException", "when item already exists");
+        EXCEPTION_DESCRIPTIONS.put("BluezNotSupportedException", "when operation not supported");
+        EXCEPTION_DESCRIPTIONS.put("BluezFailedException", "on failure");
+        EXCEPTION_DESCRIPTIONS.put("BluezNotAuthorizedException", "when not authorized");
+        EXCEPTION_DESCRIPTIONS.put("BluezRejectedException", "when operation rejected");
+        EXCEPTION_DESCRIPTIONS.put("BluezCanceledException", "when operation canceled");
+        EXCEPTION_DESCRIPTIONS.put("BluezDoesNotExistException", "when item does not exist");
+        EXCEPTION_DESCRIPTIONS.put("BluezNotConnectedException", "when bluez not connected");
+        EXCEPTION_DESCRIPTIONS.put("BluezAlreadyConnectedException", "when already connected");
+        EXCEPTION_DESCRIPTIONS.put("BluezInProgressException", "when operation already in progress");
+        
+        EXCEPTION_DESCRIPTIONS.put("BluezNotAvailableException", "when not available");
+        EXCEPTION_DESCRIPTIONS.put("BluezAuthenticationTimeoutException", "when authentication timed out");
+        EXCEPTION_DESCRIPTIONS.put("BluezAuthenticationFailedException", "when authentication failed");
+        EXCEPTION_DESCRIPTIONS.put("BluezConnectionAttemptFailedException", "when connection attempt failed");
+        
+        EXCEPTION_DESCRIPTIONS.put("BluezNotAllowedException", "when operation not allowed");
+        EXCEPTION_DESCRIPTIONS.put("BluezNotFoundException", "when item not found");
+        EXCEPTION_DESCRIPTIONS.put("BluezHealthErrorException", "when operation fails");
+        EXCEPTION_DESCRIPTIONS.put("BluezOutOfRangeException", "when value is out of range");
+        EXCEPTION_DESCRIPTIONS.put("BluezNotAcquiredException", "when item is not acquired");
+    }
+    
     public static void main(String[] _args) throws IOException {
         if (_args.length < 2) {
             System.out.println("Usage: " + BluezInterfaceCreator.class.getName() + " path-to-bluez-doc-directory output-directory");
@@ -202,7 +229,9 @@ public class BluezInterfaceCreator {
                 } else {
                     sb.append(indent).append(" * <b>From bluez documentation:</b><br>").append(nl);
                     for (String docLine : im.documentation) {
-                        sb.append(indent).append(" * ").append(docLine).append("<br>").append(nl);
+                        String cleanedLine = docLine.replace("<", "&lt;");
+                        cleanedLine = cleanedLine.replace(">", "&gt;");
+                        sb.append(indent).append(" * ").append(cleanedLine).append("<br>").append(nl);
                     }
                 }
                 if (!methodParametersWithoutType.isEmpty()) {
@@ -215,7 +244,9 @@ public class BluezInterfaceCreator {
                     sb.append(indent).append(" * ").append(nl);
                     for (String ex : im.exceptions) {
                         String[] split = ex.split("\\.");
-                        sb.append(indent).append(" * ").append("@throws ").append(split[split.length-1]).append(nl);
+                        String exName = split[split.length-1];
+                        String descr = EXCEPTION_DESCRIPTIONS.getOrDefault(exName, "on " + exName);
+                        sb.append(indent).append(" * ").append("@throws ").append(exName).append(" ").append(descr).append(nl);
                     }
                 }
 

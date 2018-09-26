@@ -165,8 +165,8 @@ public interface Adapter1 extends DBusInterface, Properties {
      * During discovery RSSI delta-threshold is imposed.<br>
      * <br>
      * 
-     * @throws BluezNotReadyException
-     * @throws BluezFailedException
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezFailedException on failure
      */
     void StartDiscovery() throws BluezNotReadyException, BluezFailedException;
 
@@ -181,9 +181,9 @@ public interface Adapter1 extends DBusInterface, Properties {
      * release a single session.<br>
      * <br>
      * 
-     * @throws BluezNotReadyException
-     * @throws BluezFailedException
-     * @throws BluezNotAuthorizedException
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezFailedException on failure
+     * @throws BluezNotAuthorizedException when not authorized
      */
     void StopDiscovery() throws BluezNotReadyException, BluezFailedException, BluezNotAuthorizedException;
 
@@ -196,8 +196,8 @@ public interface Adapter1 extends DBusInterface, Properties {
      * 
      * @param _device
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void RemoveDevice(DBusPath _device) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -294,9 +294,9 @@ public interface Adapter1 extends DBusInterface, Properties {
      * 
      * @param _filter
      * 
-     * @throws BluezNotReadyException
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void SetDiscoveryFilter(Map<String, Variant<?>> _filter) throws BluezNotReadyException, BluezNotSupportedException, BluezFailedException;
 
@@ -345,11 +345,11 @@ public interface Adapter1 extends DBusInterface, Properties {
      * 
      * @param _properties
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezAlreadyExistsException
-     * @throws BluezNotSupportedException
-     * @throws BluezNotReadyException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezAlreadyExistsException when item already exists
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezFailedException on failure
      */
     DBusPath ConnectDevice(Map<String, Variant<?>> _properties) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezNotSupportedException, BluezNotReadyException, BluezFailedException;
 

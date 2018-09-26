@@ -53,8 +53,8 @@ public interface Network1 extends DBusInterface, Properties {
      * 
      * @param _uuid
      * 
-     * @throws BluezAlreadyConnectedException
-     * @throws BluezConnectionAttemptFailedException
+     * @throws BluezAlreadyConnectedException when already connected
+     * @throws BluezConnectionAttemptFailedException when connection attempt failed
      */
     String Connect(String _uuid) throws BluezAlreadyConnectedException, BluezConnectionAttemptFailedException;
 
@@ -67,7 +67,7 @@ public interface Network1 extends DBusInterface, Properties {
      * timeouts in the client it is fine to call this method.<br>
      * <br>
      * 
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     void Disconnect() throws BluezFailedException;
 

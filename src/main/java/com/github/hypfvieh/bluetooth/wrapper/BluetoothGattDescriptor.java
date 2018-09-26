@@ -48,11 +48,11 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * </pre>
      * @param _value value to write
      * @param _options options to use
-     * @throws BluezFailedException if anything failed
-     * @throws BluezInProgressException if operation in progress
+     * @throws BluezFailedException on failure if anything failed
+     * @throws BluezInProgressException when operation already in progress if operation in progress
      * @throws BluezNotPermittedException if operation not permitted
-     * @throws BluezNotAuthorizedException if not authorized
-     * @throws BluezNotSupportedException if not supported
+     * @throws BluezNotAuthorizedException when not authorized if not authorized
+     * @throws BluezNotSupportedException when operation not supported if not supported
      * @throws BluezInvalidValueLengthException
      */
     public void writeValue(byte[] _value, Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException, BluezInvalidValueLengthException {
@@ -68,11 +68,11 @@ public class BluetoothGattDescriptor extends AbstractBluetoothObject {
      * </pre>
      * @param _options options to use
      * @return byte array, maybe null
-     * @throws BluezFailedException if anything failed
-     * @throws BluezInProgressException if operation in progress
+     * @throws BluezFailedException on failure if anything failed
+     * @throws BluezInProgressException when operation already in progress if operation in progress
      * @throws BluezNotPermittedException if operation not permitted
-     * @throws BluezNotAuthorizedException if not authorized
-     * @throws BluezNotSupportedException if not supported
+     * @throws BluezNotAuthorizedException when not authorized if not authorized
+     * @throws BluezNotSupportedException when operation not supported if not supported
      */
     public byte[] readValue(Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException  {
         return descriptor.ReadValue(optionsToVariantMap(_options));

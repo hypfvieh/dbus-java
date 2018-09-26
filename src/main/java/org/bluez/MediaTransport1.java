@@ -73,8 +73,8 @@ public interface MediaTransport1 extends DBusInterface, Properties {
      * and write respectively.<br>
      * <br>
      * 
-     * @throws BluezNotAuthorizedException
-     * @throws BluezFailedException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezFailedException on failure
      */
     ThreeTuple<FileDescriptor, UInt16, UInt16> Acquire() throws BluezNotAuthorizedException, BluezFailedException;
 
@@ -88,9 +88,9 @@ public interface MediaTransport1 extends DBusInterface, Properties {
      * with org.bluez.Error.NotAvailable.<br>
      * <br>
      * 
-     * @throws BluezNotAuthorizedException
-     * @throws BluezFailedException
-     * @throws BluezNotAvailableException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezFailedException on failure
+     * @throws BluezNotAvailableException when not available
      */
     ThreeTuple<FileDescriptor, UInt16, UInt16> TryAcquire() throws BluezNotAuthorizedException, BluezFailedException, BluezNotAvailableException;
 

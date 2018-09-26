@@ -44,30 +44,30 @@ import org.freedesktop.dbus.types.Variant;
  * must be available on the root service path. An example application hierarchy<br>
  * containing two separate GATT services may look like this:<br>
  <br>
- * -> /com/example<br>
+ * -&gt; /com/example<br>
  *   |   - org.freedesktop.DBus.ObjectManager<br>
  *   |<br>
- *   -> /com/example/service0<br>
+ *   -&gt; /com/example/service0<br>
  *   | |   - org.freedesktop.DBus.Properties<br>
  *   | |   - org.bluez.GattService1<br>
  *   | |<br>
- *   | -> /com/example/service0/char0<br>
+ *   | -&gt; /com/example/service0/char0<br>
  *   | |     - org.freedesktop.DBus.Properties<br>
  *   | |     - org.bluez.GattCharacteristic1<br>
  *   | |<br>
- *   | -> /com/example/service0/char1<br>
+ *   | -&gt; /com/example/service0/char1<br>
  *   |   |   - org.freedesktop.DBus.Properties<br>
  *   |   |   - org.bluez.GattCharacteristic1<br>
  *   |   |<br>
- *   |   -> /com/example/service0/char1/desc0<br>
+ *   |   -&gt; /com/example/service0/char1/desc0<br>
  *   |       - org.freedesktop.DBus.Properties<br>
  *   |       - org.bluez.GattDescriptor1<br>
  *   |<br>
- *   -> /com/example/service1<br>
+ *   -&gt; /com/example/service1<br>
  *     |   - org.freedesktop.DBus.Properties<br>
  *     |   - org.bluez.GattService1<br>
  *     |<br>
- *     -> /com/example/service1/char0<br>
+ *     -&gt; /com/example/service1/char0<br>
  *         - org.freedesktop.DBus.Properties<br>
  *         - org.bluez.GattCharacteristic1<br>
  <br>
@@ -104,8 +104,8 @@ public interface GattManager1 extends DBusInterface {
      * @param _application
      * @param _options
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezAlreadyExistsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezAlreadyExistsException when item already exists
      */
     void RegisterApplication(DBusPath _application, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
 
@@ -120,8 +120,8 @@ public interface GattManager1 extends DBusInterface {
      * 
      * @param _application
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezDoesNotExistException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void UnregisterApplication(DBusPath _application) throws BluezInvalidArgumentsException, BluezDoesNotExistException;
 

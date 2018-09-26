@@ -80,8 +80,8 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      * @param _value
      * @param _filter
      *
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     DBusPath Search(String _value, Map<String, Variant<?>> _filter) throws BluezNotSupportedException, BluezFailedException;
 
@@ -93,9 +93,9 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      *
      * @param _filter
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Properties>[] ListItems(Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
 
@@ -112,9 +112,9 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      *
      * @param _folder
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void ChangeFolder(DBusPath _folder) throws BluezInvalidArgumentsException, BluezNotSupportedException, BluezFailedException;
 

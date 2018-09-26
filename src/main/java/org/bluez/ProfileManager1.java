@@ -108,8 +108,8 @@ public interface ProfileManager1 extends DBusInterface {
      * @param _uuid
      * @param _options
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezAlreadyExistsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezAlreadyExistsException when item already exists
      */
     void RegisterProfile(DBusPath _profile, String _uuid, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
 
@@ -123,7 +123,7 @@ public interface ProfileManager1 extends DBusInterface {
      * 
      * @param _profile
      * 
-     * @throws BluezDoesNotExistException
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void UnregisterProfile(DBusPath _profile) throws BluezDoesNotExistException;
 

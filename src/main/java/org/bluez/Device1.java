@@ -171,11 +171,11 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			application are exposed.<br>
  * <br>
  * 			Possible values:<br>
- * 				<type> <byte array><br>
+ * 				&lt;type&gt; &lt;byte array&gt;<br>
  * 				...<br>
  * <br>
  * 			Example:<br>
- * 				<Transport Discovery> <Organization Flags...><br>
+ * 				&lt;Transport Discovery&gt; &lt;Organization Flags...&gt;<br>
  * 				0x26                   0x01         0x01...<br>
  * <br>
  */
@@ -209,10 +209,10 @@ public interface Device1 extends DBusInterface, Properties {
      * 	precedence.<br>
      * <br>
      * 
-     * @throws BluezNotReadyException
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
-     * @throws BluezAlreadyConnectedException
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
+     * @throws BluezAlreadyConnectedException when already connected
      */
     void Connect() throws BluezNotReadyException, BluezFailedException, BluezInProgressException, BluezAlreadyConnectedException;
 
@@ -234,7 +234,7 @@ public interface Device1 extends DBusInterface, Properties {
      * Connect method is called again.<br>
      * <br>
      * 
-     * @throws BluezNotConnectedException
+     * @throws BluezNotConnectedException when bluez not connected
      */
     void Disconnect() throws BluezNotConnectedException;
 
@@ -248,11 +248,11 @@ public interface Device1 extends DBusInterface, Properties {
      * 
      * @param _uuid
      * 
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotAvailableException
-     * @throws BluezNotReadyException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotAvailableException when not available
+     * @throws BluezNotReadyException when bluez not ready
      */
     void ConnectProfile(String _uuid) throws BluezFailedException, BluezInProgressException, BluezInvalidArgumentsException, BluezNotAvailableException, BluezNotReadyException;
 
@@ -270,10 +270,10 @@ public interface Device1 extends DBusInterface, Properties {
      * 
      * @param _uuid
      * 
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotSupportedException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotSupportedException when operation not supported
      */
     void DisconnectProfile(String _uuid) throws BluezFailedException, BluezInProgressException, BluezInvalidArgumentsException, BluezNotSupportedException;
 
@@ -297,14 +297,14 @@ public interface Device1 extends DBusInterface, Properties {
      * no default agent present, this method will fail.<br>
      * <br>
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
-     * @throws BluezAlreadyExistsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
+     * @throws BluezAlreadyExistsException when item already exists
      * @throws BluezAuthenticationCanceledException
-     * @throws BluezAuthenticationFailedException
+     * @throws BluezAuthenticationFailedException when authentication failed
      * @throws BluezAuthenticationRejectedException
-     * @throws BluezAuthenticationTimeoutException
-     * @throws BluezConnectionAttemptFailedException
+     * @throws BluezAuthenticationTimeoutException when authentication timed out
+     * @throws BluezConnectionAttemptFailedException when connection attempt failed
      */
     void Pair() throws BluezInvalidArgumentsException, BluezFailedException, BluezAlreadyExistsException, BluezAuthenticationCanceledException, BluezAuthenticationFailedException, BluezAuthenticationRejectedException, BluezAuthenticationTimeoutException, BluezConnectionAttemptFailedException;
 
@@ -315,8 +315,8 @@ public interface Device1 extends DBusInterface, Properties {
      * operation initiated by the Pair method.<br>
      * <br>
      * 
-     * @throws BluezDoesNotExistException
-     * @throws BluezFailedException
+     * @throws BluezDoesNotExistException when item does not exist
+     * @throws BluezFailedException on failure
      */
     void CancelPairing() throws BluezDoesNotExistException, BluezFailedException;
 

@@ -96,11 +96,11 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * </pre>
      * @param _value value to write
      * @param _options options to use
-     * @throws BluezFailedException if operation failed
-     * @throws BluezInProgressException if operation is already in progress
+     * @throws BluezFailedException on failure if operation failed
+     * @throws BluezInProgressException when operation already in progress if operation is already in progress
      * @throws BluezNotPermittedException if operation is not permitted
-     * @throws BluezNotAuthorizedException if not authorized
-     * @throws BluezNotSupportedException if not supported
+     * @throws BluezNotAuthorizedException when not authorized if not authorized
+     * @throws BluezNotSupportedException when operation not supported if not supported
      * @throws BluezInvalidValueLengthException
      */
     public void writeValue(byte[] _value, Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException, BluezInvalidValueLengthException {
@@ -116,11 +116,11 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * </pre>
      * @param _options options to use
      * @return byte array, maybe null
-     * @throws BluezFailedException if anything failed
-     * @throws BluezInProgressException if already in progress
+     * @throws BluezFailedException on failure if anything failed
+     * @throws BluezInProgressException when operation already in progress if already in progress
      * @throws BluezNotPermittedException if not permitted
-     * @throws BluezNotAuthorizedException if not authorized
-     * @throws BluezNotSupportedException if not supported
+     * @throws BluezNotAuthorizedException when not authorized if not authorized
+     * @throws BluezNotSupportedException when operation not supported if not supported
      * @throws BluezInvalidOffsetException if offset is invalid
      */
     public byte[] readValue(Map<String, Object> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException, BluezInvalidOffsetException  {
@@ -221,9 +221,9 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * if it supports value notifications or indications.
      * <br>
      * </p>
-     * @throws BluezFailedException if operation failed
-     * @throws BluezInProgressException if operation already in progress
-     * @throws BluezNotSupportedException if operation is not supported
+     * @throws BluezFailedException on failure if operation failed
+     * @throws BluezInProgressException when operation already in progress if operation already in progress
+     * @throws BluezNotSupportedException when operation not supported if operation is not supported
      * @throws BluezNotPermittedException
      */
     public void startNotify() throws BluezFailedException, BluezInProgressException, BluezNotSupportedException, BluezNotPermittedException {
@@ -239,7 +239,7 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      * calling StopNotify will release a single session.
      * <br>
      * </p>
-     * @throws BluezFailedException on any error
+     * @throws BluezFailedException on failure on any error
      */
     public void stopNotify() throws BluezFailedException {
         gattCharacteristic.StopNotify();

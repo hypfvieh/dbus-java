@@ -156,8 +156,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * Resume playback.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Play() throws BluezNotSupportedException, BluezFailedException;
 
@@ -167,8 +167,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * Pause playback.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Pause() throws BluezNotSupportedException, BluezFailedException;
 
@@ -178,8 +178,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * Stop playback.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Stop() throws BluezNotSupportedException, BluezFailedException;
 
@@ -189,8 +189,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * Next item.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Next() throws BluezNotSupportedException, BluezFailedException;
 
@@ -200,8 +200,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * Previous item.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Previous() throws BluezNotSupportedException, BluezFailedException;
 
@@ -212,8 +212,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * when another method in this interface is called.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void FastForward() throws BluezNotSupportedException, BluezFailedException;
 
@@ -224,8 +224,8 @@ public interface MediaPlayer1 extends DBusInterface, Properties {
      * when another method in this interface is called.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Rewind() throws BluezNotSupportedException, BluezFailedException;
 

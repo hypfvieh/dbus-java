@@ -31,8 +31,8 @@ public interface MessageAccess1 extends DBusInterface {
      *
      * @param _name
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void SetFolder(String _name) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -51,8 +51,8 @@ public interface MessageAccess1 extends DBusInterface {
      *
      * @param _filter
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     Map<String, Variant<?>>[] ListFolders(Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -162,8 +162,8 @@ public interface MessageAccess1 extends DBusInterface {
      * @param _folder
      * @param _filter
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>>[] ListMessages(String _folder, Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -173,7 +173,7 @@ public interface MessageAccess1 extends DBusInterface {
      * Request remote to update its inbox.<br>
      * <br>
      *
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     void UpdateInbox() throws BluezFailedException;
 
@@ -201,8 +201,8 @@ public interface MessageAccess1 extends DBusInterface {
      * @param _folder
      * @param _args
      *
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> PushMessage(String _sourcefile, String _folder, Map<String, Variant<?>> _args) throws BluezInvalidArgumentsException, BluezFailedException;
 

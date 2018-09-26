@@ -51,7 +51,7 @@ public interface HealthManager1 extends DBusInterface {
      * 
      * @param _config
      * 
-     * @throws BluezInvalidArgumentsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
      */
     DBusPath CreateApplication(Map<String, Variant<?>> _config) throws BluezInvalidArgumentsException;
 
@@ -66,9 +66,9 @@ public interface HealthManager1 extends DBusInterface {
      * 
      * @param _application
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotFoundException
-     * @throws BluezNotAllowedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotFoundException when item not found
+     * @throws BluezNotAllowedException when operation not allowed
      */
     void DestroyApplication(DBusPath _application) throws BluezInvalidArgumentsException, BluezNotFoundException, BluezNotAllowedException;
 

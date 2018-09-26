@@ -53,7 +53,7 @@ public interface Media1 extends DBusInterface {
      * @param _endpoint
      * @param _properties
      * 
-     * @throws BluezInvalidArgumentsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
      */
     void RegisterEndpoint(DBusPath _endpoint, Map<String, Variant<?>> _properties) throws BluezInvalidArgumentsException;
 
@@ -86,8 +86,8 @@ public interface Media1 extends DBusInterface {
      * @param _player
      * @param _properties
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotSupportedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotSupportedException when operation not supported
      */
     void RegisterPlayer(DBusPath _player, Map<String, Variant<?>> _properties) throws BluezInvalidArgumentsException, BluezNotSupportedException;
 

@@ -292,8 +292,8 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * Remove a device and it's pairing information.
      *
      * @param _device device to remove
-     * @throws BluezFailedException when something went wrong
-     * @throws BluezInvalidArgumentsException when device was invalid
+     * @throws BluezFailedException on failure when something went wrong
+     * @throws BluezInvalidArgumentsException when argument is invalid when device was invalid
      */
     public void removeDevice(Device1 _device) throws BluezFailedException, BluezInvalidArgumentsException {
         adapter.RemoveDevice(new DBusPath(_device.getObjectPath()));
@@ -325,10 +325,10 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
      * If a transport mode is used which is not supported by the device, a {@link BluezNotSupportedException} is thrown.
      *
      * @param _filter filter to use
-     * @throws BluezInvalidArgumentsException thrown if any arguments in the map are not supported
-     * @throws BluezNotReadyException if adapter not ready
-     * @throws BluezNotSupportedException if operation not supported
-     * @throws BluezFailedException any other error
+     * @throws BluezInvalidArgumentsException when argument is invalid thrown if any arguments in the map are not supported
+     * @throws BluezNotReadyException when bluez not ready if adapter not ready
+     * @throws BluezNotSupportedException when operation not supported if operation not supported
+     * @throws BluezFailedException on failure any other error
      */
     public void setDiscoveryFilter(Map<String, Variant<?>> _filter) throws BluezInvalidArgumentsException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
 

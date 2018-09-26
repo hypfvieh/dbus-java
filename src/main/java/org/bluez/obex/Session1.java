@@ -49,8 +49,8 @@ public interface Session1 extends DBusInterface, Properties {
      * Get remote device capabilities.<br>
      * <br>
      * 
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     String GetCapabilities() throws BluezNotSupportedException, BluezFailedException;
 

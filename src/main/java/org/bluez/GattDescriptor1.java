@@ -73,11 +73,11 @@ public interface GattDescriptor1 extends DBusInterface, Properties {
      * 
      * @param _flags
      * 
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
      * @throws BluezNotPermittedException
-     * @throws BluezNotAuthorizedException
-     * @throws BluezNotSupportedException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezNotSupportedException when operation not supported
      */
     byte[] ReadValue(Map<String, Variant<?>> _flags) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezNotSupportedException;
 
@@ -96,12 +96,12 @@ public interface GattDescriptor1 extends DBusInterface, Properties {
      * @param _value
      * @param _flags
      * 
-     * @throws BluezFailedException
-     * @throws BluezInProgressException
+     * @throws BluezFailedException on failure
+     * @throws BluezInProgressException when operation already in progress
      * @throws BluezNotPermittedException
      * @throws BluezInvalidValueLengthException
-     * @throws BluezNotAuthorizedException
-     * @throws BluezNotSupportedException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezNotSupportedException when operation not supported
      */
     void WriteValue(byte[] _value, Map<String, Variant<?>> _flags) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezInvalidValueLengthException, BluezNotAuthorizedException, BluezNotSupportedException;
 

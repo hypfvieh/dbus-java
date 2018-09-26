@@ -208,10 +208,10 @@ public class DeviceManager {
      * Setup bluetooth scan/discovery filter.
      *
      * @param _filter
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezNotReadyException
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezNotReadyException when bluez not ready
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     public void setScanFilter(Map<DiscoveryFilter, Object> _filter) throws BluezInvalidArgumentsException, BluezNotReadyException, BluezNotSupportedException, BluezFailedException {
         Map<String, Variant<?>> filters = new LinkedHashMap<>();
@@ -342,7 +342,7 @@ public class DeviceManager {
      * Setup the default bluetooth adapter to use by giving the adapters MAC address.
      *
      * @param _adapterMac MAC address of the bluetooth adapter
-     * @throws BluezDoesNotExistException if there is no bluetooth adapter with the given MAC
+     * @throws BluezDoesNotExistException when item does not exist if there is no bluetooth adapter with the given MAC
      */
     public void setDefaultAdapter(String _adapterMac) throws BluezDoesNotExistException {
         if (bluetoothAdaptersByMac.isEmpty()) {
@@ -359,7 +359,7 @@ public class DeviceManager {
      * Setup the default bluetooth adapter to use by giving an adapter object.
      *
      * @param _adapter bluetooth adapter object
-     * @throws BluezDoesNotExistException if there is no bluetooth adapter with the given MAC or adapter object was null
+     * @throws BluezDoesNotExistException when item does not exist if there is no bluetooth adapter with the given MAC or adapter object was null
      */
     public void setDefaultAdapter(BluetoothAdapter _adapter) throws BluezDoesNotExistException {
         if (_adapter != null) {

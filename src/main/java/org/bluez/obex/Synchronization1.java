@@ -39,7 +39,7 @@ public interface Synchronization1 extends DBusInterface {
      * 
      * @param _location
      * 
-     * @throws BluezInvalidArgumentsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
      */
     void SetLocation(String _location) throws BluezInvalidArgumentsException;
 
@@ -62,8 +62,8 @@ public interface Synchronization1 extends DBusInterface {
      * 
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> GetPhonebook(String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -82,8 +82,8 @@ public interface Synchronization1 extends DBusInterface {
      * 
      * @param _sourcefile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> PutPhonebook(String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
 

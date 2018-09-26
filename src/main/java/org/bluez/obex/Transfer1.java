@@ -76,9 +76,9 @@ public interface Transfer1 extends DBusInterface, Properties {
      * Stops the current transference.<br>
      * <br>
      * 
-     * @throws BluezNotAuthorizedException
-     * @throws BluezInProgressException
-     * @throws BluezFailedException
+     * @throws BluezNotAuthorizedException when not authorized
+     * @throws BluezInProgressException when operation already in progress
+     * @throws BluezFailedException on failure
      */
     void Cancel() throws BluezNotAuthorizedException, BluezInProgressException, BluezFailedException;
 
@@ -88,7 +88,7 @@ public interface Transfer1 extends DBusInterface, Properties {
      * Suspend transference.<br>
      * <br>
      * 
-     * @throws BluezNotAuthorizedException
+     * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezNotInProgressException
      */
     void Suspend() throws BluezNotAuthorizedException, BluezNotInProgressException;
@@ -99,7 +99,7 @@ public interface Transfer1 extends DBusInterface, Properties {
      * Resume transference.<br>
      * <br>
      * 
-     * @throws BluezNotAuthorizedException
+     * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezNotInProgressException
      */
     void Resume() throws BluezNotAuthorizedException, BluezNotInProgressException;

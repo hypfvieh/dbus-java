@@ -113,8 +113,8 @@ public interface MediaItem1 extends DBusInterface, Properties {
      * Play item<br>
      * <br>
      *
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void Play() throws BluezNotSupportedException, BluezFailedException;
 
@@ -124,8 +124,8 @@ public interface MediaItem1 extends DBusInterface, Properties {
      * Add item to now playing list<br>
      * <br>
      *
-     * @throws BluezNotSupportedException
-     * @throws BluezFailedException
+     * @throws BluezNotSupportedException when operation not supported
+     * @throws BluezFailedException on failure
      */
     void AddtoNowPlaying() throws BluezNotSupportedException, BluezFailedException;
 

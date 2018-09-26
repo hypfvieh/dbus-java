@@ -29,7 +29,7 @@ public interface SimAccess1 extends DBusInterface, Properties {
      * Disconnects SAP client from the server.<br>
      * <br>
      * 
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     void Disconnect() throws BluezFailedException;
 

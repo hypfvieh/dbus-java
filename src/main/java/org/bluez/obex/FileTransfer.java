@@ -30,8 +30,8 @@ public interface FileTransfer extends DBusInterface {
      * 
      * @param _folder
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void ChangeFolder(String _folder) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -43,8 +43,8 @@ public interface FileTransfer extends DBusInterface {
      * 
      * @param _folder
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void CreateFolder(String _folder) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -67,7 +67,7 @@ public interface FileTransfer extends DBusInterface {
      * 	uint64 Created : Creation date<br>
      * <br>
      * 
-     * @throws BluezFailedException
+     * @throws BluezFailedException on failure
      */
     Map<String, Variant<?>>[] ListFolder() throws BluezFailedException;
 
@@ -91,8 +91,8 @@ public interface FileTransfer extends DBusInterface {
      * @param _targetfile
      * @param _sourcefile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> GetFile(String _targetfile, String _sourcefile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -113,8 +113,8 @@ public interface FileTransfer extends DBusInterface {
      * @param _sourcefile
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> PutFile(String _sourcefile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -128,8 +128,8 @@ public interface FileTransfer extends DBusInterface {
      * @param _sourcefile
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void CopyFile(String _sourcefile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -143,8 +143,8 @@ public interface FileTransfer extends DBusInterface {
      * @param _sourcefile
      * @param _targetfile
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void MoveFile(String _sourcefile, String _targetfile) throws BluezInvalidArgumentsException, BluezFailedException;
 
@@ -156,8 +156,8 @@ public interface FileTransfer extends DBusInterface {
      * 
      * @param _file
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     void Delete(String _file) throws BluezInvalidArgumentsException, BluezFailedException;
 

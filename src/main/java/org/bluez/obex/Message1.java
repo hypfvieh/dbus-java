@@ -114,8 +114,8 @@ public interface Message1 extends DBusInterface, Properties {
      * @param _targetfile
      * @param _attachment
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezFailedException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> Get(String _targetfile, boolean _attachment) throws BluezInvalidArgumentsException, BluezFailedException;
 

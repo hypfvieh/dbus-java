@@ -49,8 +49,8 @@ public interface Profile1 extends DBusInterface {
      * @param fd
      * @param _fd_properties
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void NewConnection(DBusPath _device, Object fd, Map<String, Variant<?>> _fd_properties) throws BluezRejectedException, BluezCanceledException;
 
@@ -72,8 +72,8 @@ public interface Profile1 extends DBusInterface {
      * 
      * @param _device
      * 
-     * @throws BluezRejectedException
-     * @throws BluezCanceledException
+     * @throws BluezRejectedException when operation rejected
+     * @throws BluezCanceledException when operation canceled
      */
     void RequestDisconnection(DBusPath _device) throws BluezRejectedException, BluezCanceledException;
 

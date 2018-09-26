@@ -54,8 +54,8 @@ public interface AgentManager1 extends DBusInterface {
      * @param _agent
      * @param _capability
      * 
-     * @throws BluezInvalidArgumentsException
-     * @throws BluezAlreadyExistsException
+     * @throws BluezInvalidArgumentsException when argument is invalid
+     * @throws BluezAlreadyExistsException when item already exists
      */
     void RegisterAgent(DBusPath _agent, String _capability) throws BluezInvalidArgumentsException, BluezAlreadyExistsException;
 
@@ -69,7 +69,7 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @param _agent
      * 
-     * @throws BluezDoesNotExistException
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void UnregisterAgent(DBusPath _agent) throws BluezDoesNotExistException;
 
@@ -86,7 +86,7 @@ public interface AgentManager1 extends DBusInterface {
      * 
      * @param _agent
      * 
-     * @throws BluezDoesNotExistException
+     * @throws BluezDoesNotExistException when item does not exist
      */
     void RequestDefaultAgent(DBusPath _agent) throws BluezDoesNotExistException;
 
