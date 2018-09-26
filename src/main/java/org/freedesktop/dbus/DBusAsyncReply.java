@@ -97,7 +97,7 @@ public class DBusAsyncReply<T> {
     /**
     * Get the reply.
     * @return The return value from the method.
-    * @throws DBusExecutionException if the reply to the method was an error.
+    * @throws DBusException if the reply to the method was an error.
     * @throws NoReply if the method hasn't had a reply yet
     */
     public T getReply() throws DBusException {

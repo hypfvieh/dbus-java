@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -296,7 +295,7 @@ public abstract class AbstractConnection implements Closeable {
 
     /**
      * Send a message to the DBus daemon.
-     * @param _message
+     * @param _message message to send
      */
     public void sendMessage(Message _message) {
     	Runnable runnable = new Runnable() {
@@ -1013,8 +1012,6 @@ public abstract class AbstractConnection implements Closeable {
      * Returns the address this connection is connected to.
      *
      * @return new {@link BusAddress} object
-     * @throws ParseException
-     *             on error
      */
     public BusAddress getAddress() {
         return busAddress;

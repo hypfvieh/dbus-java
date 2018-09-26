@@ -10,8 +10,8 @@ public interface Monitoring {
      * connection</em></span> which can be used as a debugging/monitoring
      * tool. Only a user who is privileged on this
      * bus (by some implementation-specific definition) may create
-     * monitor connections<a href="https://dbus.freedesktop.org/doc/dbus-specification.html#ftn.idm3162" class="footnote" name="idm3162"><sup class="footnote">[5]</sup></a>.
-     * </p><p>
+     * monitor connections<a href="https://dbus.freedesktop.org/doc/dbus-specification.html#ftn.idm3162" name="idm3162"><sup class="footnote">[5]</sup></a>.
+     * <p>
      * Monitor connections lose all their bus names, including the unique
      * connection name, and all their match rules. Sending messages on a
      * monitor connection is not allowed: applications should use a private
@@ -22,7 +22,7 @@ public interface Monitoring {
      * The first argument is a list of match rules, which replace any
      * match rules that were previously active for this connection.
      * These match rules are always treated as if they contained the
-     * special <code class="literal">eavesdrop='true'</code> member.
+     * special <code>eavesdrop='true'</code> member.
      * </p><p>
      * As a special case, an empty list of match rules (which would
      * otherwise match nothing, making the monitor useless) is treated
