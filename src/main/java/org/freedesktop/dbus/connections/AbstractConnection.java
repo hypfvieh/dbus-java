@@ -146,7 +146,7 @@ public abstract class AbstractConnection implements Closeable {
         } catch (IOException | DBusException ioe) {
             logger.debug("Error creating transport", ioe);
             disconnect();
-            throw new DBusException("Failed to connect to bus " + ioe.getMessage());
+            throw new DBusException("Failed to connect to bus " + ioe.getMessage(), ioe);
         }
         run = true;
 
