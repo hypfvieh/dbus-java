@@ -862,6 +862,10 @@ public final class DBusConnection extends AbstractConnection {
      */
     @Override
     public void disconnect() {
+        if (!isConnected()) { // already disconnected
+            return;
+        }
+      
         synchronized (CONNECTIONS) {
             DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
             if (connection != null) {
