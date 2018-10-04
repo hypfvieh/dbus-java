@@ -58,7 +58,7 @@ public interface Properties extends DBusInterface {
 
         /**
          * Get name of the interface created this signal (e.g. org.bluez.Adapter1).
-         * @return
+         * @return String
          */
         public String getInterfaceName() {
             return interfaceName;
@@ -68,7 +68,7 @@ public interface Properties extends DBusInterface {
         /**
          * Return the changed properties.
          * Key is the properties name, value is Variant containing any type.
-         * @return
+         * @return Map
          */
         public Map<String, Variant<?>> getPropertiesChanged() {
             return propertiesChanged;
@@ -76,7 +76,7 @@ public interface Properties extends DBusInterface {
 
         /**
          * Returns a list of removed property keys.        
-         * @return
+         * @return List
          */
         public List<String> getPropertiesRemoved() {
             return propertiesRemoved;

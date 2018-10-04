@@ -727,6 +727,7 @@ public class CreateInterface {
 
     /** Output the interface for the supplied xml reader
     * @param _introspectdata The introspect data reader
+    * @param _config config
     * @throws ParserConfigurationException If the xml parser could not be configured
     * @throws SAXException If a problem occurs reading the xml data
     * @throws IOException If an IO error occurs

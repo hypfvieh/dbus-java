@@ -225,6 +225,7 @@ public class DirectConnection extends AbstractConnection {
        * @param objectpath The path on which the process is exporting the object.
        * @param type The interface they are exporting it on. This type must have the same full class name and exposed method signatures
        * as the interface the remote object is exporting.
+       * @param <T> class which extends DBusInterface
        * @return A reference to a remote object.
        * @throws ClassCastException If type is not a sub-type of DBusInterface
        * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
