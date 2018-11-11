@@ -485,6 +485,9 @@ public abstract class AbstractConnection implements Closeable {
 
     }
 
+    /**
+     * Disconnect this session (for use in try-with-resources).
+     */
     @Override
     public void close() throws IOException {
         disconnect();
@@ -667,7 +670,10 @@ public abstract class AbstractConnection implements Closeable {
             @Override
             public void run() {
                 logger.debug("Running method {} for remote call", me);
-
+                if (me == null) {
+                	logger.debug("Cannot run method - method variable was null");
+                	return;
+                }
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
@@ -860,6 +866,10 @@ public abstract class AbstractConnection implements Closeable {
             if (null != cbh) {
                 final CallbackHandler<Object> fcbh = cbh;
                 final DBusAsyncReply<?> fasr = asr;
+                if (fasr == null) {
+                	logger.debug("Cannot add runnable for method, given method callback was null");
+                	return;
+                }
                 logger.trace("Adding Runnable for method {} with callback handler {}", fcbh,
                         fasr != null ? fasr.getMethod() : null);
                 Runnable r = new Runnable() {
