@@ -11,6 +11,7 @@
 package org.freedesktop.dbus.connections.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -77,6 +78,10 @@ public final class DBusConnection extends AbstractConnection {
      * the 'real' disconnection should only occur when there is no second/third/whatever connection is left. */
     private final AtomicInteger                      concurrentConnections              = new AtomicInteger(1);
 
+    /**
+     * Whether this connection is used in shared mode.
+     */
+    private final boolean shared;
 
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
@@ -112,7 +117,7 @@ public final class DBusConnection extends AbstractConnection {
                     c.concurrentConnections.incrementAndGet();
                     return c;
                 } else {
-                    c = new DBusConnection(_address, _registerSelf, getDbusMachineId());
+                    c = new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId());
                     // do not increment connection counter here, it always starts at 1 on new objects!
                     // c.getConcurrentConnections().incrementAndGet();
                     CONNECTIONS.put(_address, c);
@@ -120,7 +125,7 @@ public final class DBusConnection extends AbstractConnection {
                 }
             }
         } else {
-            return new DBusConnection(_address, _registerSelf, getDbusMachineId());
+            return new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId());
         }
     }
 
@@ -270,10 +275,11 @@ public final class DBusConnection extends AbstractConnection {
         return uuid;
     }
 
-    private DBusConnection(String _address, boolean _registerSelf, String _machineId) throws DBusException {
+    private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId) throws DBusException {
         super(_address);
         busnames = new ArrayList<>();
         machineId = _machineId;
+        shared = _shared;        		
         // start listening for calls
         listen();
 
@@ -857,8 +863,8 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
      * Disconnect from the Bus.
-     * This only disconnects when the last reference to the bus has disconnect called on it or
-     * has been destroyed.
+     * If this is a shared connection, it only disconnects when the last reference to the bus has called disconnect.
+     * If this is not a shared connection, disconnect will close the connection instantly. 
      */
     @Override
     public void disconnect() {
@@ -866,37 +872,52 @@ public final class DBusConnection extends AbstractConnection {
             return;
         }
       
-        synchronized (CONNECTIONS) {
-            DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
-            if (connection != null) {
-                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
-                    logger.debug("Disconnecting last remaining DBusConnection");
-                    // Set all pending messages to have an error.
-                    try {
-                        Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
-                                0, "s", new Object[] {
-                                        "Disconnected"
-                                });
-                        cleanupPendingCalls(err, true);
-
-                        synchronized (getPendingErrorQueue()) {
-                            getPendingErrorQueue().add(err);
-                        }
-                    } catch (DBusException dbe) {
-                    }
-                    CONNECTIONS.remove(getAddress().getRawAddress());
-
-                    super.disconnect();
-
-                } else {
-                    logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
-                    connection.getConcurrentConnections().addAndGet(-1);
-                }
-            }
+        // if this is a shared connection, keep track of disconnect calls
+        if (shared) {
+	        
+	        synchronized (CONNECTIONS) {
+	            DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
+	            if (connection != null) {
+	                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
+	                    logger.debug("Disconnecting last remaining DBusConnection");
+	                    // Set all pending messages to have an error.
+	                    try {
+	                        Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected",
+	                                0, "s", new Object[] {
+	                                        "Disconnected"
+	                                });
+	                        cleanupPendingCalls(err, true);
+	
+	                        synchronized (getPendingErrorQueue()) {
+	                            getPendingErrorQueue().add(err);
+	                        }
+	                    } catch (DBusException dbe) {
+	                    }
+	                    CONNECTIONS.remove(getAddress().getRawAddress());
+	
+	                    super.disconnect();
+	
+	                } else {
+	                    logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
+	                    connection.getConcurrentConnections().addAndGet(-1);
+	                }
+	            }
+	        }
+	        
+        } else { // this is a standalone non-shared session, disconnect directly using super's implementation
+        	super.disconnect();
         }
     }
+    
+    /**
+     * Same as disconnect.
+     */
+    @Override
+	public void close() throws IOException {
+		disconnect();
+	}
 
-    private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {
+	private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {
 
         synchronized (getPendingCalls()) {
             Iterator<Entry<Long, MethodCall>> iter = getPendingCalls().entrySet().iterator();
