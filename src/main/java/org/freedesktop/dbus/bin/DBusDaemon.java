@@ -305,8 +305,8 @@ public class DBusDaemon extends Thread implements Closeable {
 
             boolean exists = false;
             synchronized (names) {
-                if ((exists = (names.containsKey(name) && names.get(name).equals(c)))) {
-                    names.remove(name);
+                if (names.containsKey(name) && names.get(name).equals(c)) {
+                	exists = names.remove(name) != null;
                 }
             }
 
@@ -801,10 +801,11 @@ public class DBusDaemon extends Thread implements Closeable {
 
         LOGGER.debug("enter");
 
-        boolean exists;
+        boolean exists = false;
         synchronized (conns) {
-            if ((exists = conns.containsKey(c))) {
+            if (conns.containsKey(c)) {
                 Reader r = conns.get(c);
+                exists = true;
                 r.stopRunning();
                 conns.remove(c);
             }
@@ -968,9 +969,10 @@ public class DBusDaemon extends Thread implements Closeable {
 
         // start the daemon
         LOGGER.warn("Binding to {}", addr);
-        EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon();
-        daemon.setAddress(address);
-        daemon.startInForeground();
+        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon()) {
+	        daemon.setAddress(address);
+	        daemon.startInForeground();
+        }
         LOGGER.debug("exit");
     }
 }
