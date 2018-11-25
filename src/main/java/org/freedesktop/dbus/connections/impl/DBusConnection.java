@@ -264,6 +264,9 @@ public final class DBusConnection extends AbstractConnection {
             uuidfile = new File("/usr/local/var/lib/dbus/machine-id");
         }
         if (!uuidfile.exists()) {
+            uuidfile = new File("/etc/machine-id");
+        }
+        if (!uuidfile.exists()) {
             throw new DBusException("Cannot Resolve Session Bus Address");
         }
 
