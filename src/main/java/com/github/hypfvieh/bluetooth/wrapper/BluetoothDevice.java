@@ -249,8 +249,8 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      * </p>
      * @return maybe null if feature is not supported
      */
-    public Boolean isServiceResolved() {
-        return getTyped("ServiceResolved", Boolean.class);
+    public Boolean isServicesResolved() {
+        return getTyped("ServicesResolved", Boolean.class);
     }
 
     /**
