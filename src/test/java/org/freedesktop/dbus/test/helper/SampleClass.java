@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.test.helper;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -26,7 +28,6 @@ import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
-import org.junit.Assert;
 
 public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, Properties {
     private DBusConnection conn;
@@ -56,7 +57,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public float testfloat(float[] f) {
         if (f.length < 4 || f[0] != 17.093f || f[1] != -23f || f[2] != 0.0f || f[3] != 31.42f) {
-            Assert.fail("testfloat got incorrect array");
+            fail("testfloat got incorrect array");
         }
         return f[0];
     }
@@ -64,7 +65,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public void newpathtest(DBusPath p) {
         if (!p.toString().equals("/new/path/test")) {
-            Assert.fail("new path test got wrong path");
+            fail("new path test got wrong path");
         }
     }
 
@@ -82,7 +83,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public <A> SampleTuple<String, List<Integer>, Boolean> show(A in) {
         System.out.println("Showing Stuff: " + in.getClass() + "(" + in + ")");
         if (!(in instanceof Integer) || ((Integer) in).intValue() != 234) {
-            Assert.fail("show received the wrong arguments");
+            fail("show received the wrong arguments");
         }
         DBusCallInfo info = AbstractConnection.getCallInfo();
         List<Integer> l = new ArrayList<>();
@@ -96,7 +97,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         System.out.println("Doing Stuff " + foo);
         System.out.println(" -- (" + foo.getStringValue().getClass() + ", " + foo.getInt32Value().getClass() + ", " + foo.getVariantValue().getClass() + ")");
         if (!(foo instanceof SampleStruct) || !(foo.getStringValue() instanceof String) || !(foo.getInt32Value() instanceof UInt32) || !(foo.getVariantValue() instanceof Variant) || !"bar".equals(foo.getStringValue()) || foo.getInt32Value().intValue() != 52 || !(foo.getVariantValue().getValue() instanceof Boolean) || ((Boolean) foo.getVariantValue().getValue()).booleanValue() != true) {
-            Assert.fail("dostuff received the wrong arguments");
+            fail("dostuff received the wrong arguments");
         }
         return (T) foo.getVariantValue().getValue();
     }
@@ -120,21 +121,21 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
             System.out.println("--" + s);
         }
         if (ss.size() != 5 || !"hi".equals(ss.get(0)) || !"hello".equals(ss.get(1)) || !"hej".equals(ss.get(2)) || !"hey".equals(ss.get(3)) || !"aloha".equals(ss.get(4))) {
-            Assert.fail("sampleArray, String array contents incorrect");
+            fail("sampleArray, String array contents incorrect");
         }
         System.out.println("Got an array:");
         for (Integer i : is) {
             System.out.println("--" + i);
         }
         if (is.length != 4 || is[0].intValue() != 1 || is[1].intValue() != 5 || is[2].intValue() != 7 || is[3].intValue() != 9) {
-            Assert.fail("sampleArray, Integer array contents incorrect");
+            fail("sampleArray, Integer array contents incorrect");
         }
         System.out.println("Got an array:");
         for (long l : ls) {
             System.out.println("--" + l);
         }
         if (ls.length != 4 || ls[0] != 2 || ls[1] != 6 || ls[2] != 8 || ls[3] != 12) {
-            Assert.fail("sampleArray, Integer array contents incorrect");
+            fail("sampleArray, Integer array contents incorrect");
         }
         List<Integer> v = new ArrayList<>();
         v.add(-1);
@@ -164,44 +165,44 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public <T> int frobnicate(List<Long> n, Map<String, Map<UInt16, Short>> m, T v) {
         if (null == n) {
-            Assert.fail("List was null");
+            fail("List was null");
         }
         if (n.size() != 3) {
-            Assert.fail("List was wrong size (expected 3, actual " + n.size() + ")");
+            fail("List was wrong size (expected 3, actual " + n.size() + ")");
         }
         if (n.get(0) != 2L || n.get(1) != 5L || n.get(2) != 71L) {
-            Assert.fail("List has wrong contents");
+            fail("List has wrong contents");
         }
         if (!(v instanceof Integer)) {
-            Assert.fail("v not an Integer");
+            fail("v not an Integer");
         }
         if (((Integer) v) != 13) {
-            Assert.fail("v is incorrect");
+            fail("v is incorrect");
         }
         if (null == m) {
-            Assert.fail("Map was null");
+            fail("Map was null");
         }
         if (m.size() != 1) {
-            Assert.fail("Map was wrong size");
+            fail("Map was wrong size");
         }
         if (!m.keySet().contains("stuff")) {
-            Assert.fail("Incorrect key");
+            fail("Incorrect key");
         }
         Map<UInt16, Short> mus = m.get("stuff");
         if (null == mus) {
-            Assert.fail("Sub-Map was null");
+            fail("Sub-Map was null");
         }
         if (mus.size() != 3) {
-            Assert.fail("Sub-Map was wrong size");
+            fail("Sub-Map was wrong size");
         }
         if (!(new Short((short) 5).equals(mus.get(new UInt16(4))))) {
-            Assert.fail("Sub-Map has wrong contents");
+            fail("Sub-Map has wrong contents");
         }
         if (!(new Short((short) 6).equals(mus.get(new UInt16(5))))) {
-            Assert.fail("Sub-Map has wrong contents");
+            fail("Sub-Map has wrong contents");
         }
         if (!(new Short((short) 7).equals(mus.get(new UInt16(6))))) {
-            Assert.fail("Sub-Map has wrong contents");
+            fail("Sub-Map has wrong contents");
         }
         return -5;
     }
@@ -209,7 +210,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public DBusInterface getThis(DBusInterface t) {
         if (!t.equals(this)) {
-            Assert.fail("Didn't get this properly");
+            fail("Didn't get this properly");
         }
         return this;
     }
@@ -223,7 +224,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public SampleSerializable<String> testSerializable(byte b, SampleSerializable<String> s, int i) {
         System.out.println("Recieving TestSerializable: " + s);
         if (b != 12 || i != 13 || !(s.getInt() == 1) || !(s.getString().equals("woo")) || !(s.getList().size() == 3) || !(s.getList().get(0) == 1) || !(s.getList().get(1) == 2) || !(s.getList().get(2) == 3)) {
-            Assert.fail("Error in recieving custom synchronisation");
+            fail("Error in recieving custom synchronisation");
         }
         return s;
     }
@@ -234,7 +235,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
             SampleRemoteInterface tri = conn.getRemoteObject("foo.bar.Test", TestAll.TEST_OBJECT_PATH, SampleRemoteInterface.class);
             return tri.getName();
         } catch (DBusException exDb) {
-            Assert.fail("Failed with error: " + exDb);
+            fail("Failed with error: " + exDb);
             return "";
         }
     }
@@ -279,13 +280,13 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public void sig(Type[] s) {
-        if (s.length != 2 || !s[0].equals(Byte.class) 
-                || !(s[1] instanceof ParameterizedType) 
-                || !Map.class.equals(((ParameterizedType) s[1]).getRawType()) 
-                || ((ParameterizedType) s[1]).getActualTypeArguments().length != 2 
+        if (s.length != 2 || !s[0].equals(Byte.class)
+                || !(s[1] instanceof ParameterizedType)
+                || !Map.class.equals(((ParameterizedType) s[1]).getRawType())
+                || ((ParameterizedType) s[1]).getActualTypeArguments().length != 2
                 || !CharSequence.class.equals(((ParameterizedType) s[1]).getActualTypeArguments()[0])
                 || !Integer.class.equals(((ParameterizedType) s[1]).getActualTypeArguments()[1])) {
-            Assert.fail("Didn't send types correctly: " + Arrays.toString(s));
+            fail("Didn't send types correctly: " + Arrays.toString(s));
         }
     }
 
@@ -293,18 +294,18 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @SuppressWarnings("unchecked")
     public void complexv(Variant<? extends Object> v) {
         if (!"a{ss}".equals(v.getSig()) || !(v.getValue() instanceof Map) || ((Map<Object, Object>) v.getValue()).size() != 1 || !"moo".equals(((Map<Object, Object>) v.getValue()).get("cow"))) {
-            Assert.fail("Didn't send variant correctly");
+            fail("Didn't send variant correctly");
         }
     }
 
     @Override
     public void reg13291(byte[] as, byte[] bs) {
         if (as.length != bs.length) {
-            Assert.fail("didn't receive identical byte arrays");
+            fail("didn't receive identical byte arrays");
         }
         for (int i = 0; i < as.length; i++) {
             if (as[i] != bs[i]) {
-                Assert.fail("didn't receive identical byte arrays");
+                fail("didn't receive identical byte arrays");
             }
         }
     }

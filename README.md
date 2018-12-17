@@ -1,4 +1,4 @@
-# dbus-java
+# dbus-java [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with compatibility to Java 8.
 
 Please note this version is not compatible with 2.7.x versions as classes have been moved in other packages or were completly removed.
@@ -31,3 +31,4 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes by others:
   - Thanks to [thjomnx](https://github.com/thjomnx) for support of PropertiesChanged signal class
   - Thanks to [RafalSumislawski](https://github.com/RafalSumislawski) for support of org.freedesktop.DBus.ObjectManager
+  - Thanks to [lbeuster](https://github.com/lbeuster) for improvments and Mac support

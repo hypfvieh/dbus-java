@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.messages;
 
-import java.text.MessageFormat;
-
 import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -29,7 +27,7 @@ public class MessageFactory {
                 m = new Error();
                 break;
             default:
-                throw new MessageTypeException(MessageFormat.format("Message type {0} unsupported", _type));
+                throw new MessageTypeException(String.format("Message type %s unsupported", _type));
         }
 
         if (LOGGER.isTraceEnabled()) {

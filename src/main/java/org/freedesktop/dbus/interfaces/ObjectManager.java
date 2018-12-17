@@ -38,7 +38,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
-         * @return
+         * @return DBusPath
          */
         public DBusPath getSignalSource() {
             return signalSource;
@@ -53,7 +53,7 @@ public interface ObjectManager extends DBusInterface {
          * Returns the added interfaces.
          * Key is a DBus interface name (like org.bluez.Device1).
          * Value is a Map with properties known for the new device.
-         * @return
+         * @return Map
          */
         public Map<String, Map<String, Variant<?>>> getInterfaces() {
             return interfaces;
@@ -80,7 +80,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
-         * @return
+         * @return DBusPath
          */
         public DBusPath getSignalSource() {
             return signalSource;
@@ -92,7 +92,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * Returns list of removed DBus interfaces (like org.bluez.Device1).
-         * @return
+         * @return List
          */
         public List<String> getInterfaces() {
             return interfaces;

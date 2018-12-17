@@ -24,7 +24,6 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -605,7 +604,7 @@ public class CreateInterface {
             }
             expected += name + " or ";
         }
-        System.err.println(MessageFormat.format("ERROR: Expected {0}, got {1}, failed.", expected.replaceAll("....$", ""), n.getNodeName()));
+        System.err.println(String.format("ERROR: Expected %s, got %s, failed.", expected.replaceAll("....$", ""), n.getNodeName()));
         System.exit(1);
     }
 
@@ -728,6 +727,7 @@ public class CreateInterface {
 
     /** Output the interface for the supplied xml reader
     * @param _introspectdata The introspect data reader
+    * @param _config config
     * @throws ParserConfigurationException If the xml parser could not be configured
     * @throws SAXException If a problem occurs reading the xml data
     * @throws IOException If an IO error occurs

@@ -10,24 +10,24 @@
 */
 package org.freedesktop.dbus.bin;
 
+import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.DBus;
 import org.freedesktop.Hexdump;
@@ -35,7 +35,6 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.errors.Error;
@@ -54,14 +53,12 @@ import org.freedesktop.dbus.types.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cx.ath.matthew.unix.UnixServerSocket;
 import cx.ath.matthew.unix.UnixSocket;
-import cx.ath.matthew.unix.UnixSocketAddress;
 
 /**
  * A replacement DBusDaemon
  */
-public class DBusDaemon extends Thread {
+public class DBusDaemon extends Thread implements Closeable {
     public static final int     QUEUE_POLL_WAIT = 500;
 
     private static final Logger LOGGER          = LoggerFactory.getLogger(DBusDaemon.class);
@@ -308,8 +305,8 @@ public class DBusDaemon extends Thread {
 
             boolean exists = false;
             synchronized (names) {
-                if ((exists = (names.containsKey(name) && names.get(name).equals(c)))) {
-                    names.remove(name);
+                if (names.containsKey(name) && names.get(name).equals(c)) {
+                	exists = names.remove(name) != null;
                 }
             }
 
@@ -472,7 +469,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            while (run) {
+            while (isRunning()) {
                 Message msg;
                 List<WeakReference<Connstruct>> wcs;
                 // block on outqueue
@@ -481,6 +478,7 @@ public class DBusDaemon extends Thread {
                         try {
                             localqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
                     msg = localqueue.head();
@@ -553,7 +551,7 @@ public class DBusDaemon extends Thread {
 
             logger.debug("enter");
 
-            while (run) {
+            while (isRunning()) {
 
                 logger.trace("Acquiring lock on outqueue and blocking for data");
 
@@ -565,6 +563,7 @@ public class DBusDaemon extends Thread {
                         try {
                             outqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
 
@@ -617,7 +616,7 @@ public class DBusDaemon extends Thread {
 
             LOGGER.debug("enter");
 
-            while (run && lrun) {
+            while (isRunning() && lrun) {
 
                 Message m = null;
                 try {
@@ -654,7 +653,7 @@ public class DBusDaemon extends Thread {
     private MagicMap<Message, WeakReference<Connstruct>> inqueue     = new MagicMap<>("in");
     private MagicMap<Message, WeakReference<Connstruct>> localqueue  = new MagicMap<>("local");
     private List<Connstruct>                             sigrecips   = new ArrayList<>();
-    private boolean                                      run        = true;
+    private final AtomicBoolean                          run        = new AtomicBoolean(true);
     private int                                          nextUnique = 0;
     private Object                                       uniqueLock = new Object();
     //CHECKSTYLE:OFF
@@ -730,7 +729,7 @@ public class DBusDaemon extends Thread {
 
         LOGGER.debug("enter");
 
-        while (run) {
+        while (isRunning()) {
             try {
                 Message m;
                 List<WeakReference<Connstruct>> wcs;
@@ -739,6 +738,7 @@ public class DBusDaemon extends Thread {
                         try {
                             inqueue.wait();
                         } catch (InterruptedException ex) {
+                            return;
                         }
                     }
 
@@ -778,7 +778,7 @@ public class DBusDaemon extends Thread {
                                         Connstruct dest = names.get(m.getDestination());
 
                                         if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", MessageFormat.format("The name `{0}' does not exist", m.getDestination())));
+                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
                                         } else {
                                             send(dest, m);
                                         }
@@ -801,10 +801,11 @@ public class DBusDaemon extends Thread {
 
         LOGGER.debug("enter");
 
-        boolean exists;
+        boolean exists = false;
         synchronized (conns) {
-            if ((exists = conns.containsKey(c))) {
+            if (conns.containsKey(c)) {
                 Reader r = conns.get(c);
+                exists = true;
                 r.stopRunning();
                 conns.remove(c);
             }
@@ -872,6 +873,16 @@ public class DBusDaemon extends Thread {
 
         LOGGER.debug("exit");
 
+    }
+
+    @Override
+    public void close() {
+        run.set(false);
+        interrupt();
+    }
+
+    public boolean isRunning() {
+        return this.run.get() && isAlive();
     }
 
     public static void syntax() {
@@ -958,70 +969,10 @@ public class DBusDaemon extends Thread {
 
         // start the daemon
         LOGGER.warn("Binding to {}", addr);
-        if ("unix".equals(address.getType())) {
-            doUnix(address);
-        } else if ("tcp".equals(address.getType())) {
-            doTCP(address);
-        } else {
-            throw new Exception("Unknown address type: " + address.getType());
+        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon()) {
+	        daemon.setAddress(address);
+	        daemon.startInForeground();
         }
         LOGGER.debug("exit");
-    }
-
-    private static void doUnix(BusAddress address) throws IOException {
-        LOGGER.debug("enter");
-        UnixServerSocket uss;
-        if (null != address.getParameter("abstract")) {
-            uss = new UnixServerSocket(new UnixSocketAddress(address.getParameter("abstract"), true));
-        } else {
-            uss = new UnixServerSocket(new UnixSocketAddress(address.getParameter("path"), false));
-        }
-        DBusDaemon d = new DBusDaemon();
-        d.start();
-        d.sender.start();
-        d.dbusServer.start();
-
-        // accept new connections
-        while (d.run) {
-            UnixSocket s = uss.accept();
-            if ((new SASL()).auth(SASL.MODE_SERVER, SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), s)) {
-                // s.setBlocking(false);
-                d.addSock(s);
-            } else {
-                s.close();
-            }
-        }
-        uss.close();
-        LOGGER.debug("exit");
-
-    }
-
-    private static void doTCP(BusAddress address) throws IOException {
-
-        LOGGER.debug("enter");
-
-        try (ServerSocket ss = new ServerSocket(Integer.parseInt(address.getParameter("port")), 10, InetAddress.getByName(address.getParameter("host")))) {
-            DBusDaemon d = new DBusDaemon();
-            d.start();
-            d.sender.start();
-            d.dbusServer.start();
-
-            // accept new connections
-            while (d.run) {
-                Socket s = ss.accept();
-                boolean authOK = false;
-                try {
-                    authOK = (new SASL()).auth(SASL.MODE_SERVER, SASL.AUTH_EXTERNAL, address.getParameter("guid"), s.getOutputStream(), s.getInputStream(), null);
-                } catch (Exception e) {
-                    LOGGER.debug("", e);
-                }
-                if (authOK) {
-                    d.addSock(s);
-                } else {
-                    s.close();
-                }
-            }
-            LOGGER.debug("exit");
-        }
     }
 }

@@ -17,7 +17,6 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -169,7 +168,7 @@ public class DirectConnection extends AbstractConnection {
             return newi;
         } catch (Exception e) {
             logger.debug("", e);
-            throw new DBusException(MessageFormat.format("Failed to create proxy object for {0}; reason: {1}.", path, e.getMessage()));
+            throw new DBusException(String.format("Failed to create proxy object for %s; reason: %s.", path, e.getMessage()));
         }
     }
 
@@ -226,6 +225,7 @@ public class DirectConnection extends AbstractConnection {
        * @param objectpath The path on which the process is exporting the object.
        * @param type The interface they are exporting it on. This type must have the same full class name and exposed method signatures
        * as the interface the remote object is exporting.
+       * @param <T> class which extends DBusInterface
        * @return A reference to a remote object.
        * @throws ClassCastException If type is not a sub-type of DBusInterface
        * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.

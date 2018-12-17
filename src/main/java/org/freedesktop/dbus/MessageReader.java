@@ -16,7 +16,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
-import java.text.MessageFormat;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
@@ -80,7 +79,7 @@ public class MessageReader implements Closeable {
         byte protover = buf[3];
         if (protover > Message.PROTOCOL) {
             buf = null;
-            throw new MessageProtocolVersionException(MessageFormat.format("Protocol version {0} is unsupported", protover));
+            throw new MessageProtocolVersionException(String.format("Protocol version %s is unsupported", protover));
         }
 
         /* Read the length of the variable header */

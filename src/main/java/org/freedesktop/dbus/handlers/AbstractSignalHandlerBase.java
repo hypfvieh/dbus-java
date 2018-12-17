@@ -11,7 +11,7 @@ public abstract class AbstractSignalHandlerBase<T extends DBusSignal> implements
 
     /**
      * Signal-Class which is implemented in subclasses of this class.
-     * @return
+     * @return Class
      */
     public abstract Class<T> getImplementationClass();
 

@@ -172,66 +172,13 @@ public interface DBus extends DBusInterface {
      * particular security framework), or if the values of those credentials
      * cannot be represented as documented here, then those credentials
      * are omitted.
-     * </p><p>
+     * <p>
      * Keys in the returned dictionary not containing "." are defined
      * by this specification. Bus daemon implementors supporting
      * credentials frameworks not mentioned in this document should either
      * contribute patches to this specification, or use keys containing
      * "." and starting with a reversed domain name.
-     * </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col><col><col></colgroup><thead><tr><th>Key</th><th>Value type</th><th>Value</th></tr></thead><tbody><tr><td>UnixUserID</td><td>UINT32</td><td>The numeric Unix user ID, as defined by POSIX</td></tr><tr><td>ProcessID</td><td>UINT32</td><td>The numeric process ID, on platforms that have
-     * this concept. On Unix, this is the process ID defined by
-     * POSIX.</td></tr><tr><td>WindowsSID</td><td>STRING</td><td>The Windows security identifier in its string form,
-     * e.g. "S-1-5-21-3623811015-3361044348-30300820-1013" for
-     * a domain or local computer user or "S-1-5-18" for the
-     * LOCAL_SYSTEM user</td></tr><tr><td>LinuxSecurityLabel</td><td>ARRAY of BYTE</td><td>
-     * <p>On Linux systems, the security label that would result
-     * from the SO_PEERSEC getsockopt call. The array contains
-     * the non-zero bytes of the security label in an unspecified
-     * ASCII-compatible encoding<a href="#ftn.idm2993" class="footnote" name="idm2993"><sup class="footnote">[a]</sup></a>, followed by a single zero byte.</p>
-     * <p>
-     * For example, the SELinux context
-     * <code class="literal">system_u:system_r:init_t:s0</code>
-     * (a string of length 27) would be encoded as 28 bytes
-     * ending with ':', 's', '0', '\x00'.<a href="#ftn.idm2997" class="footnote" name="idm2997"><sup class="footnote">[b]</sup></a>
      * </p>
-     * <p>
-     * On SELinux systems this is the SELinux context, as output
-     * by <code class="literal">ps -Z</code> or <code class="literal">ls -Z</code>.
-     * Typical values might include
-     * <code class="literal">system_u:system_r:init_t:s0</code>,
-     * <code class="literal">unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023</code>,
-     * or
-     * <code class="literal">unconfined_u:unconfined_r:chrome_sandbox_t:s0-s0:c0.c1023</code>.
-     * </p>
-     * <p>
-     * On Smack systems, this is the Smack label.
-     * Typical values might include
-     * <code class="literal">_</code>, <code class="literal">*</code>,
-     * <code class="literal">User</code>, <code class="literal">System</code>
-     * or <code class="literal">System::Shared</code>.
-     * </p>
-     * <p>
-     * On AppArmor systems, this is the AppArmor context,
-     * a composite string encoding the AppArmor label (one or more
-     * profiles) and the enforcement mode.
-     * Typical values might include <code class="literal">unconfined</code>,
-     * <code class="literal">/usr/bin/firefox (enforce)</code> or
-     * <code class="literal">user1 (complain)</code>.
-     * </p>
-     * </td></tr></tbody><tbody class="footnotes"><tr><td colspan="3"><div id="ftn.idm2993" class="footnote"><p><a href="#idm2993" class="para"><sup class="para">[a] </sup></a>It could be ASCII or UTF-8, but could also be
-     * ISO Latin-1 or any other encoding.</p></div><div id="ftn.idm2997" class="footnote"><p><a href="#idm2997" class="para"><sup class="para">[b] </sup></a>Note that this is not the same as the older
-     * GetConnectionSELinuxContext method, which does
-     * not append the zero byte. Always appending the
-     * zero byte allows callers to read the string
-     * from the message payload without copying.</p></div></td></tr></tbody></table></div><p>
-     * </p><p>
-     * This method was added in D-Bus 1.7 to reduce the round-trips
-     * required to list a process's credentials. In older versions, calling
-     * this method will fail: applications should recover by using the
-     * separate methods such as
-     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-unix-user" title="org.freedesktop.DBus.GetConnectionUnixUser">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionUnixUser</code>”</a>
-     * instead.
-     * 
      * 
      * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
      * @return Credentials
@@ -247,7 +194,7 @@ public interface DBus extends DBusInterface {
      * documentation via the D-Bus bug tracking system.<br>
      * This method is on the core DBus interface for historical reasons;<br>
      * the same information should be made available via<br>
-     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials" title="org.freedesktop.DBus.GetConnectionCredentials">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+     * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
      * in future.<br>
      * 
      * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
@@ -262,7 +209,7 @@ public interface DBus extends DBusInterface {
     * documentation via the D-Bus bug tracking system.<br>
     * This method is on the core DBus interface for historical reasons;<br>
     * the same information should be made available via<br>
-    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials" title="org.freedesktop.DBus.GetConnectionCredentials">the section called “<code class="literal">org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
     * in future.
     * 
     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
@@ -291,10 +238,10 @@ public interface DBus extends DBusInterface {
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
      * Gets the unique ID of the bus. The unique ID here is shared among all addresses the<br>
      * bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in<br>
-     * <a  href="#uuids" title="UUIDs">the section called “UUIDs”</a>. <br> 
+     * <a href="#uuids">the section called "UUIDs”</a>. <br> 
      * Each address the bus is listening on also has its own unique<br>
-     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses" title="Server Addresses">the section called “Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
-     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called “<code class="literal">org.freedesktop.DBus.Peer</code>”</a> and returned
+     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">the section called "Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
+     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>”</a> and returned
      * by org.freedesktop.DBus.Peer.GetMachineId().<br>
      * For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
      *    

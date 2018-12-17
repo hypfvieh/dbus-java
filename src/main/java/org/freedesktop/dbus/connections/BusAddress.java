@@ -12,6 +12,7 @@
 package org.freedesktop.dbus.connections;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -88,12 +89,12 @@ public class BusAddress {
         TCP;
 
         public String getBusType() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.ROOT);
         }
 
         public static AddressBusTypes toEnum(String _str) {
             for (AddressBusTypes itm : values()) {
-                if (itm.getBusType().equals(_str.toLowerCase())) {
+                if (itm.getBusType().equals(_str.toLowerCase(Locale.ROOT))) {
                     return itm;
                 }
             }

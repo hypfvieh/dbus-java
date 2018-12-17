@@ -10,6 +10,12 @@
 */
 package org.freedesktop.dbus.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.Type;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -62,10 +68,9 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.util.TimeMeasure;
 
@@ -73,32 +78,32 @@ import com.github.hypfvieh.util.TimeMeasure;
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
  */
 // CHECKSTYLE:OFF
-public class TestAll extends Assert {
+public class TestAll {
 
     public static final String TEST_OBJECT_PATH = "/TestAll";
-    
+
     // CHECKSTYLE:OFF
     private static DBusConnection serverconn = null;
     private static DBusConnection clientconn = null;
     private static SampleClass tclass;
     // CHECKSTYLE:ON
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws DBusException {
         serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
         clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
         serverconn.setWeakReferences(true);
         clientconn.setWeakReferences(true);
         serverconn.requestBusName("foo.bar.Test");
-        
+
         tclass = new SampleClass(serverconn);
-        
+
         /** This exports an instance of the test class as the object /Test. */
         serverconn.exportObject(TEST_OBJECT_PATH, tclass);
         serverconn.addFallback("/FallbackTest", tclass);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         System.out.println("Checking for outstanding errors");
         DBusExecutionException dbee = serverconn.getError();
@@ -162,8 +167,8 @@ public class TestAll extends Assert {
         Thread.sleep(1000L);
 
         // ensure callback has been fired at least once
-        assertTrue("SignalHandler should have been called", sigh.getActualTestRuns() == 1);
-        assertTrue("EmptySignalHandler should have been called", rsh.getActualTestRuns() == 1);
+        assertTrue(sigh.getActualTestRuns() == 1, "SignalHandler should have been called");
+        assertTrue(rsh.getActualTestRuns() == 1, "EmptySignalHandler should have been called");
 
         /** Remove sig handler */
         clientconn.removeSigHandler(SampleSignals.TestSignal.class, sigh);
@@ -232,19 +237,19 @@ public class TestAll extends Assert {
         Marshalling.getJavaType("ya{si}", ts, -1);
         tri.sig(ts.toArray(new Type[0]));
 
-        
+
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = tri.pathrv(path);
         System.out.println(path.toString() + " => " + p.toString());
-        assertEquals("pathrv incorrect", path, p);
+        assertEquals(path, p, "pathrv incorrect");
 
         List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
-        
+
         List<DBusPath> ps = tri.pathlistrv(paths);
         System.out.println(paths.toString() + " => " + ps.toString());
 
-        assertEquals("pathlistrv incorrect", paths, ps);
+        assertEquals(paths, ps, "pathlistrv incorrect");
 
         Map<DBusPath, DBusPath> pathm = new HashMap<>();
         pathm.put(path, path);
@@ -254,8 +259,8 @@ public class TestAll extends Assert {
         System.out.println(pm.containsKey(path) + " " + pm.get(path) + " " + path.equals(pm.get(path)));
         System.out.println(pm.containsKey(p) + " " + pm.get(p) + " " + p.equals(pm.get(p)));
 
-        assertTrue("pathmaprv incorrect", pm.containsKey(path));
-        assertTrue("pathmaprv incorrect", path.equals(pm.get(path)));
+        assertTrue(pm.containsKey(path), "pathmaprv incorrect");
+        assertTrue(path.equals(pm.get(path)), "pathmaprv incorrect");
     }
 
     @Test
@@ -280,7 +285,7 @@ public class TestAll extends Assert {
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = tri.pathrv(path);
         System.out.println(path.toString() + " => " + p.toString());
-        assertEquals("pathrv incorrect", path, p);
+        assertEquals(path, p, "pathrv incorrect");
 
         List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
@@ -361,16 +366,16 @@ public class TestAll extends Assert {
         try {
             System.out.println("Throwing stuff");
             tri.throwme();
-            TestAll.fail("Method Execution should have failed");
+            fail("Method Execution should have failed");
         } catch (SampleException ex) {
             System.out.println("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
             if (!ex.getMessage().equals("test")) {
-                TestAll.fail("Error message was not correct");
+                fail("Error message was not correct");
             }
         }
-        
+
         Thread.sleep(500L); // wait some time to let the callbacks do their work
-        
+
         assertEquals(1, cbWhichWorks.getTestHandleCalls());
         assertEquals(0, cbWhichThrows.getTestHandleCalls());
 
@@ -429,7 +434,7 @@ public class TestAll extends Assert {
         } catch (UnknownObject ex) {
             System.out.println("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
         }
-       
+
     }
 
      @Test
@@ -441,7 +446,7 @@ public class TestAll extends Assert {
         assertEquals("This Is A UTF-8 Name: س !!", tri.getName());
         assertTrue(intro.Introspect().startsWith("<!DOCTYPE"));
     }
-    
+
     @Test
     public void testGetProperties() throws DBusException {
         Properties prop = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Properties.class);
@@ -489,10 +494,10 @@ public class TestAll extends Assert {
 
         // wait a bit to allow the async call to complete
         Thread.sleep(500L);
-        
-        assertFalse("bools are broken", tri2.check());
 
-        assertTrue("dostuff return value incorrect", stuffreply.getReply());
+        assertFalse(tri2.check(), "bools are broken");
+
+        assertTrue(stuffreply.getReply(), "dostuff return value incorrect");
 
     }
 
@@ -516,7 +521,7 @@ public class TestAll extends Assert {
         for (Integer i : is) {
             System.out.println("--" + i);
         }
-        
+
         assertEquals(5, is.size());
         assertEquals(-1, is.get(0).intValue());
         assertEquals(-5, is.get(1).intValue());
@@ -524,8 +529,8 @@ public class TestAll extends Assert {
         assertEquals(-12, is.get(3).intValue());
         assertEquals(-18, is.get(4).intValue());
 
-        assertEquals("Didn't get the correct this", tclass, tri2.getThis(tri2));
-        
+        assertEquals(tclass, tri2.getThis(tri2), "Didn't get the correct this");
+
         System.out.print("Sending Array Signal...");
         /**
          * This creates an instance of the Test Signal, with the given object path, signal name and parameters, and
@@ -578,16 +583,16 @@ public class TestAll extends Assert {
         System.out.print("testing method overloading...");
         SampleRemoteInterface tri = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface.class);
         if (1 != tri2.overload("foo")) {
-            TestAll.fail("wrong overloaded method called");
+            fail("wrong overloaded method called");
         }
         if (2 != tri2.overload((byte) 0)) {
-            TestAll.fail("wrong overloaded method called");
+            fail("wrong overloaded method called");
         }
         if (3 != tri2.overload()) {
-            TestAll.fail("wrong overloaded method called");
+            fail("wrong overloaded method called");
         }
         if (4 != tri.overload()) {
-            TestAll.fail("wrong overloaded method called");
+            fail("wrong overloaded method called");
         }
     }
 
@@ -612,7 +617,7 @@ public class TestAll extends Assert {
         for (int i = 0; i < 10; i++) {
             as[i] = (byte) (100 - i);
         }
-        
+
         tri.reg13291(as, as);
         System.out.println("done");
     }
@@ -627,7 +632,7 @@ public class TestAll extends Assert {
 
         List<List<Integer>> reti = tri2.checklist(lli);
         if (reti.size() != 1 || reti.get(0).size() != 1 || reti.get(0).get(0) != 1) {
-            TestAll.fail("Failed to check nested lists");
+            fail("Failed to check nested lists");
         }
     }
 

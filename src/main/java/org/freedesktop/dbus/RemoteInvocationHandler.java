@@ -15,7 +15,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
@@ -60,7 +59,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 }, conn);
             } catch (Exception e) {
                 LOGGER.debug("Wrong return type.", e);
-                throw new DBusException(MessageFormat.format("Wrong return type (failed to de-serialize correct types: {0} )", e.getMessage()));
+                throw new DBusException(String.format("Wrong return type (failed to de-serialize correct types: %s )", e.getMessage()));
             }
         }
 

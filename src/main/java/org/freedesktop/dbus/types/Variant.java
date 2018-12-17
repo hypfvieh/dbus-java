@@ -11,7 +11,6 @@
 package org.freedesktop.dbus.types;
 
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class Variant<T> {
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _value.getClass(), dbe.getMessage()));
+            throw new IllegalArgumentException(String.format("Can't wrap %s in an unqualified Variant (%s).", _value.getClass(), dbe.getMessage()));
         }
         this.value = _value;
     }
@@ -74,7 +73,7 @@ public class Variant<T> {
             this.sig = ss[0];
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can't wrap {0} in an unqualified Variant ({1}).", _type, dbe.getMessage()));
+            throw new IllegalArgumentException(String.format("Can't wrap %s in an unqualified Variant (%s).", _type, dbe.getMessage()));
         }
         this.value = _value;
     }
@@ -99,7 +98,7 @@ public class Variant<T> {
             this.type = ts.get(0);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            throw new IllegalArgumentException(MessageFormat.format("Can''t wrap {0} in an unqualified Variant ({1}).", _sig, dbe.getMessage()));
+            throw new IllegalArgumentException(String.format("Can''t wrap %s in an unqualified Variant (%s).", _sig, dbe.getMessage()));
         }
         this.value = _value;
     }
