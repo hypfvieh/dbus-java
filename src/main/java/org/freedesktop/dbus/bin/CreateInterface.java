@@ -293,7 +293,7 @@ public class CreateInterface {
         return s += ")\n";
     }
 
-    void parseInterface(Element iface, PrintStream out, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
+    void parseInterface(Element iface, String pack, PrintStream out, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
         if (null == iface.getAttribute("name") || "".equals(iface.getAttribute("name"))) {
             System.err.println("ERROR: Interface name was blank, failed");
             System.exit(1);
@@ -306,6 +306,7 @@ public class CreateInterface {
         String annotations = "";
         Set<String> imports = new TreeSet<String>();
         imports.add("org.freedesktop.dbus.DBusInterface");
+        imports.add(pack + ".*");
         for (Node meth : new IterableNodeList(iface.getChildNodes())) {
 
             if (Node.ELEMENT_NODE != meth.getNodeType()) {
@@ -370,6 +371,7 @@ public class CreateInterface {
         Set<String> imports = new TreeSet<String>();
         imports.add("org.freedesktop.dbus.Position");
         imports.add("org.freedesktop.dbus.Struct");
+        imports.add(pack + ".*");
         Map<StructStruct, Type[]> structs = new HashMap<StructStruct, Type[]>(existing);
         String[] types = new String[type.length];
         for (int i = 0; i < type.length; i++) {
@@ -465,7 +467,8 @@ public class CreateInterface {
                 String name = ((Element) iface).getAttribute("name");
                 String file = name.replaceAll("\\.", "/") + ".java";
                 String path = file.replaceAll("/[^/]*$", "");
-                String pack = name.replaceAll("\\.[^.]*$", "");
+                String parentPack = name.replaceAll("\\.[^.]*$", "");
+                String pack = name;
 
                 // don't create interfaces in org.freedesktop.DBus by default
                 if (pack.startsWith("org.freedesktop.DBus") && !builtin) {
@@ -473,7 +476,7 @@ public class CreateInterface {
                 }
 
                 factory.init(file, path);
-                parseInterface((Element) iface, factory.createPrintStream(file), tuples, structs, exceptions, annotations);
+                parseInterface((Element) iface, pack, factory.createPrintStream(file), tuples, structs, exceptions, annotations);
 
                 structs = StructStruct.fillPackages(structs, pack);
                 createTuples(tuples, pack);
