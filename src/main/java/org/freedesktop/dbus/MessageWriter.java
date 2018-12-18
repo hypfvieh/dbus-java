@@ -74,7 +74,7 @@ public class MessageWriter implements Closeable {
 
     @Override
     public void close() throws IOException {
-        logger.info("Closing Message Writer");
+        logger.debug("Closing Message Writer");
         if (outputStream != null) {
             outputStream.close();
         }

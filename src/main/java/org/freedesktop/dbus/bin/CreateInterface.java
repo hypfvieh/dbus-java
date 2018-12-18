@@ -42,6 +42,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.types.DBusStructType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,6 +54,8 @@ import org.xml.sax.SAXException;
  * Converts a DBus XML file into Java interface definitions.
  */
 public class CreateInterface {
+    private static final Logger logger = LoggerFactory.getLogger(CreateInterface.class);
+
     @SuppressWarnings("unchecked")
     private static String collapseType(Type t, Set<String> imports, Map<StructStruct, Type[]> structs, boolean container, boolean fullnames) throws DBusException {
         if (t instanceof ParameterizedType) {
@@ -133,6 +137,8 @@ public class CreateInterface {
     }
 
     String parseReturns(List<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs) throws DBusException {
+        logger.debug("parseReturns");
+
         String[] names = new String[] {
                 "Pair", "Triplet", "Quad", "Quintuple", "Sextuple", "Septuple"
         };
@@ -177,6 +183,8 @@ public class CreateInterface {
         }
         String annotations = "";
         String throwses = null;
+
+        logger.debug("parseMethod '{}'", meth.getAttribute("name"));
 
         for (Node a : new IterableNodeList(meth.getChildNodes())) {
 
@@ -230,6 +238,8 @@ public class CreateInterface {
     }
 
     String parseSignal(Element signal, Set<String> imports, Map<StructStruct, Type[]> structs, Set<String> anns) throws DBusException {
+        logger.debug("parseSignal");
+
         Map<String, String> params = new HashMap<String, String>();
         List<String> porder = new ArrayList<>();
         char defaultname = 'a';
@@ -284,6 +294,8 @@ public class CreateInterface {
     }
 
     String parseAnnotation(Element ann, Set<String> imports, Set<String> annotations) {
+        logger.debug("parseAnnotation");
+
         String s = "  @" + ann.getAttribute("name").replaceAll(".*\\.([^.]*)$", "$1") + "(";
         if (null != ann.getAttribute("value") && !"".equals(ann.getAttribute("value"))) {
             s += '"' + ann.getAttribute("value") + '"';
@@ -293,11 +305,14 @@ public class CreateInterface {
         return s += ")\n";
     }
 
-    void parseInterface(Element iface, PrintStream out, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
+    void parseInterface(Element iface, String pack, PrintStream out, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
+
         if (null == iface.getAttribute("name") || "".equals(iface.getAttribute("name"))) {
             System.err.println("ERROR: Interface name was blank, failed");
             System.exit(1);
         }
+
+        logger.info("  - interface '{}'", iface.getAttribute("name"));
 
         out.println("package " + iface.getAttribute("name").replaceAll("\\.[^.]*$", "") + ";");
 
@@ -306,6 +321,7 @@ public class CreateInterface {
         String annotations = "";
         Set<String> imports = new TreeSet<String>();
         imports.add("org.freedesktop.dbus.DBusInterface");
+        imports.add(pack + ".*");
         for (Node meth : new IterableNodeList(iface.getChildNodes())) {
 
             if (Node.ELEMENT_NODE != meth.getNodeType()) {
@@ -319,7 +335,7 @@ public class CreateInterface {
             } else if ("signal".equals(meth.getNodeName())) {
                 signals += parseSignal((Element) meth, imports, structs, anns);
             } else if ("property".equals(meth.getNodeName())) {
-                System.err.println("WARNING: Ignoring property");
+                logger.debug("WARNING: Ignoring property");
             } else if ("annotation".equals(meth.getNodeName())) {
                 annotations += parseAnnotation((Element) meth, imports, anns);
             }
@@ -341,6 +357,8 @@ public class CreateInterface {
     }
 
     void createException(String name, String pack, PrintStream out) throws DBusException {
+        logger.debug("Create exception '{}'", name);
+
         out.println("package " + pack + ";");
         out.println("import org.freedesktop.dbus.DBusExecutionException;");
         out.print("public class " + name);
@@ -354,6 +372,8 @@ public class CreateInterface {
     }
 
     void createAnnotation(String name, String pack, PrintStream out) throws DBusException {
+        logger.debug("Create annotation '{}'", name);
+
         out.println("package " + pack + ";");
         out.println("import java.lang.annotation.Retention;");
         out.println("import java.lang.annotation.RetentionPolicy;");
@@ -365,11 +385,14 @@ public class CreateInterface {
     }
 
     void createStruct(String name, Type[] type, String pack, PrintStream out, Map<StructStruct, Type[]> existing) throws DBusException, IOException {
+        logger.debug("Create struct '{}.{}'", pack, name);
+
         out.println("package " + pack + ";");
 
         Set<String> imports = new TreeSet<String>();
         imports.add("org.freedesktop.dbus.Position");
         imports.add("org.freedesktop.dbus.Struct");
+        imports.add(pack + ".*");
         Map<StructStruct, Type[]> structs = new HashMap<StructStruct, Type[]>(existing);
         String[] types = new String[type.length];
         for (int i = 0; i < type.length; i++) {
@@ -409,6 +432,8 @@ public class CreateInterface {
     }
 
     void createTuple(String name, int num, String pack, PrintStream out) throws DBusException {
+        logger.debug("Create tuple '{}'", name);
+
         out.println("package " + pack + ";");
         out.println("import org.freedesktop.dbus.Position;");
         out.println("import org.freedesktop.dbus.Tuple;");
@@ -465,7 +490,8 @@ public class CreateInterface {
                 String name = ((Element) iface).getAttribute("name");
                 String file = name.replaceAll("\\.", "/") + ".java";
                 String path = file.replaceAll("/[^/]*$", "");
-                String pack = name.replaceAll("\\.[^.]*$", "");
+                String parentPack = name.replaceAll("\\.[^.]*$", "");
+                String pack = name;
 
                 // don't create interfaces in org.freedesktop.DBus by default
                 if (pack.startsWith("org.freedesktop.DBus") && !builtin) {
@@ -473,7 +499,7 @@ public class CreateInterface {
                 }
 
                 factory.init(file, path);
-                parseInterface((Element) iface, factory.createPrintStream(file), tuples, structs, exceptions, annotations);
+                parseInterface((Element) iface, pack, factory.createPrintStream(file), tuples, structs, exceptions, annotations);
 
                 structs = StructStruct.fillPackages(structs, pack);
                 createTuples(tuples, pack);
@@ -491,6 +517,8 @@ public class CreateInterface {
     }
 
     private void createAnnotations(Set<String> annotations) throws DBusException, IOException {
+        logger.debug("createAnnotations");
+
         for (String fqn : annotations) {
             String name = fqn.replaceAll("^.*\\.([^.]*)$", "$1");
             String pack = fqn.replaceAll("\\.[^.]*$", "");
@@ -506,6 +534,8 @@ public class CreateInterface {
     }
 
     private void createExceptions(Set<String> exceptions) throws DBusException, IOException {
+        logger.debug("createExceptions");
+
         for (String fqn : exceptions) {
             String name = fqn.replaceAll("^.*\\.([^.]*)$", "$1");
             String pack = fqn.replaceAll("\\.[^.]*$", "");
@@ -521,6 +551,8 @@ public class CreateInterface {
     }
 
     private void createStructs(Map<StructStruct, Type[]> structs, Map<StructStruct, Type[]> existing) throws DBusException, IOException {
+        logger.debug("createStructs");
+
         for (StructStruct ss : structs.keySet()) {
             String file = ss.name.replaceAll("\\.", "/") + ".java";
             String path = ss.pack.replaceAll("\\.", "/");
@@ -530,6 +562,8 @@ public class CreateInterface {
     }
 
     private void createTuples(Map<String, Integer> typeMap, String pack) throws DBusException, IOException {
+        logger.debug("createTuples");
+
         for (String tname : typeMap.keySet()) {
             createTuple(tname, typeMap.get(tname), pack, factory.createPrintStream(pack.replaceAll("\\.", "/"), tname));
         }
@@ -547,6 +581,9 @@ public class CreateInterface {
          */
         public PrintStream createPrintStream(String path, String tname) throws IOException {
             final String file = path + "/" + tname + ".java";
+
+            logger.debug("Writing to {}", file);
+
             return createPrintStream(file);
         }
 
@@ -690,6 +727,11 @@ public class CreateInterface {
 
         if (null != config.busname) {
             try {
+
+                logger.info("Introspecting:");
+                logger.info("  - interface '{}'", config.busname);
+                logger.info("  - objectPath '{}'", config.object);
+
                 DBusConnection conn = DBusConnection.getConnection(config.bus);
                 Introspectable in = conn.getRemoteObject(config.busname, config.object, Introspectable.class);
                 String id = in.Introspect();
@@ -716,6 +758,8 @@ public class CreateInterface {
             }
         }
         try {
+            logger.info("Generating code: ");
+
             PrintStreamFactory factory = config.fileout ? new FileStreamFactory() : new ConsoleStreamFactory();
             CreateInterface createInterface = new CreateInterface(factory, config.builtin);
             createInterface.createInterface(introspectdata, config);
