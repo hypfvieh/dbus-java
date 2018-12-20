@@ -349,7 +349,8 @@ public class CreateInterface {
         def.packageName     = def.interfaceName.replaceAll("\\.[^.]*$", "");
 
         String parentPack = def.interfaceName.replaceAll("\\.[^.]*$", "");
-        def.className = "I" + def.interfaceName.replaceAll("^.*\\.([^.]*)$", "$1");
+        String interfaceName = def.interfaceName.replaceAll("^.*\\.([^.]*)$", "$1");
+        def.className = "I" + interfaceName.substring(0, 1).toUpperCase() + interfaceName.substring(1);
 
         def.file = parentPack.replaceAll("\\.", "/") + "/" + def.className + ".java";
         def.path = def.file.replaceAll("/[^/]*$", "");
@@ -550,6 +551,7 @@ public class CreateInterface {
                 def.imports.add(sspack + ".*");
             }
 
+            logger.info ( "  - writing interface {}.{}", def.packageName, def.className);
             factory.init(def.file, def.path);
             def.write (factory.createPrintStream(def.file));
         }
@@ -650,7 +652,7 @@ public class CreateInterface {
 
         @Override
         public PrintStream createPrintStream(String file) throws IOException {
-            logger.info("Writing to {}", file);
+            logger.debug("Writing to {}", file);
             System.out.println("/* File: " + file + " */");
             return System.out;
         }
@@ -675,7 +677,7 @@ public class CreateInterface {
          */
         @Override
         public PrintStream createPrintStream(final String file) throws IOException {
-            logger.info("Writing to {}", file);
+            logger.debug("Writing to {}", file);
             return new PrintStream(new FileOutputStream(file));
         }
 
