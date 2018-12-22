@@ -12,20 +12,33 @@ import java.util.stream.Collectors;
 
 import com.github.hypfvieh.util.StringUtil;
 
+/**
+ * Helper to create Java class/interface files with proper formatting.
+ * 
+ * @author hypfvieh
+ * @since v3.0.1 - 2018-12-22
+ */
 public class ClassBuilderInfo {
+	/** Imported files for this class. */
     private final Set<String>            imports               = new LinkedHashSet<>();
+    /** Members/Fields of this class. */
     private final List<ClassMember>      members               = new ArrayList<>();
+    /** Interfaces implemented by this class. */
     private final Set<String>            implementedInterfaces = new LinkedHashSet<>();
-
+    /** Methods provided by this class. */
     private final List<ClassMethod>      methods               = new ArrayList<>();
-
+    /** Inner classes inside of this class. */
     private final List<ClassBuilderInfo> innerClasses          = new ArrayList<>();
-
+    /** Constructors for this class. */
     private final List<ClassConstructor> constructors          = new ArrayList<>();
 
+    /** Name of this class. */
     private String                       className;
+    /** Package of this class. */
     private String                       packageName;
+    /** Type of this class (interface or class). */
     private ClassType                    classType;
+    /** Class which this class may extend. */
     private String                       extendClass;
 
     public Set<String> getImports() {
@@ -80,16 +93,26 @@ public class ClassBuilderInfo {
         return innerClasses;
     }
 
-
     public List<ClassConstructor> getConstructors() {
         return constructors;
     }
 
+    /**
+     * Create the Java source for the class information provided.
+     * @return String
+     */
     public String createClassFileContent() {
         List<String> result = createClassFileContent(false, null);
         return String.join(System.lineSeparator(), result);
     }
 
+    /**
+     * Create the Java source for the class information provided.
+     * 
+     * @param _staticClass this is static inner class
+     * @param _otherImports this class needs additional imports (e.g. due to inner class)
+     * @return
+     */
     private List<String> createClassFileContent(boolean _staticClass, Set<String> _otherImports) {
         List<String> content = new ArrayList<>();
 
@@ -191,6 +214,11 @@ public class ClassBuilderInfo {
         content.add("");
 
         for (ClassMethod mth : getMethods()) {
+        	
+        	if (!mth.getAnnotations().isEmpty()) {
+        		content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
+        	}
+        	
             String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), _otherImports) + " ");
             clzMth += mth.getName() + "(";
             if (!mth.getArguments().isEmpty()) {
@@ -217,13 +245,25 @@ public class ClassBuilderInfo {
         return content;
     }
 
+    /**
+     * Create the filename with path this java class should use.
+     * @return String, null if class name was null
+     */
     public String getFileName() {
-        if (getPackageName() == null || getClassName() == null) {
-            System.out.println("TODO");
+    	if (getClassName() == null) { // no class name
+    		return null;
+    	}
+        if (getPackageName() == null) { // no package name
+        	return getClassName() + ".java";
         }
+        
         return getPackageName().replace(".", File.separator) + File.separator + getClassName() + ".java";
     }
 
+    /**
+     * Creates the fully qualified classname based on the provided classname and package.
+     * @return String
+     */
     public String getFqcn() {
         return StringUtil.isBlank(getPackageName()) ? getClassName() : getPackageName() + "." + getClassName();
     }
@@ -245,12 +285,24 @@ public class ClassBuilderInfo {
         return clzzName;
     }
 
+    /**
+     * Pojo which represents a class method.
+     * 
+     * @author hypfvieh
+     * @since v3.0.1 - 2018-12-20
+     */
     public static class ClassMethod {
+    	/** Name of this method. */
         private final String              name;
+        /** Return value of the method. */
         private final String              returnType;
+        /** True if method should be final, false otherwise. */
         private final boolean             finalMethod;
+        /** Arguments for this method, key is argument name, value is argument type. */
         private final Map<String, String> arguments = new LinkedHashMap<>();
-
+        /** List of annotations for this method. */
+        private final List<String> annotations = new ArrayList<>();
+        
         public ClassMethod(String _name, String _returnType, boolean _finalMethod) {
             name = _name;
             returnType = _returnType;
@@ -273,13 +325,28 @@ public class ClassBuilderInfo {
             return arguments;
         }
 
+		public List<String> getAnnotations() {
+			return annotations;
+		}
+        
     }
 
+    /**
+     * Pojo which represents a class member/field.
+     * 
+     * @author hypfvieh
+     * @since v3.0.1 - 2018-12-20
+     */
     public static class ClassMember {
+    	/** Name of member/field. */
         private final String       name;
+        /** Type of member/field (e.g. String, int...). */
         private final String       type;
+        /** True to force this member to be final, false otherwise. */
         private final boolean      finalMember;
+        /** List of classes/types or placeholders put into diamond operators to use as generics. */
         private final List<String> generics = new ArrayList<>();
+        /** List of annotations for this member. */
         private final List<String> annotations = new ArrayList<>();
 
         public ClassMember(String _name, String _type, boolean _finalMember) {
@@ -310,9 +377,18 @@ public class ClassBuilderInfo {
 
     }
 
+    /**
+     * Pojo which represents a class constructor.
+     * 
+     * @author hypfvieh
+     * @since v3.0.1 - 2018-12-20
+     */
     public static class ClassConstructor {
+    	/** List of arguments for the constructor. Key is argument name, value is argument type. */
         private final Map<String, String> arguments = new LinkedHashMap<>();
+        /** List of arguments for the super-constructor. Key is argument name, value is argument type. */
         private final List<String> superArguments = new ArrayList<>();
+        
         public Map<String, String> getArguments() {
             return arguments;
         }
@@ -321,6 +397,12 @@ public class ClassBuilderInfo {
         }
     }
 
+    /**
+     * Enum to define either the {@link ClassBuilderInfo} is for a CLASS or an INTERFACE.
+     * 
+     * @author hypfvieh
+     * @since v3.0.1 - 2018-12-20
+     */
     public static enum ClassType {
         INTERFACE,
         CLASS;

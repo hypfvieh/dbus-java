@@ -24,7 +24,12 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -124,7 +129,7 @@ public class CreateInterface {
     // CHECKSTYLE:OFF
     public String comment = "";
     boolean       builtin;
-    private HashMap<String, ArrayList<StructStruct>> structPackages = new HashMap<>();
+    private HashMap<String, List<StructStruct>> structPackages = new HashMap<>();
     // CHECKSTYLE:ON
 
     public CreateInterface(PrintStreamFactory _factory, boolean _builtin) {
@@ -501,7 +506,7 @@ public class CreateInterface {
 
     void parseRoot(Element root) throws DBusException, IOException {
 
-        ArrayList<InterfaceDefinition> interfaceDefs = new ArrayList();
+        ArrayList<InterfaceDefinition> interfaceDefs = new ArrayList<>();
 
         Map<StructStruct, Type[]> structs = new HashMap<StructStruct, Type[]>();
         Set<String> exceptions = new TreeSet<String>();
@@ -543,8 +548,6 @@ public class CreateInterface {
         createStructs(structs, structs);
         createExceptions(exceptions);
         createAnnotations(annotations);
-
-        HashSet<String> packageSet = new HashSet();
 
         for (InterfaceDefinition def : interfaceDefs) {
             for (String sspack : structPackages.keySet()) {
@@ -600,11 +603,11 @@ public class CreateInterface {
             factory.init(file, path);
             createStruct(ss.name, structs.get(ss), ss.pack, factory.createPrintStream(path, ss.name), existing);
 
-            ArrayList packageStructs;
+            List<StructStruct> packageStructs;
             if (structPackages.containsKey(ss.pack)) {
                 packageStructs = structPackages.get(ss.pack);
             } else {
-                packageStructs = new ArrayList();
+                packageStructs = new ArrayList<>();
                 structPackages.put(ss.pack, packageStructs);
             }
             packageStructs.add(ss);

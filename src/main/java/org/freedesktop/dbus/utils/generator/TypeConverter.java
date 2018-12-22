@@ -17,6 +17,14 @@ import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.Variant;
 
+import com.github.hypfvieh.util.StringUtil;
+
+/**
+ * Helper to convert DBus types and java types.
+ * 
+ * @author hypfvieh
+ * @since v3.0.1 - 2018-12-22
+ */
 public class TypeConverter {
 
     private static final Map<String, String> CLASS_MAP = new HashMap<>();
@@ -28,11 +36,23 @@ public class TypeConverter {
         CLASS_MAP.put(Variant.class.getName(), "Variant<?>");
     }
 
-
+    /**
+     * Converts a java class type to another type.
+     * This is used for converting e.g. CharSequence to String etc.
+     * It will also remove unnecessary package names like java.lang.
+     *  
+     * @param _argType Argument to convert
+     * @param _includes Set where additional includes will be added (should never be null!)
+     * @return String with proper type, if no converation could be done, original input is returned
+     */
     public static String getProperJavaClass(String _argType, Set<String> _includes) {
         String clazzName = null;
+        if (_argType == null) {
+        	return _argType;
+        }
 
-        if (_argType.contains("<")) { // TODO: This is a class using generics
+        // this is something with generics, so we do not convert boxed type to primitives
+        if (_argType.contains("<")) { 
             clazzName = _argType;
             for (Entry<String, String> clzzNames : CLASS_MAP.entrySet()) {
                 if (clazzName.contains(clzzNames.getKey())) {
@@ -52,8 +72,22 @@ public class TypeConverter {
         return clazzName;
     }
 
+    /**
+     * Transform certain java types to other java types (see {@link #CLASS_MAP}).
+     * 
+     * @param _fqcn fully qualified classname of the type to convert
+     * @param _usePrimitives if true, boxed types will be converted to primitives
+     * @return converted type or original input
+     */
     private static String convertJavaType(String _fqcn, boolean _usePrimitives) {
-        String clazzName = _fqcn.substring(_fqcn.lastIndexOf(".") + 1);
+    	if (_fqcn == null) {
+    		return _fqcn;
+    	}
+    	String clazzName = _fqcn;
+    	
+    	if (_fqcn.contains(".")) {
+    		clazzName = _fqcn.substring(_fqcn.lastIndexOf(".") + 1);
+    	}
 
         if (CLASS_MAP.containsKey(_fqcn)) {
             return CLASS_MAP.get(_fqcn);
@@ -66,6 +100,12 @@ public class TypeConverter {
         return _usePrimitives ? convertJavaBoxedTypeToPrimitive(clazzName) : clazzName;
     }
 
+    /**
+     * Converts certain boxed types to primitives.
+     * 
+     * @param _clazzName class name of boxed type
+     * @return primitive or original input
+     */
     private static String convertJavaBoxedTypeToPrimitive(String _clazzName) {
         switch (_clazzName) {
             case "Boolean":
@@ -87,9 +127,23 @@ public class TypeConverter {
         }
     }
 
+    /**
+     * Converts a DBus data type string to java classname(s).
+     * 
+     * @param _dbusType DBus data type string
+     * @param _javaIncludes List where additional imports will be added to (should not be null!)
+     * @return Java classname, maybe null if no suitable input was given
+     * 
+     * @throws DBusException on DBus error
+     */
     public static String getJavaTypeFromDBusType(String _dbusType, Set<String> _javaIncludes) throws DBusException {
         List<Type> dataType = new ArrayList<>();
         String type;
+        
+        if (StringUtil.isBlank(_dbusType)) {
+        	return null;
+        }
+        
         if (_dbusType.length() == 1) {
             Marshalling.getJavaType(_dbusType, dataType, 1);
 
@@ -107,7 +161,16 @@ public class TypeConverter {
         return type;
     }
 
-    private static Map<String, List<String>> getTypeAdv(Type _type, List<String> _parts) throws DBusException {
+    /**
+     * Resolve java type recursively.
+     * 
+     * @param _type Type object
+     * @param _innerGenerics list which will be populated with classnames of the inner generic types (if any)
+     * @return Map where key is parent classname (e.g. List) and value is a list of types used inside the generics
+     * 
+     * @throws DBusException on error
+     */
+    private static Map<String, List<String>> getTypeAdv(Type _type, List<String> _innerGenerics) throws DBusException {
         Map<String, List<String>> result = new LinkedHashMap<>();
         if (_type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) _type;
@@ -128,7 +191,21 @@ public class TypeConverter {
         return result;
     }
 
+    /**
+     * Special handling for {@link DBusMapType} and {@link DBusListType}.
+     * 
+     * @param _dbusType DBus type string
+     * @param _javaIncludes list where additional java imports are added to (if any) 
+     * @return class name of the parent type, maybe null if no suitable input provided
+     * 
+     * @throws DBusException
+     */
     private static String getTypeAdv(String _dbusType, Set<String> _javaIncludes) throws DBusException {
+    	
+    	if (StringUtil.isBlank(_dbusType)) {
+    		return null;
+    	}
+    	
         List<Type> dataType = new ArrayList<>();
         Marshalling.getJavaType(_dbusType, dataType, 1);
 
@@ -158,16 +235,7 @@ public class TypeConverter {
 
             return retVal + "<" + actualArgTypeVal + ">";
         }
-
-//        if (dataType.get(0) instanceof DBusStructType) {
-//            DBusStructType dbusStructType = (DBusStructType) dataType.get(0);
-//            Type rawType = dbusStructType.getRawType();
-//            String retVal = rawType.getTypeName();
-//
-//            return retVal;
-//        }
-
+        
         return dataType.get(0).getTypeName();
-
     }
 }
