@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
 
@@ -116,6 +117,7 @@ public class StructTreeBuilder {
                 member.getGenerics().addAll(temp.getMembers().stream().map(l -> l.getType()).collect(Collectors.toList()));
             }
 
+            info.getImports().add(Position.class.getName()); // add position annotation as include
             info.getImports().add(inTree.getDataType().getName());
             info.getMembers().add(member);
 
