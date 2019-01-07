@@ -24,6 +24,7 @@ import org.bluez.exceptions.BluezNotAvailableException;
 import org.bluez.exceptions.BluezNotConnectedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.DBusMap;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -263,7 +264,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      */
     @SuppressWarnings("unchecked")
     public Map<String, byte[]> getServiceData() {
-        return getTyped("ServiceData", Map.class);
+        return getTyped("ServiceData", DBusMap.class);
     }
 
     /**
@@ -277,7 +278,7 @@ public class BluetoothDevice extends AbstractBluetoothObject {
      */
     @SuppressWarnings("unchecked")
     public Map<UInt16, byte[]> getManufacturerData() {
-        return getTyped("ManufacturerData", Map.class);
+        return getTyped("ManufacturerData", DBusMap.class);
     }
 
     /**
