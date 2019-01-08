@@ -182,7 +182,7 @@ public class DeviceManager {
      * Gets all devices found by the given adapter and published by bluez using DBus Introspection API.
      * @param adapter bluetooth adapter
      */
-    private void findBtDevicesByIntrospection(BluetoothAdapter adapter) {
+    public void findBtDevicesByIntrospection(BluetoothAdapter adapter) {
         Set<String> scanObjectManager = DbusHelper.findNodes(dbusConnection, adapter.getDbusPath());
 
         String adapterMac = adapter.getAddress();
