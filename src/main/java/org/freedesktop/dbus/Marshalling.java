@@ -288,10 +288,6 @@ public final class Marshalling {
                 _out[_level].append(')');
 
             } else {
-                if (dataTypeClazz.isPrimitive()) {
-
-                }
-
                 boolean found = false;
 
                 for (Entry<Class<?>, Byte> entry : CLASS_TO_ARGUMENTTYPE.entrySet()) {
@@ -593,7 +589,14 @@ public final class Marshalling {
         if (_parameter instanceof DBusMap) {
             LOGGER.trace("Deserializing a Map");
             DBusMap<?,?> dmap = (DBusMap<?,?>) _parameter;
-            Type[] maptypes = ((ParameterizedType) _type).getActualTypeArguments();
+            
+            Type[] maptypes;
+            if (_type instanceof ParameterizedType) {
+                maptypes = ((ParameterizedType) _type).getActualTypeArguments();
+            } else {
+                maptypes = _parameter.getClass().getTypeParameters();
+            }
+            
             for (int i = 0; i < dmap.entries.length; i++) {
                 dmap.entries[i][0] = deSerializeParameter(dmap.entries[i][0], maptypes[0], _conn);
                 dmap.entries[i][1] = deSerializeParameter(dmap.entries[i][1], maptypes[1], _conn);
@@ -687,8 +690,8 @@ public final class Marshalling {
                             compress[i] = sz;
                             System.arraycopy(_parameters, i + newtypes.length, compress, i + 1, _parameters.length - i - newtypes.length);
                             _parameters = compress;
-                        } catch (ArrayIndexOutOfBoundsException aioobe) {
-                            LOGGER.debug("", aioobe);
+                        } catch (ArrayIndexOutOfBoundsException _ex) {
+                            LOGGER.debug("", _ex);
                             throw new DBusException(String.format("Not enough elements to create custom object from serialized data (%s < %s).", _parameters.length - i, newtypes.length));
                         }
                     }
