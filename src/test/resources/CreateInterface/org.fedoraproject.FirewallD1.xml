@@ -1,0 +1,724 @@
+<?xml version="1.0"?>
+<node name="/org/fedoraproject/FirewallD1">
+  <interface name="org.fedoraproject.FirewallD1.direct">
+    <method name="queryPassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="passthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getAllPassthroughs">
+      <arg direction="out" type="a(sas)"/>
+    </method>
+    <method name="getAllChains">
+      <arg direction="out" type="a(sss)"/>
+    </method>
+    <method name="getPassthroughs">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="out" type="aas"/>
+    </method>
+    <method name="getRules">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="out" type="a(ias)"/>
+    </method>
+    <method name="getChains">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addPassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="queryChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removePassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="removeRules">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+    <signal name="RuleAdded">
+      <arg name="ipv" type="s"/>
+      <arg name="table" type="s"/>
+      <arg name="chain" type="s"/>
+      <arg name="priority" type="i"/>
+      <arg name="args" type="as"/>
+    </signal>
+    <method name="getAllRules">
+      <arg direction="out" type="a(sssias)"/>
+    </method>
+    <signal name="PassthroughRemoved">
+      <arg name="ipv" type="s"/>
+      <arg name="args" type="as"/>
+    </signal>
+    <method name="removeRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="addChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+    <signal name="PassthroughAdded">
+      <arg name="ipv" type="s"/>
+      <arg name="args" type="as"/>
+    </signal>
+    <method name="removeChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+    <signal name="ChainRemoved">
+      <arg name="ipv" type="s"/>
+      <arg name="table" type="s"/>
+      <arg name="chain" type="s"/>
+    </signal>
+    <signal name="RuleRemoved">
+      <arg name="ipv" type="s"/>
+      <arg name="table" type="s"/>
+      <arg name="chain" type="s"/>
+      <arg name="priority" type="i"/>
+      <arg name="args" type="as"/>
+    </signal>
+    <method name="queryRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeAllPassthroughs">
+    </method>
+    <signal name="ChainAdded">
+      <arg name="ipv" type="s"/>
+      <arg name="table" type="s"/>
+      <arg name="chain" type="s"/>
+    </signal>
+  </interface>
+  <interface name="org.fedoraproject.IFirewallD1">
+    <method name="queryPanicMode">
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="Reloaded">
+    </signal>
+    <signal name="LogDeniedChanged">
+      <arg name="value" type="s"/>
+    </signal>
+    <method name="setLogDenied">
+      <arg direction="in" name="value" type="s"/>
+    </method>
+    <method name="authorizeAll">
+    </method>
+    <method name="getLogDenied">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getAutomaticHelpers">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="disablePanicMode">
+    </method>
+    <signal name="AutomaticHelpersChanged">
+      <arg name="value" type="s"/>
+    </signal>
+    <method name="completeReload">
+    </method>
+    <signal name="PanicModeDisabled">
+    </signal>
+    <method name="getDefaultZone">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getHelpers">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getZoneSettings">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="(sssbsasa(ss)asba(ssss)asasasasa(ss)b)"/>
+    </method>
+    <signal name="DefaultZoneChanged">
+      <arg name="zone" type="s"/>
+    </signal>
+    <method name="listIcmpTypes">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="enablePanicMode">
+    </method>
+    <method name="runtimeToPermanent">
+    </method>
+    <method name="listServices">
+      <arg direction="out" type="as"/>
+    </method>
+    <signal name="PanicModeEnabled">
+    </signal>
+    <method name="getServiceSettings">
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="out" type="(sssa(ss)asa{ss}asa(ss))"/>
+    </method>
+    <method name="getHelperSettings">
+      <arg direction="in" name="helper" type="s"/>
+      <arg direction="out" type="(sssssa(ss))"/>
+    </method>
+    <method name="setAutomaticHelpers">
+      <arg direction="in" name="value" type="s"/>
+    </method>
+    <method name="getIcmpTypeSettings">
+      <arg direction="in" name="icmptype" type="s"/>
+      <arg direction="out" type="(sssas)"/>
+    </method>
+    <method name="reload">
+    </method>
+    <method name="setDefaultZone">
+      <arg direction="in" name="zone" type="s"/>
+    </method>
+  <property access="read" name="BRIDGE" type="b"/><property access="read" name="nf_conntrack_helper_setting" type="b"/><property access="read" name="IPSetTypes" type="as"/><property access="read" name="IPSet" type="b"/><property access="read" name="interface_version" type="s"/><property access="read" name="IPv6_rpfilter" type="b"/><property access="read" name="IPv6ICMPTypes" type="as"/><property access="read" name="state" type="s"/><property access="read" name="version" type="s"/><property access="read" name="nf_conntrack_helpers" type="a{sas}"/><property access="read" name="IPv4" type="b"/><property access="read" name="IPv6" type="b"/><property access="read" name="IPv4ICMPTypes" type="as"/></interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.fedoraproject.FirewallD1.ipset">
+    <signal name="EntryAdded">
+      <arg name="ipset" type="s"/>
+      <arg name="entry" type="s"/>
+    </signal>
+    <method name="queryEntry">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="in" name="entry" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getEntries">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getIPSetSettings">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="out" type="(ssssa{ss}as)"/>
+    </method>
+    <method name="getIPSets">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addEntry">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="in" name="entry" type="s"/>
+    </method>
+    <method name="setEntries">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="in" name="entries" type="as"/>
+    </method>
+    <method name="queryIPSet">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="EntryRemoved">
+      <arg name="ipset" type="s"/>
+      <arg name="entry" type="s"/>
+    </signal>
+    <method name="removeEntry">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="in" name="entry" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.fedoraproject.FirewallD1.policies">
+    <signal name="LockdownDisabled">
+    </signal>
+    <method name="addLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+    </method>
+    <method name="getLockdownWhitelistCommands">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removeLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+    </method>
+    <signal name="LockdownEnabled">
+    </signal>
+    <signal name="LockdownWhitelistContextAdded">
+      <arg name="context" type="s"/>
+    </signal>
+    <method name="addLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+    </method>
+    <method name="queryLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="LockdownWhitelistUidAdded">
+      <arg name="uid" type="i"/>
+    </signal>
+    <method name="getLockdownWhitelistUsers">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getLockdownWhitelistContexts">
+      <arg direction="out" type="as"/>
+    </method>
+    <signal name="LockdownWhitelistCommandRemoved">
+      <arg name="command" type="s"/>
+    </signal>
+    <method name="queryLockdown">
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="enableLockdown">
+    </method>
+    <method name="queryLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+    </method>
+    <method name="removeLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+    </method>
+    <signal name="LockdownWhitelistCommandAdded">
+      <arg name="command" type="s"/>
+    </signal>
+    <method name="disableLockdown">
+    </method>
+    <method name="addLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+    </method>
+    <method name="removeLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+    </method>
+    <signal name="LockdownWhitelistContextRemoved">
+      <arg name="context" type="s"/>
+    </signal>
+    <method name="getLockdownWhitelistUids">
+      <arg direction="out" type="ai"/>
+    </method>
+    <signal name="LockdownWhitelistUserAdded">
+      <arg name="user" type="s"/>
+    </signal>
+    <method name="addLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+    </method>
+    <signal name="LockdownWhitelistUserRemoved">
+      <arg name="user" type="s"/>
+    </signal>
+    <signal name="LockdownWhitelistUidRemoved">
+      <arg name="uid" type="i"/>
+    </signal>
+    <method name="queryLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+    <method name="Set">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="in" name="new_value" type="v"/>
+    </method>
+    <method name="GetAll">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="out" type="a{sv}"/>
+    </method>
+    <method name="Get">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="out" type="v"/>
+    </method>
+  </interface>
+  <interface name="org.fedoraproject.FirewallD1.zone">
+    <method name="changeZone">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="IcmpBlockRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="icmp" type="s"/>
+    </signal>
+    <method name="getInterfaces">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removeService">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removeInterface">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getSourcePorts">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="aas"/>
+    </method>
+    <method name="queryPort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addMasquerade">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getRichRules">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getPorts">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="aas"/>
+    </method>
+    <method name="removeIcmpBlockInversion">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getIcmpBlocks">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="queryInterface">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="RichRuleAdded">
+      <arg name="zone" type="s"/>
+      <arg name="rule" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="IcmpBlockInversionAdded">
+      <arg name="zone" type="s"/>
+    </signal>
+    <method name="getServices">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removePort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="addIcmpBlockInversion">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getZoneOfInterface">
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="queryService">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="RichRuleRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="rule" type="s"/>
+    </signal>
+    <signal name="SourceRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="source" type="s"/>
+    </signal>
+    <method name="addProtocol">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removeIcmpBlock">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="icmp" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="addIcmpBlock">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="icmp" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="addSource">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="ZoneChanged">
+      <arg name="zone" type="s"/>
+      <arg name="interface" type="s"/>
+    </signal>
+    <method name="querySource">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addPort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="queryIcmpBlock">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="icmp" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryIcmpBlockInversion">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getProtocols">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="querySourcePort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeSourcePort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="InterfaceRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="interface" type="s"/>
+    </signal>
+    <signal name="SourceAdded">
+      <arg name="zone" type="s"/>
+      <arg name="source" type="s"/>
+    </signal>
+    <method name="queryProtocol">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="changeZoneOfInterface">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="ServiceAdded">
+      <arg name="zone" type="s"/>
+      <arg name="service" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <method name="removeSource">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removeRichRule">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="rule" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="changeZoneOfSource">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="ProtocolAdded">
+      <arg name="zone" type="s"/>
+      <arg name="protocol" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="PortAdded">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <method name="getForwardPorts">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="aas"/>
+    </method>
+    <signal name="ZoneOfInterfaceChanged">
+      <arg name="zone" type="s"/>
+      <arg name="interface" type="s"/>
+    </signal>
+    <signal name="ZoneOfSourceChanged">
+      <arg name="zone" type="s"/>
+      <arg name="source" type="s"/>
+    </signal>
+    <signal name="InterfaceAdded">
+      <arg name="zone" type="s"/>
+      <arg name="interface" type="s"/>
+    </signal>
+    <signal name="ServiceRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="service" type="s"/>
+    </signal>
+    <signal name="SourcePortRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+    </signal>
+    <method name="addService">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removeProtocol">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="addSourcePort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="queryForwardPort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getSources">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getZones">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addRichRule">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="rule" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="SourcePortAdded">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="MasqueradeAdded">
+      <arg name="zone" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="IcmpBlockInversionRemoved">
+      <arg name="zone" type="s"/>
+    </signal>
+    <signal name="IcmpBlockAdded">
+      <arg name="zone" type="s"/>
+      <arg name="icmp" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="ForwardPortRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+      <arg name="toport" type="s"/>
+      <arg name="toaddr" type="s"/>
+    </signal>
+    <signal name="PortRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+    </signal>
+    <method name="queryMasquerade">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeMasquerade">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="isImmutable">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <signal name="ForwardPortAdded">
+      <arg name="zone" type="s"/>
+      <arg name="port" type="s"/>
+      <arg name="protocol" type="s"/>
+      <arg name="toport" type="s"/>
+      <arg name="toaddr" type="s"/>
+      <arg name="timeout" type="i"/>
+    </signal>
+    <signal name="ProtocolRemoved">
+      <arg name="zone" type="s"/>
+      <arg name="protocol" type="s"/>
+    </signal>
+    <signal name="MasqueradeRemoved">
+      <arg name="zone" type="s"/>
+    </signal>
+    <method name="removeForwardPort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getZoneOfSource">
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="queryRichRule">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="rule" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addInterface">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="addForwardPort">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+      <arg direction="in" name="timeout" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getActiveZones">
+      <arg direction="out" type="a{sa{sas}}"/>
+    </method>
+  </interface>
+  <node name="config"/>
+</node>

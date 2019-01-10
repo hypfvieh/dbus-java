@@ -1,0 +1,262 @@
+<?xml version="1.0"?>
+<node name="/org/fedoraproject/FirewallD1/config/zone/0">
+  <interface name="org.fedoraproject.FirewallD1.config.zone">
+    <method name="rename">
+      <arg direction="in" name="name" type="s"/>
+    </method>
+    <method name="addSource">
+      <arg direction="in" name="source" type="s"/>
+    </method>
+    <method name="removeService">
+      <arg direction="in" name="service" type="s"/>
+    </method>
+    <method name="removeInterface">
+      <arg direction="in" name="interface" type="s"/>
+    </method>
+    <method name="getSourcePorts">
+      <arg direction="out" type="a(ss)"/>
+    </method>
+    <method name="removeSourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="getRichRules">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getDescription">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="getTarget">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removeIcmpBlockInversion">
+    </method>
+    <method name="addService">
+      <arg direction="in" name="service" type="s"/>
+    </method>
+    <method name="getMasquerade">
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="loadDefaults">
+    </method>
+    <method name="getShort">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="addIcmpBlockInversion">
+    </method>
+    <method name="setVersion">
+      <arg direction="in" name="version" type="s"/>
+    </method>
+    <method name="setSources">
+      <arg direction="in" name="sources" type="as"/>
+    </method>
+    <method name="setDescription">
+      <arg direction="in" name="description" type="s"/>
+    </method>
+    <signal name="Updated">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="getIcmpBlockInversion">
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="addIcmpBlock">
+      <arg direction="in" name="icmptype" type="s"/>
+    </method>
+    <method name="setSourcePorts">
+      <arg direction="in" name="ports" type="a(ss)"/>
+    </method>
+    <method name="setInterfaces">
+      <arg direction="in" name="interfaces" type="as"/>
+    </method>
+    <method name="setMasquerade">
+      <arg direction="in" name="masquerade" type="b"/>
+    </method>
+    <method name="querySource">
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeForwardPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+    </method>
+    <method name="queryIcmpBlock">
+      <arg direction="in" name="icmptype" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryForwardPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getProtocols">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="querySourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="setServices">
+      <arg direction="in" name="services" type="as"/>
+    </method>
+    <method name="addMasquerade">
+    </method>
+    <method name="addForwardPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="in" name="toport" type="s"/>
+      <arg direction="in" name="toaddr" type="s"/>
+    </method>
+    <method name="getInterfaces">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removeSource">
+      <arg direction="in" name="source" type="s"/>
+    </method>
+    <method name="addSourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="getPorts">
+      <arg direction="out" type="a(ss)"/>
+    </method>
+    <method name="setTarget">
+      <arg direction="in" name="target" type="s"/>
+    </method>
+    <method name="getServices">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="update">
+      <arg direction="in" name="settings" type="(sssbsasa(ss)asba(ssss)asasasasa(ss)b)"/>
+    </method>
+    <method name="setShort">
+      <arg direction="in" name="short" type="s"/>
+    </method>
+    <method name="getSettings">
+      <arg direction="out" type="(sssbsasa(ss)asba(ssss)asasasasa(ss)b)"/>
+    </method>
+    <signal name="Renamed">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="setIcmpBlocks">
+      <arg direction="in" name="icmptypes" type="as"/>
+    </method>
+    <method name="getForwardPorts">
+      <arg direction="out" type="a(ssss)"/>
+    </method>
+    <method name="removeIcmpBlock">
+      <arg direction="in" name="icmptype" type="s"/>
+    </method>
+    <method name="getIcmpBlocks">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getVersion">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="setRichRules">
+      <arg direction="in" name="rules" type="as"/>
+    </method>
+    <method name="queryIcmpBlockInversion">
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getSources">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="setPorts">
+      <arg direction="in" name="ports" type="a(ss)"/>
+    </method>
+    <method name="addRichRule">
+      <arg direction="in" name="rule" type="s"/>
+    </method>
+    <signal name="Removed">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="queryService">
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryRichRule">
+      <arg direction="in" name="rule" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeMasquerade">
+    </method>
+    <method name="queryPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="remove">
+    </method>
+    <method name="queryProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryInterface">
+      <arg direction="in" name="interface" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="setForwardPorts">
+      <arg direction="in" name="ports" type="a(ssss)"/>
+    </method>
+    <method name="removeProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="queryMasquerade">
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="setIcmpBlockInversion">
+      <arg direction="in" name="flag" type="b"/>
+    </method>
+    <method name="addInterface">
+      <arg direction="in" name="interface" type="s"/>
+    </method>
+    <method name="removeRichRule">
+      <arg direction="in" name="rule" type="s"/>
+    </method>
+    <method name="setProtocols">
+      <arg direction="in" name="protocols" type="as"/>
+    </method>
+  <property access="read" name="default" type="b"/><property access="read" name="path" type="s"/><property access="read" name="builtin" type="b"/><property access="read" name="name" type="s"/><property access="read" name="filename" type="s"/></interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+    <method name="GetAll">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="out" type="a{sv}"/>
+    </method>
+    <method name="Set">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="in" name="new_value" type="v"/>
+    </method>
+    <method name="Get">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="out" type="v"/>
+    </method>
+  </interface>
+</node>

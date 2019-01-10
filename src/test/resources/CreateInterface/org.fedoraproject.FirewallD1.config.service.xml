@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<node name="/org/fedoraproject/FirewallD1/config/service/0">
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.fedoraproject.FirewallD1.config.service">
+    <method name="rename">
+      <arg direction="in" name="name" type="s"/>
+    </method>
+    <method name="getSourcePorts">
+      <arg direction="out" type="a(ss)"/>
+    </method>
+    <method name="queryPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeSourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="getDescription">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="setDestination">
+      <arg direction="in" name="family" type="s"/>
+      <arg direction="in" name="address" type="s"/>
+    </method>
+    <method name="loadDefaults">
+    </method>
+    <method name="getShort">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="removePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="removeProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="setVersion">
+      <arg direction="in" name="version" type="s"/>
+    </method>
+    <method name="setDescription">
+      <arg direction="in" name="description" type="s"/>
+    </method>
+    <signal name="Updated">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="addProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="setSourcePorts">
+      <arg direction="in" name="ports" type="a(ss)"/>
+    </method>
+    <method name="queryModule">
+      <arg direction="in" name="module" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getProtocols">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="querySourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getDestination">
+      <arg direction="in" name="family" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <signal name="Removed">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="queryProtocol">
+      <arg direction="in" name="protocol" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="setModules">
+      <arg direction="in" name="modules" type="as"/>
+    </method>
+    <method name="addSourcePort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="getPorts">
+      <arg direction="out" type="a(ss)"/>
+    </method>
+    <method name="addModule">
+      <arg direction="in" name="module" type="s"/>
+    </method>
+    <method name="update">
+      <arg direction="in" name="settings" type="(sssa(ss)asa{ss}asa(ss))"/>
+    </method>
+    <method name="setShort">
+      <arg direction="in" name="short" type="s"/>
+    </method>
+    <method name="getSettings">
+      <arg direction="out" type="(sssa(ss)asa{ss}asa(ss))"/>
+    </method>
+    <signal name="Renamed">
+      <arg name="name" type="s"/>
+    </signal>
+    <method name="removeDestination">
+      <arg direction="in" name="family" type="s"/>
+    </method>
+    <method name="getVersion">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="queryDestination">
+      <arg direction="in" name="family" type="s"/>
+      <arg direction="in" name="address" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getDestinations">
+      <arg direction="out" type="a{ss}"/>
+    </method>
+    <method name="setPorts">
+      <arg direction="in" name="ports" type="a(ss)"/>
+    </method>
+    <method name="setProtocols">
+      <arg direction="in" name="protocols" type="as"/>
+    </method>
+    <method name="removeModule">
+      <arg direction="in" name="module" type="s"/>
+    </method>
+    <method name="getModules">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="remove">
+    </method>
+    <method name="addPort">
+      <arg direction="in" name="port" type="s"/>
+      <arg direction="in" name="protocol" type="s"/>
+    </method>
+    <method name="setDestinations">
+      <arg direction="in" name="destinations" type="a{ss}"/>
+    </method>
+  <property access="read" name="default" type="b"/><property access="read" name="path" type="s"/><property access="read" name="builtin" type="b"/><property access="read" name="name" type="s"/><property access="read" name="filename" type="s"/></interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+    <method name="GetAll">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="out" type="a{sv}"/>
+    </method>
+    <method name="Set">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="in" name="new_value" type="v"/>
+    </method>
+    <method name="Get">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="out" type="v"/>
+    </method>
+  </interface>
+</node>
