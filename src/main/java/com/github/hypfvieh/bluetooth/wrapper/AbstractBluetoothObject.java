@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.bluez.Adapter1;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -109,7 +108,7 @@ public abstract class AbstractBluetoothObject {
     protected void setTyped(String _field, Object _value) {
         try {
             Properties remoteObject = dbusConnection.getRemoteObject("org.bluez", dbusPath, Properties.class);
-            remoteObject.Set(Adapter1.class.getName(), _field, _value);
+            remoteObject.Set(getInterfaceClass().getName(), _field, _value);
         } catch (DBusException _ex) {
             logger.trace("Error while setting data for DBUS (Field: {}, Value: {}).", _field, _value, _ex);
         }
