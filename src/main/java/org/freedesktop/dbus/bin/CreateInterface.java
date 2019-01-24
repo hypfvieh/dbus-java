@@ -52,7 +52,9 @@ import org.xml.sax.SAXException;
 
 /**
  * Converts a DBus XML file into Java interface definitions.
+ * @deprecated please use {@link org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator}
  */
+@Deprecated
 public class CreateInterface {
     private static final Logger logger = LoggerFactory.getLogger(CreateInterface.class);
 
@@ -620,31 +622,6 @@ public class CreateInterface {
         for (String tname : typeMap.keySet()) {
             createTuple(tname, typeMap.get(tname), pack, factory.createPrintStream(pack.replaceAll("\\.", "/"), tname));
         }
-    }
-
-    public abstract static class PrintStreamFactory {
-
-        public abstract void init(String file, String path);
-
-        /**
-         * @param path path
-         * @param tname target name
-         * @return PrintStream
-         * @throws IOException may throw exception on failure
-         */
-        public PrintStream createPrintStream(String path, String tname) throws IOException {
-            final String file = path + "/" + tname + ".java";
-
-            return createPrintStream(file);
-        }
-
-        /**
-         * @param file file to print to
-         * @return PrintStream
-         * @throws IOException may throw exception on failure
-         */
-        public abstract PrintStream createPrintStream(final String file) throws IOException;
-
     }
 
     static class ConsoleStreamFactory extends PrintStreamFactory {

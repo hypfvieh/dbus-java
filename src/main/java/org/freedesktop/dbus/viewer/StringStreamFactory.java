@@ -16,7 +16,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.freedesktop.dbus.bin.CreateInterface.PrintStreamFactory;
+import org.freedesktop.dbus.bin.PrintStreamFactory;
 
 /**
  * A factory using a byte array input stream
