@@ -13,7 +13,6 @@ package org.freedesktop.dbus.viewer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.io.StringReader;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -29,7 +28,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.freedesktop.dbus.bin.CreateInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 
 @SuppressWarnings("serial")
@@ -75,13 +73,9 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                 public void run() {
 
                     StringStreamFactory factory = new StringStreamFactory();
-                    CreateInterface createInterface = new CreateInterface(factory, false);
                     try {
                         String xml = introspectable.Introspect();
 
-                        String docType = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
-
-                        createInterface.createInterface(new StringReader(xml.replace(docType, "")), null);
                         final JTabbedPane tabbedPane = new JTabbedPane();
 
                         tabbedPane.addTab(xmlFile, createSourceTab(xmlFile, xml));

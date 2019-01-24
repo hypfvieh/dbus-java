@@ -68,7 +68,7 @@ public class InterfaceCodeGenerator {
      * @return List of Filenames and contents for the files
      * @throws Exception on DBUS or IO errors
      */
-    Map<File, String> analyze(boolean _ignoreDtd) throws Exception {
+    public Map<File, String> analyze(boolean _ignoreDtd) throws Exception {
         if (_ignoreDtd) { // if dtd validation is disabled (default)
             docFac.setValidating(false);
             docFac.setNamespaceAware(true);
@@ -285,7 +285,7 @@ public class InterfaceCodeGenerator {
             String resultType;
             if (outputArgs.size() > 1) { // multi-value return
             	logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
-            	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses); 
+            	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
             }
             logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
             resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(new ArrayList<>(outputArgs.keySet()).get(0));
@@ -293,7 +293,7 @@ public class InterfaceCodeGenerator {
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
             classMethod.getArguments().putAll(inputArgs);
             _clzBldr.getMethods().add(classMethod);
-            
+
         } else { // method has no arguments
 
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), "void", false);
@@ -306,7 +306,7 @@ public class InterfaceCodeGenerator {
 
     /**
      * Creates a Tuple extending class to encapsulate a multi-value return (which is not supported by Java natively).
-     * 
+     *
      * @param _outputArgs Map with return arguments (key) and their types (value)
      * @param _className name the tuple class should get
      * @param _parentClzBldr parent class where the tuple was required in
@@ -317,16 +317,16 @@ public class InterfaceCodeGenerator {
     	if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
     		return null;
     	}
-    	
+
     	ClassBuilderInfo info = new ClassBuilderInfo();
     	info.setClassName(_className);
     	info.setPackageName(_parentClzBldr.getPackageName());
     	info.setExtendClass(Tuple.class.getName());
- 
+
     	if (!_outputArgs.isEmpty()) {
     		info.getImports().add(Position.class.getName());
     	}
-    	
+
     	int position = 0;
     	for (Entry<String, String> entry : _outputArgs.entrySet()) {
     		ClassMember member = new ClassMember(entry.getKey(), entry.getValue(), true);
@@ -334,9 +334,9 @@ public class InterfaceCodeGenerator {
 		}
         ClassConstructor cnstrct = new ClassConstructor();
         cnstrct.getArguments().putAll(_outputArgs);
-        
+
     	_additionalClasses.add(info);
-    	
+
 		return info.getFqcn();
 	}
 
