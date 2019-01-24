@@ -339,4 +339,9 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> map) {
         return map;
     }
+    
+    @Override
+    public SampleStruct returnSamplestruct( SampleStruct s ){
+        return s;
+    }
 }

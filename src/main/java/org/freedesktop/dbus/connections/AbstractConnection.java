@@ -510,10 +510,7 @@ public abstract class AbstractConnection implements Closeable {
     public <A> void callWithCallback(DBusInterface object, String m, CallbackHandler<A> callback,
             Object... parameters) {
         logger.trace("callWithCallback({}, {}, {})", object, m, callback);
-        Class<?>[] types = new Class[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            types[i] = parameters[i].getClass();
-        }
+        Class<?>[] types = createTypesArray( parameters );
         RemoteObject ro = getImportedObjects().get(object);
 
         try {
@@ -546,10 +543,7 @@ public abstract class AbstractConnection implements Closeable {
      * @return A handle to the call.
      */
     public DBusAsyncReply<?> callMethodAsync(DBusInterface object, String m, Object... parameters) {
-        Class<?>[] types = new Class[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            types[i] = parameters[i].getClass();
-        }
+        Class<?>[] types = createTypesArray( parameters );
         RemoteObject ro = getImportedObjects().get(object);
 
         try {
@@ -568,6 +562,20 @@ public abstract class AbstractConnection implements Closeable {
             logger.debug("", e);
             throw new DBusExecutionException(e.getMessage());
         }
+    }
+    
+    private Class<?>[] createTypesArray( Object... parameters ){
+        Class<?>[] types = new Class[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            types[i] = parameters[i].getClass();
+            if( parameters[i] instanceof java.util.List<?> ){
+                try{
+                    types[i] = Class.forName( "java.util.List" );
+                }catch( ClassNotFoundException ex ){}
+            }
+        }
+    
+        return types;
     }
 
     protected void handleException(AbstractConnection dbusConnection, Message methodOrSignal,
