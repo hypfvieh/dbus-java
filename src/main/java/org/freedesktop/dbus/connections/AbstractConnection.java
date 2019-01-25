@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -563,19 +564,25 @@ public abstract class AbstractConnection implements Closeable {
             throw new DBusExecutionException(e.getMessage());
         }
     }
-    
-    private Class<?>[] createTypesArray( Object... parameters ){
-        Class<?>[] types = new Class[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            types[i] = parameters[i].getClass();
-            if( parameters[i] instanceof java.util.List<?> ){
-                try{
-                    types[i] = Class.forName( "java.util.List" );
-                }catch( ClassNotFoundException ex ){}
-            }
+
+    private Class<?>[] createTypesArray(Object... parameters) {
+        if (parameters == null) {
+            return null;
         }
-    
-        return types;
+        return Arrays.stream(parameters)
+                .filter(p -> p != null) // do no try to convert null values to concrete class
+                .map(p -> {
+                    if (List.class.isAssignableFrom(p.getClass())) { // turn possible List subclasses (e.g. ArrayList) to interface class List
+                        return List.class;
+                    } else if (Map.class.isAssignableFrom(p.getClass())) { // do the same for Map subclasses
+                        return Map.class;
+                    } else if (Set.class.isAssignableFrom(p.getClass())) { // and also for Set subclasses
+                        return Set.class;
+                    } else {
+                        return p.getClass();
+                    }
+                })
+                .toArray(Class[]::new);
     }
 
     protected void handleException(AbstractConnection dbusConnection, Message methodOrSignal,
