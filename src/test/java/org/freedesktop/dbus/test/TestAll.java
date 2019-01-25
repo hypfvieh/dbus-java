@@ -73,6 +73,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.util.TimeMeasure;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 /**
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
@@ -643,6 +645,75 @@ public class TestAll {
         SampleNewInterface tni = tri2.getNew();
 
         assertEquals(tni.getName(), SampleNewInterfaceClass.class.getSimpleName());
+    }
+    
+    @Test
+    public void testNestedListsAsync() throws DBusException, InterruptedException {
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        List<List<Integer>> lli = new ArrayList<>();
+        List<Integer> li = new ArrayList<>();
+        li.add(57);
+        lli.add(li);
+
+        DBusAsyncReply<List<List<Integer>>> checklistReply = (DBusAsyncReply<List<List<Integer>>>) clientconn.callMethodAsync(tri2, "checklist",
+                lli);
+
+        // wait a bit to allow the async call to complete
+        Thread.sleep(500L);
+
+        assertIterableEquals(lli, checklistReply.getReply(), "did not get back the same as sent in async" );
+        assertIterableEquals(li, checklistReply.getReply().get(0));
+    }
+    
+    @Test
+    public void testNestedListsCallback() throws DBusException, InterruptedException {
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        List<List<Integer>> lli = new ArrayList<>();
+        List<Integer> li = new ArrayList<>();
+        li.add(25);
+        lli.add(li);
+        
+        NestedListCallbackHandler cbHandle = new NestedListCallbackHandler();
+
+        clientconn.callWithCallback( tri2, "checklist", cbHandle, lli );
+
+        // wait a bit to allow the async call to complete
+        Thread.sleep(500L);
+        
+        assertIterableEquals(lli, cbHandle.getRetval(), "did not get back the same as sent in async" );
+        assertIterableEquals(li, cbHandle.getRetval().get(0));
+    }
+    
+    private class NestedListCallbackHandler implements CallbackHandler<List<List<Integer>>> {
+            private List<List<Integer>> retval;
+            
+            @Override
+            public void handle(List<List<Integer>> r) {
+                retval = r;
+            }
+
+            @Override
+            public void handleError(DBusExecutionException e) {
+            }
+            
+            List<List<Integer>> getRetval(){
+                return retval;
+            }
+    }
+    
+    @Test
+    public void testStructAsync() throws DBusException, InterruptedException {
+        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        SampleStruct struct = new SampleStruct( "fizbuzz", new UInt32( 5248 ), new Variant<Integer>( 2234 ) );
+        
+
+        DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
+                struct);
+
+        // wait a bit to allow the async call to complete
+        Thread.sleep(500L);
+
+        assertEquals(struct, structReply.getReply(), "struct did not match" );
     }
 
 }
