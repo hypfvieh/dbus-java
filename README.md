@@ -6,6 +6,14 @@ Most import issues should be easily fixable by using 'Organize Imports'.
 Using this version as replacement for 2.7.x however, will not work without changing your code as well.
 
 #### Changes
+
+##### Changes in 3.0.1
+  - New tool (org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator) to create apropriate java classes/interfaces from introspection XML (beta, will replace org.freedesktop.dbus.bin.CreateInterface)
+  - Some smaller fixes for old interface creation tool (org.freedesktop.dbus.bin.CreateInterface) (see #34,#35,#36, thanks to [sshort](https://github.com/sshort))
+  - Added support for reading dbus machine-id from /etc (thanks to [michivi](https://github.com/michivi))
+  - Fixed some issues with different Locale settings (thanks to [littlefreaky](https://github.com/littlefreaky))
+  - Fixed marshalling issue (#21/#26, (thanks to [littlefreaky](https://github.com/littlefreaky)))
+
 ##### Changes in 3.0
   - Requires Java 8
   - Refactored AbstractConnection and all classes depending on it
