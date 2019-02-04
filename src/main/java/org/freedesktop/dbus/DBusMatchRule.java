@@ -45,6 +45,13 @@ public class DBusMatchRule {
         this.member = _member;
     }
 
+    public DBusMatchRule(String _type, String _iface, String _member, String _object) {
+        this.type = _type;
+        this.iface = _iface;
+        this.member = _member;
+        this.object = _object;
+    }
+
     public DBusMatchRule(DBusExecutionException e) throws DBusException {
         this(e.getClass());
         member = null;

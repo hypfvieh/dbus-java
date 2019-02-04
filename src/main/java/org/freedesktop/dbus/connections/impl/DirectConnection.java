@@ -293,6 +293,35 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
+    protected void removeGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
+        SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
+        synchronized (getGenericHandledSignals()) {
+            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+            if (null != v) {
+                v.remove(handler);
+                if (0 == v.size()) {
+                    getGenericHandledSignals().remove(key);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
+        SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
+        synchronized (getGenericHandledSignals()) {
+            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+            if (null == v) {
+                v = new ArrayList<>();
+                v.add(handler);
+                getGenericHandledSignals().put(key, v);
+            } else {
+                v.add(handler);
+            }
+        }
+    }
+
+    @Override
     public DBusInterface getExportedObject(String source, String path) throws DBusException {
         return getExportedObject(path);
     }

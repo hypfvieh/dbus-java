@@ -73,7 +73,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.util.TimeMeasure;
+import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.test.helper.signals.handler.GenericHandlerWithDecode;
+import org.freedesktop.dbus.test.helper.signals.handler.GenericSignalHandler;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 /**
@@ -177,6 +181,45 @@ public class TestAll {
         clientconn.removeSigHandler(SampleSignals.TestEmptySignal.class, esh);
         clientconn.removeSigHandler(SampleSignals.TestRenamedSignal.class, rsh);
 
+    }
+
+    @Test
+    public void testGenericSignalHandler() throws DBusException, InterruptedException {
+        GenericSignalHandler genericHandler = new GenericSignalHandler();
+        DBusMatchRule signalRule = new DBusMatchRule( "signal", "org.foo", "methodnoarg", "/" );
+
+        clientconn.addGenericSigHandler(signalRule, genericHandler);
+
+        DBusSignal signalToSend = new DBusSignal( null, "/", "org.foo", "methodnoarg", null );
+
+        serverconn.sendSignal( signalToSend );
+
+        // wait some time to receive signals
+        Thread.sleep(1000L);
+
+        // ensure callback has been fired at least once
+        assertTrue(genericHandler.getActualTestRuns() == 1, "GenericHandler should have been called");
+
+        clientconn.removeGenericSigHandler(signalRule, genericHandler);
+    }
+
+    @Test
+    public void testGenericDecodeSignalHandler() throws DBusException, InterruptedException {
+        GenericHandlerWithDecode genericDecode = new GenericHandlerWithDecode( new UInt32(42), "SampleString" );
+        DBusMatchRule signalRule = new DBusMatchRule( "signal", "org.foo", "methodarg", "/" );
+
+        clientconn.addGenericSigHandler(signalRule, genericDecode);
+
+        DBusSignal signalToSend = new DBusSignal( null, "/", "org.foo", "methodarg", "us", new UInt32(42), "SampleString" );
+
+        serverconn.sendSignal( signalToSend );
+
+        // wait some time to receive signals
+        Thread.sleep(1000L);
+
+        genericDecode.incomingSameAsExpected();
+
+        clientconn.removeGenericSigHandler(signalRule, genericDecode);
     }
 
     @Test

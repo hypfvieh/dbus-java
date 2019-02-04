@@ -942,6 +942,49 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
+    @Override
+    public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
+        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
+        synchronized (getGenericHandledSignals()) {
+            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+            if (null != v) {
+                v.remove(_handler);
+                if (0 == v.size()) {
+                    getGenericHandledSignals().remove(key);
+                    try {
+                        dbus.RemoveMatch(_rule.toString());
+                    } catch (NotConnected exNc) {
+                        logger.debug("No connection.", exNc);
+                    } catch (DBusExecutionException dbee) {
+                        logger.debug("", dbee);
+                        throw new DBusException(dbee);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
+        try {
+            dbus.AddMatch(_rule.toString());
+        } catch (DBusExecutionException dbee) {
+            logger.debug("", dbee);
+            throw new DBusException(dbee.getMessage());
+        }
+        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
+        synchronized (getGenericHandledSignals()) {
+            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+            if (null == v) {
+                v = new ArrayList<>();
+                v.add(_handler);
+                getGenericHandledSignals().put(key, v);
+            } else {
+                v.add(_handler);
+            }
+        }
+    }
+
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
