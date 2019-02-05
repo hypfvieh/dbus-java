@@ -699,6 +699,7 @@ public class TestAll {
         li.add(57);
         lli.add(li);
 
+        @SuppressWarnings("unchecked")
         DBusAsyncReply<List<List<Integer>>> checklistReply = (DBusAsyncReply<List<List<Integer>>>) clientconn.callMethodAsync(tri2, "checklist",
                 lli);
 
@@ -751,6 +752,7 @@ public class TestAll {
         SampleStruct struct = new SampleStruct( "fizbuzz", new UInt32( 5248 ), new Variant<Integer>( 2234 ) );
 
 
+        @SuppressWarnings("unchecked")
         DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
                 struct);
 
