@@ -41,10 +41,10 @@
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>${maven.compiler.source}</version>
-                                </requireJavaVersion> 
+                                </requireJavaVersion>
                                <requireOS>
                                    <family>unix</family>
-                                </requireOS>         
+                                </requireOS>
                             </rules>
                         </configuration>
                     </execution>
@@ -93,7 +93,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <systemPropertyVariables>
                         <logback.configurationFile>${basedir}/src/test/resources/logback.xml</logback.configurationFile>
@@ -112,7 +112,7 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
     <dependencies>
 
         <dependency>
@@ -161,14 +161,14 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>1.2.3</version>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
         <!-- Mockito mocking framework. -->
@@ -225,7 +225,7 @@
         </contributor>
         <contributor>
             <name>sshort</name>
-            <url>https://github.com/sshort</url>            
+            <url>https://github.com/sshort</url>
         </contributor>
         <contributor>
             <name>michivi</name>
