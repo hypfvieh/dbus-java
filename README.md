@@ -7,6 +7,11 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
+##### Changes in 3.0.2 (upcoming, not released yet)
+  - Added support for handling various DBus signals without the need to create a specific interface class (thanks to [rm5248](https://github.com/rm5248))
+  - Fixed issue with List containing another List (thanks to [rm5248](https://github.com/rm5248))
+
+
 ##### Changes in 3.0.1
   - New tool (org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator) to create apropriate java classes/interfaces from introspection XML (beta, will replace org.freedesktop.dbus.bin.CreateInterface)
   - Some smaller fixes for old interface creation tool (org.freedesktop.dbus.bin.CreateInterface) (see [#34](https://github.com/hypfvieh/dbus-java/issues/34),[#35](https://github.com/hypfvieh/dbus-java/issues/35),[#36](https://github.com/hypfvieh/dbus-java/issues/36), thanks to [sshort](https://github.com/sshort))
@@ -39,4 +44,8 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes by others:
   - Thanks to [thjomnx](https://github.com/thjomnx) for support of PropertiesChanged signal class
   - Thanks to [RafalSumislawski](https://github.com/RafalSumislawski) for support of org.freedesktop.DBus.ObjectManager
-  - Thanks to [lbeuster](https://github.com/lbeuster) for improvments and Mac support
+  - Thanks to [lbeuster](https://github.com/lbeuster) for improvements and Mac support
+  - Thanks to [littlefreaky](https://github.com/littlefreaky) for various bug fixes and charset issue fixes
+  - Thanks to [michivi](https://github.com/michivi) for adding support of dbus-machine-id file on different locations
+  - Thanks to [sshort](https://github.com/sshort) for fixing some issues in old CreateInterface tool 
+  - Thanks to [rm5248](https://github.com/rm5248) for fixing issues with Lists containing Lists and adding support of handling various signals on DBus
