@@ -301,7 +301,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Send a message to the DBus daemon.
+     * Send a message or signal to the DBus daemon.
      * @param _message message to send
      */
     public void sendMessage(Message _message) {
@@ -313,24 +313,6 @@ public abstract class AbstractConnection implements Closeable {
     	};
 
     	senderService.execute(runnable);
-    }
-
-    /**
-     * Send a message to the DBus daemon.  Generally, prefer to use
-     * {@link #sendMessage(Message) sendMessage} method instead.  This is most
-     * useful when you need to send a generic signal that you fill in yourself.
-     *
-     * @param _message The signal to send
-     */
-    public void sendSignal(DBusSignal _message) {
-        Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				sendMessageInternally(_message);
-			}
-        };
-
-        senderService.execute(runnable);
     }
 
     /**
@@ -778,52 +760,54 @@ public abstract class AbstractConnection implements Closeable {
     })
     private void handleMessage(final DBusSignal _signal, boolean _useThreadPool) {
         logger.debug("Handling incoming signal: ", _signal);
-        List<DBusSigHandler<? extends DBusSignal>> v = new ArrayList<>();
-        List<DBusSigHandler<DBusSignal>> handler_generic = new ArrayList<>();
+
+        List<DBusSigHandler<? extends DBusSignal>> handlers = new ArrayList<>();
+        List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
+
         synchronized (getHandledSignals()) {
             List<DBusSigHandler<? extends DBusSignal>> t;
             t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
             if (null != t) {
-                v.addAll(t);
+                handlers.addAll(t);
             }
             t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
             if (null != t) {
-                v.addAll(t);
+                handlers.addAll(t);
             }
             t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
             if (null != t) {
-                v.addAll(t);
+                handlers.addAll(t);
             }
             t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
             if (null != t) {
-                v.addAll(t);
+                handlers.addAll(t);
             }
         }
         synchronized (getGenericHandledSignals()) {
             List<DBusSigHandler<DBusSignal>> t;
             t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
             if (null != t) {
-                handler_generic.addAll(t);
+                genericHandlers.addAll(t);
             }
             t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
             if (null != t) {
-                handler_generic.addAll(t);
+                genericHandlers.addAll(t);
             }
             t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
             if (null != t) {
-                handler_generic.addAll(t);
+                genericHandlers.addAll(t);
             }
             t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
             if (null != t) {
-                handler_generic.addAll(t);
+                genericHandlers.addAll(t);
             }
         }
-        if (0 == v.size() && 0 == handler_generic.size()) {
+        if (0 == handlers.size() && 0 == genericHandlers.size()) {
             return;
         }
 
         final AbstractConnection conn = this;
-        for (final DBusSigHandler<? extends DBusSignal> h : v) {
+        for (final DBusSigHandler<? extends DBusSignal> h : handlers) {
             logger.trace("Adding Runnable for signal {} with handler {}",  _signal, h);
             Runnable command = new Runnable() {
 
@@ -838,8 +822,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
                     } catch (DBusException _ex) {
-                        logger.warn("Exception while running signal handler '{}' for signal '{}': {}", h, _signal, _ex);
-                        logger.warn("Stack trace: ", _ex);
+                        logger.warn("Exception while running signal handler '{}' for signal '{}':", h, _signal, _ex);
                         handleException(conn, _signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
                                 + "." + _signal.getName() + ": " + _ex.getMessage()));
                     }
@@ -852,13 +835,13 @@ public abstract class AbstractConnection implements Closeable {
             }
         }
 
-        for (final DBusSigHandler<DBusSignal> h : handler_generic) {
+        for (final DBusSigHandler<DBusSignal> h : genericHandlers) {
             logger.trace("Adding Runnable for signal {} with handler {}",  _signal, h);
             Runnable command = new Runnable() {
 
                 @Override
                 public void run() {
-                    ((DBusSigHandler<DBusSignal>) h).handle(_signal);
+                    h.handle(_signal);
                 }
             };
             if (_useThreadPool) {
