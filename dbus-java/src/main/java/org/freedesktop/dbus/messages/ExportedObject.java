@@ -49,15 +49,20 @@ public class ExportedObject {
         }
         introspectiondata = "";
         methods = getExportedMethods(_object.getClass());
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n" + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n" + "  </method>\n" + " </interface>\n";
+        introspectiondata +=
+                " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n"
+                        + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
+        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n"
+                + "  </method>\n" + " </interface>\n";
     }
 
     private String getAnnotations(AnnotatedElement c) {
         String ans = "";
         for (Annotation a : c.getDeclaredAnnotations()) {
 
-            if (!a.annotationType().isAssignableFrom(DBusInterface.class)) { // skip all interfaces not compatible with DBusInterface (mother of all DBus related interfaces)
+            if (!a.annotationType().isAssignableFrom(DBusInterface.class)) { // skip all interfaces not compatible with
+                                                                             // DBusInterface (mother of all DBus
+                                                                             // related interfaces)
                 continue;
             }
             Class<?> t = a.annotationType();
@@ -71,7 +76,8 @@ public class ExportedObject {
                 // ignore
             }
 
-            ans += "  <annotation name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(t.getName()).replaceAll(".") + "\" value=\"" + value + "\" />\n";
+            ans += "  <annotation name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(t.getName()).replaceAll(".")
+                    + "\" value=\"" + value + "\" />\n";
         }
         return ans;
     }
@@ -95,9 +101,12 @@ public class ExportedObject {
                         throw new DBusException("DBusInterfaces cannot be declared outside a package");
                     }
                     if (c.getName().length() > AbstractConnection.MAX_NAME_LENGTH) {
-                        throw new DBusException("Introspected interface name exceeds 255 characters. Cannot export objects of type " + c.getName());
+                        throw new DBusException(
+                                "Introspected interface name exceeds 255 characters. Cannot export objects of type "
+                                        + c.getName());
                     } else {
-                        introspectiondata += " <interface name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".") + "\">\n";
+                        introspectiondata += " <interface name=\""
+                                + AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".") + "\">\n";
                     }
                 }
                 introspectiondata += getAnnotations(c);
@@ -111,13 +120,19 @@ public class ExportedObject {
                             name = meth.getName();
                         }
                         if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException("Introspected method name exceeds 255 characters. Cannot export objects with method " + name);
+                            throw new DBusException(
+                                    "Introspected method name exceeds 255 characters. Cannot export objects with method "
+                                            + name);
                         }
                         introspectiondata += "  <method name=\"" + name + "\" >\n";
                         introspectiondata += getAnnotations(meth);
                         for (Class<?> ex : meth.getExceptionTypes()) {
                             if (DBusExecutionException.class.isAssignableFrom(ex)) {
-                                introspectiondata += "   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(ex.getName()).replaceAll(".") + "\" />\n";
+                                introspectiondata +=
+                                        "   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\""
+                                                + AbstractConnection.DOLLAR_PATTERN.matcher(ex.getName())
+                                                        .replaceAll(".")
+                                                + "\" />\n";
                             }
                         }
                         for (Type pt : meth.getGenericParameterTypes()) {
@@ -160,7 +175,9 @@ public class ExportedObject {
                             name = sig.getSimpleName();
                         }
                         if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException("Introspected signal name exceeds 255 characters. Cannot export objects with signals of type " + name);
+                            throw new DBusException(
+                                    "Introspected signal name exceeds 255 characters. Cannot export objects with signals of type "
+                                            + name);
                         }
                         introspectiondata += "  <signal name=\"" + name + "\">\n";
                         Constructor<?> con = sig.getConstructors()[0];

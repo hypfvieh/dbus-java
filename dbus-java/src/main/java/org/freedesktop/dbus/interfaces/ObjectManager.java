@@ -13,7 +13,7 @@ import org.freedesktop.dbus.types.Variant;
 public interface ObjectManager extends DBusInterface {
     /**
      * Get a sub-tree of objects. The root of the sub-tree is this object.
-     * 
+     *
      * @return A Map from object path (DBusInterface) to a Map from interface name to a properties Map (as returned by
      *         Properties.GetAll())
      */
@@ -38,6 +38,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
+         *
          * @return DBusPath
          */
         public DBusPath getSignalSource() {
@@ -50,9 +51,9 @@ public interface ObjectManager extends DBusInterface {
         }
 
         /**
-         * Returns the added interfaces.
-         * Key is a DBus interface name (like org.bluez.Device1).
-         * Value is a Map with properties known for the new device.
+         * Returns the added interfaces. Key is a DBus interface name (like org.bluez.Device1). Value is a Map with
+         * properties known for the new device.
+         *
          * @return Map
          */
         public Map<String, Map<String, Variant<?>>> getInterfaces() {
@@ -80,6 +81,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * The source DBus object path (e.g. /org/bluez/hci0/dev_00_11_22_33_44_55).
+         *
          * @return DBusPath
          */
         public DBusPath getSignalSource() {
@@ -92,6 +94,7 @@ public interface ObjectManager extends DBusInterface {
 
         /**
          * Returns list of removed DBus interfaces (like org.bluez.Device1).
+         *
          * @return List
          */
         public List<String> getInterfaces() {

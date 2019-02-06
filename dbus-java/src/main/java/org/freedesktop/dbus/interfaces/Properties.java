@@ -9,12 +9,13 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 
 /**
-* A standard properties interface.
-*/
+ * A standard properties interface.
+ */
 @DBusInterfaceName("org.freedesktop.DBus.Properties")
 public interface Properties extends DBusInterface {
     /**
      * Get the value for the given property.
+     *
      * @param <A> whatever
      * @param interface_name The interface this property is associated with.
      * @param property_name The name of the property.
@@ -24,6 +25,7 @@ public interface Properties extends DBusInterface {
 
     /**
      * Set the value for the given property.
+     *
      * @param <A> whatever
      * @param interface_name The interface this property is associated with.
      * @param property_name The name of the property.
@@ -33,6 +35,7 @@ public interface Properties extends DBusInterface {
 
     /**
      * Get all properties and values.
+     *
      * @param interface_name The interface the properties is associated with.
      * @return The properties mapped to their values.
      */
@@ -43,12 +46,12 @@ public interface Properties extends DBusInterface {
      */
     public static class PropertiesChanged extends DBusSignal {
         private final Map<String, Variant<?>> propertiesChanged;
-        private final List<String>         propertiesRemoved;
-        
-        private final String interfaceName;
-        
+        private final List<String>            propertiesRemoved;
 
-        public PropertiesChanged(String _path, String _interfaceName, Map<String, Variant<?>> _propertiesChanged, List<String> _propertiesRemoved) throws DBusException {
+        private final String                  interfaceName;
+
+        public PropertiesChanged(String _path, String _interfaceName, Map<String, Variant<?>> _propertiesChanged,
+                List<String> _propertiesRemoved) throws DBusException {
             super(_path, _interfaceName, _propertiesChanged, _propertiesRemoved);
 
             this.propertiesChanged = _propertiesChanged;
@@ -58,16 +61,16 @@ public interface Properties extends DBusInterface {
 
         /**
          * Get name of the interface created this signal (e.g. org.bluez.Adapter1).
+         *
          * @return String
          */
         public String getInterfaceName() {
             return interfaceName;
         }
 
-        
         /**
-         * Return the changed properties.
-         * Key is the properties name, value is Variant containing any type.
+         * Return the changed properties. Key is the properties name, value is Variant containing any type.
+         *
          * @return Map
          */
         public Map<String, Variant<?>> getPropertiesChanged() {
@@ -75,7 +78,8 @@ public interface Properties extends DBusInterface {
         }
 
         /**
-         * Returns a list of removed property keys.        
+         * Returns a list of removed property keys.
+         *
          * @return List
          */
         public List<String> getPropertiesRemoved() {

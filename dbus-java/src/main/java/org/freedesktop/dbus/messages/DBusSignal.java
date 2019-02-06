@@ -48,7 +48,7 @@ public class DBusSignal extends Message {
             new ConcurrentHashMap<>();
     private static final Map<String, String>                                                 INT_NAMES         =
             new ConcurrentHashMap<>();
-    
+
     private final Logger                                                                     logger            =
             LoggerFactory.getLogger(getClass());
 
@@ -59,7 +59,8 @@ public class DBusSignal extends Message {
     DBusSignal() {
     }
 
-    public DBusSignal(String source, String path, String iface, String member, String sig, Object... args) throws DBusException {
+    public DBusSignal(String source, String path, String iface, String member, String sig, Object... args)
+            throws DBusException {
         super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
 
         if (null == path || null == member || null == iface) {
@@ -119,7 +120,7 @@ public class DBusSignal extends Message {
         marshallint(getByteCounter() - counter, blen, 0, 4);
         bodydone = true;
     }
-  
+
     static void addInterfaceMap(String java, String dbus) {
         INT_NAMES.put(dbus, java);
     }
@@ -128,7 +129,8 @@ public class DBusSignal extends Message {
         SIGNAL_NAMES.put(dbus, java);
     }
 
-    static DBusSignal createSignal(Class<? extends DBusSignal> c, String source, String objectpath, String sig, long serial, Object... parameters) throws DBusException {
+    static DBusSignal createSignal(Class<? extends DBusSignal> c, String source, String objectpath, String sig,
+            long serial, Object... parameters) throws DBusException {
         String type = "";
         if (null != c.getEnclosingClass()) {
             if (null != c.getEnclosingClass().getAnnotation(DBusInterfaceName.class)) {
@@ -138,13 +140,14 @@ public class DBusSignal extends Message {
             }
 
         } else {
-            throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
+            throw new DBusException(
+                    "Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
         }
         DBusSignal s = new InternalSignal(source, objectpath, type, c.getSimpleName(), sig, serial, parameters);
         s.clazz = c;
         return s;
     }
-    
+
     @SuppressWarnings("unchecked")
     private static Class<? extends DBusSignal> createSignalClass(String intname, String signame) throws DBusException {
         String name = intname + '$' + signame;
@@ -213,7 +216,7 @@ public class DBusSignal extends Message {
                 params[0] = getPath();
                 System.arraycopy(args, 0, params, 1, args.length);
 
-                logger.debug("Creating signal of type {} with parameters {}", clazz , Arrays.deepToString(params));
+                logger.debug("Creating signal of type {} with parameters {}", clazz, Arrays.deepToString(params));
                 s = con.newInstance(params);
             }
             s.getHeaders().putAll(getHeaders());
@@ -226,12 +229,12 @@ public class DBusSignal extends Message {
     }
 
     /**
-    * Create a new signal.
-    * This contructor MUST be called by all sub classes.
-    * @param objectpath The path to the object this is emitted from.
-    * @param args The parameters of the signal.
-    * @throws DBusException This is thrown if the subclass is incorrectly defined.
-    */
+     * Create a new signal. This contructor MUST be called by all sub classes.
+     *
+     * @param objectpath The path to the object this is emitted from.
+     * @param args The parameters of the signal.
+     * @throws DBusException This is thrown if the subclass is incorrectly defined.
+     */
     @SuppressWarnings("unchecked")
     protected DBusSignal(String objectpath, Object... args) throws DBusException {
         super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
@@ -250,7 +253,8 @@ public class DBusSignal extends Message {
         String iface = null;
         Class<? extends Object> enc = tc.getEnclosingClass();
         if (null == enc || !DBusInterface.class.isAssignableFrom(enc) || enc.getName().equals(enc.getSimpleName())) {
-            throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
+            throw new DBusException(
+                    "Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
         } else if (null != enc.getAnnotation(DBusInterfaceName.class)) {
             iface = enc.getAnnotation(DBusInterfaceName.class).value();
         } else {
@@ -283,7 +287,8 @@ public class DBusSignal extends Message {
             try {
                 Type[] types = TYPE_CACHE.get(tc);
                 if (null == types) {
-                    Constructor<? extends DBusSignal> con = (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
+                    Constructor<? extends DBusSignal> con =
+                            (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
                     CONSTRUCTOR_CACHE.put(tc, con);
                     Type[] ts = con.getGenericParameterTypes();
                     types = new Type[ts.length - 1];
@@ -340,6 +345,5 @@ public class DBusSignal extends Message {
     public String toString() {
         return "DBusSignal [clazz=" + clazz + "]";
     }
-    
-    
+
 }

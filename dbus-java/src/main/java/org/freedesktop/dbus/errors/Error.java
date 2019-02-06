@@ -38,7 +38,8 @@ public class Error extends Message {
         this(null, dest, errorName, replyserial, sig, args);
     }
 
-    public Error(String source, String dest, String errorName, long replyserial, String sig, Object... args) throws DBusException {
+    public Error(String source, String dest, String errorName, long replyserial, String sig, Object... args)
+            throws DBusException {
         super(Message.Endian.BIG, Message.MessageType.ERROR, (byte) 0);
 
         if (null == errorName) {
@@ -100,11 +101,13 @@ public class Error extends Message {
     }
 
     public Error(String source, Message m, Throwable e) throws DBusException {
-        this(source, m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
+        this(source, m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."),
+                m.getSerial(), "s", e.getMessage());
     }
 
     public Error(Message m, Throwable e) throws DBusException {
-        this(m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."), m.getSerial(), "s", e.getMessage());
+        this(m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(e.getClass().getName()).replaceAll("."),
+                m.getSerial(), "s", e.getMessage());
     }
 
     @SuppressWarnings("unchecked")
@@ -113,12 +116,12 @@ public class Error extends Message {
             return NotConnected.class;
         }
         Class<? extends DBusExecutionException> c = null;
-        
+
         // Fix package name for DBus own error messages
         if (name.startsWith("org.freedesktop.DBus.Error.")) {
             name = name.replace("org.freedesktop.DBus.Error.", "org.freedesktop.dbus.errors.");
         }
-        
+
         do {
             try {
                 c = (Class<? extends org.freedesktop.dbus.exceptions.DBusExecutionException>) Class.forName(name);
@@ -130,9 +133,10 @@ public class Error extends Message {
     }
 
     /**
-    * Turns this into an exception of the correct type
-    * @return exception
-    */
+     * Turns this into an exception of the correct type
+     *
+     * @return exception
+     */
     public DBusExecutionException getException() {
         try {
             Class<? extends DBusExecutionException> c = createExceptionClass(getName());
@@ -176,8 +180,8 @@ public class Error extends Message {
     }
 
     /**
-    * Throw this as an exception of the correct type
-    */
+     * Throw this as an exception of the correct type
+     */
     public void throwException() throws DBusExecutionException {
         throw getException();
     }
