@@ -10,7 +10,11 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes in 3.0.2 (upcoming, not released yet)
   - Added support for handling various DBus signals without the need to create a specific interface class (thanks to [rm5248](https://github.com/rm5248))
   - Fixed issue with List containing another List (thanks to [rm5248](https://github.com/rm5248))
-
+  - Changed project to multi-module. All tools (except DBusDaemon/DBusEmbeddedDaemon) are now part of the sub-module dbus-java-utils.
+    The dbus-java-utils sub-module is not required for dbus-java to work, it only contains standalone helper classes (like DBus interface class creation tool)
+  - Logback dependency for dbus-java is now test, so exclusions for logback are no longer required when using a different logger implementation
+  - Logback dependency for dbus-java-utils is runtime, as most of the helper classes need logging to show progress or issues. 
+    If you don't want to use logback when using dbus-java-utils, please specify an exclusion rule and add another slf4j logger in your pom 
 
 ##### Changes in 3.0.1
   - New tool (org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator) to create apropriate java classes/interfaces from introspection XML (beta, will replace org.freedesktop.dbus.bin.CreateInterface)
