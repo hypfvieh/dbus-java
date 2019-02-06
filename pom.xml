@@ -1,107 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>pom</packaging>
 
-    <groupId>com.github.hypfvieh</groupId>
-    <artifactId>dbus-java</artifactId>
-    <version>3.0.2-SNAPSHOT</version>
+	<groupId>com.github.hypfvieh</groupId>
+	<artifactId>dbus-java-parent</artifactId>
+	<version>3.0.2-SNAPSHOT</version>
 
-    <name>${project.artifactId}</name>
+	<name>${project.artifactId}</name>
+	<url>https://github.com/hypfvieh/${project.artifactId}</url>
 
-    <description>
-        Improved version of the DBus-Java library provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
-    </description>
+	<description>DBus-Java library module parent</description>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M2</version>
-                <executions>
-                    <execution>
-                        <id>enforce-maven</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.5.0</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>${maven.compiler.source}</version>
-                                </requireJavaVersion>
-                               <requireOS>
-                                   <family>unix</family>
-                                </requireOS>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.17</version>
-                <configuration>
-                    <signature>
-                        <groupId>org.codehaus.mojo.signature</groupId>
-                        <artifactId>java18</artifactId>
-                        <version>1.0</version>
-                    </signature>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>sniffer_check</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <logback.configurationFile>${basedir}/src/test/resources/logback.xml</logback.configurationFile>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
+	<modules>
+		<module>dbus-java</module>
+		<module>dbus-java-utils</module>
+	</modules>
 
-        </plugins>
+	<build>
+		<plugins>
+		</plugins>
+		
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -111,129 +39,234 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-    </build>
+		
+	</build>
 
-    <dependencies>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
-        <dependency>
-            <groupId>com.github.hypfvieh</groupId>
-            <artifactId>java-utils</artifactId>
-            <version>1.0.5</version>
-        </dependency>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.25</version>
+			</dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.2.3</version>
+			</dependency>
 
-        <!-- JUnit testing framework. -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>1.2.3</version>
+			</dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
+			<!-- JUnit testing framework. -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-api</artifactId>
+				<version>5.4.0-M1</version>
+			</dependency>
 
-        <!-- needed for IDE support -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
+				<version>5.4.0-M1</version>
+			</dependency>
 
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
+			<!-- needed for IDE support -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>5.4.0-M1</version>
+			</dependency>
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
-            <scope>test</scope>
-        </dependency>
+			<dependency>
+				<groupId>org.junit.platform</groupId>
+				<artifactId>junit-platform-launcher</artifactId>
+				<version>1.4.0-M1</version>
+			</dependency>
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
-            <scope>test</scope>
-        </dependency>
+			<!-- Mockito mocking framework. -->
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>2.23.4</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-        <!-- Mockito mocking framework. -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.23.4</version>
-            <scope>test</scope>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 
-    </dependencies>
+		<!-- JUnit testing framework. -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-    <scm>
-        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
-        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
-        <url>https://github.com/hypfvieh/dbus-java.git</url>
-    </scm>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-    <licenses>
-        <license>
-            <name>GNU Lesser/Library General Public License version 2</name>
-            <url>https://www.gnu.org/licenses/lgpl.html</url>
-        </license>
-    </licenses>
+		<!-- needed for IDE support -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-    <developers>
-        <developer>
-            <id>matthew</id>
-            <name>Matthew Johnson</name>
-            <email>src@matthew.ath.cx</email>
-        </developer>
-        <developer>
-            <id>hypfvieh</id>
-            <name>David M.</name>
-            <email>hypfvieh@googlemail.com</email>
-        </developer>
-    </developers>
-    <contributors>
-        <contributor>
-            <name>thjomnx</name>
-            <url>https://github.com/thjomnx</url>
-        </contributor>
-        <contributor>
-            <name>RafalSumislawski</name>
-            <url>https://github.com/RafalSumislawski</url>
-        </contributor>
-        <contributor>
-            <name>lbeuster</name>
-            <url>https://github.com/lbeuster</url>
-        </contributor>
-        <contributor>
-            <name>littlefreaky</name>
-            <url>https://github.com/littlefreaky</url>
-        </contributor>
-        <contributor>
-            <name>sshort</name>
-            <url>https://github.com/sshort</url>
-        </contributor>
-        <contributor>
-            <name>michivi</name>
-            <url>https://github.com/michivi</url>
-        </contributor>
-        <contributor>
-            <name>rm5248</name>
-            <url>https://github.com/rm5248</url>
-        </contributor>
-    </contributors>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Mockito mocking framework. -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<scm>
+		<connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
+		<developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
+		<url>https://github.com/hypfvieh/dbus-java.git</url>
+	</scm>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser/Library General Public License version 2</name>
+			<url>https://www.gnu.org/licenses/lgpl.html</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>matthew</id>
+			<name>Matthew Johnson</name>
+			<email>src@matthew.ath.cx</email>
+		</developer>
+		<developer>
+			<id>hypfvieh</id>
+			<name>David M.</name>
+			<email>hypfvieh@googlemail.com</email>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor>
+			<name>thjomnx</name>
+			<url>https://github.com/thjomnx</url>
+		</contributor>
+		<contributor>
+			<name>RafalSumislawski</name>
+			<url>https://github.com/RafalSumislawski</url>
+		</contributor>
+		<contributor>
+			<name>lbeuster</name>
+			<url>https://github.com/lbeuster</url>
+		</contributor>
+		<contributor>
+			<name>littlefreaky</name>
+			<url>https://github.com/littlefreaky</url>
+		</contributor>
+		<contributor>
+			<name>sshort</name>
+			<url>https://github.com/sshort</url>
+		</contributor>
+		<contributor>
+			<name>michivi</name>
+			<url>https://github.com/michivi</url>
+		</contributor>
+		<contributor>
+			<name>rm5248</name>
+			<url>https://github.com/rm5248</url>
+		</contributor>
+	</contributors>
+	
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+		            <plugin>
+		                <groupId>org.apache.maven.plugins</groupId>
+		                <artifactId>maven-release-plugin</artifactId>
+		                <version>2.5.3</version>
+		                <configuration>
+		                    <autoVersionSubmodules>true</autoVersionSubmodules>
+		                    <useReleaseProfile>false</useReleaseProfile>
+		                    <releaseProfiles>release</releaseProfiles>
+		                    <goals>deploy</goals>               
+		                </configuration>
+		            </plugin>
+				
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>				
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.0.1</version>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>				
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+    </profiles>
 </project>
