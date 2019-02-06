@@ -10,6 +10,7 @@
 */
 package org.freedesktop.dbus;
 
+import java.io.FileDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -85,10 +86,11 @@ public final class Marshalling {
         CLASS_TO_ARGUMENTTYPE.put(CharSequence.class, Message.ArgumentType.STRING);
         CLASS_TO_ARGUMENTTYPE.put(Variant.class, Message.ArgumentType.VARIANT);
 
+        CLASS_TO_ARGUMENTTYPE.put(FileDescriptor.class, Message.ArgumentType.FILEDESCRIPTOR);
+
         CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, Message.ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, Message.ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, Message.ArgumentType.OBJECT_PATH);
-
     }
 
     private Marshalling() {
@@ -394,6 +396,9 @@ public final class Marshalling {
                 case Message.ArgumentType.STRING:
                     _resultValue.add(CharSequence.class);
                     break;
+                case Message.ArgumentType.FILEDESCRIPTOR:
+                    _resultValue.add(FileDescriptor.class);
+                    break;
                 case Message.ArgumentType.SIGNATURE:
                     _resultValue.add(Type[].class);
                     break;
@@ -589,14 +594,14 @@ public final class Marshalling {
         if (_parameter instanceof DBusMap) {
             LOGGER.trace("Deserializing a Map");
             DBusMap<?,?> dmap = (DBusMap<?,?>) _parameter;
-            
+
             Type[] maptypes;
             if (_type instanceof ParameterizedType) {
                 maptypes = ((ParameterizedType) _type).getActualTypeArguments();
             } else {
                 maptypes = _parameter.getClass().getTypeParameters();
             }
-            
+
             for (int i = 0; i < dmap.entries.length; i++) {
                 dmap.entries[i][0] = deSerializeParameter(dmap.entries[i][0], maptypes[0], _conn);
                 dmap.entries[i][1] = deSerializeParameter(dmap.entries[i][1], maptypes[1], _conn);
@@ -615,29 +620,6 @@ public final class Marshalling {
                 continue;
             }
 
-            /* DO NOT DO THIS! IT'S REALLY NOT SUPPORTED!
-             * if (type instanceof Class &&
-               DBusSerializable.class.isAssignableFrom((Class) types[i])) {
-            for (Method m: ((Class) types[i]).getDeclaredMethods())
-               if (m.getName().equals("deserialize")) {
-                  Type[] newtypes = m.getGenericParameterTypes();
-                  try {
-                     Object[] sub = new Object[newtypes.length];
-                     System.arraycopy(parameters, i, sub, 0, newtypes.length);
-                     sub = deSerializeParameters(sub, newtypes, conn);
-                     DBusSerializable sz = (DBusSerializable) ((Class) types[i]).newInstance();
-                     m.invoke(sz, sub);
-                     Object[] compress = new Object[parameters.length - newtypes.length + 1];
-                     System.arraycopy(parameters, 0, compress, 0, i);
-                     compress[i] = sz;
-                     System.arraycopy(parameters, i + newtypes.length, compress, i+1, parameters.length - i - newtypes.length);
-                     parameters = compress;
-                  } catch (ArrayIndexOutOfBoundsException AIOOBe) {
-                     if (AbstractConnection.EXCEPTION_DEBUG && Debug.debug) Debug.print(Debug.ERR, AIOOBe);
-                     throw new DBusException("Not enough elements to create custom object from serialized data ("+(parameters.size()-i)+" < "+(newtypes.length)+")");
-                  }
-               }
-            } else*/
             _parameters.set(i, deSerializeParameter(_parameters.get(i), _type, _conn));
         }
         return _parameters;

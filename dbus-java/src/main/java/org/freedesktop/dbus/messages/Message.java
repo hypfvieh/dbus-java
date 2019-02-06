@@ -10,8 +10,12 @@
 */
 package org.freedesktop.dbus.messages;
 
+import java.io.FileDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -49,7 +53,7 @@ public class Message {
     private static final int OFFSET_DATA = 1;
     /** Position of signature offset in int array. */
     private static final int OFFSET_SIG = 0;
-    
+
     /** Keep a static reference to each size of padding array to prevent allocation. */
     private static byte[][] padding;
     static {
@@ -538,6 +542,10 @@ public class Message {
             case ArgumentType.INT16:
                 appendint(((Number) data).shortValue(), 2);
                 break;
+            case ArgumentType.FILEDESCRIPTOR:
+                int x = getFileDescriptor((FileDescriptor) data);
+                appendint(((Number) x).longValue(), 4);
+                break;
             case ArgumentType.STRING:
             case ArgumentType.OBJECT_PATH:
                 // Strings are marshalled as a UInt32 with the length,
@@ -753,7 +761,7 @@ public class Message {
             appendBytes(padding[a]);
         }
         logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
-        
+
     }
 
     /**
@@ -772,6 +780,7 @@ public class Message {
         case ArgumentType.FLOAT:
         case ArgumentType.INT32:
         case ArgumentType.UINT32:
+        case ArgumentType.FILEDESCRIPTOR:
         case ArgumentType.STRING:
         case ArgumentType.OBJECT_PATH:
         case ArgumentType.ARRAY:
@@ -908,9 +917,9 @@ public class Message {
             if (length > AbstractConnection.MAX_ARRAY_LENGTH) {
                 throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
             }
-            
+
             rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length);
-            
+
             if (_contained && !(rv instanceof List) && !(rv instanceof Map)) {
                 rv = ArrayFrob.listify(rv);
             }
@@ -940,6 +949,10 @@ public class Message {
             newofs[OFFSET_SIG] = 0;
             rv = new Variant<>(extract(sig, _dataBuf, newofs)[0], sig);
             _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
+            break;
+        case ArgumentType.FILEDESCRIPTOR:
+            rv = createFileDescriptorByReflection(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+            _offsets[OFFSET_DATA] += 4;
             break;
         case ArgumentType.STRING:
             length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
@@ -974,6 +987,28 @@ public class Message {
             }
         }
         return rv;
+    }
+
+    private int getFileDescriptor(FileDescriptor _data) throws MarshallingException {
+        Field declaredField;
+        try {
+            declaredField = _data.getClass().getDeclaredField("fd");
+            declaredField.setAccessible(true);
+            return declaredField.getInt(_data);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException _ex) {
+            logger.error("Could not get filedescriptor by reflection.", _ex);
+            throw new MarshallingException("Could not get member 'fd' of FileDescriptor by reflection!", _ex);
+        }
+    }
+
+    private FileDescriptor createFileDescriptorByReflection(long _demarshallint) throws MarshallingException {
+        try {
+            Constructor<FileDescriptor> constructor = FileDescriptor.class.getDeclaredConstructor(int.class);
+            return constructor.newInstance((int) _demarshallint);
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException _ex) {
+            logger.error("Could not create new FileDescriptor instance by reflection.", _ex);
+            throw new MarshallingException("Could not create new FileDescriptor instance by reflection", _ex);
+        }
     }
 
     private Object optimizePrimitives(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, long size, byte algn, int length)
@@ -1265,49 +1300,51 @@ public class Message {
     * There are two constants for each argument type,
     * as a byte or as a String (the _STRING version) */
     public interface ArgumentType {
-        String BYTE_STRING        = "y";
-        String BOOLEAN_STRING     = "b";
-        String INT16_STRING       = "n";
-        String UINT16_STRING      = "q";
-        String INT32_STRING       = "i";
-        String UINT32_STRING      = "u";
-        String INT64_STRING       = "x";
-        String UINT64_STRING      = "t";
-        String DOUBLE_STRING      = "d";
-        String FLOAT_STRING       = "f";
-        String STRING_STRING      = "s";
-        String OBJECT_PATH_STRING = "o";
-        String SIGNATURE_STRING   = "g";
-        String ARRAY_STRING       = "a";
-        String VARIANT_STRING     = "v";
-        String STRUCT_STRING      = "r";
-        String STRUCT1_STRING     = "(";
-        String STRUCT2_STRING     = ")";
-        String DICT_ENTRY_STRING  = "e";
-        String DICT_ENTRY1_STRING = "{";
-        String DICT_ENTRY2_STRING = "}";
+        String BYTE_STRING           = "y";
+        String BOOLEAN_STRING        = "b";
+        String INT16_STRING          = "n";
+        String UINT16_STRING         = "q";
+        String INT32_STRING          = "i";
+        String UINT32_STRING         = "u";
+        String INT64_STRING          = "x";
+        String UINT64_STRING         = "t";
+        String DOUBLE_STRING         = "d";
+        String FLOAT_STRING          = "f";
+        String STRING_STRING         = "s";
+        String OBJECT_PATH_STRING    = "o";
+        String SIGNATURE_STRING      = "g";
+        String FILEDESCRIPTOR_STRING = "h";
+        String ARRAY_STRING          = "a";
+        String VARIANT_STRING        = "v";
+        String STRUCT_STRING         = "r";
+        String STRUCT1_STRING        = "(";
+        String STRUCT2_STRING        = ")";
+        String DICT_ENTRY_STRING     = "e";
+        String DICT_ENTRY1_STRING    = "{";
+        String DICT_ENTRY2_STRING    = "}";
 
-        byte   BYTE               = 'y';
-        byte   BOOLEAN            = 'b';
-        byte   INT16              = 'n';
-        byte   UINT16             = 'q';
-        byte   INT32              = 'i';
-        byte   UINT32             = 'u';
-        byte   INT64              = 'x';
-        byte   UINT64             = 't';
-        byte   DOUBLE             = 'd';
-        byte   FLOAT              = 'f';
-        byte   STRING             = 's';
-        byte   OBJECT_PATH        = 'o';
-        byte   SIGNATURE          = 'g';
-        byte   ARRAY              = 'a';
-        byte   VARIANT            = 'v';
-        byte   STRUCT             = 'r';
-        byte   STRUCT1            = '(';
-        byte   STRUCT2            = ')';
-        byte   DICT_ENTRY         = 'e';
-        byte   DICT_ENTRY1        = '{';
-        byte   DICT_ENTRY2        = '}';
+        byte   BYTE                  = 'y';
+        byte   BOOLEAN               = 'b';
+        byte   INT16                 = 'n';
+        byte   UINT16                = 'q';
+        byte   INT32                 = 'i';
+        byte   UINT32                = 'u';
+        byte   INT64                 = 'x';
+        byte   UINT64                = 't';
+        byte   DOUBLE                = 'd';
+        byte   FLOAT                 = 'f';
+        byte   STRING                = 's';
+        byte   OBJECT_PATH           = 'o';
+        byte   SIGNATURE             = 'g';
+        byte   FILEDESCRIPTOR        = 'h';
+        byte   ARRAY                 = 'a';
+        byte   VARIANT               = 'v';
+        byte   STRUCT                = 'r';
+        byte   STRUCT1               = '(';
+        byte   STRUCT2               = ')';
+        byte   DICT_ENTRY            = 'e';
+        byte   DICT_ENTRY1           = '{';
+        byte   DICT_ENTRY2           = '}';
     }
 
     /** Defines constants representing the endianness of the message. */
