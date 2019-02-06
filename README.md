@@ -15,6 +15,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Logback dependency for dbus-java is now test, so exclusions for logback are no longer required when using a different logger implementation
   - Logback dependency for dbus-java-utils is runtime, as most of the helper classes need logging to show progress or issues. 
     If you don't want to use logback when using dbus-java-utils, please specify an exclusion rule and add another slf4j logger in your pom 
+  - Added support sending/receiving FileDescriptor (UNIX_FD, DBus type 'h') [#42](https://github.com/hypfvieh/dbus-java/issues/42)
 
 ##### Changes in 3.0.1
   - New tool (org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator) to create apropriate java classes/interfaces from introspection XML (beta, will replace org.freedesktop.dbus.bin.CreateInterface)
