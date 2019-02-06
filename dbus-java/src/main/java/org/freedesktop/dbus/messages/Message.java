@@ -1026,6 +1026,7 @@ public class Message {
     private FileDescriptor createFileDescriptorByReflection(long _demarshallint) throws MarshallingException {
         try {
             Constructor<FileDescriptor> constructor = FileDescriptor.class.getDeclaredConstructor(int.class);
+            constructor.setAccessible(true);
             return constructor.newInstance((int) _demarshallint);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException _ex) {
