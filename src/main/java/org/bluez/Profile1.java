@@ -1,5 +1,6 @@
 package org.bluez;
 
+import java.io.FileDescriptor;
 import java.util.Map;
 
 import org.bluez.exceptions.BluezCanceledException;
@@ -52,7 +53,7 @@ public interface Profile1 extends DBusInterface {
      * @throws BluezRejectedException when operation rejected
      * @throws BluezCanceledException when operation canceled
      */
-    void NewConnection(DBusPath _device, Object fd, Map<String, Variant<?>> _fd_properties) throws BluezRejectedException, BluezCanceledException;
+    void NewConnection(DBusPath _device, FileDescriptor fd, Map<String, Variant<?>> _fd_properties) throws BluezRejectedException, BluezCanceledException;
 
     /**
      * <b>From bluez documentation:</b><br>
