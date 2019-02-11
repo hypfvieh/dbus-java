@@ -45,6 +45,8 @@ import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
@@ -117,7 +119,7 @@ public abstract class AbstractConnection implements Closeable {
     private boolean                                                            weakreferences   = false;
     private boolean                                                            connected        = false;
 
-    private Transport                                                          transport;
+    private AbstractTransport                                                  transport;
     private ExecutorService                                                    workerThreadPool;
     private ExecutorService                                                    senderService;
 
@@ -146,7 +148,8 @@ public abstract class AbstractConnection implements Closeable {
 
         try {
             busAddress = new BusAddress(address);
-            transport = new Transport(busAddress, AbstractConnection.TIMEOUT);
+            transport = TransportFactory.createTransport(busAddress, AbstractConnection.TIMEOUT);
+            transport.start();
             connected = true;
         } catch (IOException | DBusException ioe) {
             logger.debug("Error creating transport", ioe);
@@ -480,7 +483,7 @@ public abstract class AbstractConnection implements Closeable {
         // disconnect from the transport layer
         try {
             if (transport != null) {
-                transport.disconnect();
+                transport.close();
                 transport = null;
             }
         } catch (IOException exIo) {

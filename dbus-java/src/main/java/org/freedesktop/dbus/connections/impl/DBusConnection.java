@@ -396,13 +396,14 @@ public final class DBusConnection extends AbstractConnection {
         if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name");
         }
+        try {
+            dbus.ReleaseName(_busname);
+        } catch (DBusExecutionException dbee) {
+            logger.debug("", dbee);
+            throw new DBusException(dbee.getMessage());
+        }
+        
         synchronized (this.busnames) {
-            try {
-                dbus.ReleaseName(_busname);
-            } catch (DBusExecutionException dbee) {
-                logger.debug("", dbee);
-                throw new DBusException(dbee.getMessage());
-            }
             this.busnames.remove(_busname);
         }
     }
@@ -420,27 +421,28 @@ public final class DBusConnection extends AbstractConnection {
         if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid bus name");
         }
+        
+        UInt32 rv;
+        try {
+            rv = dbus.RequestName(_busname,
+                    new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
+        } catch (DBusExecutionException dbee) {
+            logger.debug("", dbee);
+            throw new DBusException(dbee.getMessage());
+        }
+        switch (rv.intValue()) {
+        case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
+            break;
+        case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
+            throw new DBusException("Failed to register bus name");
+        case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
+            throw new DBusException("Failed to register bus name");
+        case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
+            break;
+        default:
+            break;
+        }
         synchronized (this.busnames) {
-            UInt32 rv;
-            try {
-                rv = dbus.RequestName(_busname,
-                        new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
-            } catch (DBusExecutionException dbee) {
-                logger.debug("", dbee);
-                throw new DBusException(dbee.getMessage());
-            }
-            switch (rv.intValue()) {
-            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-                break;
-            case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-                throw new DBusException("Failed to register bus name");
-            case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
-                throw new DBusException("Failed to register bus name");
-            case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-                break;
-            default:
-                break;
-            }
             this.busnames.add(_busname);
         }
     }
@@ -1005,7 +1007,9 @@ public final class DBusConnection extends AbstractConnection {
                 } catch (DBusException exDb) {
                 }
             } else if (_signal instanceof org.freedesktop.DBus.NameAcquired) {
-                busnames.add(((org.freedesktop.DBus.NameAcquired) _signal).name);
+                synchronized (busnames) {
+                    busnames.add(((org.freedesktop.DBus.NameAcquired) _signal).name);    
+                }                
             }
         }
     }

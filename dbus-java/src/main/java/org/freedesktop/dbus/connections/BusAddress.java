@@ -19,6 +19,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.util.TypeUtil;
+
 public class BusAddress {
     private final Logger        logger = LoggerFactory.getLogger(getClass());
 
@@ -66,11 +68,50 @@ public class BusAddress {
         return type;
     }
 
-    
-    public String getParameter(String key) {
-        return parameters.get(key);
+    public boolean isAbstract() {
+        return parameters.containsKey("abstract");
     }
 
+    public boolean isListeningSocket() {
+        return parameters.containsKey("listen");
+    }
+
+    public boolean hasPath() {
+        return parameters.containsKey("path");
+    }
+
+    public boolean hasHost() {
+        return parameters.containsKey("host");
+    }
+
+    public boolean hasPort() {
+        return parameters.containsKey("port");
+    }
+
+    public boolean hasGuid() {
+        return parameters.containsKey("guid");
+    }
+    
+    public String getAbstract() {
+        return parameters.get("abstract");
+    }
+    
+    public String getPath() {
+        return parameters.get("path");
+    }
+
+    public int getPort() {
+        return TypeUtil.isValidNetworkPort(parameters.get("port"), true) ? Integer.parseInt(parameters.get("port")) : null;
+    }
+
+    public String getHost() {
+        return parameters.get("host");
+    }
+
+    public String getGuid() {
+        return parameters.get("guid");
+    }
+    
     @Override
     public String toString() {
         return type + ": " + parameters;
@@ -81,7 +122,7 @@ public class BusAddress {
     }
 
     public boolean isServer() {
-        return getParameter("listen") != null;
+        return isListeningSocket();
     }
     
     public static enum AddressBusTypes {

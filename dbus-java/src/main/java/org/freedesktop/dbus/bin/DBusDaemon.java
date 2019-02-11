@@ -37,8 +37,8 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MessageReader;
 import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -949,8 +949,8 @@ public class DBusDaemon extends Thread implements Closeable {
         }
 
         BusAddress address = new BusAddress(addr);
-        if (null == address.getParameter("guid")) {
-            addr += ",guid=" + Transport.genGUID();
+        if (!address.hasGuid()) {
+            addr += ",guid=" + TransportFactory.genGUID();
             address = new BusAddress(addr);
         }
 

@@ -108,6 +108,12 @@
 	</build>
 
 	<dependencies>
+         <dependency>
+            <groupId>com.github.jnr</groupId>
+            <artifactId>jnr-unixsocket</artifactId>
+            <version>0.22-SNAPSHOT</version>
+        </dependency>
+            
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>java-utils</artifactId>

@@ -6,8 +6,9 @@ import java.text.ParseException;
 import java.util.Properties;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.Transport;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
@@ -29,7 +30,7 @@ public class LowLevelTest {
         BusAddress address = new BusAddress(addr);
         logger.debug(address + "");
 
-        try (Transport conn = new Transport(address)) {
+        try (AbstractTransport conn = TransportFactory.createTransport(address)) {
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
             conn.writeMessage(m);
             m = conn.readMessage();
