@@ -31,13 +31,18 @@ public final class TransportFactory {
     public static AbstractTransport createTransport(BusAddress _address, int _timeout) throws IOException {
         LoggerFactory.getLogger(TransportFactory.class).debug("Connecting to {}", _address);
 
+        AbstractTransport transport;
+        
         if (_address.getBusType() == AddressBusTypes.UNIX) {
-            return new UnixSocketTransport(_address, _timeout);
+            transport = new UnixSocketTransport(_address, _timeout);
             // } else if (_address.getBusType() == AddressBusTypes.TCP) {
             // return new TcpTransport(_address, _timeout);
         } else {
             throw new IOException("Unknown address type " + _address.getType());
         }
+        
+        transport.start();
+        return transport;
     }
 
     public static AbstractTransport createTransport(BusAddress _address) throws IOException {

@@ -36,19 +36,21 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     public void writeMessage(Message _msg) throws IOException {
-        if (!outputWriter.isClosed()) {
+        if (outputWriter != null && !outputWriter.isClosed()) {
             outputWriter.writeMessage(_msg);
+        } else {
+            throw new IOException("OutputWriter already closed or null");
         }
     }
     
     public Message readMessage() throws IOException, DBusException {
-        if (!inputReader.isClosed()) {
+        if (inputReader != null && !inputReader.isClosed()) {
             return inputReader.readMessage();
         }
-        return null;
+        throw new IOException("InputReader already closed or null");
     }
     
-    public void start() throws IOException {
+    void start() throws IOException {
         connect();
     }
     

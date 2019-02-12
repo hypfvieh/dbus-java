@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -30,6 +29,7 @@ public class TestCross {
     @BeforeEach
     public void before() {
         serverThread = new ServerThread();
+        serverThread.setName("Server Thread");
         serverThread.start();
     }
 
@@ -40,17 +40,14 @@ public class TestCross {
         }
     }
 
-
-
     @Test
     public void testCross() throws InterruptedException {
         while (!serverReady) {
             Thread.sleep(500L);
         }
 
-        try {
+        try (DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION)){
             /* init */
-            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
             CrossTestClient client = new CrossTestClient(conn);
             conn.exportObject("/TestClient", client);
             conn.addSigHandler(Binding.SampleSignals.Triggered.class, client);
@@ -73,13 +70,12 @@ public class TestCross {
                     System.out.println(s.getKey() + " failed: " + msg);
                 }
             }
-
-            conn.disconnect();
-        } catch (DBusException exDbe) {
+            
+        } catch (DBusException | IOException exDbe) {
             exDbe.printStackTrace();
-        }
+            fail("Exception while processing DBus");
+        } 
 
-        assertTrue(serverThread.getCts().getNotdone().isEmpty()); // all tests should have been run
     }
 
 
@@ -105,20 +101,14 @@ public class TestCross {
                     System.out.println(s + " ok");
                 }
                 for (String s : cts.getNotdone()) {
-                    System.out.println(s + " untested");
+                    System.out.println("---> " + s + " untested");
                 }
                 conn.disconnect();
-                assertFalse(cts.getNotdone().isEmpty(), "All tests should have been run");
+                assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
             } catch (DBusException | IOException exDe) {
                 exDe.printStackTrace();
                 fail("Exception while server running");
             }
         }
-
-        CrossTestServer getCts() {
-            return cts;
-        }
-
-
     }
 }
