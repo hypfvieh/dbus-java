@@ -7,7 +7,12 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.0.2 (upcoming, not released yet)
+##### Changes in 3.2.0 (upcoming, not released yet)
+  - Replaced libmatthew with jnr-unixsocket
+  - Removed all native library files and sources 
+  - Added new transport system to use jnr-unixsocket (replaces old Transport class)
+
+##### Changes in 3.0.2
   - Added support for handling various DBus signals without the need to create a specific interface class (thanks to [rm5248](https://github.com/rm5248))
   - Fixed issue with List containing another List (thanks to [rm5248](https://github.com/rm5248))
   - Changed project to multi-module. All tools (except DBusDaemon/DBusEmbeddedDaemon) are now part of the sub-module dbus-java-utils.
