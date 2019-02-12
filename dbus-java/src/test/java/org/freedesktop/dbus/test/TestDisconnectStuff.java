@@ -8,13 +8,11 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.test.helper.SampleClass;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class TestDisconnectStuff {
 
     @Test
-    @Disabled("Fails when run in maven combined with all other tests, but runs as standalone")
     public void testStuffAfterDisconnect() throws DBusException, InterruptedException {
 
         DBusConnection serverConnection = DBusConnection.getConnection(DBusBusType.SESSION);

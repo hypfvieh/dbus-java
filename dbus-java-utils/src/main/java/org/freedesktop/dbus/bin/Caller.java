@@ -20,7 +20,8 @@ import java.util.List;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.Transport;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
@@ -34,7 +35,7 @@ public final class Caller {
     public static void main(String[] args) {
         String addr = System.getenv("DBUS_SESSION_BUS_ADDRESS");
 
-        try (Transport conn = new Transport(new BusAddress(addr))) {
+        try (AbstractTransport conn = TransportFactory.createTransport(new BusAddress(addr))) {
             if (args.length < 4) {
                 System.out.println("Syntax: Caller <dest> <path> <interface> <method> [<sig> <args>]");
                 System.exit(1);
