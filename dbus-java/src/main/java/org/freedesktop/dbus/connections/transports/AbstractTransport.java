@@ -15,6 +15,12 @@ import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Base class for all transport types.
+ * 
+ * @author hypfvieh
+ * @since v3.2.0 - 2019-02-08
+ */
 public abstract class AbstractTransport implements Closeable {
 
     private final Logger     logger;
@@ -30,11 +36,23 @@ public abstract class AbstractTransport implements Closeable {
     AbstractTransport(BusAddress _address, int _timeout) {
         address = _address;
         timeout = _timeout;
-        saslMode = SASL.SaslMode.CLIENT;
+        
+        if (_address.isListeningSocket()) {
+            saslMode = SASL.SaslMode.SERVER;    
+        } else {
+            saslMode = SASL.SaslMode.CLIENT;
+        }
+        
         saslAuthMode = SASL.AUTH_NONE;
         logger = LoggerFactory.getLogger(getClass());
     }
 
+    /**
+     * Write a message to the underlying socket.
+     * 
+     * @param _msg message to write
+     * @throws IOException on write error or if output was already closed or null
+     */
     public void writeMessage(Message _msg) throws IOException {
         if (outputWriter != null && !outputWriter.isClosed()) {
             outputWriter.writeMessage(_msg);
@@ -43,6 +61,13 @@ public abstract class AbstractTransport implements Closeable {
         }
     }
     
+    /**
+     * Read a message from the underlying socket.
+     * 
+     * @return read message, maybe null
+     * @throws IOException when input already close or null
+     * @throws DBusException when message could not be converted to a DBus message
+     */
     public Message readMessage() throws IOException, DBusException {
         if (inputReader != null && !inputReader.isClosed()) {
             return inputReader.readMessage();
@@ -50,12 +75,21 @@ public abstract class AbstractTransport implements Closeable {
         throw new IOException("InputReader already closed or null");
     }
     
-    void start() throws IOException {
-        connect();
-    }
-    
+    /**
+     * Abstract method implemented by concrete sub classes to establish a connection 
+     * using whatever transport type (e.g. TCP/Unix socket).
+     * @throws IOException when connection fails
+     */
     abstract void connect() throws IOException;
-    
+     
+    /**
+     * Helper method to authenticate to DBus using SASL.
+     * 
+     * @param _out output stream
+     * @param _in input stream
+     * @param _sock socket
+     * @throws IOException on any error
+     */
     protected void authenticate(OutputStream _out, InputStream _in, Socket _sock) throws IOException {
         if (!(new SASL()).auth(saslMode, saslAuthMode, address.getGuid(), _out, _in, _sock)) {
             _out.close();

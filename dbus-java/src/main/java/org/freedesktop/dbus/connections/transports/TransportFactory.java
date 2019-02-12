@@ -35,16 +35,23 @@ public final class TransportFactory {
         
         if (_address.getBusType() == AddressBusTypes.UNIX) {
             transport = new UnixSocketTransport(_address, _timeout);
-            // } else if (_address.getBusType() == AddressBusTypes.TCP) {
-            // return new TcpTransport(_address, _timeout);
+        } else if (_address.getBusType() == AddressBusTypes.TCP) {
+            transport = new TcpTransport(_address, _timeout);
         } else {
             throw new IOException("Unknown address type " + _address.getType());
         }
         
-        transport.start();
+        transport.connect();
         return transport;
     }
 
+    /**
+     * Creates a new transport encapsulating connection to a unix socket or TCP socket.
+     * 
+     * @param _address Address parameter
+     * @return {@link AbstractTransport}
+     * @throws IOException when transport could not be created
+     */
     public static AbstractTransport createTransport(BusAddress _address) throws IOException {
         return createTransport(_address, 10000);
     }

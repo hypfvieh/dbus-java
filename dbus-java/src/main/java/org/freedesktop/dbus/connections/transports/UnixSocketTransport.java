@@ -10,6 +10,11 @@ import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
 import jnr.unixsocket.UnixSocketOptions;
 
+/**
+ * Transport type representing a transport connection to a unix socket.
+ * @author hypfvieh
+ * @since v3.2.0 - 2019-02-08
+ */
 public class UnixSocketTransport extends AbstractTransport {
     private final UnixSocketAddress unixSocketAddress;
     private UnixServerSocketChannel unixServerSocket;
@@ -28,6 +33,10 @@ public class UnixSocketTransport extends AbstractTransport {
         setSaslAuthMode(SASL.AUTH_EXTERNAL);
     }
 
+    /**
+     * Establish a connection to DBus using unix sockets.
+     * @throws IOException on error
+     */
     void connect() throws IOException {
         UnixSocketChannel us;
         if (getAddress().isListeningSocket()) {
