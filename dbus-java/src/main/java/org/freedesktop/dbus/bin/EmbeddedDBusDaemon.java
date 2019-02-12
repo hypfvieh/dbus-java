@@ -14,9 +14,9 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cx.ath.matthew.unix.UnixServerSocket;
-import cx.ath.matthew.unix.UnixSocket;
-import cx.ath.matthew.unix.UnixSocketAddress;
+import jnr.unixsocket.UnixServerSocketChannel;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 /**
  *
@@ -93,20 +93,22 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     private void startUnixSocket(BusAddress address) throws IOException {
         LOGGER.debug("enter");
-        UnixServerSocket uss;
+        UnixServerSocketChannel uss;
+        uss = UnixServerSocketChannel.open();
+
         if (address.isAbstract()) {
-            uss = new UnixServerSocket(new UnixSocketAddress(address.getAbstract(), true));
+            uss.socket().bind(new UnixSocketAddress("\0" + address.getAbstract()));
         } else {
-            uss = new UnixServerSocket(new UnixSocketAddress(address.getPath(), false));
+            uss.socket().bind(new UnixSocketAddress(address.getPath()));
         }
         listenSocket = uss;
 
         // accept new connections
         while (daemonThread.isRunning()) {
-            UnixSocket s = uss.accept();
-            if ((new SASL()).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), s)) {
+             UnixSocketChannel s = uss.accept();
+            if ((new SASL()).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
                 // s.setBlocking(false);
-                daemonThread.addSock(s);
+                daemonThread.addSock(s.socket());
             } else {
                 s.close();
             }
