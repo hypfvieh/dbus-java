@@ -213,6 +213,9 @@
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <gpg.executable>gpg2</gpg.executable>
+            </properties>
             <activation>
                 <property>
                     <name>performRelease</name>
