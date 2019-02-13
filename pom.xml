@@ -1,272 +1,278 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
 
-	<groupId>com.github.hypfvieh</groupId>
-	<artifactId>dbus-java-parent</artifactId>
-	<version>3.0.2-SNAPSHOT</version>
+    <groupId>com.github.hypfvieh</groupId>
+    <artifactId>dbus-java-parent</artifactId>
+    <version>3.0.2-SNAPSHOT</version>
 
-	<name>${project.artifactId}</name>
-	<url>https://github.com/hypfvieh/${project.artifactId}</url>
+    <name>${project.artifactId}</name>
+    <url>https://github.com/hypfvieh/${project.artifactId}</url>
 
-	<description>DBus-Java library module parent</description>
+    <description>DBus-Java library module parent</description>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<modules>
-		<module>dbus-java</module>
-		<module>dbus-java-utils</module>
-	</modules>
+    <modules>
+        <module>dbus-java</module>
+        <module>dbus-java-utils</module>
+    </modules>
 
-	<build>
-		<plugins>
-		</plugins>
+    <build>
+        <plugins>
+        </plugins>
 
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.7</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 
-	</build>
+    </build>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.25</version>
-			</dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.25</version>
+            </dependency>
 
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>1.2.3</version>
-			</dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
+            </dependency>
 
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>1.2.3</version>
-			</dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.2.3</version>
+            </dependency>
 
-			<!-- JUnit testing framework. -->
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-api</artifactId>
-				<version>5.4.0-M1</version>
-			</dependency>
+            <!-- JUnit testing framework. -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>5.4.0-M1</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-params</artifactId>
-				<version>5.4.0-M1</version>
-			</dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>5.4.0-M1</version>
+            </dependency>
 
-			<!-- needed for IDE support -->
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-engine</artifactId>
-				<version>5.4.0-M1</version>
-			</dependency>
+            <!-- needed for IDE support -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.4.0-M1</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.junit.platform</groupId>
-				<artifactId>junit-platform-launcher</artifactId>
-				<version>1.4.0-M1</version>
-			</dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>1.4.0-M1</version>
+            </dependency>
 
-			<!-- Mockito mocking framework. -->
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<version>2.23.4</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+            <!-- Mockito mocking framework. -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>2.23.4</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
-		<!-- JUnit testing framework. -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- JUnit testing framework. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- needed for IDE support -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- needed for IDE support -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-launcher</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- Mockito mocking framework. -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <!-- Mockito mocking framework. -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<scm>
-		<connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
-		<developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
-		<url>https://github.com/hypfvieh/dbus-java.git</url>
-	</scm>
+    <scm>
+        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
+        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
+        <url>https://github.com/hypfvieh/dbus-java.git</url>
+    </scm>
 
-	<licenses>
-		<license>
-			<name>GNU Lesser/Library General Public License version 2</name>
-			<url>https://www.gnu.org/licenses/lgpl.html</url>
-		</license>
-	</licenses>
+    <licenses>
+        <license>
+            <name>GNU Lesser/Library General Public License version 2</name>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
+        </license>
+    </licenses>
 
-	<developers>
-		<developer>
-			<id>matthew</id>
-			<name>Matthew Johnson</name>
-			<email>src@matthew.ath.cx</email>
-		</developer>
-		<developer>
-			<id>hypfvieh</id>
-			<name>David M.</name>
-			<email>hypfvieh@googlemail.com</email>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>matthew</id>
+            <name>Matthew Johnson</name>
+            <email>src@matthew.ath.cx</email>
+        </developer>
+        <developer>
+            <id>hypfvieh</id>
+            <name>David M.</name>
+            <email>hypfvieh@googlemail.com</email>
+        </developer>
+    </developers>
 
-	<contributors>
-		<contributor>
-			<name>thjomnx</name>
-			<url>https://github.com/thjomnx</url>
-		</contributor>
-		<contributor>
-			<name>RafalSumislawski</name>
-			<url>https://github.com/RafalSumislawski</url>
-		</contributor>
-		<contributor>
-			<name>lbeuster</name>
-			<url>https://github.com/lbeuster</url>
-		</contributor>
-		<contributor>
-			<name>littlefreaky</name>
-			<url>https://github.com/littlefreaky</url>
-		</contributor>
-		<contributor>
-			<name>sshort</name>
-			<url>https://github.com/sshort</url>
-		</contributor>
-		<contributor>
-			<name>michivi</name>
-			<url>https://github.com/michivi</url>
-		</contributor>
-		<contributor>
-			<name>rm5248</name>
-			<url>https://github.com/rm5248</url>
-		</contributor>
-	</contributors>
+    <contributors>
+        <contributor>
+            <name>thjomnx</name>
+            <url>https://github.com/thjomnx</url>
+        </contributor>
+        <contributor>
+            <name>RafalSumislawski</name>
+            <url>https://github.com/RafalSumislawski</url>
+        </contributor>
+        <contributor>
+            <name>lbeuster</name>
+            <url>https://github.com/lbeuster</url>
+        </contributor>
+        <contributor>
+            <name>littlefreaky</name>
+            <url>https://github.com/littlefreaky</url>
+        </contributor>
+        <contributor>
+            <name>sshort</name>
+            <url>https://github.com/sshort</url>
+        </contributor>
+        <contributor>
+            <name>michivi</name>
+            <url>https://github.com/michivi</url>
+        </contributor>
+        <contributor>
+            <name>rm5248</name>
+            <url>https://github.com/rm5248</url>
+        </contributor>
+    </contributors>
 
-	<profiles>
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-release-plugin</artifactId>
-						<version>2.5.3</version>
-						<configuration>
-							<autoVersionSubmodules>true</autoVersionSubmodules>
-							<useReleaseProfile>false</useReleaseProfile>
-							<releaseProfiles>release</releaseProfiles>
-							<goals>deploy</goals>
-						</configuration>
-					</plugin>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                        </configuration>
+                    </plugin>
 
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>3.0.1</version>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.0.1</version>
-						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
