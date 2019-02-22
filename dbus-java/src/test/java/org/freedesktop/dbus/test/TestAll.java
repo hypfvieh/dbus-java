@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +69,11 @@ import org.freedesktop.dbus.test.helper.signals.handler.ObjectSignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.PathSignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.RenamedSignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.SignalHandler;
+import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
+import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
@@ -379,6 +382,25 @@ public class TestAll {
         }
     }
 
+    @Test
+    public void testListOfStruct() throws DBusException {
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+
+        IntStruct elem1 = new IntStruct(3, 7);
+		IntStruct elem2 = new IntStruct(9, 14);
+		List<IntStruct> list = Arrays.asList(elem1, elem2);
+        SampleStruct4 param = new SampleStruct4(list);
+        int[][] out = tri.testListstruct(param);
+        if (out.length != 2) {
+            fail("teststructstruct returned the wrong thing: " + Arrays.deepToString(out));
+        }
+        assertEquals(elem1.getValue1(), out[0][0]);
+        assertEquals(elem1.getValue2(), out[0][1]);
+        assertEquals(elem2.getValue1(), out[1][0]);
+        assertEquals(elem2.getValue2(), out[1][1]);
+
+    }
+    
     public void testFrob() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         System.out.println("frobnicating");
