@@ -76,8 +76,8 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.util.TimeMeasure;
@@ -91,13 +91,13 @@ public class TestAll {
     public static final String TEST_OBJECT_PATH = "/TestAll";
 
     // CHECKSTYLE:OFF
-    private static DBusConnection serverconn = null;
-    private static DBusConnection clientconn = null;
-    private static SampleClass tclass;
+    private DBusConnection serverconn = null;
+    private DBusConnection clientconn = null;
+    private SampleClass tclass;
     // CHECKSTYLE:ON
 
-    @BeforeAll
-    public static void beforeClass() throws DBusException {
+    @BeforeEach
+    public void setUp() throws DBusException {
         serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
         clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
         serverconn.setWeakReferences(true);
@@ -111,8 +111,8 @@ public class TestAll {
         serverconn.addFallback("/FallbackTest", tclass);
     }
 
-    @AfterAll
-    public static void afterClass() {
+    @AfterEach
+    public void afterClass() {
         System.out.println("Checking for outstanding errors");
         DBusExecutionException dbee = serverconn.getError();
         if (null != dbee) {
