@@ -115,7 +115,7 @@ public class TestAll {
     }
 
     @AfterEach
-    public void afterClass() {
+    public void tearDown() {
         System.out.println("Checking for outstanding errors");
         DBusExecutionException dbee = serverconn.getError();
         if (null != dbee) {
