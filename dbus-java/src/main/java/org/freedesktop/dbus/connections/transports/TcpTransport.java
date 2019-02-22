@@ -38,7 +38,9 @@ public class TcpTransport extends AbstractTransport {
             socket = new Socket();
             socket.connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
         }
-
+        
+        setInputReader(socket.getInputStream());
+        setOutputWriter(socket.getOutputStream());
         getLogger().trace("Setting timeout to {} on Socket", getTimeout());
         socket.setSoTimeout(getTimeout());
 
