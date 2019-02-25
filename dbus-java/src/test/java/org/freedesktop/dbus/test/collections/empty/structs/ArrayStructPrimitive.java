@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 
-public final class ArrayStructPrimative extends Struct implements IEmptyCollectionStruct<int[]> {
+public final class ArrayStructPrimitive extends Struct implements IEmptyCollectionStruct<int[]> {
 
 	@Position(0)
 	private final int[] list;
@@ -25,7 +25,7 @@ public final class ArrayStructPrimative extends Struct implements IEmptyCollecti
 	@Position(1)
 	private final String validationValue;
 
-	public ArrayStructPrimative(int[] list, String validationValue) {
+	public ArrayStructPrimitive(int[] list, String validationValue) {
 		this.list = list.clone();
 		this.validationValue = validationValue;
 	}

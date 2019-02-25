@@ -1,5 +1,8 @@
 package org.freedesktop.dbus.test.collections.empty.structs;
 
+/**
+ * Interface is used to make the TestEmptyCollection usable for parameterized testing  
+ */
 public interface IEmptyCollectionStruct<T> {
 
 	/**

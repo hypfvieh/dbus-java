@@ -662,7 +662,7 @@ public class Message {
                         diff = appendone(sigb, i, o);
                     }
                     if (contents.length == 0) {
-                        diff = EmptyCollectionHelper.determineSignatureOffsetEmptyCollection(sigb, diff);
+                        diff = EmptyCollectionHelper.determineSignatureOffset(sigb, diff);
                     }
                     i = diff;
                 } else if (data instanceof Map) {
@@ -673,7 +673,7 @@ public class Message {
                         diff = appendone(sigb, i, o);
                     }
                     if (map.size() == 0) {
-                        diff = EmptyCollectionHelper.determineSignatureOffsetEmptyCollection(sigb, diff);
+                        diff = EmptyCollectionHelper.determineSignatureOffset(sigb, diff);
                     }
                     i = diff;
                 } else {
@@ -684,7 +684,7 @@ public class Message {
                         diff = appendone(sigb, i, o);
                     }
                     if (contents.length == 0) {
-                        diff = EmptyCollectionHelper.determineSignatureOffsetEmptyCollection(sigb, diff);
+                        diff = EmptyCollectionHelper.determineSignatureOffset(sigb, diff);
                     }
                     i = diff;
                 }

@@ -26,17 +26,17 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepListStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepMapStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.IEmptyCollectionStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.ListMapStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ListStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.ListStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.ListStructStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +45,27 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+/**
+ * 
+ * The test structure is a bit of a complex constructions. However the goal is very simple
+ * 
+ * The class tests all structs implementing IEmptyCollectionStruct
+ * 
+ * There are two tests:
+ * 
+ * Empty test:
+ * 
+ * The test creates an empty object with emptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}. 
+ * This interface returns the {@link IEmptyCollectionStruct#getValidationValue()} that value can be 
+ * used to determine whether (de)serialization of object with an empty collection is executed correctly.
+ *
+ * Non Empty test:
+ * 
+ * The test creates an non empty object with nonEmptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}. 
+ * This interface returns the {@link IEmptyCollectionStruct#getStringTestValue()} that value can be 
+ * used to determine whether (de)serialization of non empty collection is executed correctly.
+ *
+ */
 class TestEmptyCollections {
 
 	private DBusConnection serverconn;
@@ -117,24 +138,32 @@ class TestEmptyCollections {
 		assertEquals(validationValue, result);
 	}
 	
+	/**
+	 * List of arguments for each scenario:
+	 * 1: Interface function to use for to test this struct
+	 * 2: Factory to create an empty structure
+	 * 3: Factory to create an non empty structure
+	 * 4: Name, which is also used for validating empty collections
+	 * 5: Expected to string value for non empty collection test
+	 */
 	static Stream<Arguments> scenarios() {
 		return Stream.of(
-				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListPrimative,
-						s -> new ListStructPrimative(Collections.emptyList(), s),
-						s -> new ListStructPrimative(Arrays.asList(1, 2), s)), "ListPrimative", "1,2"),
+				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListPrimitive,
+						s -> new ListStructPrimitive(Collections.emptyList(), s),
+						s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimative", "1,2"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListIntStruct,
 						s -> new ListStructStruct(Collections.emptyList(), s),
 						s -> new ListStructStruct(Arrays.asList(new IntStruct(5, 6)), s)), "ListStruct", "(5,6)"),
-				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayPrimative,
-						s -> new ArrayStructPrimative(new int[0], s),
-						s -> new ArrayStructPrimative(new int[] {4,5}, s)), "ArrayPrimative", "4,5"),
+				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayPrimitive,
+						s -> new ArrayStructPrimitive(new int[0], s),
+						s -> new ArrayStructPrimitive(new int[] {4,5}, s)), "ArrayPrimative", "4,5"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayIntStruct,
 						s -> new ArrayStructIntStruct(new IntStruct[0], s),
 						s -> new ArrayStructIntStruct(new IntStruct[] { new IntStruct(9, 12)}, s)),
 						"ArrayIntStruct", "(9,12)"),
-				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapPrimative,
-						s -> new MapStructPrimative(Collections.emptyMap(), s),
-						s -> new MapStructPrimative(getIntHashMap(), s)), "MapPrimative", "{test:8}"),
+				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapPrimitive,
+						s -> new MapStructPrimitive(Collections.emptyMap(), s),
+						s -> new MapStructPrimitive(getIntHashMap(), s)), "MapPrimative", "{test:8}"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapIntStruct,
 						s -> new MapStructIntStruct(Collections.emptyMap(), s),
 						s -> new MapStructIntStruct(getIntStructHashMap(), s)), "MapIntStruct", "{other:(12,17)}"),
@@ -209,8 +238,6 @@ class TestEmptyCollections {
 			this.function = function;
 			this.factoryEmpty = factoryEmpty;
 			this.factoryNonEmpty = factoryNonEmpty;
-
 		}
 	}
-
 }

@@ -24,7 +24,7 @@ final class EmptyCollectionHelper {
 	 * @param currentOffset the current offset within the signature
 	 * @return the index of the last element of the collection (subtype)
 	 */
-	static int determineSignatureOffsetEmptyCollection(byte[] sigb, int currentOffset) {
+	static int determineSignatureOffset(byte[] sigb, int currentOffset) {
 		byte[] restSigbytes = Arrays.copyOfRange(sigb, currentOffset, sigb.length);
 		String sigSubString = new String(restSigbytes);
 		
@@ -72,10 +72,10 @@ final class EmptyCollectionHelper {
 					}
 					break;
 				case ARRAY:
-					//array is a strange type since it has uses not brackets but the next type is part of the array
-					// for example aa(ii) means array of arrays of struct of two ints.
-					return determineSignatureOffsetEmptyCollection(sigb, currentOffset + i + 1);	
-				case PRIMATIVE:
+					// array is a strange type it has on starting/ending character. It just uses the next full type.
+					// For example aa(ii) means an array of arrays of struct with two Integer.
+					return determineSignatureOffset(sigb, currentOffset + i + 1);	
+				case PRIMITIVE:
 				default:
 					return currentOffset + i ; 
 			}
@@ -99,7 +99,7 @@ final class EmptyCollectionHelper {
 				return ECollectionSubType.ARRAY;
 			default:
 				// of course there can be other types but those shouldn't be allowed in this part of the signature
-				return ECollectionSubType.PRIMATIVE;
+				return ECollectionSubType.PRIMITIVE;
 		}
 	}
 
@@ -111,6 +111,6 @@ final class EmptyCollectionHelper {
 		STRUCT,
 		DICT,
 		ARRAY,
-		PRIMATIVE
+		PRIMITIVE
 	}	
 }

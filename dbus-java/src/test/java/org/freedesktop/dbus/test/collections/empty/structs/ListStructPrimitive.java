@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 
-public final class ListStructPrimative extends Struct implements IEmptyCollectionStruct<List<Integer>> {
+public final class ListStructPrimitive extends Struct implements IEmptyCollectionStruct<List<Integer>> {
 
 	@Position(0)
 	private final List<Integer> list;
@@ -25,7 +25,7 @@ public final class ListStructPrimative extends Struct implements IEmptyCollectio
 	@Position(1)
 	private final String validationValue;
 
-	public ListStructPrimative(List<Integer> list, String validationValue) {
+	public ListStructPrimitive(List<Integer> list, String validationValue) {
 		this.list = list;
 		this.validationValue = validationValue;
 	}

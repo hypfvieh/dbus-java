@@ -23,7 +23,6 @@ import java.lang.reflect.Type;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -387,8 +386,8 @@ public class TestAll {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         IntStruct elem1 = new IntStruct(3, 7);
-		IntStruct elem2 = new IntStruct(9, 14);
-		List<IntStruct> list = Arrays.asList(elem1, elem2);
+        IntStruct elem2 = new IntStruct(9, 14);
+        List<IntStruct> list = Arrays.asList(elem1, elem2);
         SampleStruct4 param = new SampleStruct4(list);
         int[][] out = tri.testListstruct(param);
         if (out.length != 2) {
@@ -398,7 +397,6 @@ public class TestAll {
         assertEquals(elem1.getValue2(), out[0][1]);
         assertEquals(elem2.getValue1(), out[1][0]);
         assertEquals(elem2.getValue2(), out[1][1]);
-
     }
     
     public void testFrob() throws DBusException {

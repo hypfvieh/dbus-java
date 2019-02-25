@@ -11,22 +11,22 @@
 package org.freedesktop.dbus.test.collections.empty;
 
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepListStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepMapStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.IEmptyCollectionStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.ListMapStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ListStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.ListStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.ListStructStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimative;
+import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
 
 public class SampleCollectionImpl implements ISampleCollectionInterface {
 
 	@Override
-	public String testListPrimative(ListStructPrimative param) {
+	public String testListPrimitive(ListStructPrimitive param) {
 		return testValue(param);
 	}
 
@@ -41,7 +41,7 @@ public class SampleCollectionImpl implements ISampleCollectionInterface {
 	}
 
 	@Override
-	public String testArrayPrimative(ArrayStructPrimative param) {
+	public String testArrayPrimitive(ArrayStructPrimitive param) {
 		return testValue(param);
 
 	}
@@ -57,7 +57,7 @@ public class SampleCollectionImpl implements ISampleCollectionInterface {
 	}
 
 	@Override
-	public String testMapPrimative(MapStructPrimative param) {
+	public String testMapPrimitive(MapStructPrimitive param) {
 		return testValue(param);
 	}
 

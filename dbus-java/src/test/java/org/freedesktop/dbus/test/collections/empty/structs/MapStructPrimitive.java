@@ -18,7 +18,7 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 
 
-public final class MapStructPrimative extends Struct implements IEmptyCollectionStruct<Map<String, Integer>> {
+public final class MapStructPrimitive extends Struct implements IEmptyCollectionStruct<Map<String, Integer>> {
 
 	@Position(0)
 	private final Map<String, Integer> map;
@@ -26,7 +26,7 @@ public final class MapStructPrimative extends Struct implements IEmptyCollection
 	@Position(1)
 	private final String validationValue;
 
-	public MapStructPrimative(Map<String, Integer> map, String validationValue) {
+	public MapStructPrimitive(Map<String, Integer> map, String validationValue) {
 		this.map = map;
 		this.validationValue = validationValue;
 	}
