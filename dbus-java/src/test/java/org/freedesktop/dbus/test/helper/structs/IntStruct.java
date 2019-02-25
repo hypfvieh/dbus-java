@@ -16,10 +16,10 @@ import org.freedesktop.dbus.annotations.Position;
 public final class IntStruct extends Struct {
     
 	@Position(0)
-    private final int  value1;
+    private final int value1;
     
     @Position(1)
-    private final int  value2;
+    private final int value2;
 
 	public IntStruct(int value1, int value2) {
 		this.value1 = value1;
@@ -33,5 +33,8 @@ public final class IntStruct extends Struct {
 	public int getValue2() {
 		return value2;
 	}
-    
+	
+	public String toSimpleString() {
+		return String.format("(%s,%s)", value1, value2);
+	}
 }
