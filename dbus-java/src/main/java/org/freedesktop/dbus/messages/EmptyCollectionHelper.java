@@ -39,7 +39,7 @@ final class EmptyCollectionHelper {
 		int structsDepth = 0;
 		int dictDepth = 0;
 		
-		ECollectionSubType subTypeCategory = determineCollectionSubType((char)sigb[i]); 
+		ECollectionSubType subTypeCategory = determineCollectionSubType((char)sigb[currentOffset]); 
 		for(char chr : sigSubString.toCharArray()) {
 			//book keeping of depth of nested structures to solve opening closing bracket problem
 			switch (chr) {
