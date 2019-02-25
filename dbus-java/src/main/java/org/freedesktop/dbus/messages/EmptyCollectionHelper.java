@@ -16,7 +16,7 @@ import java.util.Arrays;
 final class EmptyCollectionHelper {
 
 	/**
-	 * This function determine the new offset in signature for empty collections.
+	 * This function determine the new offset in signature for empty Dictionary/Map collections.
 	 *  Normally the element inside a collection determines the new offset, 
 	 *  however in case of empty collections there is no element to determine the sub signature of the list
 	 *  so this function determines which part of the signature to skip
@@ -24,67 +24,85 @@ final class EmptyCollectionHelper {
 	 * @param currentOffset the current offset within the signature
 	 * @return the index of the last element of the collection (subtype)
 	 */
-	static int determineSignatureOffset(byte[] sigb, int currentOffset) {
-		byte[] restSigbytes = Arrays.copyOfRange(sigb, currentOffset, sigb.length);
-		String sigSubString = new String(restSigbytes);
+	static int determineSignatureOffsetDict(byte[] sigb, int currentOffset) {
+		return determineEndOfBracketStructure(sigb, currentOffset, '{' , '}');
+	}
+	
+	/**
+	 * This function determine the new offset in signature for empty Array/List collections.
+	 *  Normally the element inside a collection determines the new offset, 
+	 *  however in case of empty collections there is no element to determine the sub signature of the list
+	 *  so this function determines which part of the signature to skip
+	 * @param sigb the total signature
+	 * @param currentOffset the current offset within the signature
+	 * @return the index of the last element of the collection (subtype)
+	 */
+	static int determineSignatureOffsetArray(byte[] sigb, int currentOffset) {
+		String sigSubString = determineSubSignature(sigb, currentOffset);
 		
 		// End of string so can't have any more offset
 		if (sigSubString.isEmpty()) {
 			return currentOffset;
 		}
 		
-		// find end of structure
-		// meaning the end of the sub structure
-		int i = 0;
-		int structsDepth = 0;
-		int dictDepth = 0;
+		ECollectionSubType newtype = determineCollectionSubType((char)sigb[currentOffset]);
+		switch (newtype) {
+			case ARRAY:
+				// array in array so look at the next type
+				return determineSignatureOffsetArray(sigb, currentOffset + 1);
+			case DICT:
+				return determineSignatureOffsetDict(sigb, currentOffset);
+			case STRUCT:
+				return determineSignatureOffsetStruct(sigb, currentOffset);
+			case PRIMITIVE:
+				//primitive is always one element so no need to skip more
+				return currentOffset;
+			default:
+				break;
+	
+		}
+		throw new IllegalStateException("Unable to parse signature for empty collection");
+	}
+
+	private static int determineSignatureOffsetStruct(byte[] sigb, int currentOffset) {
+		return determineEndOfBracketStructure(sigb, currentOffset, '(' , ')');
+	}
+
+	/**
+	 * This is a generic function to determine the end of a structure that has opening and closing characters.
+	 * Currently used for Struct () and Dict {}
+     * 
+	 */
+	private static int determineEndOfBracketStructure(byte[] sigb, int currentOffset, char openChar, char closeChar) {
+		String sigSubString = determineSubSignature(sigb, currentOffset);
 		
-		ECollectionSubType subTypeCategory = determineCollectionSubType((char)sigb[currentOffset]); 
+		// End of string so can't have any more offset
+		if (sigSubString.isEmpty()) {
+			return currentOffset;
+		}
+		int i = 0;
+		int depth = 0;
+		
 		for(char chr : sigSubString.toCharArray()) {
 			//book keeping of depth of nested structures to solve opening closing bracket problem
-			switch (chr) {
-				case '(':
-					structsDepth ++;
-					break;
-				case ')':
-					structsDepth --;
-					break;
-				case '{':
-					dictDepth ++;
-					break;
-				case '}':
-					dictDepth --;
-					break;
-				default:
-					break;
+			if (chr == openChar) {
+				depth ++;
+			} else if (chr == closeChar) {
+				depth --;					
 			}
-		
-			// determine the case on when to return since subtype is complete
-			switch (subTypeCategory) {
-				case STRUCT: 
-					if (structsDepth == 0) {
-						return currentOffset + i;
-					}
-					break;
-				case DICT: 
-					if (dictDepth == 0) {
-						return currentOffset + i;
-					}
-					break;
-				case ARRAY:
-					// array is a strange type it has on starting/ending character. It just uses the next full type.
-					// For example aa(ii) means an array of arrays of struct with two Integer.
-					return determineSignatureOffset(sigb, currentOffset + i + 1);	
-				case PRIMITIVE:
-				default:
-					return currentOffset + i ; 
+			if (depth == 0) {
+				return currentOffset + i;
 			}
 			i++;
 		}
 		throw new IllegalStateException("Unable to parse signature for empty collection");
 	}
-
 	
+	private static String determineSubSignature(byte[] sigb, int currentOffset) {
+		byte[] restSigbytes = Arrays.copyOfRange(sigb, currentOffset, sigb.length);
+		return new String(restSigbytes);
+	}
+
 	/**
 	 * The starting type determines of a collection determines when it ends
 	 * @param sig the signature letter of the type
@@ -103,11 +121,10 @@ final class EmptyCollectionHelper {
 		}
 	}
 
-
 	/**
 	 * Internal Enumeration used to group the types of element
 	 */
-	private enum ECollectionSubType {
+	enum ECollectionSubType {
 		STRUCT,
 		DICT,
 		ARRAY,
