@@ -208,6 +208,10 @@
             <name>rm5248</name>
             <url>https://github.com/rm5248</url>
         </contributor>
+        <contributor>
+            <name>chris-melman</name>
+            <url>https://github.com/chris-melman</url>
+        </contributor>
     </contributors>
 
     <profiles>
