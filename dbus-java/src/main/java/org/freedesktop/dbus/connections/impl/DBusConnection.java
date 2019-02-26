@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -63,10 +64,12 @@ import com.github.hypfvieh.util.SystemUtil;
  * </p>
  */
 public final class DBusConnection extends AbstractConnection {
-    private final Logger                             logger                     = LoggerFactory.getLogger(getClass());
+
+	private final Logger                             logger                     = LoggerFactory.getLogger(getClass());
 
     public static final String                       DEFAULT_SYSTEM_BUS_ADDRESS =
             "unix:path=/var/run/dbus/system_bus_socket";
+    private static final String DBUS_MACHINE_ID_SYS_VAR = "DBUS_MACHINE_ID_LOCATION";
 
     private List<String>                             busnames;
 
@@ -256,22 +259,13 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
      * Extracts the machine-id usually found in /var/lib/dbus/machine-id.
+     * Use system variable DBUS_MACHINE_ID_LOCATION to use other location
      *
      * @return machine-id string, never null
      * @throws DBusException if machine-id could not be found
      */
     public static String getDbusMachineId() throws DBusException {
-        File uuidfile = new File("/var/lib/dbus/machine-id");
-        if (!uuidfile.exists()) {
-            uuidfile = new File("/usr/local/var/lib/dbus/machine-id");
-        }
-        if (!uuidfile.exists()) {
-            uuidfile = new File("/etc/machine-id");
-        }
-        if (!uuidfile.exists()) {
-            throw new DBusException("Cannot Resolve Session Bus Address");
-        }
-
+    	File uuidfile = determineMachineIdFile();
         String uuid = FileIoUtil.readFileToString(uuidfile);
         if (StringUtil.isEmpty(uuid)) {
             throw new DBusException("Cannot Resolve Session Bus Address: MachineId file is empty.");
@@ -279,6 +273,17 @@ public final class DBusConnection extends AbstractConnection {
 
         return uuid;
     }
+
+	private static File determineMachineIdFile() throws DBusException {
+		List<String> locationPriorityList = Arrays.asList(System.getenv(DBUS_MACHINE_ID_SYS_VAR),
+				"/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
+		return locationPriorityList.stream()
+				.filter(s -> s != null)
+				.map(s -> new File(s))
+				.filter(f -> f.exists())
+				.findFirst()
+				.orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
+	}
 
     private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId) throws DBusException {
         super(_address);
