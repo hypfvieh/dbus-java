@@ -22,8 +22,10 @@ import org.freedesktop.dbus.test.TestAll;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
+import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
+import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
@@ -53,6 +55,18 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         }
         return out;
     }
+    
+    @Override
+	public int[][] testListstruct(SampleStruct4 in) {
+		List<IntStruct> list = in.getInnerListOfLists();
+		int size = list.size();
+		int[][] retVal = new int [size][];
+		for(int i = 0; i < size; i++) {
+			IntStruct elem = list.get(i);
+			retVal[i] = new int [] { elem.getValue1(), elem.getValue2()}; 
+		}
+		return retVal;
+	}
 
     @Override
     public float testfloat(float[] f) {
