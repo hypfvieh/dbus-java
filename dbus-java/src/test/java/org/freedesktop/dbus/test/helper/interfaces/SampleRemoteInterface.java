@@ -22,6 +22,7 @@ import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
+import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.types.UInt16;
 
 /**
@@ -70,4 +71,7 @@ public interface SampleRemoteInterface extends DBusInterface {
     List<DBusPath> pathlistrv(List<DBusPath> a);
 
     Map<DBusPath, DBusPath> pathmaprv(Map<DBusPath, DBusPath> a);
+
+    @IntrospectionDescription("Some function to test collections")
+	int[][] testListstruct(SampleStruct4 in);
 }
