@@ -460,7 +460,9 @@ public class Message {
             sb.append('}');
         } else {
             for (Object o : largs) {
-                if (o instanceof Object[]) {
+                if (o == null) {
+                    sb.append("null");
+                } else if (o instanceof Object[]) {
                     sb.append(Arrays.deepToString((Object[]) o));
                 } else if (o instanceof byte[]) {
                     sb.append(Arrays.toString((byte[]) o));
@@ -477,7 +479,7 @@ public class Message {
                 } else if (o instanceof float[]) {
                     sb.append(Arrays.toString((float[]) o));
                 } else {
-                    sb.append(o.toString());
+                    sb.append(o);
                 }
                 sb.append(',');
                 sb.append(' ');
@@ -669,7 +671,7 @@ public class Message {
                     int diff = i;
                     Map<Object, Object> map = (Map<Object, Object>) data;
                     ensureBuffers(map.size() * 6);
-					for (Map.Entry<Object, Object> o : map.entrySet()) {
+                    for (Map.Entry<Object, Object> o : map.entrySet()) {
                         diff = appendone(sigb, i, o);
                     }
                     if (map.size() == 0) {
