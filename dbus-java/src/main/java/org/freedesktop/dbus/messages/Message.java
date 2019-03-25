@@ -90,7 +90,7 @@ public class Message {
 
     /**
      * Returns the name of the given header field.
-     * 
+     *
      * @param field field
      * @return string
      */
@@ -119,7 +119,7 @@ public class Message {
 
     /**
      * Create a message; only to be called by sub-classes.
-     * 
+     *
      * @param endian The endianness to create the message.
      * @param _type The message type.
      * @param _flags Any message flags.
@@ -153,7 +153,7 @@ public class Message {
 
     /**
      * Create a message from wire-format data.
-     * 
+     *
      * @param _msg D-Bus serialized data of type yyyuu
      * @param _headers D-Bus serialized data of type a(yv)
      * @param _body D-Bus serialized data of the signature defined in headers.
@@ -220,7 +220,7 @@ public class Message {
 
     /**
      * Ensures there are enough free buffers.
-     * 
+     *
      * @param num number of free buffers to create.
      */
     private void ensureBuffers(int num) {
@@ -240,7 +240,7 @@ public class Message {
 
     /**
      * Appends a buffer to the buffer list.
-     * 
+     *
      * @param buf buffer byte array
      */
     protected void appendBytes(byte[] buf) {
@@ -270,7 +270,7 @@ public class Message {
 
     /**
      * Appends a byte to the buffer list.
-     * 
+     *
      * @param b byte
      */
     protected void appendByte(byte b) {
@@ -294,7 +294,7 @@ public class Message {
 
     /**
      * Demarshalls an integer of a given width from a buffer. Endianness is determined from the format of the message.
-     * 
+     *
      * @param buf The buffer to demarshall from.
      * @param ofs The offset to demarshall from.
      * @param width The byte-width of the int.
@@ -307,7 +307,7 @@ public class Message {
 
     /**
      * Demarshalls an integer of a given width from a buffer.
-     * 
+     *
      * @param buf The buffer to demarshall from.
      * @param ofs The offset to demarshall from.
      * @param endian The endianness to use in demarshalling.
@@ -321,7 +321,7 @@ public class Message {
 
     /**
      * Demarshalls an integer of a given width from a buffer using big-endian format.
-     * 
+     *
      * @param buf The buffer to demarshall from.
      * @param ofs The offset to demarshall from.
      * @param width The byte-width of the int.
@@ -338,7 +338,7 @@ public class Message {
 
     /**
      * Demarshalls an integer of a given width from a buffer using little-endian format.
-     * 
+     *
      * @param buf The buffer to demarshall from.
      * @param ofs The offset to demarshall from.
      * @param width The byte-width of the int.
@@ -356,7 +356,7 @@ public class Message {
 
     /**
      * Marshalls an integer of a given width and appends it to the message. Endianness is determined from the message.
-     * 
+     *
      * @param l The integer to marshall.
      * @param width The byte-width of the int.
      */
@@ -368,7 +368,7 @@ public class Message {
 
     /**
      * Marshalls an integer of a given width into a buffer. Endianness is determined from the message.
-     * 
+     *
      * @param l The integer to marshall.
      * @param buf The buffer to marshall to.
      * @param ofs The offset to marshall to.
@@ -386,7 +386,7 @@ public class Message {
 
     /**
      * Marshalls an integer of a given width into a buffer using big-endian format.
-     * 
+     *
      * @param l The integer to marshall.
      * @param buf The buffer to marshall to.
      * @param ofs The offset to marshall to.
@@ -401,7 +401,7 @@ public class Message {
 
     /**
      * Marshalls an integer of a given width into a buffer using little-endian format.
-     * 
+     *
      * @param l The integer to marshall.
      * @param buf The buffer to demarshall to.
      * @param ofs The offset to demarshall to.
@@ -492,7 +492,7 @@ public class Message {
 
     /**
      * Returns the value of the header field of a given field.
-     * 
+     *
      * @param _type The field to return.
      * @return The value of the field or null if unset.
      */
@@ -503,7 +503,7 @@ public class Message {
     /**
      * Appends a value to the message. The type of the value is read from a D-Bus signature and used to marshall the
      * value.
-     * 
+     *
      * @param sigb A buffer of the D-Bus signature.
      * @param sigofs The offset into the signature corresponding to this value.
      * @param data The value to marshall.
@@ -759,7 +759,7 @@ public class Message {
 
     /**
      * Pad the message to the proper alignment for the given type.
-     * 
+     *
      * @param _type type
      */
     public void pad(byte _type) {
@@ -783,7 +783,7 @@ public class Message {
 
     /**
      * Return the alignment for a given type.
-     * 
+     *
      * @param type type
      * @return int
      */
@@ -825,7 +825,7 @@ public class Message {
 
     /**
      * Append a series of values to the message.
-     * 
+     *
      * @param sig The signature(s) of the value(s).
      * @param data The value(s).
      *
@@ -843,7 +843,7 @@ public class Message {
 
     /**
      * Align a counter to the given type.
-     * 
+     *
      * @param _current The current counter.
      * @param _type The type to align to.
      * @return The new, aligned, counter.
@@ -859,7 +859,7 @@ public class Message {
 
     /**
      * Demarshall one value from a buffer.
-     * 
+     *
      * @param _signatureBuf A buffer of the D-Bus signature.
      * @param _dataBuf The buffer to demarshall from.
      * @param _offsets An array of two ints, which holds the position of the current signature offset and the current
@@ -1131,7 +1131,7 @@ public class Message {
 
     /**
      * Demarshall values from a buffer.
-     * 
+     *
      * @param _signature The D-Bus signature(s) of the value(s).
      * @param _dataBuf The buffer to demarshall from.
      * @param _offsets The offset into the data buffer to start.
@@ -1147,7 +1147,7 @@ public class Message {
 
     /**
      * Demarshall values from a buffer.
-     * 
+     *
      * @param _signature The D-Bus signature(s) of the value(s).
      * @param _dataBuf The buffer to demarshall from.
      * @param _offsets An array of two ints, which holds the position of the current signature offset and the current
@@ -1170,7 +1170,7 @@ public class Message {
 
     /**
      * Returns the Bus ID that sent the message.
-     * 
+     *
      * @return string
      */
     public String getSource() {
@@ -1179,7 +1179,7 @@ public class Message {
 
     /**
      * Returns the destination of the message.
-     * 
+     *
      * @return string
      */
     public String getDestination() {
@@ -1188,7 +1188,7 @@ public class Message {
 
     /**
      * Returns the interface of the message.
-     * 
+     *
      * @return string
      */
     public String getInterface() {
@@ -1197,7 +1197,7 @@ public class Message {
 
     /**
      * Returns the object path of the message.
-     * 
+     *
      * @return string
      */
     public String getPath() {
@@ -1210,7 +1210,7 @@ public class Message {
 
     /**
      * Returns the member name or error name this message represents.
-     * 
+     *
      * @return string
      */
     public String getName() {
@@ -1223,7 +1223,7 @@ public class Message {
 
     /**
      * Returns the dbus signature of the parameters.
-     * 
+     *
      * @return string
      */
     public String getSig() {
@@ -1232,7 +1232,7 @@ public class Message {
 
     /**
      * Returns the message flags.
-     * 
+     *
      * @return int
      */
     public int getFlags() {
@@ -1241,7 +1241,7 @@ public class Message {
 
     /**
      * Returns the message serial ID (unique for this connection)
-     * 
+     *
      * @return the message serial.
      */
     public long getSerial() {
@@ -1250,7 +1250,7 @@ public class Message {
 
     /**
      * If this is a reply to a message, this returns its serial.
-     * 
+     *
      * @return The reply serial, or 0 if it is not a reply.
      */
     public long getReplySerial() {
@@ -1263,7 +1263,7 @@ public class Message {
 
     /**
      * Parses and returns the parameters to this message as an Object array.
-     * 
+     *
      * @return object array
      * @throws DBusException on failure
      */
@@ -1285,7 +1285,7 @@ public class Message {
 
     /**
      * Warning, do not use this method unless you really know what you are doing.
-     * 
+     *
      * @param source string
      * @throws DBusException on error
      */
