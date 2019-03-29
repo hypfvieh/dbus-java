@@ -124,7 +124,7 @@ public abstract class AbstractConnection implements Closeable {
     private ExecutorService                                                    senderService;
 
     protected AbstractConnection(String address) throws DBusException {
-    	this(address, AbstractConnection.TIMEOUT);
+        this(address, AbstractConnection.TIMEOUT);
     }
     
     protected AbstractConnection(String address, int timeout) throws DBusException {
