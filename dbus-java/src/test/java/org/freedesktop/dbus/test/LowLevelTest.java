@@ -13,6 +13,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,26 @@ import com.github.hypfvieh.util.StringUtil;
 public class LowLevelTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Test
+    public void testTimeout() throws ParseException, IOException, DBusException {
+        String addr = getAddress();
+        logger.debug(addr);
+        BusAddress address = new BusAddress(addr);
+        logger.debug(address + "");
+        int timeout = 100;
+		try (AbstractTransport conn = TransportFactory.createTransport(address, timeout)) {
+        	long before = System.currentTimeMillis();
+        	conn.readMessage();
+        	long after = System.currentTimeMillis();
+        	long timeOutMeasured = after - before;
+			Assertions.assertTrue(timeOutMeasured >= timeout, "To early unblocked");
+			//There is no strict limit on this however the 2 times is a safe limit
+			Assertions.assertTrue(timeOutMeasured < timeout * 2, "Blocking to long");
+			System.out.println(timeOutMeasured);
+        }
+    }
+    
+    
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException {
         String addr = getAddress();
