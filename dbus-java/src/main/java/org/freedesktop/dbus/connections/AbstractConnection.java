@@ -124,6 +124,10 @@ public abstract class AbstractConnection implements Closeable {
     private ExecutorService                                                    senderService;
 
     protected AbstractConnection(String address) throws DBusException {
+        this(address, AbstractConnection.TIMEOUT);
+    }
+    
+    protected AbstractConnection(String address, int timeout) throws DBusException {
         exportedObjects = new HashMap<>();
         importedObjects = new ConcurrentHashMap<>();
 
@@ -148,7 +152,7 @@ public abstract class AbstractConnection implements Closeable {
 
         try {
             busAddress = new BusAddress(address);
-            transport = TransportFactory.createTransport(busAddress, AbstractConnection.TIMEOUT);
+            transport = TransportFactory.createTransport(busAddress, timeout);
             connected = true;
         } catch (IOException | DBusException ioe) {
             logger.debug("Error creating transport", ioe);
