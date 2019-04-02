@@ -13,6 +13,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Added new transport system to use jnr-unixsocket (replaces old Transport class)
   - Added support for empty collections/arrays (thanks to [chris-melman](https://github.com/chris-melman))
   - Added support of DBUS_MACHINE_ID_LOCATION environment property to allow usage of dbus-java on Windows (thanks to [chris-melman](https://github.com/chris-melman))
+  - Allow change of the default socket timeout (thanks to [chris-melman](https://github.com/chris-melman))
 
 ##### Changes in 3.0.2
   - Added support for handling various DBus signals without the need to create a specific interface class (thanks to [rm5248](https://github.com/rm5248))
