@@ -97,9 +97,9 @@ public final class DBusConnection extends AbstractConnection {
      * @return {@link DBusConnection}
      */
     public static DBusConnection getConnection(String _address) throws DBusException {
-        return getConnection(_address, true, true);
+        return getConnection(_address, true, true, AbstractConnection.TIMEOUT);
     }
-
+    
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned. 
      * Will register our own session to DBus if registerSelf is true (default).
@@ -108,10 +108,11 @@ public final class DBusConnection extends AbstractConnection {
      * @param _address The address of the bus to connect to
      * @param _registerSelf register own session in dbus
      * @param _shared use a shared connections
+     * @param _timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket. 
      * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
      */
-    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
+    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared, int _timeout)
             throws DBusException {
 
         // CONNECTIONS.getOrDefault(address, defaultValue)
@@ -122,7 +123,7 @@ public final class DBusConnection extends AbstractConnection {
                     c.concurrentConnections.incrementAndGet();
                     return c;
                 } else {
-                    c = new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId());
+                    c = new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId(), _timeout);
                     // do not increment connection counter here, it always starts at 1 on new objects!
                     // c.getConcurrentConnections().incrementAndGet();
                     CONNECTIONS.put(_address, c);
@@ -130,11 +131,11 @@ public final class DBusConnection extends AbstractConnection {
                 }
             }
         } else {
-            return new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId());
+            return new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId(), _timeout);
         }
     }
 
-    private static DBusConnection getConnection(Supplier<String> _addressGenerator, boolean _registerSelf, boolean _shared) throws DBusException {
+    private static DBusConnection getConnection(Supplier<String> _addressGenerator, boolean _registerSelf, boolean _shared, int _timeout) throws DBusException {
         if (_addressGenerator == null) {
             throw new DBusException("Invalid address generator");
         }
@@ -142,7 +143,7 @@ public final class DBusConnection extends AbstractConnection {
         if (address == null) {
             throw new DBusException("null is not a valid DBUS address");
         }
-        return getConnection(address, _registerSelf, _shared);
+        return getConnection(address, _registerSelf, _shared, _timeout);
     }
 
     /**
@@ -157,7 +158,7 @@ public final class DBusConnection extends AbstractConnection {
      *
      */
     public static DBusConnection getConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, true);
+        return getConnection(_bustype, true, AbstractConnection.TIMEOUT);
     }
 
     /**
@@ -171,8 +172,9 @@ public final class DBusConnection extends AbstractConnection {
      *
      */
     public static DBusConnection newConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, false);
+        return getConnection(_bustype, false, AbstractConnection.TIMEOUT);
     }
+    
 
     /**
      * Connect to the BUS. 
@@ -187,8 +189,7 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException If there is a problem connecting to the Bus.
      *
      */
-    public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared) throws DBusException {
-
+    public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
         switch (_bustype) {
             case SYSTEM:
                 DBusConnection systemConnection = getConnection(() -> {
@@ -197,7 +198,7 @@ public final class DBusConnection extends AbstractConnection {
                         bus = DEFAULT_SYSTEM_BUS_ADDRESS;
                     }
                     return bus;
-                }, true, _shared);
+                }, true, _shared, _timeout);
                 return systemConnection;
             case SESSION:
                 DBusConnection sessionConnection = getConnection(() -> {
@@ -244,7 +245,7 @@ public final class DBusConnection extends AbstractConnection {
 
                     return s;
 
-                }, true, _shared);
+                }, true, _shared, _timeout);
 
                 return sessionConnection;
             default:
@@ -285,7 +286,7 @@ public final class DBusConnection extends AbstractConnection {
 				.orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
 	}
 
-    private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId) throws DBusException {
+    private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
         super(_address);
         busnames = new ArrayList<>();
         machineId = _machineId;
