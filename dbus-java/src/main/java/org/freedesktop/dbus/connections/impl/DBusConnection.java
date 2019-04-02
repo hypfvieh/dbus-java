@@ -287,7 +287,7 @@ public final class DBusConnection extends AbstractConnection {
 	}
 
     private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
-        super(_address);
+        super(_address, timeout);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;        		
