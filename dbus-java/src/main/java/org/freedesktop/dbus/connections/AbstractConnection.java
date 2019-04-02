@@ -122,10 +122,6 @@ public abstract class AbstractConnection implements Closeable {
     private AbstractTransport                                                  transport;
     private ExecutorService                                                    workerThreadPool;
     private ExecutorService                                                    senderService;
-
-    protected AbstractConnection(String address) throws DBusException {
-        this(address, AbstractConnection.TIMEOUT);
-    }
     
     protected AbstractConnection(String address, int timeout) throws DBusException {
         exportedObjects = new HashMap<>();
