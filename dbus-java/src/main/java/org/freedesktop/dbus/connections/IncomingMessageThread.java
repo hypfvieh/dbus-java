@@ -46,12 +46,16 @@ public class IncomingMessageThread extends Thread {
                 }
             } catch (DBusException _ex) {
                 if (_ex instanceof FatalException) {
+                    logger.error("FatalException in connection thread.", _ex);
                     if (connection.isConnected()) {
                         connection.disconnect();
                         setTerminate(true);
                     }
                 }
-                logger.error("Exception in connection thread.", _ex);
+
+                if (!terminate) { // only log exceptions if the connection was not intended to be closed
+                    logger.error("Exception in connection thread.", _ex);
+                }
             }
         }
     }
