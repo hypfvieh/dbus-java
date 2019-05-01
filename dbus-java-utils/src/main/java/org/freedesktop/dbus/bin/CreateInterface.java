@@ -396,7 +396,7 @@ public class CreateInterface {
         logger.info("  - create exception '{}'", name);
 
         out.println("package " + pack + ";");
-        out.println("import org.freedesktop.dbus.DBusExecutionException;");
+        out.println("import org.freedesktop.dbus.exceptions.DBusExecutionException;");
         out.print("public class " + name);
         out.println(" extends DBusExecutionException");
         out.println("{");
@@ -472,7 +472,7 @@ public class CreateInterface {
         logger.info("  - create tuple '{}'", name);
 
         out.println("package " + pack + ";");
-        out.println("import org.freedesktop.dbus.Position;");
+        out.println("import org.freedesktop.dbus.annotations.Position;");
         out.println("import org.freedesktop.dbus.Tuple;");
         out.println("/** Just a typed container class */");
         out.print("public final class " + name);
