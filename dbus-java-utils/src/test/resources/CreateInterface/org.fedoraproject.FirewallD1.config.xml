@@ -1,0 +1,286 @@
+<?xml version="1.0"?>
+<node name="/org/fedoraproject/FirewallD1/config">
+  <interface name="org.fedoraproject.FirewallD1.config.direct">
+    <method name="removeChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+    <method name="getAllRules">
+      <arg direction="out" type="a(sssias)"/>
+    </method>
+    <signal name="Updated">
+    </signal>
+    <method name="getSettings">
+      <arg direction="out" type="(a(sss)a(sssias)a(sas))"/>
+    </method>
+    <method name="getPassthroughs">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="out" type="aas"/>
+    </method>
+    <method name="queryPassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="removeRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="getRules">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="out" type="a(ias)"/>
+    </method>
+    <method name="update">
+      <arg direction="in" name="settings" type="(a(sss)a(sssias)a(sas))"/>
+    </method>
+    <method name="getChains">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+    <method name="addRule">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="in" name="priority" type="i"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="getAllPassthroughs">
+      <arg direction="out" type="a(sas)"/>
+    </method>
+    <method name="getAllChains">
+      <arg direction="out" type="a(sss)"/>
+    </method>
+    <method name="queryChain">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addPassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="removePassthrough">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="args" type="as"/>
+    </method>
+    <method name="removeRules">
+      <arg direction="in" name="ipv" type="s"/>
+      <arg direction="in" name="table" type="s"/>
+      <arg direction="in" name="chain" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+    <method name="Set">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="in" name="new_value" type="v"/>
+    </method>
+    <method name="GetAll">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="out" type="a{sv}"/>
+    </method>
+    <method name="Get">
+      <arg direction="in" name="interface_name" type="s"/>
+      <arg direction="in" name="property_name" type="s"/>
+      <arg direction="out" type="v"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="org.fedoraproject.FirewallD1.Iconfig">
+    <method name="getHelperByName">
+      <arg direction="in" name="helper" type="s"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="addIcmpType">
+      <arg direction="in" name="icmptype" type="s"/>
+      <arg direction="in" name="settings" type="(sssas)"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="getIcmpTypeByName">
+      <arg direction="in" name="icmptype" type="s"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <signal name="IcmpTypeAdded">
+      <arg name="icmptype" type="s"/>
+    </signal>
+    <method name="getIPSetNames">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="listZones">
+      <arg direction="out" type="ao"/>
+    </method>
+    <method name="getIPSetByName">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="getServiceByName">
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="getZoneNames">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getIcmpTypeNames">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="listServices">
+      <arg direction="out" type="ao"/>
+    </method>
+    <signal name="ZoneAdded">
+      <arg name="zone" type="s"/>
+    </signal>
+    <method name="getServiceNames">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="getHelperNames">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="addZone">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="in" name="settings" type="(sssbsasa(ss)asba(ssss)asasasasa(ss)b)"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="getZoneOfInterface">
+      <arg direction="in" name="iface" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="listHelpers">
+      <arg direction="out" type="ao"/>
+    </method>
+    <signal name="ServiceAdded">
+      <arg name="service" type="s"/>
+    </signal>
+    <method name="listIcmpTypes">
+      <arg direction="out" type="ao"/>
+    </method>
+    <method name="getZoneByName">
+      <arg direction="in" name="zone" type="s"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="addIPSet">
+      <arg direction="in" name="ipset" type="s"/>
+      <arg direction="in" name="settings" type="(ssssa{ss}as)"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <signal name="IPSetAdded">
+      <arg name="ipset" type="s"/>
+    </signal>
+    <signal name="HelperAdded">
+      <arg name="helper" type="s"/>
+    </signal>
+    <method name="addService">
+      <arg direction="in" name="service" type="s"/>
+      <arg direction="in" name="settings" type="(sssa(ss)asa{ss}asa(ss))"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="listIPSets">
+      <arg direction="out" type="ao"/>
+    </method>
+    <method name="addHelper">
+      <arg direction="in" name="helper" type="s"/>
+      <arg direction="in" name="settings" type="(sssssa(ss))"/>
+      <arg direction="out" type="o"/>
+    </method>
+    <method name="getZoneOfSource">
+      <arg direction="in" name="source" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+  <property access="readwrite" name="MinimalMark" type="i"/><property access="readwrite" name="AutomaticHelpers" type="s"/><property access="readwrite" name="Lockdown" type="s"/><property access="readwrite" name="LogDenied" type="s"/><property access="readwrite" name="IPv6_rpfilter" type="s"/><property access="readwrite" name="IndividualCalls" type="s"/><property access="readwrite" name="CleanupOnExit" type="s"/><property access="read" name="DefaultZone" type="s"/></interface>
+  <interface name="org.fedoraproject.FirewallD1.config.policies">
+    <method name="addLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+    </method>
+    <method name="queryLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="getLockdownWhitelist">
+      <arg direction="out" type="(asasasai)"/>
+    </method>
+    <method name="getLockdownWhitelistCommands">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removeLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+    </method>
+    <method name="getLockdownWhitelistUsers">
+      <arg direction="out" type="as"/>
+    </method>
+    <method name="removeLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+    </method>
+    <method name="getLockdownWhitelistContexts">
+      <arg direction="out" type="as"/>
+    </method>
+    <signal name="LockdownWhitelistUpdated">
+    </signal>
+    <method name="removeLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+    </method>
+    <method name="addLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+    </method>
+    <method name="addLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+    </method>
+    <method name="queryLockdownWhitelistCommand">
+      <arg direction="in" name="command" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="queryLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="setLockdownWhitelist">
+      <arg direction="in" name="settings" type="(asasasai)"/>
+    </method>
+    <method name="queryLockdownWhitelistContext">
+      <arg direction="in" name="context" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <method name="addLockdownWhitelistUid">
+      <arg direction="in" name="uid" type="i"/>
+    </method>
+    <method name="removeLockdownWhitelistUser">
+      <arg direction="in" name="user" type="s"/>
+    </method>
+    <method name="getLockdownWhitelistUids">
+      <arg direction="out" type="ai"/>
+    </method>
+  </interface>
+  <node name="helper"/>
+  <node name="icmptype"/>
+  <node name="ipset"/>
+  <node name="service"/>
+  <node name="zone"/>
+</node>
