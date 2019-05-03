@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import javax.swing.text.Position;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.freedesktop.dbus.Tuple;
-import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -381,6 +381,7 @@ public class InterfaceCodeGenerator {
         DBusBusType busType = null;
         boolean ignoreDtd = true;
         String objectPath = null;
+        String inputFile = null;
 
         for (int i = 0; i < args.length; i++) {
             String p = args[i];
@@ -399,6 +400,13 @@ public class InterfaceCodeGenerator {
             } else if ("--outputDir".equals(p) || "-o".equals(p)) {
                 if (args.length > i) {
                     outputDir = args[++i];
+                } else {
+                    printHelp();
+                    System.exit(0);
+                }
+            } else if ("--inputFile".equals(p) || "-i".equals(p)) {
+                if (args.length > i) {
+                    inputFile = args[++i];
                 } else {
                     printHelp();
                     System.exit(0);
@@ -428,25 +436,33 @@ public class InterfaceCodeGenerator {
         String introspectionData = null;
 
         if (!StringUtil.isBlank(busName)) {
-            try {
-
-                logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
-
-                DBusConnection conn = DBusConnection.getConnection(busType);
-
-                Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
-                introspectionData = in.Introspect();
-                if (StringUtil.isBlank(introspectionData)) {
-                    logger.error("Failed to get introspection data");
+            if (!StringUtil.isBlank(inputFile)) {
+                File file = new File(inputFile);
+                if (!file.exists()) {
+                    logger.error("Given input file {} does not exist", file);
                     System.exit(1);
                 }
-                conn.disconnect();
-            } catch (DBusExecutionException | DBusException _ex) {
-                logger.error("Failure in DBus Communications. ", _ex);
-                System.exit(1);
-
+                introspectionData = FileIoUtil.readFileToString(file);
+            } else {
+                try {
+                    logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
+    
+                    DBusConnection conn = DBusConnection.getConnection(busType);
+    
+                    Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
+                    introspectionData = in.Introspect();
+                    if (StringUtil.isBlank(introspectionData)) {
+                        logger.error("Failed to get introspection data");
+                        System.exit(1);
+                    }
+                    conn.disconnect();
+                } catch (DBusExecutionException | DBusException _ex) {
+                    logger.error("Failure in DBus Communications. ", _ex);
+                    System.exit(1);
+    
+                }
             }
-
+            
             InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
             try {
 
@@ -458,19 +474,18 @@ public class InterfaceCodeGenerator {
         }
     }
 
-
     private static void version() {
         System.out.println("Java D-Bus Version " + System.getProperty("Version"));
         System.exit(1);
     }
 
-
     private static void printHelp() {
         System.out.println("Syntax: <options> [busname object] [object path]");
         System.out.println("        Options: ");
-        System.out.println("        --system          | -y           Use SYSTEM DBus");
-        System.out.println("        --session         | -s           Use SESSION DBus");
-        System.out.println("        --outputDir <Dir> | -o <Dir>     Use <Dir> as output directory for all generated files");
+        System.out.println("        --system           | -y           Use SYSTEM DBus");
+        System.out.println("        --session          | -s           Use SESSION DBus");
+        System.out.println("        --outputDir <Dir>  | -o <Dir>     Use <Dir> as output directory for all generated files");
+        System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("");
         System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
         System.out.println("        --version                        Show version information");
