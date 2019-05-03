@@ -380,7 +380,7 @@ public class InterfaceCodeGenerator {
         String outputDir = null;
         DBusBusType busType = null;
         boolean ignoreDtd = true;
-        String objectPath = "/";
+        String objectPath = null;
 
         for (int i = 0; i < args.length; i++) {
             String p = args[i];
@@ -415,6 +415,10 @@ public class InterfaceCodeGenerator {
             }
         }
 
+        if (objectPath == null) {
+            objectPath = "/";
+        }
+        
         if (outputDir == null) {
             throw new RuntimeException("No output directory (--outputDir) given!");
         }
@@ -462,7 +466,7 @@ public class InterfaceCodeGenerator {
 
 
     private static void printHelp() {
-        System.out.println("Syntax: <options> [busname object]");
+        System.out.println("Syntax: <options> [busname object] [object path]");
         System.out.println("        Options: ");
         System.out.println("        --system          | -y           Use SYSTEM DBus");
         System.out.println("        --session         | -s           Use SESSION DBus");
