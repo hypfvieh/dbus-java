@@ -398,7 +398,7 @@ public class InterfaceCodeGenerator {
                 System.exit(0);
             } else if ("--outputDir".equals(p) || "-o".equals(p)) {
                 if (args.length > i) {
-                    outputDir = args[i++];
+                    outputDir = args[++i];
                 } else {
                     printHelp();
                     System.exit(0);
