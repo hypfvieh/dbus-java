@@ -99,6 +99,22 @@ public final class DBusConnection extends AbstractConnection {
     public static DBusConnection getConnection(String _address) throws DBusException {
         return getConnection(_address, true, true, AbstractConnection.TIMEOUT);
     }
+
+    /**
+     * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned. 
+     * Will register our own session to DBus if registerSelf is true (default).
+     * A new connection is created every time if shared-flag is false.
+     * 
+     * @param _address The address of the bus to connect to
+     * @param _registerSelf register own session in dbus
+     * @param _shared use a shared connections
+     * @throws DBusException If there is a problem connecting to the Bus.
+     * @return {@link DBusConnection}
+     */
+    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
+            throws DBusException {
+        return getConnection(_address, _registerSelf, _shared, AbstractConnection.TIMEOUT);
+    }
     
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned. 
