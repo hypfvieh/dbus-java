@@ -763,7 +763,7 @@ public abstract class AbstractConnection implements Closeable {
             "unchecked"
     })
     private void handleMessage(final DBusSignal _signal, boolean _useThreadPool) {
-        logger.debug("Handling incoming signal: ", _signal);
+        logger.debug("Handling incoming signal: {}", _signal);
 
         List<DBusSigHandler<? extends DBusSignal>> handlers = new ArrayList<>();
         List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
