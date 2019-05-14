@@ -114,7 +114,7 @@ public class TestAll {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
         System.out.println("Checking for outstanding errors");
         DBusExecutionException dbee = serverconn.getError();
         if (null != dbee) {
@@ -128,6 +128,7 @@ public class TestAll {
         System.out.println("Disconnecting");
         /** Disconnect from the bus. */
         clientconn.disconnect();
+        serverconn.releaseBusName("foo.bar.Test");
         serverconn.disconnect();
     }
 
