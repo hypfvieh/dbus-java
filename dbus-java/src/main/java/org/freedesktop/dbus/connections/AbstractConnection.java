@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -93,7 +94,7 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_NAME_LENGTH  = 255;
 
     private final Logger        logger = LoggerFactory.getLogger(getClass());
-
+    
     private final ObjectTree                                                   objectTree;
 
     private final Map<String, ExportedObject>                                  exportedObjects;
@@ -114,14 +115,16 @@ public abstract class AbstractConnection implements Closeable {
 
     private final BusAddress                                                   busAddress;
 
+    private final ExecutorService                                              senderService;
+    
     private volatile boolean                                                   run;
 
     private boolean                                                            weakreferences   = false;
     private boolean                                                            connected        = false;
 
     private AbstractTransport                                                  transport;
-    private ExecutorService                                                    workerThreadPool;
-    private ExecutorService                                                    senderService;
+    private volatile ThreadPoolExecutor                                        workerThreadPool;
+    
     
     protected AbstractConnection(String address, int timeout) throws DBusException {
         exportedObjects = new HashMap<>();
@@ -135,8 +138,8 @@ public abstract class AbstractConnection implements Closeable {
         callbackManager = new PendingCallbackManager();
 
         pendingErrorQueue = new ConcurrentLinkedQueue<>();
-        workerThreadPool =
-                Executors.newFixedThreadPool(THREADCOUNT, new NameableThreadFactory("DBus Worker Thread-", false));
+        workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREADCOUNT,
+                        new NameableThreadFactory("DBus Worker Thread-", false));
 
         senderService =
                 Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
@@ -181,14 +184,16 @@ public abstract class AbstractConnection implements Closeable {
     /**
      * Change the number of worker threads to receive method calls and handle signals. Default is 4 threads
      *
-     * @param newcount
+     * @param _newPoolSize
      *            The new number of worker Threads to use.
      */
-    public void changeThreadCount(byte newcount) {
-        if (newcount != THREADCOUNT) {
-            List<Runnable> remainingTasks = workerThreadPool.shutdownNow(); // kill previous threadpool
-            workerThreadPool =
-                    Executors.newFixedThreadPool(newcount, new NameableThreadFactory("DbusWorkerThreads", false));
+    public void changeThreadCount(byte _newPoolSize) {
+        if (workerThreadPool.getPoolSize() != _newPoolSize) {
+            ThreadPoolExecutor oldPool = workerThreadPool;
+            workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(_newPoolSize,
+                    new NameableThreadFactory("DbusWorkerThreads", false));
+            
+            List<Runnable> remainingTasks = oldPool.shutdownNow(); // kill previous threadpool
             // re-schedule previously waiting tasks
             for (Runnable runnable : remainingTasks) {
                 workerThreadPool.execute(runnable);
