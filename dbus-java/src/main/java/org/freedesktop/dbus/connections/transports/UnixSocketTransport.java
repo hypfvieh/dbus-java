@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 
+import com.github.hypfvieh.util.SystemUtil;
+
 import jnr.unixsocket.UnixServerSocketChannel;
 import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
@@ -37,6 +39,7 @@ public class UnixSocketTransport extends AbstractTransport {
      * Establish a connection to DBus using unix sockets.
      * @throws IOException on error
      */
+    @Override
     void connect() throws IOException {
         UnixSocketChannel us;
         if (getAddress().isListeningSocket()) {
@@ -48,7 +51,10 @@ public class UnixSocketTransport extends AbstractTransport {
             us = UnixSocketChannel.open(unixSocketAddress);
         }
         
-        us.setOption(UnixSocketOptions.SO_PASSCRED, true);
+        // MacOS doesn't support SO_PASSCRED
+        if (!SystemUtil.isMacOs()) {
+            us.setOption(UnixSocketOptions.SO_PASSCRED, true);
+        }
 
         getLogger().trace("Setting timeout to {} on unix socket", getTimeout());
         
