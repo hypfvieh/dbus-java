@@ -188,7 +188,7 @@ public abstract class AbstractConnection implements Closeable {
      *            The new number of worker Threads to use.
      */
     public void changeThreadCount(byte _newPoolSize) {
-        if (workerThreadPool.getPoolSize() != _newPoolSize) {
+        if (workerThreadPool.getMaximumPoolSize() != _newPoolSize) {
             ThreadPoolExecutor oldPool = workerThreadPool;
             workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(_newPoolSize,
                     new NameableThreadFactory("DbusWorkerThreads", false));
