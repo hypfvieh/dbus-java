@@ -35,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import org.freedesktop.dbus.DBusAsyncReply;
@@ -124,6 +126,7 @@ public abstract class AbstractConnection implements Closeable {
 
     private AbstractTransport                                                  transport;
     private volatile ThreadPoolExecutor                                        workerThreadPool;
+    private final ReadWriteLock                                                workerThreadPoolLock = new ReentrantReadWriteLock();
     
     
     protected AbstractConnection(String address, int timeout) throws DBusException {
@@ -189,15 +192,19 @@ public abstract class AbstractConnection implements Closeable {
      */
     public void changeThreadCount(byte _newPoolSize) {
         if (workerThreadPool.getMaximumPoolSize() != _newPoolSize) {
-            ThreadPoolExecutor oldPool = workerThreadPool;
-            workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(_newPoolSize,
+            workerThreadPoolLock.writeLock().lock();
+            try {
+                List<Runnable> remainingTasks = workerThreadPool.shutdownNow(); // kill previous threadpool
+                workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(_newPoolSize,
                     new NameableThreadFactory("DbusWorkerThreads", false));
-            
-            List<Runnable> remainingTasks = oldPool.shutdownNow(); // kill previous threadpool
-            // re-schedule previously waiting tasks
-            for (Runnable runnable : remainingTasks) {
-                workerThreadPool.execute(runnable);
+                // re-schedule previously waiting tasks
+                for (Runnable runnable : remainingTasks) {
+                    workerThreadPool.execute(runnable);
+                }
+            } finally {
+                workerThreadPoolLock.writeLock().unlock();
             }
+            
         }
     }
 
@@ -464,6 +471,7 @@ public abstract class AbstractConnection implements Closeable {
 
         logger.debug("Disconnecting Abstract Connection");
 
+        workerThreadPoolLock.writeLock().lock();
         try {
             // try to wait for all pending tasks.
             workerThreadPool.shutdown();
@@ -471,6 +479,8 @@ public abstract class AbstractConnection implements Closeable {
 
         } catch (InterruptedException _ex) {
             logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
+        } finally {
+            workerThreadPoolLock.writeLock().unlock();
         }
 
         // shutdown sender executor service, send all remaining messages in main thread
@@ -495,10 +505,14 @@ public abstract class AbstractConnection implements Closeable {
         }
 
         // stop all the workers
-        if (!workerThreadPool.isTerminated()) { // try forceful shutdown
-            workerThreadPool.shutdownNow();
+        workerThreadPoolLock.writeLock().lock();
+        try {
+            if (!workerThreadPool.isTerminated()) { // try forceful shutdown
+                workerThreadPool.shutdownNow();
+            }
+        } finally {
+            workerThreadPoolLock.writeLock().unlock();
         }
-
     }
 
     /**
@@ -755,7 +769,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             }
         };
-        workerThreadPool.execute(r);
+        executeInWorkerThreadPool(r);
     }
 
     /**
@@ -838,7 +852,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             };
             if (_useThreadPool) {
-                workerThreadPool.execute(command);
+                executeInWorkerThreadPool(command);
             } else {
                 command.run();
             }
@@ -854,10 +868,19 @@ public abstract class AbstractConnection implements Closeable {
                 }
             };
             if (_useThreadPool) {
-                workerThreadPool.execute(command);
+                executeInWorkerThreadPool(command);
             } else {
                 command.run();
             }
+        }
+    }
+    
+    private void executeInWorkerThreadPool(Runnable task) {
+        workerThreadPoolLock.readLock().lock();
+        try {
+            workerThreadPool.execute(task);
+        } finally {
+            workerThreadPoolLock.readLock().unlock();
         }
     }
 
@@ -899,7 +922,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                     }
                 };
-                workerThreadPool.execute(command);
+                executeInWorkerThreadPool(command);
             }
 
         } else {
@@ -958,7 +981,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                     }
                 };
-                workerThreadPool.execute(r);
+                executeInWorkerThreadPool(r);
             }
 
         } else
