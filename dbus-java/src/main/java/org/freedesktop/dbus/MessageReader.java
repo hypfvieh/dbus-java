@@ -42,7 +42,7 @@ public class MessageReader implements Closeable {
 
     public Message readMessage() throws IOException, DBusException {
         int rv;
-        /* Read the 12 byte fixed header, retrying as neccessary */
+        /* Read the 12 byte fixed header, retrying as necessary */
         if (null == buf) {
             buf = new byte[12];
             len[0] = 0;
