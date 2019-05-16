@@ -50,6 +50,8 @@ public class UnixSocketTransport extends AbstractTransport {
         } else {
             us = UnixSocketChannel.open(unixSocketAddress);
         }
+
+        us.configureBlocking(true);
         
         // MacOS doesn't support SO_PASSCRED
         if (!SystemUtil.isMacOs()) {
@@ -58,9 +60,7 @@ public class UnixSocketTransport extends AbstractTransport {
 
         getLogger().trace("Setting timeout to {} on unix socket", getTimeout());
         
-        us.configureBlocking(true);
-        
-        if (getTimeout() == 1) {
+        if (getTimeout() == 1 || getTimeout() < 0) {
             us.socket().setSoTimeout(0);
         } else {
             us.socket().setSoTimeout(getTimeout());
