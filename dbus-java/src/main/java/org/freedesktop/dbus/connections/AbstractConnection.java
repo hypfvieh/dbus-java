@@ -453,9 +453,28 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Disconnect from the Bus.
+     * Special disconnect method which may be used whenever some cleanup before or after 
+     * disconnection to DBus is required.
+     * @param _before action execute before actual disconnect, null if not needed
+     * @param _after action execute after disconnect, null if not needed
      */
-    public synchronized void disconnect() {
+    protected synchronized void disconnect(IDisconnectAction _before, IDisconnectAction _after) {
+        if (_before != null) {
+            _before.perform();
+        }
+        internalDisconnect();
+        if (_after != null) {
+            _after.perform();
+        }
+    }
+    
+    /**
+     * Disconnects the DBus session.
+     * This method is private as it should never be overwritten by subclasses,
+     * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)} 
+     * which then will cause a StackOverflowError.
+     */
+    private synchronized void internalDisconnect() {
 
         if (connected == false) { // already disconnected
             return;
@@ -485,8 +504,8 @@ public abstract class AbstractConnection implements Closeable {
 
         // shutdown sender executor service, send all remaining messages in main thread
         for (Runnable runnable : senderService.shutdownNow()) {
-			runnable.run();
-		}
+            runnable.run();
+        }
 
         // stop the main thread
         run = false;
@@ -513,6 +532,13 @@ public abstract class AbstractConnection implements Closeable {
         } finally {
             workerThreadPoolLock.writeLock().unlock();
         }
+    }
+    
+    /**
+     * Disconnect from the Bus.
+     */
+    public synchronized void disconnect() {
+        internalDisconnect();
     }
 
     /**

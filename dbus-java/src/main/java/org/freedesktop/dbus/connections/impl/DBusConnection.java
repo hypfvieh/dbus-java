@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusMatchRule;
@@ -34,6 +35,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -934,7 +936,30 @@ public final class DBusConnection extends AbstractConnection {
 	        }
 	        
         } else { // this is a standalone non-shared session, disconnect directly using super's implementation
-        	super.disconnect();
+        	IDisconnectAction beforeDisconnectAction = () -> {
+        	    
+        	    // get all busnames from the list which matches the usual pattern
+        	    // this is required as the list also contains internal names like ":1.11"
+        	    // it is also required to put the results in a new list, otherwise we would get a
+        	    // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
+                List<String> lBusNames = busnames.stream()
+        	        .filter(busName -> busName != null && !(!busName.matches(BUSNAME_REGEX) || busName.length() > MAX_NAME_LENGTH))
+        	        .collect(Collectors.toList());
+                
+                
+                lBusNames.forEach(busName -> {
+                        try {
+                            releaseBusName(busName);
+                            
+                        } catch (DBusException _ex) {
+                            logger.error("Error while releasing busName '" + busName + "'.", _ex);
+                        }
+        	            
+        	        });
+        	    
+        	};
+        	
+            super.disconnect(beforeDisconnectAction, null);
         }
     }
     
