@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.test;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -33,7 +34,11 @@ public class LowLevelTest {
         int timeout = 100;
 		try (AbstractTransport conn = TransportFactory.createTransport(address, timeout)) {
         	long before = System.currentTimeMillis();
-        	conn.readMessage();
+        	try {
+                conn.readMessage();
+            } catch (EOFException _ex) { 
+                // EOFException will be thrown on linux because after read-timeout no data is available (End Of File)
+            }
         	long after = System.currentTimeMillis();
         	long timeOutMeasured = after - before;
 			Assertions.assertTrue(timeOutMeasured >= timeout, "To early unblocked");
