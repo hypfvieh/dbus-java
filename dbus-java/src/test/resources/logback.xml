@@ -9,7 +9,7 @@
     </appender>
 
     <logger name="com" level="INFO" />
-    <logger name="org" level="INFO" />
+    <logger name="org" level="DEBUG" />
     <logger name="cx.ath.matthew" level="INFO" />
     <logger name="org.freedesktop.dbus.connections" level="INFO" />
     <logger name="org.freedesktop.dbus.errors" level="INFO" />
