@@ -30,8 +30,8 @@ public class DBusConnectionTest {
 
         // prepare 2 independent connection
         String busName = "org.freedesktop.dbus.test.TestBus";
-        DBusConnection connection1 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TIMEOUT);
-        DBusConnection connection2 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TIMEOUT);
+        DBusConnection connection1 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TCP_CONNECT_TIMEOUT);
+        DBusConnection connection2 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TCP_CONNECT_TIMEOUT);
         assertNotEquals(connection1.getUniqueName(), connection2.getUniqueName());
 
         // only one connection can have the bus

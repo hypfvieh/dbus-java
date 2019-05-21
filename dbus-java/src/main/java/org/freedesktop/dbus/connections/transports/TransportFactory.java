@@ -34,7 +34,7 @@ public final class TransportFactory {
         AbstractTransport transport;
         
         if (_address.getBusType() == AddressBusTypes.UNIX) {
-            transport = new UnixSocketTransport(_address, _timeout);
+            transport = new UnixSocketTransport(_address);
         } else if (_address.getBusType() == AddressBusTypes.TCP) {
             transport = new TcpTransport(_address, _timeout);
         } else {

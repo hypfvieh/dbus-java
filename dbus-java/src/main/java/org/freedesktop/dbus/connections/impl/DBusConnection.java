@@ -99,7 +99,7 @@ public final class DBusConnection extends AbstractConnection {
      * @return {@link DBusConnection}
      */
     public static DBusConnection getConnection(String _address) throws DBusException {
-        return getConnection(_address, true, true, AbstractConnection.TIMEOUT);
+        return getConnection(_address, true, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
 
     /**
@@ -115,7 +115,7 @@ public final class DBusConnection extends AbstractConnection {
      */
     public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
             throws DBusException {
-        return getConnection(_address, _registerSelf, _shared, AbstractConnection.TIMEOUT);
+        return getConnection(_address, _registerSelf, _shared, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
     
     /**
@@ -126,7 +126,7 @@ public final class DBusConnection extends AbstractConnection {
      * @param _address The address of the bus to connect to
      * @param _registerSelf register own session in dbus
      * @param _shared use a shared connections
-     * @param _timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket. 
+     * @param _timeout connect timeout if this is a TCP socket, 0 will block forever, if this is not a TCP socket this value is ignored 
      * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
      */
@@ -176,7 +176,7 @@ public final class DBusConnection extends AbstractConnection {
      *
      */
     public static DBusConnection getConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, true, AbstractConnection.TIMEOUT);
+        return getConnection(_bustype, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
 
     /**
@@ -190,7 +190,7 @@ public final class DBusConnection extends AbstractConnection {
      *
      */
     public static DBusConnection newConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, false, AbstractConnection.TIMEOUT);
+        return getConnection(_bustype, false, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
     
 
@@ -201,7 +201,8 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @param _bustype The Bus to connect to.
      * @param _shared use shared connection
-     *          
+     * @param _timeout connect timeout if this is a TCP socket, 0 will block forever, if this is not a TCP socket this value is ignored
+     *
      * @return {@link DBusConnection}
      *
      * @throws DBusException If there is a problem connecting to the Bus.

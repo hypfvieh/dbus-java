@@ -82,9 +82,9 @@ public abstract class AbstractConnection implements Closeable {
      */
     private static final int         THREADCOUNT = 4;
     /**
-     * Timeout in µs on checking the BUS for incoming messages and sending outgoing messages
+     * Connect timeout, used for TCP only
      */
-    public static final int               TIMEOUT     = 100000;
+    public static final int          TCP_CONNECT_TIMEOUT     = 100000;
 
     public static final boolean      FLOAT_SUPPORT    =    (null != System.getenv("DBUS_JAVA_FLOATS"));
     public static final String       BUSNAME_REGEX    = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";

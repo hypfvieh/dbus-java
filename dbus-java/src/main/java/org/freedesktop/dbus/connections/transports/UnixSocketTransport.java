@@ -21,8 +21,8 @@ public class UnixSocketTransport extends AbstractTransport {
     private final UnixSocketAddress unixSocketAddress;
     private UnixServerSocketChannel unixServerSocket;
 
-    UnixSocketTransport(BusAddress _address, int _timeout) throws IOException {
-        super(_address, _timeout); 
+    UnixSocketTransport(BusAddress _address) throws IOException {
+        super(_address); 
         
         if (_address.isAbstract()) {
             unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
@@ -58,14 +58,6 @@ public class UnixSocketTransport extends AbstractTransport {
             us.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
-        getLogger().trace("Setting timeout to {} on unix socket", getTimeout());
-        
-        if (getTimeout() == 1 || getTimeout() < 0) {
-            us.socket().setSoTimeout(0);
-        } else {
-            us.socket().setSoTimeout(getTimeout());
-        }
-        
         setOutputWriter(us.socket().getOutputStream());
         setInputReader(us.socket().getInputStream());
         

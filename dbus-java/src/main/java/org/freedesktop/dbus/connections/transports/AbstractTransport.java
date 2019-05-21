@@ -25,7 +25,6 @@ public abstract class AbstractTransport implements Closeable {
 
     private final Logger     logger;
     private final BusAddress address;
-    private final int        timeout;
 
     private SASL.SaslMode    saslMode;
 
@@ -33,9 +32,8 @@ public abstract class AbstractTransport implements Closeable {
     private MessageReader    inputReader;
     private MessageWriter    outputWriter;
 
-    AbstractTransport(BusAddress _address, int _timeout) {
+    AbstractTransport(BusAddress _address) {
         address = _address;
-        timeout = _timeout;
         
         if (_address.isListeningSocket()) {
             saslMode = SASL.SaslMode.SERVER;    
@@ -124,10 +122,6 @@ public abstract class AbstractTransport implements Closeable {
 
     protected BusAddress getAddress() {
         return address;
-    }
-
-    protected int getTimeout() {
-        return timeout;
     }
 
     protected Logger getLogger() {

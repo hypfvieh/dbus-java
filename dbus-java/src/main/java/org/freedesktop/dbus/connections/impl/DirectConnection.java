@@ -56,7 +56,7 @@ public class DirectConnection extends AbstractConnection {
      * @throws DBusException on error
      */
     public DirectConnection(String address) throws DBusException {
-        this(address, AbstractConnection.TIMEOUT);
+        this(address, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
     
     /**
