@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bluez.datatypes.ThreeTuple;
@@ -86,12 +88,14 @@ public class BluezInterfaceCreator {
             System.exit(1);
         }
 
-        List<File> fileList = Files.walk(docPath.toPath())
-            .map(p -> p.toFile())
-//            .filter(f -> f.getName().contains("agent-api"))
-            .filter(p -> SystemUtil.getFileExtension(p.getAbsolutePath()).equals("txt"))
-            .collect(Collectors.toList());
-
+        List<File> fileList;
+        try (Stream<Path> walk = Files.walk(docPath.toPath())) {
+            fileList = walk
+                .map(p -> p.toFile())
+    //            .filter(f -> f.getName().contains("agent-api"))
+                .filter(p -> SystemUtil.getFileExtension(p.getAbsolutePath()).equals("txt"))
+                .collect(Collectors.toList());
+        }
         Set<InterfaceStructure> structure = new LinkedHashSet<>();
 
         for (File file : fileList) {
