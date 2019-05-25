@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
 
     <artifactId>dbus-java</artifactId>
 
@@ -49,6 +49,31 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <manifestLocation>META-INF</manifestLocation>
+                    <instructions>
+                      <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                      <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                      <Bundle-Name>${project.name}</Bundle-Name>
+                      <Bundle-Description>dbus-java</Bundle-Description>
+                      <Bundle-Vendor>JCI</Bundle-Vendor>
+                      <Bundle-Version>${project.version}</Bundle-Version>
+                      <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+                      <Import-Package>
+                      org.slf4j,
+                      org.eclipse.jdt.annotation;resolution:=optional
+                      </Import-Package>
+                      <Export-Package>org.freedesktop.*</Export-Package>
+                      <Embed-Dependency>!junit-*,!slf4j*, !mockito*, !logback*, !apiguardian*, !opentest4j*, !objenesis, !org.eclipse.jdt.annotation*, !byte-buddy*, ;scope=compile|runtime</Embed-Dependency>
+                      <Embed-Transitive>true</Embed-Transitive>
+                    </instructions>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -106,6 +131,13 @@
     </build>
 
     <dependencies>
+    
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+    
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>java-utils</artifactId>
