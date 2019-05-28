@@ -41,7 +41,7 @@ public class MessageWriter implements Closeable {
             return;
         }
 
-        logger.debug("Writing all {} buffers simultaneously to Unix Socket", m.getWireData().length );
+        logger.debug("Writing {} bytes for signature '{}' simultaneously to Unix Socket", m.getWireData().length, m.getSig());
         for (byte[] buf : m.getWireData()) {
             logger.trace("({}):{}", buf, (null == buf ? "" : Hexdump.format(buf)));
             if (null == buf) {

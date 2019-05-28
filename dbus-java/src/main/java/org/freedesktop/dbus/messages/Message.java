@@ -173,7 +173,7 @@ public class Message {
         serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 8)[0]).longValue();
         bytecounter = _msg.length + _headers.length + _body.length;
 
-        logger.trace(_headers.toString());
+        logger.trace("Message header: {}", Hexdump.toAscii(_headers));
         Object[] hs = extract("a(yv)", _headers, 0);
         if (logger.isTraceEnabled()) {
             logger.trace(Arrays.deepToString(hs));
