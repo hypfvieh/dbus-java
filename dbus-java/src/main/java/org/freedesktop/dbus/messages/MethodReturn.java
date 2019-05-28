@@ -15,6 +15,7 @@ package org.freedesktop.dbus.messages;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 public class MethodReturn extends Message {
@@ -29,7 +30,7 @@ public class MethodReturn extends Message {
     }
 
     public MethodReturn(String source, String dest, long replyserial, String sig, Object... args) throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.METHOD_RETURN, (byte) 0);
+        super(DBusConnection.getEndianness(), Message.MessageType.METHOD_RETURN, (byte) 0);
 
         getHeaders().put(Message.HeaderField.REPLY_SERIAL, replyserial);
 

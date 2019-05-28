@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.freedesktop.Hexdump;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class MethodCall extends Message {
     }
 
     public MethodCall(String source, String dest, String path, String iface, String member, byte flags, String sig, Object... args) throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.METHOD_CALL, flags);
+        super(DBusConnection.getEndianness(), Message.MessageType.METHOD_CALL, flags);
 
         if (null == member || null == path) {
             throw new MessageFormatException("Must specify destination, path and function name to MethodCalls.");

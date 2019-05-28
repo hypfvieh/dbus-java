@@ -28,6 +28,7 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -61,7 +62,7 @@ public class DBusSignal extends Message {
 
     public DBusSignal(String source, String path, String iface, String member, String sig, Object... args)
             throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
+        super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
 
         if (null == path || null == member || null == iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
@@ -237,7 +238,7 @@ public class DBusSignal extends Message {
      */
     @SuppressWarnings("unchecked")
     protected DBusSignal(String objectpath, Object... args) throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.SIGNAL, (byte) 0);
+        super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
 
         if (!objectpath.matches(AbstractConnection.OBJECT_REGEX)) {
             throw new DBusException("Invalid object path: " + objectpath);

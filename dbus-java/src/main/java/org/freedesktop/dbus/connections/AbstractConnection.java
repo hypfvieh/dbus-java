@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,6 +87,9 @@ public abstract class AbstractConnection implements Closeable {
      */
     public static final int          TCP_CONNECT_TIMEOUT     = 100000;
 
+    /** Lame method to setup endianness used on DBus messages */
+    private static byte              endianness       = getSystemEndianness();
+    
     public static final boolean      FLOAT_SUPPORT    =    (null != System.getenv("DBUS_JAVA_FLOATS"));
     public static final String       BUSNAME_REGEX    = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
     public static final String       CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
@@ -1170,5 +1174,36 @@ public abstract class AbstractConnection implements Closeable {
 
     protected ObjectTree getObjectTree() {
         return objectTree;
+    }
+    
+    /**
+     * Set the endianness to use for all connections.
+     * Defaults to the system architectures endianness.
+     * 
+     * @param _b Message.Endian.BIG or Message.Endian.LITTLE
+     */
+    public static void setEndianness(byte _b) {
+        if (_b == Message.Endian.BIG || _b == Message.Endian.LITTLE) {
+            endianness = _b;
+        }
+    }
+    
+    /**
+     * Get current endianness to use.
+     * @return Message.Endian.BIG or Message.Endian.LITTLE
+     */
+    public static byte getEndianness() {
+        return endianness;
+    }
+    
+    /**
+     * Get the default system endianness.
+     * 
+     * @return LITTLE or BIG
+     */
+    public static byte getSystemEndianness() {
+       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ? 
+                Message.Endian.BIG 
+                : Message.Endian.LITTLE;
     }
 }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
@@ -40,7 +41,7 @@ public class Error extends Message {
 
     public Error(String source, String dest, String errorName, long replyserial, String sig, Object... args)
             throws DBusException {
-        super(Message.Endian.BIG, Message.MessageType.ERROR, (byte) 0);
+        super(DBusConnection.getEndianness(), Message.MessageType.ERROR, (byte) 0);
 
         if (null == errorName) {
             throw new MessageFormatException("Must specify error name to Errors.");
