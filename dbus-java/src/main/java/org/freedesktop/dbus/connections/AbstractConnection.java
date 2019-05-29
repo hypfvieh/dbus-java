@@ -855,7 +855,7 @@ public abstract class AbstractConnection implements Closeable {
                 genericHandlers.addAll(t);
             }
         }
-        if (0 == handlers.size() && 0 == genericHandlers.size()) {
+        if (handlers.isEmpty() && genericHandlers.isEmpty()) {
             return;
         }
 
