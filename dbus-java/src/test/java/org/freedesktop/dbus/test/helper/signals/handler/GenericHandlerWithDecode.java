@@ -5,6 +5,7 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
@@ -38,6 +39,7 @@ public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
     }
 
     public void incomingSameAsExpected(){
+        assertNotNull( parameters );
         assertEquals( parameters.length, 2 );
 
         if (expectedIntResult != null) {
