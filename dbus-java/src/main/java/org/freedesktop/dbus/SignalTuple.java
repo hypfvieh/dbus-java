@@ -12,6 +12,9 @@
 
 package org.freedesktop.dbus;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class SignalTuple {
     private String type;
     private String name;
@@ -66,5 +69,51 @@ public class SignalTuple {
     @Override
     public String toString() {
         return "SignalTuple(" + type + "," + name + "," + object + "," + source + ")";
+    }
+
+    /**
+     * Get a {@link Set} of all possible SignalTuples that we can have, given the 4 parameters.
+     * @param _type interface type
+     * @param _name name
+     * @param _object object
+     * @param _source source
+     * @return {@link Set} of {@link SignalTuple}, never null
+     */
+    public static Set<SignalTuple> getAllPossibleTuples(String _type, String _name, String _object, String _source){
+        Set<SignalTuple> allTuples = new HashSet<>();
+
+        // Tuple with no null
+        allTuples.add(new SignalTuple(_type, _name, _object, _source));
+
+        // Tuples with one null
+        allTuples.add(new SignalTuple(null, _name, _object, _source));
+        allTuples.add(new SignalTuple(_type, null, _object, _source));
+        allTuples.add(new SignalTuple(_type, _name, null, _source));
+        allTuples.add(new SignalTuple(_type, _name, _object, null));
+
+        // Tuples where type is null, and one other null
+        allTuples.add(new SignalTuple(null, null, _object, _source));
+        allTuples.add(new SignalTuple(null, _name, null, _source));
+        allTuples.add(new SignalTuple(null, _name, _object, null));
+
+        // Tuples where name is null, and one other null
+        allTuples.add(new SignalTuple(_type, null, null, _source));
+        allTuples.add(new SignalTuple(_type, null, _object, null));
+
+        // Tuples where object is null, and one other null
+        allTuples.add(new SignalTuple(null, _name, null, _source));
+        allTuples.add(new SignalTuple(_type, _name, null, null));
+
+        // Tuples where source is null, and one other null
+        allTuples.add(new SignalTuple(null, _name, _object, null));
+        allTuples.add(new SignalTuple(_type, _name, null, null));
+
+        // Tuples with three nulls
+        allTuples.add(new SignalTuple(_type, null, null, null));
+        allTuples.add(new SignalTuple(null, _name, null, null));
+        allTuples.add(new SignalTuple(null, null, _object, null));
+        allTuples.add(new SignalTuple(null, null, null, _source));
+
+        return allTuples;
     }
 }

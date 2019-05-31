@@ -838,21 +838,12 @@ public abstract class AbstractConnection implements Closeable {
         }
         synchronized (getGenericHandledSignals()) {
             List<DBusSigHandler<DBusSignal>> t;
-            t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
-            if (null != t) {
-                genericHandlers.addAll(t);
-            }
-            t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
-            if (null != t) {
-                genericHandlers.addAll(t);
-            }
-            t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
-            if (null != t) {
-                genericHandlers.addAll(t);
-            }
-            t = getGenericHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
-            if (null != t) {
-                genericHandlers.addAll(t);
+            Set<SignalTuple> allTuples = SignalTuple.getAllPossibleTuples(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource());
+            for( SignalTuple tuple : allTuples ){
+                t = getGenericHandledSignals().get(tuple);
+                if (null != t) {
+                    genericHandlers.addAll(t);
+                }
             }
         }
         if (handlers.isEmpty() && genericHandlers.isEmpty()) {

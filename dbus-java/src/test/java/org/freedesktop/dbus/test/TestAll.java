@@ -229,6 +229,26 @@ public class TestAll {
     }
 
     @Test
+    public void testGenericHandlerWithNoInterface() throws DBusException, InterruptedException {
+        GenericHandlerWithDecode genericDecode = new GenericHandlerWithDecode(new UInt32(42), "SampleString");
+        DBusMatchRule signalRule = new DBusMatchRule("signal", null, "methodargNoIface", "/");
+
+        clientconn.addGenericSigHandler(signalRule, genericDecode);
+
+        DBusSignal signalToSend =
+                new DBusSignal(null, "/", "org.foo", "methodargNoIface", "us", new UInt32(42), "SampleString");
+
+        serverconn.sendMessage(signalToSend);
+
+        // wait some time to receive signals
+        Thread.sleep(1000L);
+
+        genericDecode.incomingSameAsExpected();
+
+        clientconn.removeGenericSigHandler(signalRule, genericDecode);
+    }
+
+    @Test
     public void testPing() throws DBusException {
         System.out.println("Pinging ourselves");
         Peer peer = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Peer.class);
@@ -399,7 +419,7 @@ public class TestAll {
         assertEquals(elem2.getValue1(), out[1][0]);
         assertEquals(elem2.getValue2(), out[1][1]);
     }
-    
+
     public void testFrob() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         System.out.println("frobnicating");
