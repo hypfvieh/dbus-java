@@ -23,6 +23,12 @@
     </properties>
 
     <build>
+        <sourceDirectory>${basedir}/../dbus-java/src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/../dbus-java/src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -63,8 +69,12 @@
         
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
-            <artifactId>dbus-java</artifactId>
-            <version>${project.version}</version>
+            <artifactId>java-utils</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.jnr</groupId>
+            <artifactId>jnr-unixsocket</artifactId>
         </dependency>
     </dependencies>
 

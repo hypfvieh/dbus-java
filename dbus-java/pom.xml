@@ -22,53 +22,17 @@
     </properties>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <configuration>
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
-                    <systemPropertyVariables>
-                        <logback.configurationFile>${basedir}/src/test/resources/logback.xml</logback.configurationFile>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-
-        </plugins>
     </build>
 
     <dependencies>
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>java-utils</artifactId>
-            <version>1.0.5</version>
         </dependency>
         
         <dependency>
             <groupId>com.github.jnr</groupId>
             <artifactId>jnr-unixsocket</artifactId>
-            <version>0.22</version>
         </dependency>
 
         <dependency>
