@@ -667,7 +667,7 @@ public final class Marshalling {
                             Object[] sub = new Object[newtypes.length];
                             System.arraycopy(_parameters, i, sub, 0, newtypes.length);
                             sub = deSerializeParameters(sub, newtypes, _conn);
-                            DBusSerializable sz = dsc.newInstance();
+                            DBusSerializable sz = dsc.getDeclaredConstructor().newInstance();
                             m.invoke(sz, sub);
                             Object[] compress = new Object[_parameters.length - newtypes.length + 1];
                             System.arraycopy(_parameters, 0, compress, 0, i);

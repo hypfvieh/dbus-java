@@ -579,7 +579,7 @@ public class TestAll {
         System.out.println("Doing stuff asynchronously");
         @SuppressWarnings("unchecked")
         DBusAsyncReply<Boolean> stuffreply = (DBusAsyncReply<Boolean>) clientconn.callMethodAsync(tri2, "dostuff",
-                new SampleStruct("bar", new UInt32(52), new Variant<>(new Boolean(true))));
+                new SampleStruct("bar", new UInt32(52), new Variant<>(Boolean.TRUE)));
 
         // wait a bit to allow the async call to complete
         Thread.sleep(500L);

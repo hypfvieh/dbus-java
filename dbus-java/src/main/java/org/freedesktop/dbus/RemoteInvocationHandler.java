@@ -193,7 +193,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
         } else if (method.getName().equals("equals")) {
             try {
                 if (1 == args.length) {
-                    return new Boolean(remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(args[0])).remote));
+                    return Boolean.valueOf(remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(args[0])).remote));
                 }
             } catch (IllegalArgumentException exIa) {
                 return Boolean.FALSE;

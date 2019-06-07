@@ -331,7 +331,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
             fail("org.freedesktop.DBus.Introspectable.Introspect", "Got exception during introspection on / (" + dbee.getClass().getName() + "): " + dbee.getMessage());
         }
 
-        test(SamplesInterface.class, tests, "Identity", new Variant<>(new Integer(1)), new Variant<>(new Integer(1)));
+        test(SamplesInterface.class, tests, "Identity", new Variant<>(Integer.valueOf(1)), new Variant<>(Integer.valueOf(1)));
         test(SamplesInterface.class, tests, "Identity", new Variant<>("Hello"), new Variant<>("Hello"));
 
         test(SamplesInterface.class, tests, "IdentityBool", false, false);
@@ -447,7 +447,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         }
         test(Binding.SingleSample.class, singletests, "Sum", new UInt32(res % (UInt32.MAX_VALUE + 1)), bs);
 
-        test(SamplesInterface.class, tests, "DeStruct", new org.freedesktop.dbus.test.helper.interfaces.Binding.Triplet<>("hi", new UInt32(12), new Short((short) 99)), new CrossSampleStruct("hi", new UInt32(12), new Short((short) 99)));
+        test(SamplesInterface.class, tests, "DeStruct", new org.freedesktop.dbus.test.helper.interfaces.Binding.Triplet<>("hi", new UInt32(12), Short.valueOf((short) 99)), new CrossSampleStruct("hi", new UInt32(12), Short.valueOf((short) 99)));
 
         Map<String, String> in = new HashMap<>();
         Map<String, List<String>> out = new HashMap<>();
@@ -469,7 +469,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         out.put("out", l);
         test(SamplesInterface.class, tests, "InvertMapping", out, in);
 
-        primitizeTest(tests, new Integer(1));
+        primitizeTest(tests, Integer.valueOf(1));
         primitizeTest(tests, new Variant<>(new Variant<>(new Variant<>(new Variant<>("Hi")))));
         primitizeTest(tests, new Variant<>(in, new DBusMapType(String.class, String.class)));
 

@@ -209,13 +209,13 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         if (mus.size() != 3) {
             fail("Sub-Map was wrong size");
         }
-        if (!(new Short((short) 5).equals(mus.get(new UInt16(4))))) {
+        if (!(Short.valueOf((short) 5).equals(mus.get(new UInt16(4))))) {
             fail("Sub-Map has wrong contents");
         }
-        if (!(new Short((short) 6).equals(mus.get(new UInt16(5))))) {
+        if (!(Short.valueOf((short) 6).equals(mus.get(new UInt16(5))))) {
             fail("Sub-Map has wrong contents");
         }
-        if (!(new Short((short) 7).equals(mus.get(new UInt16(6))))) {
+        if (!(Short.valueOf((short) 7).equals(mus.get(new UInt16(6))))) {
             fail("Sub-Map has wrong contents");
         }
         return -5;
