@@ -16,7 +16,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Allow change of the default socket timeout (thanks to [chris-melman](https://github.com/chris-melman))
   - Detect system endianness for DBus message instead of using BIG endian all the time (#54)
   - Allow changing the default endianness (DBusConnection.setEndianness())
-  - Providing OSGi ready artifact (#32) (thanks to [stack-head](https://github.com/stack-head))
+  - Providing OSGi ready artifact ([#33](https://github.com/hypfvieh/dbus-java/issues/32)) (thanks to [stack-head](https://github.com/stack-head))
 
 ##### Changes in 3.0.2
   - Added support for handling various DBus signals without the need to create a specific interface class (thanks to [rm5248](https://github.com/rm5248))
