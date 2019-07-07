@@ -172,7 +172,7 @@ public class DeviceManager {
             findBtDevicesByIntrospection(adapter);
         }
 
-        List<BluetoothDevice> devicelist = bluetoothDeviceByAdapterMac.get(_adapter);
+        List<BluetoothDevice> devicelist = bluetoothDeviceByAdapterMac.get(adapter.getAddress());
         if (devicelist != null) {
             return new ArrayList<>(devicelist);
         }
