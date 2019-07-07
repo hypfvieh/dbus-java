@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ClassUtils;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
@@ -93,7 +94,7 @@ public abstract class AbstractBluetoothObject {
                 return _type.cast(obj);
             }
 
-        } catch (DBusException _ex) {
+        } catch (DBusException | DBusExecutionException _ex) {
             logger.trace("Error while receiving data from DBUS (Field: {}, Type: {}).", _field, _type, _ex);
         }
         return null;
