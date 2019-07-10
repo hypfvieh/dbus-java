@@ -45,6 +45,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
         supportedFilterOptions.put("RSSI", Short.class);
         supportedFilterOptions.put("Pathloss", UInt16.class);
         supportedFilterOptions.put("Transport", String.class);
+        supportedFilterOptions.put("DuplicateData", Boolean.class);
     }
 
     /**
