@@ -42,7 +42,7 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
         adapter = _adapter;
 
         supportedFilterOptions.put("UUIDs", String[].class);
-        supportedFilterOptions.put("RSSI", short.class);
+        supportedFilterOptions.put("RSSI", Short.class);
         supportedFilterOptions.put("Pathloss", UInt16.class);
         supportedFilterOptions.put("Transport", String.class);
     }
@@ -337,9 +337,9 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
                 throw new BluezInvalidArgumentsException("Key " + entry.getKey() + " is not supported by Bluez library");
             }
             Class<?> typeClass = supportedFilterOptions.get(entry.getKey());
-            if (!typeClass.isAssignableFrom(entry.getValue().getClass())) {
+            if (!typeClass.isAssignableFrom(entry.getValue().getValue().getClass())) {
                 throw new BluezInvalidArgumentsException("Key " + entry.getKey() + " uses unsupported data type "
-                        + entry.getValue().getClass() + ", only "+ typeClass.getName() + " is supported.");
+                        + entry.getValue().getValue().getClass() + ", only "+ typeClass.getName() + " is supported.");
             }
         }
         if (_filter.containsKey("Transport")) {
