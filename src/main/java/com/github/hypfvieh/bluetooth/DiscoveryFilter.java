@@ -7,8 +7,8 @@ import org.freedesktop.dbus.types.UInt16;
  */
 public enum DiscoveryFilter {
 
-    UUIDs(String[].class),RSSI(Short.class),Pathloss(UInt16.class),Transport(DiscoveryTransport.class); 
-    
+    UUIDs(String[].class),RSSI(Short.class),Pathloss(UInt16.class),Transport(DiscoveryTransport.class),DuplicateData(Boolean.class);
+
     private final Class<?> valueClass;
 
     private DiscoveryFilter(Class<?> _valueClass) {
@@ -17,7 +17,7 @@ public enum DiscoveryFilter {
 
     public Class<?> getValueClass() {
         return valueClass;
-    }    
+    }
 }
 
 
