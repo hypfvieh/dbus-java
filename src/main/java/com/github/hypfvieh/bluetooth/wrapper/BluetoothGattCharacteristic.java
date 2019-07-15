@@ -52,7 +52,7 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
     /**
      * Re-queries the GattCharacteristics from the device.
      */
-    public void refreshGattCharacteristics() {
+    public void refreshGattDescriptors() {
         descriptorByUuid.clear();
 
         Set<String> findNodes = DbusHelper.findNodes(getDbusConnection(), getDbusPath());
@@ -65,12 +65,12 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
 
     /**
      * Get the currently available GATT descriptors.<br>
-     * Will issue a query if {@link #refreshGattCharacteristics()} wasn't called before.
+     * Will issue a query if {@link #refreshGattDescriptors()} wasn't called before.
      * @return List, maybe empty but never null
      */
     public List<BluetoothGattDescriptor> getGattDescriptors() {
         if (descriptorByUuid.isEmpty()) {
-            refreshGattCharacteristics();
+            refreshGattDescriptors();
         }
         return new ArrayList<>(descriptorByUuid.values());
     }
@@ -82,7 +82,7 @@ public class BluetoothGattCharacteristic extends AbstractBluetoothObject {
      */
     public BluetoothGattDescriptor getGattDescriptorByUuid(String _uuid) {
         if (descriptorByUuid.isEmpty()) {
-            refreshGattCharacteristics();
+            refreshGattDescriptors();
         }
         return descriptorByUuid.get(_uuid);
     }
