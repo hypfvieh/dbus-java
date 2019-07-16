@@ -52,7 +52,7 @@ public abstract class AbstractBluetoothObject {
         return dbusPath;
     }
 
-    protected DBusConnection getDbusConnection() {
+    public DBusConnection getDbusConnection() {
         return dbusConnection;
     }
 
