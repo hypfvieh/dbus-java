@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import javax.swing.text.Position;
 import javax.xml.parsers.DocumentBuilder;
@@ -20,6 +19,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
@@ -149,6 +149,7 @@ public class InterfaceCodeGenerator {
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
         interfaceClass.setClassName(className);
+        interfaceClass.setExtendClass(DBusInterface.class.getName());
 
         List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
 
@@ -198,7 +199,7 @@ public class InterfaceCodeGenerator {
 
         ClassBuilderInfo innerClass = new ClassBuilderInfo();
         innerClass.setClassType(ClassType.CLASS);
-        innerClass.setExtendClass(DBusSignal.class.getSimpleName());
+        innerClass.setExtendClass(DBusSignal.class.getName());
         innerClass.getImports().add(DBusSignal.class.getName());
         innerClass.setClassName(className);
 
@@ -211,7 +212,7 @@ public class InterfaceCodeGenerator {
         int unknownArgCnt = 0;
         for (Element argElm : signalArgs) {
                 String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
-                String argName = argElm.getAttribute("name");
+                String argName = StringUtil.snakeToCamelCase(argElm.getAttribute("name"));
                 if (StringUtil.isBlank(argName)) {
                     argName = "arg" + unknownArgCnt;
                     unknownArgCnt++;
@@ -225,10 +226,22 @@ public class InterfaceCodeGenerator {
         }
 
         ClassConstructor classConstructor = new ClassBuilderInfo.ClassConstructor();
-        Map<String, String> invertedMap = args.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (k1,k2) -> k1, LinkedHashMap::new));
-        classConstructor.getArguments().putAll(invertedMap);
-        classConstructor.getSuperArguments().addAll(args.keySet());
 
+        Map<String, String> argsMap = new LinkedHashMap<>();
+        for (Entry<String, String> e : args.entrySet()) {
+            argsMap.put("_" + e.getKey(), e.getValue());
+        }
+        
+        classConstructor.getArguments().put("_path", "String");
+        classConstructor.getArguments().put("_interfaceName", "String");        
+        classConstructor.getArguments().putAll(argsMap);
+        
+        classConstructor.getSuperArguments().add("_path");
+        classConstructor.getSuperArguments().add("_interfaceName");
+        classConstructor.getSuperArguments().addAll(argsMap.keySet());
+
+        innerClass.getConstructors().add(classConstructor);
+        
 
         return additionalClasses;
     }
@@ -273,6 +286,8 @@ public class InterfaceCodeGenerator {
                 if (StringUtil.isBlank(argName)) {
                     argName = "arg" + unknownArgNameCnt;
                     unknownArgNameCnt++;
+                } else {
+                    argName = StringUtil.snakeToCamelCase(argName);
                 }
 
                 if ("in".equals(argElm.getAttribute("direction"))) {

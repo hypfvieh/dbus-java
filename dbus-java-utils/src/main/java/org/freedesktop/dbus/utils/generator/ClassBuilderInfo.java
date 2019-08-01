@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.github.hypfvieh.util.StringUtil;
@@ -20,7 +21,7 @@ import com.github.hypfvieh.util.StringUtil;
  */
 public class ClassBuilderInfo {
 	/** Imported files for this class. */
-    private final Set<String>            imports               = new LinkedHashSet<>();
+    private final Set<String>            imports               = new TreeSet<>();
     /** Members/Fields of this class. */
     private final List<ClassMember>      members               = new ArrayList<>();
     /** Interfaces implemented by this class. */
@@ -37,7 +38,7 @@ public class ClassBuilderInfo {
     /** Package of this class. */
     private String                       packageName;
     /** Type of this class (interface or class). */
-    private ClassType                    classType;
+    private ClassType                     classType;
     /** Class which this class may extend. */
     private String                       extendClass;
 
@@ -102,7 +103,7 @@ public class ClassBuilderInfo {
      * @return String
      */
     public String createClassFileContent() {
-        List<String> result = createClassFileContent(false, null);
+        List<String> result = createClassFileContent(false, new LinkedHashSet<>());
         return String.join(System.lineSeparator(), result);
     }
 
@@ -119,6 +120,12 @@ public class ClassBuilderInfo {
         String classIndent = _staticClass ? "    " : "";
         String memberIndent = _staticClass ? "        " : "    ";
 
+        Set<String> allImports = new TreeSet<>();
+        allImports.addAll(getImports());
+        if (_otherImports != null) {
+            allImports.addAll(_otherImports);
+        }
+        
         if (!_staticClass) {
             content.add("package " + getPackageName() + ";");
             content.add("");
@@ -128,9 +135,6 @@ public class ClassBuilderInfo {
 
         } else {
             content.add("");
-            if (_otherImports != null) {
-                _otherImports.addAll(getImports());
-            }
         }
 
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
@@ -138,6 +142,7 @@ public class ClassBuilderInfo {
         if (getExtendClass() != null) {
             if (!getExtendClass().startsWith("java.lang.")) {
                 getImports().add(getExtendClass()); // add class import if extends-argument is not a java.lang. class
+                allImports.add(getExtendClass());
             }
 
             bgn += " extends " + getClassName(getExtendClass());
@@ -160,32 +165,38 @@ public class ClassBuilderInfo {
             if (!member.getAnnotations().isEmpty()) {
                 content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).collect(Collectors.toList()));
             }
-            String memberType = TypeConverter.getProperJavaClass(member.getType(), _otherImports);
+            String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
             if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _otherImports)).collect(Collectors.joining(" ,")) + ">";
+                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(" ,")) + ">";
             }
             content.add(memberIndent + "private " + (member.isFinalMember() ? "final " : "") + memberType + " "
                     + member.getName() + ";");
+        
         }
 
         if (!getConstructors().isEmpty()) {
+            content.add("");
             for (ClassConstructor constructor : getConstructors()) {
-                String cstr = "    " + getClassName() + "(";
+                String outerIndent = _staticClass ? "        " : "    ";
+                String cstr = outerIndent + getClassName() + "(";
                 if (!constructor.getArguments().isEmpty()) {
                     cstr += constructor.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
                 }
                 cstr += ") {";
                 content.add(cstr);
+                
+                String innerIndent = _staticClass ? "            " : "        ";
+                
                 if (!constructor.getSuperArguments().isEmpty()) {
-                    content.add("super(" + String.join(", ", constructor.getSuperArguments()) + ");");
+                    content.add(innerIndent + "super(" + String.join(", ", constructor.getSuperArguments()) + ");");
                 }
                 if (!constructor.getArguments().isEmpty()) {
                     for (Entry<String, String> e : constructor.getArguments().entrySet()) {
-                        content.add("this." + e.getKey() + " = " + e.getKey() + ";");
+                        content.add(innerIndent + "this." + e.getKey() + " = " + e.getKey() + ";");
                     }
                 }
 
-                content.add("}");
+                content.add(outerIndent + "}");
             }
         }
 
@@ -193,20 +204,21 @@ public class ClassBuilderInfo {
 
         // add getter and setter
         for (ClassMember member : members) {
-            String memberType = TypeConverter.getProperJavaClass(member.getType(), _otherImports);
+            String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
 
             if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _otherImports)).collect(Collectors.joining(" ,")) + ">";
+                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(" ,")) + ">";
             }
 
+            String getterSetterName = StringUtil.snakeToCamelCase(StringUtil.upperCaseFirstChar(member.getName()));
             if (!member.isFinalMember()) {
-                content.add(memberIndent + "public void set" + StringUtil.upperCaseFirstChar(member.getName()) + "("
+                content.add(memberIndent + "public void set" + getterSetterName + "("
                         + memberType + " arg) {");
                 content.add(memberIndent + "    " + member.getName() + " = arg;");
                 content.add(memberIndent +"}");
             }
             content.add("");
-            content.add(memberIndent + "public " + memberType + " get" + StringUtil.upperCaseFirstChar(member.getName()) + "() {");
+            content.add(memberIndent + "public " + memberType + " get" + getterSetterName + "() {");
             content.add(memberIndent + "    return " + member.getName() + ";");
             content.add(memberIndent + "}");
         }
@@ -219,7 +231,7 @@ public class ClassBuilderInfo {
         		content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
         	}
         	
-            String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), _otherImports) + " ");
+            String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
             clzMth += mth.getName() + "(";
             if (!mth.getArguments().isEmpty()) {
                 clzMth += mth.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey())
@@ -231,15 +243,16 @@ public class ClassBuilderInfo {
         content.add("");
 
         for (ClassBuilderInfo inner : getInnerClasses()) {
-            content.addAll(inner.createClassFileContent(true, this.getImports()));
+            content.addAll(inner.createClassFileContent(true, allImports));
+            allImports.addAll(inner.getImports()); // collect additional imports which may have been added by inner class
         }
-
+        
         content.add(classIndent + "}");
 
+        // write imports to resulting content if this is not a inner class
         if (!_staticClass) {
             content.add(2,"");
-            content.addAll(2, getImports().stream().filter(l -> !l.startsWith("java.lang.")).map(l -> "import " + l + ";").collect(Collectors.toList()));
-
+            content.addAll(2, allImports.stream().filter(l -> !l.startsWith("java.lang.")).map(l -> "import " + l + ";").collect(Collectors.toList()));
         }
 
         return content;
