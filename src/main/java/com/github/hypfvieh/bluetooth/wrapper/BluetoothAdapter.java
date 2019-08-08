@@ -57,6 +57,14 @@ public class BluetoothAdapter extends AbstractBluetoothObject {
     }
 
     /**
+     * Get the raw {@link Adapter1} object wrapped by this {@link BluetoothAdapter} object.
+     * @return adapter
+     */
+    public Adapter1 getRawAdapter() {
+        return adapter;
+    }
+    
+    /**
      * Get the deviceName used in DBus (e.g. hci0).
      *
      * @return the device name
