@@ -141,7 +141,7 @@ public class CreateInterface {
         this.builtin = _builtin;
     }
 
-    String parseReturns(List<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs) throws DBusException {
+    String parseReturns(List<Element> out, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, String pack) throws DBusException {
         logger.debug("parseReturns");
 
         String[] names = new String[] {
@@ -169,6 +169,7 @@ public class CreateInterface {
             }
 
             tuples.put(name, out.size());
+            imports.add(pack + "." + name);
             sig += name + "<";
             for (Element arg : out) {
                 sig += getJavaType(arg.getAttribute("type"), imports, structs, true, false) + ", ";
@@ -179,7 +180,7 @@ public class CreateInterface {
         return sig;
     }
 
-    String parseMethod(Element meth, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
+    String parseMethod(Element meth, Set<String> imports, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns, String pack) throws DBusException {
         List<Element> in = new ArrayList<>();
         List<Element> out = new ArrayList<>();
         if (null == meth.getAttribute("name") || "".equals(meth.getAttribute("name"))) {
@@ -225,7 +226,7 @@ public class CreateInterface {
 
         String sig = "";
         comment = "";
-        sig += parseReturns(out, imports, tuples, structs);
+        sig += parseReturns(out, imports, tuples, structs, pack);
 
         sig += mangle(meth.getAttribute("name")) + "(";
 
@@ -343,7 +344,7 @@ public class CreateInterface {
         }
     }
 
-    InterfaceDefinition parseInterface(Element iface, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns) throws DBusException {
+    InterfaceDefinition parseInterface(Element iface, Map<String, Integer> tuples, Map<StructStruct, Type[]> structs, Set<String> exceptions, Set<String> anns, String pack) throws DBusException {
 
         if (null == iface.getAttribute("name") || "".equals(iface.getAttribute("name"))) {
             System.err.println("ERROR: Interface name was blank, failed");
@@ -378,7 +379,7 @@ public class CreateInterface {
             checkNode(meth, "method", "signal", "property", "annotation");
 
             if ("method".equals(meth.getNodeName())) {
-                def.methods += parseMethod((Element) meth, def.imports, tuples, structs, exceptions, anns) + "\n";
+                def.methods += parseMethod((Element) meth, def.imports, tuples, structs, exceptions, anns, pack) + "\n";
             } else if ("signal".equals(meth.getNodeName())) {
                 def.signals += parseSignal((Element) meth, def.imports, structs, anns);
             } else if ("property".equals(meth.getNodeName())) {
@@ -535,7 +536,7 @@ public class CreateInterface {
                     continue;
                 }
 
-                InterfaceDefinition def = parseInterface((Element) iface, tuples, structs, exceptions, annotations);
+                InterfaceDefinition def = parseInterface((Element) iface, tuples, structs, exceptions, annotations, pack);
                 interfaceDefs.add(def);
 
                 structs = StructStruct.fillPackages(structs, pack);
