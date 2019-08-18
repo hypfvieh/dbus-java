@@ -43,7 +43,7 @@ public final class Hexdump {
     }
 
     public static String toHex(byte[] buf, int ofs, int len) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int j = ofs + len;
         for (int i = ofs; i < j; i++) {
             if (i < buf.length) {
@@ -64,7 +64,7 @@ public final class Hexdump {
     }
 
     public static String toAscii(byte[] buf, int ofs, int len) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int j = ofs + len;
         for (int i = ofs; i < j; i++) {
             if (i < buf.length) {
@@ -87,7 +87,7 @@ public final class Hexdump {
     public static String format(byte[] buf, int width) {
         int bs = (width - 8) / 4;
         int i = 0;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         do {
             for (int j = 0; j < 6; j++) {
                 sb.append(HEX_CHARS[(i << (j * 4) & 0xF00000) >> 20]);
@@ -99,6 +99,7 @@ public final class Hexdump {
             sb.append('\n');
             i += bs;
         } while (i < buf.length);
+        sb.deleteCharAt(sb.length() - 1); // remove the last \n
         return sb.toString();
     }
 
@@ -148,7 +149,7 @@ public final class Hexdump {
      * @return string
      */
     public static String toByteArray(byte[] buf, int ofs, int len) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = ofs; i < len && i < buf.length; i++) {
             sb.append('0');
             sb.append('x');

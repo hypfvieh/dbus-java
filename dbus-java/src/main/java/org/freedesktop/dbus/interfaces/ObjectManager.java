@@ -60,6 +60,14 @@ public interface ObjectManager extends DBusInterface {
             return interfaces;
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" +
+                    "signalSource=" + signalSource +
+                    ", objectPath='" + objectPath + '\'' +
+                    ", interfaces=" + interfaces +
+                    ']';
+        }
     }
 
     /**
@@ -101,6 +109,14 @@ public interface ObjectManager extends DBusInterface {
             return interfaces;
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" +
+                    "signalSource=" + signalSource +
+                    ", objectPath='" + objectPath + '\'' +
+                    ", interfaces=" + interfaces +
+                    ']';
+        }
     }
 
 }

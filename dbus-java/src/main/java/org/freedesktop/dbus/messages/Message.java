@@ -956,9 +956,11 @@ public class Message {
             break;
         case ArgumentType.DICT_ENTRY1:
             Object[] decontents = new Object[2];
-            logger.trace("Extracting Dict Entry ({}) from: {}",
-                    Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]),
-                    Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA]));
+            if(logger.isTraceEnabled()) { // avoid allocating these large heapdumps when trace logging is disabled
+                logger.trace("Extracting Dict Entry ({}) from: {}",
+                        Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]),
+                        Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA]));
+            }
             _offsets[OFFSET_SIG]++;
             decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
             _offsets[OFFSET_SIG]++;
