@@ -62,7 +62,7 @@ public interface ObjectManager extends DBusInterface {
 
         @Override
         public String toString() {
-            return "InterfacesAdded[" +
+            return getClass().getSimpleName() + "[" +
                     "signalSource=" + signalSource +
                     ", objectPath='" + objectPath + '\'' +
                     ", interfaces=" + interfaces +
@@ -111,7 +111,7 @@ public interface ObjectManager extends DBusInterface {
 
         @Override
         public String toString() {
-            return "InterfacesRemoved[" +
+            return getClass().getSimpleName() + "[" +
                     "signalSource=" + signalSource +
                     ", objectPath='" + objectPath + '\'' +
                     ", interfaces=" + interfaces +

@@ -88,7 +88,7 @@ public interface Properties extends DBusInterface {
 
         @Override
         public String toString() {
-            return "PropertiesChanged[" +
+            return getClass().getSimpleName() + "[" +
                     "propertiesChanged=" + propertiesChanged +
                     ", propertiesRemoved=" + propertiesRemoved +
                     ", interfaceName='" + interfaceName + '\'' +
