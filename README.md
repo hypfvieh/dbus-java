@@ -7,7 +7,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.2.0 (upcoming, not released yet)
+##### Changes in 3.2.0 
   - Replaced libmatthew with jnr-unixsocket
   - Removed all native library files and sources 
   - Added new transport system to use jnr-unixsocket (replaces old Transport class)
