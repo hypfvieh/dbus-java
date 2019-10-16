@@ -89,7 +89,7 @@ public abstract class AbstractConnection implements Closeable {
 
     /** Lame method to setup endianness used on DBus messages */
     private static byte              endianness       = getSystemEndianness();
-    
+
     public static final boolean      FLOAT_SUPPORT    =    (null != System.getenv("DBUS_JAVA_FLOATS"));
     public static final String       BUSNAME_REGEX    = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
     public static final String       CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
@@ -100,7 +100,7 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_NAME_LENGTH  = 255;
 
     private final Logger        logger = LoggerFactory.getLogger(getClass());
-    
+
     private final ObjectTree                                                   objectTree;
 
     private final Map<String, ExportedObject>                                  exportedObjects;
@@ -122,7 +122,7 @@ public abstract class AbstractConnection implements Closeable {
     private final BusAddress                                                   busAddress;
 
     private final ExecutorService                                              senderService;
-    
+
     private volatile boolean                                                   run;
 
     private boolean                                                            weakreferences   = false;
@@ -131,8 +131,8 @@ public abstract class AbstractConnection implements Closeable {
     private AbstractTransport                                                  transport;
     private volatile ThreadPoolExecutor                                        workerThreadPool;
     private final ReadWriteLock                                                workerThreadPoolLock = new ReentrantReadWriteLock();
-    
-    
+
+
     protected AbstractConnection(String address, int timeout) throws DBusException {
         exportedObjects = new HashMap<>();
         importedObjects = new ConcurrentHashMap<>();
@@ -171,14 +171,54 @@ public abstract class AbstractConnection implements Closeable {
 
     public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
 
-    protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
+    /**
+     * Remove a match rule with the given {@link DBusSigHandler}.
+     * The rule will only be removed from DBus if no other additional handlers are registered to the same rule.
+     *
+     * @param _rule rule to remove
+     * @param _handler handler to remove
+     * @throws DBusException on error
+     */
+    protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
 
-    protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException;
+    /**
+     * Add a signal handler with the given {@link DBusMatchRule} to DBus.
+     * The rule will be added to DBus if it was not added before.
+     * If the rule was already added, the signal handler is added to the internal map receiving
+     * the same signal as the first (and additional) handlers for this rule.
+     *
+     * @param _rule rule to add
+     * @param _handler handler to use
+     * @throws DBusException on error
+     */
+    protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
 
-    protected abstract void removeGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException;
+    /**
+     * Remove a generic signal handler with the given {@link DBusMatchRule}.
+     * The rule will only be removed from DBus if no other additional handlers are registered to the same rule.
+     *
+     * @param _rule rule to remove
+     * @param _handler handler to remove
+     * @throws DBusException on error
+     */
+    protected abstract void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
 
-    protected abstract void addGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException;
+    /**
+     * Adds a {@link DBusMatchRule} to with a generic signal handler.
+     * Generic signal handlers allow receiving different signals with the same handler.
+     * If the rule was already added, the signal handler is added to the internal map receiving
+     * the same signal as the first (and additional) handlers for this rule.
+     *
+     * @param _rule rule to add
+     * @param _handler handler to use
+     * @throws DBusException on error
+     */
+    protected abstract void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
 
+    /**
+     * The generated UUID of this machine.
+     * @return String
+     */
     public abstract String getMachineId();
 
     /**
@@ -208,7 +248,7 @@ public abstract class AbstractConnection implements Closeable {
             } finally {
                 workerThreadPoolLock.writeLock().unlock();
             }
-            
+
         }
     }
 
@@ -457,7 +497,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Special disconnect method which may be used whenever some cleanup before or after 
+     * Special disconnect method which may be used whenever some cleanup before or after
      * disconnection to DBus is required.
      * @param _before action execute before actual disconnect, null if not needed
      * @param _after action execute after disconnect, null if not needed
@@ -471,11 +511,11 @@ public abstract class AbstractConnection implements Closeable {
             _after.perform();
         }
     }
-    
+
     /**
      * Disconnects the DBus session.
      * This method is private as it should never be overwritten by subclasses,
-     * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)} 
+     * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)}
      * which then will cause a StackOverflowError.
      */
     private synchronized void internalDisconnect() {
@@ -537,7 +577,7 @@ public abstract class AbstractConnection implements Closeable {
             workerThreadPoolLock.writeLock().unlock();
         }
     }
-    
+
     /**
      * Disconnect from the Bus.
      */
@@ -895,7 +935,7 @@ public abstract class AbstractConnection implements Closeable {
             }
         }
     }
-    
+
     private void executeInWorkerThreadPool(Runnable task) {
         workerThreadPoolLock.readLock().lock();
         try {
@@ -1005,12 +1045,13 @@ public abstract class AbstractConnection implements Closeable {
                 executeInWorkerThreadPool(r);
             }
 
-        } else
+        } else {
             try {
                 sendMessage(new Error(mr, new DBusExecutionException(
                         "Spurious reply. No message with the given serial id was awaiting a reply.")));
             } catch (DBusException exDe) {
             }
+        }
     }
 
     public void queueCallback(MethodCall _call, Method _method, CallbackHandler<?> _callback) {
@@ -1166,11 +1207,11 @@ public abstract class AbstractConnection implements Closeable {
     protected ObjectTree getObjectTree() {
         return objectTree;
     }
-    
+
     /**
      * Set the endianness to use for all connections.
      * Defaults to the system architectures endianness.
-     * 
+     *
      * @param _b Message.Endian.BIG or Message.Endian.LITTLE
      */
     public static void setEndianness(byte _b) {
@@ -1178,7 +1219,7 @@ public abstract class AbstractConnection implements Closeable {
             endianness = _b;
         }
     }
-    
+
     /**
      * Get current endianness to use.
      * @return Message.Endian.BIG or Message.Endian.LITTLE
@@ -1186,15 +1227,15 @@ public abstract class AbstractConnection implements Closeable {
     public static byte getEndianness() {
         return endianness;
     }
-    
+
     /**
      * Get the default system endianness.
-     * 
+     *
      * @return LITTLE or BIG
      */
     public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ? 
-                Message.Endian.BIG 
+       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
+                Message.Endian.BIG
                 : Message.Endian.LITTLE;
     }
 }
