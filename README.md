@@ -7,6 +7,9 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
+##### Changes in 3.2.1 (not released yet)
+  - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76)
+
 ##### Changes in 3.2.0 
   - Replaced libmatthew with jnr-unixsocket
   - Removed all native library files and sources 
