@@ -15,14 +15,16 @@ package org.freedesktop.dbus;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
 public final class ArrayFrob {
-    private static final Hashtable<Class<? extends Object>, Class<? extends Object>> PRIMITIVE_TO_WRAPPER = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
-    private static final Hashtable<Class<? extends Object>, Class<? extends Object>> WRAPPER_TO_PRIMITIVE = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE = new ConcurrentHashMap<>();
     static {
         PRIMITIVE_TO_WRAPPER.put(Boolean.TYPE, Boolean.class);
         PRIMITIVE_TO_WRAPPER.put(Byte.TYPE, Byte.class);
@@ -41,6 +43,14 @@ public final class ArrayFrob {
         WRAPPER_TO_PRIMITIVE.put(Float.class, Float.TYPE);
         WRAPPER_TO_PRIMITIVE.put(Double.class, Double.TYPE);
 
+    }
+
+    public static Map<Class<?>, Class<?>> getPrimitiveToWrapperTypes() {
+        return Collections.unmodifiableMap(PRIMITIVE_TO_WRAPPER);
+    }
+
+    public static Map<Class<?>, Class<?>> getWrapperToPrimitiveTypes() {
+        return Collections.unmodifiableMap(WRAPPER_TO_PRIMITIVE);
     }
 
     private ArrayFrob() {
@@ -91,7 +101,7 @@ public final class ArrayFrob {
         if (!o.getClass().isArray()) {
             throw new IllegalArgumentException("Not an array");
         }
-        List<T> l = new ArrayList<T>(Array.getLength(o));
+        List<T> l = new ArrayList<>(Array.getLength(o));
         for (int i = 0; i < Array.getLength(o); i++) {
             l.add((T) Array.get(o, i));
         }
