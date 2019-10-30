@@ -33,3 +33,11 @@ Starting with version 0.1.0 of this library Java 8 is required (previous version
 10. Press Enter to start the build
 11. Install the generated .deb files:  
   &nbsp;&nbsp;&nbsp;&nbsp;`sudo dpkg -i bluez_5.50-1_amd64.deb`
+
+# Changelog:
+
+#### Version 0.1.2 (not released yet):
+- Multi module maven project
+- Provide a new artifact for usage with OSGi (bluez-java-osgi)
+- Changed visibility of some methods to public
+- Smaller bugfixes
