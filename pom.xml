@@ -186,14 +186,15 @@
             
             <!-- Base dependencies for submodules -->
             <dependency>
-                <groupId>com.github.hypfvieh</groupId>
-                <artifactId>java-utils</artifactId>
-                <version>1.0.6</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.8.1</version>
             </dependency>
+            
             <dependency>
-                <groupId>com.github.jnr</groupId>
-                <artifactId>jnr-unixsocket</artifactId>
-                <version>0.23</version>
+                <groupId>com.github.hypfvieh</groupId>
+                <artifactId>dbus-java</artifactId>
+                <version>3.2.0</version>
             </dependency>
             
         </dependencies>        
