@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>bundle</packaging>
+
+    <artifactId>bluez-dbus-osgi</artifactId>
+
+    <name>${project.artifactId}</name>
+
+    <description>
+        Java native bluetooth library which uses bluez via dbus (linux only).
+        This is the OSGi compliant bundle of all required libraries in one bundle.
+    </description>
+
+    <parent>
+        <groupId>com.github.hypfvieh</groupId>
+        <artifactId>bluez-dbus-parent</artifactId>
+        <version>0.1.2-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+    </properties>
+
+    <build>
+        <sourceDirectory>${basedir}/../bluez-dbus/src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/../bluez-dbus/src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.2.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <manifestLocation>META-INF</manifestLocation>
+                    <instructions>
+                        <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.name}</Bundle-Name>
+                        <Bundle-Description>${project.artifactId}</Bundle-Description>
+                        <Bundle-Vendor>JCI</Bundle-Vendor>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+                        <Import-Package> org.slf4j,
+                            org.eclipse.jdt.annotation;resolution:=optional 
+                        </Import-Package>
+                        <Export-Package>com.github.hypfvieh.*, org.bluez.*, org.freedesktop.*</Export-Package>
+                        <Embed-Dependency>!junit-*,!slf4j*, !mockito*,
+                            !logback*, !apiguardian*, !opentest4j*,
+                            !objenesis, !org.eclipse.jdt.annotation*,
+                            !byte-buddy*, ;scope=compile|runtime</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+    </dependencies>
+
+    <scm>
+        <connection>scm:git:https://github.com/hypfvieh/bluez-dbus.git</connection>
+        <developerConnection>scm:git:https://github.com/hypfvieh/bluez-dbus.git</developerConnection>
+        <url>https://github.com/hypfvieh/bluez-dbus.git</url>
+      <tag>HEAD</tag>
+  </scm>
+
+</project>
