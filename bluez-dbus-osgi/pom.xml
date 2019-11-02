@@ -46,6 +46,10 @@
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
                         <Import-Package> org.slf4j,
+                            org.w3c.dom,
+                            javax.xml.parsers,
+                            javax.xml.xpath,
+                            sun.misc,
                             org.eclipse.jdt.annotation;resolution:=optional 
                         </Import-Package>
                         <Export-Package>com.github.hypfvieh.*, org.bluez.*, org.freedesktop.*</Export-Package>
