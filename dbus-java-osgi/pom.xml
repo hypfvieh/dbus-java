@@ -46,6 +46,7 @@
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
                         <Import-Package> org.slf4j,
+                            sun.misc,
                             org.eclipse.jdt.annotation;resolution:=optional 
                         </Import-Package>
                         <Export-Package>org.freedesktop.*</Export-Package>
