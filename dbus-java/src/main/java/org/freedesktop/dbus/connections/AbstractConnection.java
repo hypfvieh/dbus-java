@@ -160,10 +160,10 @@ public abstract class AbstractConnection implements Closeable {
             busAddress = new BusAddress(address);
             transport = TransportFactory.createTransport(busAddress, timeout);
             connected = true;
-        } catch (IOException | DBusException ioe) {
-            logger.debug("Error creating transport", ioe);
+        } catch (IOException | DBusException _ex) {
+            logger.debug("Error creating transport", _ex);
             disconnect();
-            throw new DBusException("Failed to connect to bus: " + ioe.getMessage(), ioe);
+            throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }
         run = true;
 

@@ -254,9 +254,16 @@ public final class DBusConnection extends AbstractConnection {
                             }
                             Properties readProperties = FileIoUtil.readProperties(addressfile);
                             String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
+                            
                             if (StringUtil.isEmpty(sessionAddress)) {
                                 throw new RuntimeException("Cannot Resolve Session Bus Address");
                             }
+
+                            // sometimes (e.g. Ubuntu 18.04) the returned address is wrapped in single quotes ('), we have to remove them
+                            if (sessionAddress.matches("^'[^']+'$")) {
+                                sessionAddress = sessionAddress.replaceFirst("^'([^']+)'$", "$1");
+                            }
+                            
                             return sessionAddress;
                         } catch (DBusException _ex) {
                             throw new RuntimeException("Cannot Resolve Session Bus Address", _ex);
