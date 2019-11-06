@@ -51,81 +51,81 @@ public class ObjectTree {
 
     public static final Pattern SLASH_PATTERN = Pattern.compile("/");
 
-    private TreeNode recursiveFind(TreeNode current, String path) {
-        if ("/".equals(path)) {
-            return current;
+    private TreeNode recursiveFind(TreeNode _current, String _path) {
+        if ("/".equals(_path)) {
+            return _current;
         }
-        String[] elements = path.split("/", 2);
+        String[] elements = _path.split("/", 2);
         // this is us or a parent node
-        if (path.startsWith(current.name)) {
+        if (_path.startsWith(_current.name)) {
             // this is us
-            if (path.equals(current.name)) {
-                return current;
+            if (_path.equals(_current.name)) {
+                return _current;
             }
             // recurse down
             else {
-                if (current.down == null) {
+                if (_current.down == null) {
                     return null;
                 } else {
-                    return recursiveFind(current.down, elements[1]);
+                    return recursiveFind(_current.down, elements[1]);
                 }
             }
-        } else if (current.right == null) {
+        } else if (_current.right == null) {
             return null;
-        } else if (0 > current.right.name.compareTo(elements[0])) {
+        } else if (0 > _current.right.name.compareTo(elements[0])) {
             return null;
         }
         // recurse right
         else {
-            return recursiveFind(current.right, path);
+            return recursiveFind(_current.right, _path);
         }
     }
 
-    private TreeNode recursiveAdd(TreeNode current, String path, ExportedObject object, String data) {
-        String[] elements = SLASH_PATTERN.split(path, 2);
+    private TreeNode recursiveAdd(TreeNode _current, String _path, ExportedObject _object, String _data) {
+        String[] elements = SLASH_PATTERN.split(_path, 2);
         // this is us or a parent node
-        if (path.startsWith(current.name)) {
+        if (_path.startsWith(_current.name)) {
             // this is us
             if (1 == elements.length || "".equals(elements[1])) {
-                current.object = object;
-                current.data = data;
+                _current.object = _object;
+                _current.data = _data;
             }
             // recurse down
             else {
-                if (current.down == null) {
+                if (_current.down == null) {
                     String[] el = elements[1].split("/", 2);
-                    current.down = new TreeNode(el[0]);
+                    _current.down = new TreeNode(el[0]);
                 }
-                current.down = recursiveAdd(current.down, elements[1], object, data);
+                _current.down = recursiveAdd(_current.down, elements[1], _object, _data);
             }
         }
         // need to create a new sub-tree on the end
-        else if (current.right == null) {
-            current.right = new TreeNode(elements[0]);
-            current.right = recursiveAdd(current.right, path, object, data);
+        else if (_current.right == null) {
+            _current.right = new TreeNode(elements[0]);
+            _current.right = recursiveAdd(_current.right, _path, _object, _data);
         }
         // need to insert here
-        else if (0 > current.right.name.compareTo(elements[0])) {
+        else if (0 > _current.right.name.compareTo(elements[0])) {
             TreeNode t = new TreeNode(elements[0]);
-            t.right = current.right;
-            current.right = t;
-            current.right = recursiveAdd(current.right, path, object, data);
+            t.right = _current.right;
+            _current.right = t;
+            _current.right = recursiveAdd(_current.right, _path, _object, _data);
         }
         // recurse right
         else {
-            current.right = recursiveAdd(current.right, path, object, data);
+            _current.right = recursiveAdd(_current.right, _path, _object, _data);
         }
-        return current;
+        return _current;
     }
 
-    public synchronized void add(String path, ExportedObject object, String data) {
-        logger.debug("Adding {} to object tree", path);
-        root = recursiveAdd(root, path, object, data);
+    public synchronized void add(String _path, ExportedObject _object, String _data) {
+        logger.debug("Adding {} to object tree", _path);
+        root = recursiveAdd(root, _path, _object, _data);
     }
 
-    public synchronized void remove(String path) {
-        logger.debug("Removing {} from object tree", path);
-        TreeNode t = recursiveFind(root, path);
+    public synchronized void remove(String _path) {
+        logger.debug("Removing {} from object tree", _path);
+        TreeNode t = recursiveFind(root, _path);
         t.object = null;
         t.data = null;
     }
@@ -138,14 +138,23 @@ public class ObjectTree {
             return null;
         }
         StringBuilder sb = new StringBuilder();
+
         sb.append("<node name=\"");
         sb.append(_path);
         sb.append("\">\n");
+
         if (null != t.data) {
             sb.append(t.data);
         }
         t = t.down;
         while (null != t) {
+            // omit entries without a bound object
+            // if there is no object, there is nothing to show in introspection
+            // also unexported object will then be removed from introspection output
+            if (t.object == null) {
+                t = t.right;
+                continue;
+            }
             sb.append("<node name=\"");
             sb.append(t.name);
             sb.append("\"/>\n");
@@ -155,18 +164,18 @@ public class ObjectTree {
         return sb.toString();
     }
 
-    private String recursivePrint(TreeNode current) {
+    private String recursivePrint(TreeNode _current) {
         String s = "";
-        if (null != current) {
-            s += current.name;
-            if (null != current.object) {
+        if (null != _current) {
+            s += _current.name;
+            if (null != _current.object) {
                 s += "*";
             }
-            if (null != current.down) {
-                s += "/{" + recursivePrint(current.down) + "}";
+            if (null != _current.down) {
+                s += "/{" + recursivePrint(_current.down) + "}";
             }
-            if (null != current.right) {
-                s += ", " + recursivePrint(current.right);
+            if (null != _current.right) {
+                s += ", " + recursivePrint(_current.right);
             }
         }
         return s;
