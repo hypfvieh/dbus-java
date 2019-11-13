@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.utils.generator;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -11,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+
 import com.github.hypfvieh.util.StringUtil;
 
 /**
@@ -20,7 +23,7 @@ import com.github.hypfvieh.util.StringUtil;
  * @since v3.0.1 - 2018-12-22
  */
 public class ClassBuilderInfo {
-	/** Imported files for this class. */
+    /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
     /** Members/Fields of this class. */
     private final List<ClassMember>      members               = new ArrayList<>();
@@ -37,6 +40,10 @@ public class ClassBuilderInfo {
     private String                       className;
     /** Package of this class. */
     private String                       packageName;
+    
+    /** Package name used by DBus. */
+    private String                       dbusPackageName;
+
     /** Type of this class (interface or class). */
     private ClassType                     classType;
     /** Class which this class may extend. */
@@ -52,6 +59,14 @@ public class ClassBuilderInfo {
 
     public void setPackageName(String _packageName) {
         packageName = _packageName;
+    }
+
+    public String getDbusPackageName() {
+        return dbusPackageName;
+    }
+
+    public void setDbusPackageName(String _dbusPackageName) {
+        dbusPackageName = _dbusPackageName;
     }
 
     public String getClassName() {
@@ -97,7 +112,7 @@ public class ClassBuilderInfo {
     public List<ClassConstructor> getConstructors() {
         return constructors;
     }
-
+    
     /**
      * Create the Java source for the class information provided.
      * @return String
@@ -137,6 +152,11 @@ public class ClassBuilderInfo {
             content.add("");
         }
 
+        if (getDbusPackageName() != null) {
+            allImports.add(DBusInterfaceName.class.getName());
+            content.add(classIndent + "@" + DBusInterfaceName.class.getSimpleName() + "(\"" + getDbusPackageName() + "\")");
+        }
+        
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
         bgn += " " + getClassName();
         if (getExtendClass() != null) {
@@ -192,7 +212,7 @@ public class ClassBuilderInfo {
                 }
                 if (!constructor.getArguments().isEmpty()) {
                     for (Entry<String, String> e : constructor.getArguments().entrySet()) {
-                        content.add(innerIndent + "this." + e.getKey() + " = " + e.getKey() + ";");
+                        content.add(innerIndent + "this." + e.getKey().replaceFirst("^_(.+)", "$1") + " = " + e.getKey() + ";");
                     }
                 }
 
@@ -298,6 +318,32 @@ public class ClassBuilderInfo {
         return clzzName;
     }
 
+    /**
+     * Contains information about annotation to place on classes, members or methods.
+     * 
+     * @author hypfvieh
+     * @since v3.2.1 - 2019-11-13
+     */
+    public static class AnnotationInfo {
+        /** Annotation class. */
+        private final Class<? extends Annotation> annotationClass;
+        /** Annotation params (e.g. value = "foo", key = "bar"). */ 
+        private final String annotationParams;
+        
+        public AnnotationInfo(Class<? extends Annotation> _annotationClass, String _annotationParams) {
+            annotationClass = _annotationClass;
+            annotationParams = _annotationParams;
+        }
+
+        public Class<? extends Annotation> getAnnotationClass() {
+            return annotationClass;
+        }
+
+        public String getAnnotationParams() {
+            return annotationParams;
+        }
+    }
+    
     /**
      * Pojo which represents a class method.
      * 

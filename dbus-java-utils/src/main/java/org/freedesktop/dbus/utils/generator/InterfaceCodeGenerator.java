@@ -148,6 +148,7 @@ public class InterfaceCodeGenerator {
         ClassBuilderInfo interfaceClass = new ClassBuilderInfo();
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
+        interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.ORIG_PKGNAME));
         interfaceClass.setClassName(className);
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
@@ -385,7 +386,11 @@ public class InterfaceCodeGenerator {
                 outputFile.getParentFile().mkdirs();
             }
 
-            FileIoUtil.writeTextFile(outputFile.getAbsolutePath(), entry.getValue(), Charset.defaultCharset(), false);
+            if (FileIoUtil.writeTextFile(outputFile.getAbsolutePath(), entry.getValue(), Charset.defaultCharset(), false)) {
+                LoggerFactory.getLogger(InterfaceCodeGenerator.class).info("Created class file {}", outputFile.getAbsolutePath());
+            } else {
+                LoggerFactory.getLogger(InterfaceCodeGenerator.class).error("Could not write content to class file {}", outputFile.getName());
+            }
         }
     }
 
@@ -483,9 +488,13 @@ public class InterfaceCodeGenerator {
 
                 Map<File, String> analyze = ci2.analyze(ignoreDtd);
                 writeToFile(outputDir, analyze);
+                logger.info("Interface creation finished");
             } catch (Exception _ex) {
                 logger.error("Error while analyzing introspection data", _ex);
             }
+        } else {
+            logger.error("Busname missing!");
+            System.exit(1);
         }
     }
 
@@ -508,7 +517,7 @@ public class InterfaceCodeGenerator {
     }
 
     static enum DbusInterfaceToFqcn {
-        PACKAGENAME, CLASSNAME;
+        PACKAGENAME, ORIG_PKGNAME, CLASSNAME;
 
         public static Map<DbusInterfaceToFqcn, String> toFqcn(String _interfaceName) {
             String packageName ;
@@ -524,7 +533,10 @@ public class InterfaceCodeGenerator {
 
             map.put(DbusInterfaceToFqcn.CLASSNAME, StringUtil.upperCaseFirstChar(className));
             map.put(DbusInterfaceToFqcn.PACKAGENAME, packageName.toLowerCase());
-
+            
+            if (!packageName.equals(packageName.toLowerCase())) {
+                map.put(DbusInterfaceToFqcn.ORIG_PKGNAME, packageName);    
+            }
             return map;
         }
     }
