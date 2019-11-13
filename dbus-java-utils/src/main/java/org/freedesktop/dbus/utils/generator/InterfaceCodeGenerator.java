@@ -233,13 +233,10 @@ public class InterfaceCodeGenerator {
             argsMap.put("_" + e.getKey(), e.getValue());
         }
         
-        classConstructor.getArguments().put("_path", "String");
-        classConstructor.getArguments().put("_interfaceName", "String");        
         classConstructor.getArguments().putAll(argsMap);
         
-        classConstructor.getSuperArguments().add("_path");
-        classConstructor.getSuperArguments().add("_interfaceName");
-        classConstructor.getSuperArguments().addAll(argsMap.keySet());
+        classConstructor.getSuperArguments().put("_path", "String");
+        classConstructor.getSuperArguments().put("_interfaceName", "String");
 
         innerClass.getConstructors().add(classConstructor);
         

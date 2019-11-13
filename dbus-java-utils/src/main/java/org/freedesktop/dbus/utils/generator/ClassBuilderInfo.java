@@ -199,6 +199,9 @@ public class ClassBuilderInfo {
             for (ClassConstructor constructor : getConstructors()) {
                 String outerIndent = _staticClass ? "        " : "    ";
                 String cstr = outerIndent + getClassName() + "(";
+                if (!constructor.getSuperArguments().isEmpty()) {
+                    cstr += constructor.getSuperArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
+                }
                 if (!constructor.getArguments().isEmpty()) {
                     cstr += constructor.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
                 }
@@ -208,7 +211,7 @@ public class ClassBuilderInfo {
                 String innerIndent = _staticClass ? "            " : "        ";
                 
                 if (!constructor.getSuperArguments().isEmpty()) {
-                    content.add(innerIndent + "super(" + String.join(", ", constructor.getSuperArguments()) + ");");
+                    content.add(innerIndent + "super(" + String.join(", ", constructor.getSuperArguments().keySet()) + ");");
                 }
                 if (!constructor.getArguments().isEmpty()) {
                     for (Entry<String, String> e : constructor.getArguments().entrySet()) {
@@ -446,12 +449,12 @@ public class ClassBuilderInfo {
     	/** List of arguments for the constructor. Key is argument name, value is argument type. */
         private final Map<String, String> arguments = new LinkedHashMap<>();
         /** List of arguments for the super-constructor. Key is argument name, value is argument type. */
-        private final List<String> superArguments = new ArrayList<>();
+        private final Map<String, String> superArguments = new LinkedHashMap<>();
         
         public Map<String, String> getArguments() {
             return arguments;
         }
-        public List<String> getSuperArguments() {
+        public Map<String, String> getSuperArguments() {
             return superArguments;
         }
     }
