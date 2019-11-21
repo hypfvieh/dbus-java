@@ -187,7 +187,12 @@ public class DeviceManager {
         Set<String> scanObjectManager = DbusHelper.findNodes(dbusConnection, adapter.getDbusPath());
 
         String adapterMac = adapter.getAddress();
-
+        // remove all devices from previous calls so unavailable devices will be removed
+        // and only devices found in the current introspection result will be used
+        if (bluetoothDeviceByAdapterMac.containsKey(adapterMac)) {
+            bluetoothDeviceByAdapterMac.get(adapterMac).clear();    
+        }
+        
         for (String path : scanObjectManager) {
             String devicePath = "/org/bluez/" + adapter.getDeviceName() + "/" + path;
             Device1 device = DbusHelper.getRemoteObject(dbusConnection, devicePath, Device1.class);
