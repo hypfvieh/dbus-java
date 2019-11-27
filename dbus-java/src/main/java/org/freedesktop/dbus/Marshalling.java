@@ -372,7 +372,7 @@ public final class Marshalling {
                     _resultValue.add(Byte.class);
                     break;
                 case Message.ArgumentType.OBJECT_PATH:
-                    _resultValue.add(DBusInterface.class);
+                    _resultValue.add(DBusPath.class);
                     break;
                 case Message.ArgumentType.UINT16:
                     _resultValue.add(UInt16.class);

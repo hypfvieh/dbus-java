@@ -8,9 +8,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.Marshalling;
@@ -159,7 +159,7 @@ public class TypeConverter {
         if (_dbusType.length() == 1) {
             Marshalling.getJavaType(_dbusType, dataType, 1);
 
-             type = dataType.stream()
+            type = dataType.stream()
                     .map(t -> {
                         return t.getTypeName();
                     })
