@@ -44,6 +44,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -73,23 +74,27 @@ class TestEmptyCollections {
 	private ISampleCollectionInterface clientObj;
 
 	@BeforeEach
-	public void setUp() throws DBusException {
-		serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
-		clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
-		serverconn.setWeakReferences(true);
-		clientconn.setWeakReferences(true);
+	public void setUp()  {
+		try {
+			serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
+			clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
+			serverconn.setWeakReferences(true);
+			clientconn.setWeakReferences(true);
 
-		/** This exports an instance of the test class as the object /Test. */
-		ISampleCollectionInterface serverImpl = new SampleCollectionImpl();
-		serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
+			/** This exports an instance of the test class as the object /Test. */
+			ISampleCollectionInterface serverImpl = new SampleCollectionImpl();
+			serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
 
-		clientObj = clientconn.getRemoteObject(serverconn.getUniqueName(), serverImpl.getObjectPath(),
-				ISampleCollectionInterface.class);
+			clientObj = clientconn.getRemoteObject(serverconn.getUniqueName(), serverImpl.getObjectPath(),
+					ISampleCollectionInterface.class);
+		} catch (DBusException _ex) {
+			LoggerFactory.getLogger(TestEmptyCollections.class).error("Failed to initiate dbus.", _ex);
+		}
 
 	}
 
 	@AfterEach
-	public void tearDown() {
+	public void tearDown() throws InterruptedException {
 		DBusExecutionException dbee = serverconn.getError();
 		if (null != dbee) {
 			throw dbee;
@@ -100,6 +105,9 @@ class TestEmptyCollections {
 		}
 		clientconn.disconnect();
 		serverconn.disconnect();
+		
+		// give the dbus daemon some time to unregister our calls before restarting test
+		Thread.sleep(300L);
 	}
 
 	/**

@@ -254,7 +254,10 @@ public abstract class AbstractConnection implements Closeable {
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
-        Optional<Entry<String, ExportedObject>> foundInterface = getExportedObjects().entrySet().stream().filter(e -> _interface.equals(e.getValue().getObject().get())).findFirst();
+        Optional<Entry<String, ExportedObject>> foundInterface = 
+        		getExportedObjects().entrySet().stream()
+        			.filter(e -> _interface.equals(e.getValue().getObject().get()))
+        			.findFirst();
         if (foundInterface.isPresent()) {
             return foundInterface.get().getKey();
         } else {
@@ -318,45 +321,45 @@ public abstract class AbstractConnection implements Closeable {
      * Export an object as a fallback object. This object will have it's methods invoked for all paths starting with
      * this object path.
      *
-     * @param objectprefix
+     * @param _objectPrefix
      *            The path below which the fallback handles calls. MUST be in slash-notation, like
      *            "/org/freedesktop/Local",
-     * @param object
+     * @param _object
      *            The object to export.
      * @throws DBusException
      *             If the objectpath is incorrectly formatted,
      */
-    public void addFallback(String objectprefix, DBusInterface object) throws DBusException {
-        if (null == objectprefix || "".equals(objectprefix)) {
+    public void addFallback(String _objectPrefix, DBusInterface _object) throws DBusException {
+        if (null == _objectPrefix || "".equals(_objectPrefix)) {
             throw new DBusException("Must Specify an Object Path");
         }
-        if (!objectprefix.matches(OBJECT_REGEX) || objectprefix.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid object path: " + objectprefix);
+        if (!_objectPrefix.matches(OBJECT_REGEX) || _objectPrefix.length() > MAX_NAME_LENGTH) {
+            throw new DBusException("Invalid object path: " + _objectPrefix);
         }
-        ExportedObject eo = new ExportedObject(object, weakreferences);
-        fallbackContainer.add(objectprefix, eo);
+        ExportedObject eo = new ExportedObject(_object, weakreferences);
+        fallbackContainer.add(_objectPrefix, eo);
     }
 
     /**
      * Remove a fallback
      *
-     * @param objectprefix
+     * @param _objectprefix
      *            The prefix to remove the fallback for.
      */
-    public void removeFallback(String objectprefix) {
-        fallbackContainer.remove(objectprefix);
+    public void removeFallback(String _objectprefix) {
+        fallbackContainer.remove(_objectprefix);
     }
 
     /**
      * Stop Exporting an object
      *
-     * @param objectpath
+     * @param _objectpath
      *            The objectpath to stop exporting.
      */
-    public void unExportObject(String objectpath) {
+    public void unExportObject(String _objectpath) {
         synchronized (getExportedObjects()) {
-            getExportedObjects().remove(objectpath);
-            getObjectTree().remove(objectpath);
+            getExportedObjects().remove(_objectpath);
+            getObjectTree().remove(_objectpath);
         }
     }
 
