@@ -16,7 +16,7 @@ import java.math.BigInteger;
 
 /**
  * Class to represent unsigned 64-bit numbers.
- * Warning: Any functions which take or return a <tt>long</tt>
+ * Warning: Any functions which take or return a <i>long</i>
  * are restricted to the range of a signed 64bit number.
  * Use the BigInteger methods if you wish access to the full
  * range.
