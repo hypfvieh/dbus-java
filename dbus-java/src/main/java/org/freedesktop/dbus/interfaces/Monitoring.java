@@ -9,7 +9,7 @@ public interface Monitoring {
      * Converts the connection into a <span class="emphasis"><em>monitor connection</em></span> which can be used as a
      * debugging/monitoring tool. Only a user who is privileged on this bus (by some implementation-specific definition)
      * may create monitor
-     * connections<a href="https://dbus.freedesktop.org/doc/dbus-specification.html#ftn.idm3162" name="idm3162"><sup
+     * connections<a href="https://dbus.freedesktop.org/doc/dbus-specification.html#ftn.idm3162" id="idm3162"><sup
      * class="footnote">[5]</sup></a>.
      * <p>
      * Monitor connections lose all their bus names, including the unique connection name, and all their match rules.
