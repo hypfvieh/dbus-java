@@ -980,7 +980,7 @@ public final class DBusConnection extends AbstractConnection {
         	        });
                 
                 // remove all exported objects before disconnecting
-                getExportedObjects().keySet().stream().filter(f -> f == null).forEach(key -> unExportObject(key));
+                getExportedObjects().keySet().stream().filter(f -> f != null).forEach(key -> unExportObject(key));
 
         	};
 
