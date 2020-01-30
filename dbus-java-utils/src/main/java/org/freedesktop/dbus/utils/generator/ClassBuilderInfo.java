@@ -201,6 +201,9 @@ public class ClassBuilderInfo {
                 String cstr = outerIndent + getClassName() + "(";
                 if (!constructor.getSuperArguments().isEmpty()) {
                     cstr += constructor.getSuperArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
+                    if (!constructor.getArguments().isEmpty()) {
+                        cstr += ", ";
+                    }
                 }
                 if (!constructor.getArguments().isEmpty()) {
                     cstr += constructor.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));

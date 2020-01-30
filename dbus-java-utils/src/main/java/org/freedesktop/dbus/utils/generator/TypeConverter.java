@@ -243,12 +243,17 @@ public class TypeConverter {
                         actualArgTypeVal += ">";
                         internalTypes.add(actualArgTypeVal);
                         _javaIncludes.addAll(e.getValue());
-                    } else {
+                    } else { 
                         internalTypes.add(e.getKey());
                     }
                 }
             }
-
+            
+            // if key and value of map is of same type:
+            if (dataType.get(0) instanceof DBusMapType && internalTypes.size() == 1) {
+                internalTypes.add(internalTypes.get(0));
+            }
+            
             return retVal + "<" + String.join(", ", internalTypes) + ">";
         }
         
