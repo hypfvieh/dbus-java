@@ -208,7 +208,13 @@ public class ClassBuilderInfo {
                 if (!constructor.getArguments().isEmpty()) {
                     cstr += constructor.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
                 }
-                cstr += ") {";
+                
+                if (constructor.getThrowArguments().isEmpty()) {
+                    cstr += ") {";
+                } else {
+                    cstr += ") throws " + String.join(", ", constructor.getThrowArguments()) + " {";
+                }
+                
                 content.add(cstr);
                 
                 String innerIndent = _staticClass ? "            " : "        ";
@@ -454,9 +460,17 @@ public class ClassBuilderInfo {
         /** List of arguments for the super-constructor. Key is argument name, value is argument type. */
         private final Map<String, String> superArguments = new LinkedHashMap<>();
         
+        /** List of throws arguments. */
+        private final List<String> throwArguments = new ArrayList<>();
+        
+        public List<String> getThrowArguments() {
+            return throwArguments;
+        }
+        
         public Map<String, String> getArguments() {
             return arguments;
         }
+        
         public Map<String, String> getSuperArguments() {
             return superArguments;
         }

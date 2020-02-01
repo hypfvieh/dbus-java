@@ -148,7 +148,7 @@ public class InterfaceCodeGenerator {
         ClassBuilderInfo interfaceClass = new ClassBuilderInfo();
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
-        interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.ORIG_PKGNAME));
+        interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
         interfaceClass.setClassName(className);
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
@@ -202,6 +202,7 @@ public class InterfaceCodeGenerator {
         innerClass.setClassType(ClassType.CLASS);
         innerClass.setExtendClass(DBusSignal.class.getName());
         innerClass.getImports().add(DBusSignal.class.getName());
+        innerClass.getImports().add(DBusException.class.getName());
         innerClass.setClassName(className);
 
         _clzBldr.getInnerClasses().add(innerClass);
@@ -234,6 +235,7 @@ public class InterfaceCodeGenerator {
         }
         
         classConstructor.getArguments().putAll(argsMap);
+        classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
         
         classConstructor.getSuperArguments().put("_path", "String");
         classConstructor.getSuperArguments().put("_interfaceName", "String");
@@ -514,7 +516,7 @@ public class InterfaceCodeGenerator {
     }
 
     static enum DbusInterfaceToFqcn {
-        PACKAGENAME, ORIG_PKGNAME, CLASSNAME;
+        PACKAGENAME, ORIG_PKGNAME, CLASSNAME, DBUS_INTERFACE_NAME;
 
         public static Map<DbusInterfaceToFqcn, String> toFqcn(String _interfaceName) {
             String packageName ;
@@ -533,6 +535,7 @@ public class InterfaceCodeGenerator {
             
             if (!packageName.equals(packageName.toLowerCase())) {
                 map.put(DbusInterfaceToFqcn.ORIG_PKGNAME, packageName);    
+                map.put(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME, packageName + "." + className); 
             }
             return map;
         }
