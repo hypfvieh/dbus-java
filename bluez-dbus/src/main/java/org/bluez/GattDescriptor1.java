@@ -9,11 +9,10 @@ import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -55,9 +54,17 @@ import org.freedesktop.dbus.types.Variant;
  * 				"secure-write" (Server Only)<br>
  * 				"authorize"<br>
  * <br>
+ * 		uint16 Handle [read-write, optional] (Server Only)<br>
+ * <br>
+ * 			Characteristic handle. When available in the server it<br>
+ * 			would attempt to use to allocate into the database<br>
+ * 			which may fail, to auto allocate the value 0x0000<br>
+ * 			shall be used which will cause the allocated handle to<br>
+ * 			be set once registered.<br>
+ * <br>
  * <br>
  */
-public interface GattDescriptor1 extends DBusInterface, Properties {
+public interface GattDescriptor1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -75,7 +82,7 @@ public interface GattDescriptor1 extends DBusInterface, Properties {
      * 
      * @throws BluezFailedException on failure
      * @throws BluezInProgressException when operation already in progress
-     * @throws BluezNotPermittedException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
      * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezNotSupportedException when operation not supported
      */
@@ -90,7 +97,9 @@ public interface GattDescriptor1 extends DBusInterface, Properties {
      * Possible options: "offset": Start offset<br>
      * 		  "device": Device path (Server only)<br>
      * 		  "link": Link type (Server only)<br>
-     * 		  "prepare-authorize": boolean Is prepare authorization request<br>
+     * 		  "prepare-authorize": boolean Is prepare<br>
+     * 	       authorization<br>
+     * 	       request<br>
      * <br>
      * 
      * @param _value
@@ -98,8 +107,8 @@ public interface GattDescriptor1 extends DBusInterface, Properties {
      * 
      * @throws BluezFailedException on failure
      * @throws BluezInProgressException when operation already in progress
-     * @throws BluezNotPermittedException
-     * @throws BluezInvalidValueLengthException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
+     * @throws BluezInvalidValueLengthException on BluezInvalidValueLengthException
      * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezNotSupportedException when operation not supported
      */

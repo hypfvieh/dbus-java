@@ -1,20 +1,18 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
-
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezForbiddenException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -59,7 +57,7 @@ import org.freedesktop.dbus.types.Variant;
  * <br>
  * <br>
  */
-public interface PhonebookAccess1 extends DBusInterface, Properties {
+public interface PhonebookAccess1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -83,10 +81,10 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * 	"spd":	speed dials entry ( only for "internal" )<br>
      * 	"fav":	favorites entry ( only for "internal" )<br>
      * <br>
-     *
+     * 
      * @param _location
      * @param _phonebook
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      */
@@ -112,12 +110,12 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * Possible filters: Format, Order, Offset, MaxCount and<br>
      * Fields<br>
      * <br>
-     *
+     * 
      * @param _targetfile
      * @param _filters
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
-     * @throws BluezForbiddenException
+     * @throws BluezForbiddenException on BluezForbiddenException
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> PullAll(String _targetfile, Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
 
@@ -131,11 +129,11 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * <br>
      * Possible filters: Order, Offset and MaxCount<br>
      * <br>
-     *
+     * 
      * @param _filters
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
-     * @throws BluezForbiddenException
+     * @throws BluezForbiddenException on BluezForbiddenException
      */
     TwoTuple<String,String[]> List(Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException;
 
@@ -157,13 +155,13 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * <br>
      * Possbile filters: Format and Fields<br>
      * <br>
-     *
+     * 
      * @param _vcard
      * @param _targetfile
      * @param _filters
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
-     * @throws BluezForbiddenException
+     * @throws BluezForbiddenException on BluezForbiddenException
      * @throws BluezFailedException on failure
      */
     TwoTuple<DBusPath, Map<String,Variant<?>>> Pull(String _vcard, String _targetfile, Map<String, Variant<?>> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException, BluezFailedException;
@@ -185,13 +183,13 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * <br>
      * Possible filters: Order, Offset and MaxCount<br>
      * <br>
-     *
+     * 
      * @param _field
      * @param _value
      * @param _filters
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
-     * @throws BluezForbiddenException
+     * @throws BluezForbiddenException on BluezForbiddenException
      * @throws BluezFailedException on failure
      */
     TwoTuple<String, String[]> Search(String _field, String _value, Map<?, ?> _filters) throws BluezInvalidArgumentsException, BluezForbiddenException, BluezFailedException;
@@ -203,8 +201,8 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * object that are actually used (i.e. indexes that<br>
      * correspond to non-NULL entries).<br>
      * <br>
-     *
-     * @throws BluezForbiddenException
+     * 
+     * @throws BluezForbiddenException on BluezForbiddenException
      * @throws BluezFailedException on failure
      */
     UInt16 GetSize() throws BluezForbiddenException, BluezFailedException;
@@ -214,9 +212,9 @@ public interface PhonebookAccess1 extends DBusInterface, Properties {
      * <br>
      * Attempt to update PrimaryCounter and SecondaryCounter.<br>
      * <br>
-     *
+     * 
      * @throws BluezNotSupportedException when operation not supported
-     * @throws BluezForbiddenException
+     * @throws BluezForbiddenException on BluezForbiddenException
      * @throws BluezFailedException on failure
      */
     void UpdateVersion() throws BluezNotSupportedException, BluezForbiddenException, BluezFailedException;

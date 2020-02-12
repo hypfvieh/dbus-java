@@ -1,16 +1,15 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
-
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>

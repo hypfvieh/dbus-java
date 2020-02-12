@@ -16,10 +16,9 @@ import org.bluez.exceptions.BluezNotConnectedException;
 import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: device-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -171,15 +170,15 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			application are exposed.<br>
  * <br>
  * 			Possible values:<br>
- * 				&lt;type&gt; &lt;byte array&gt;<br>
+ * 				<type> <byte array><br>
  * 				...<br>
  * <br>
  * 			Example:<br>
- * 				&lt;Transport Discovery&gt; &lt;Organization Flags...&gt;<br>
+ * 				<Transport Discovery> <Organization Flags...><br>
  * 				0x26                   0x01         0x01...<br>
  * <br>
  */
-public interface Device1 extends DBusInterface, Properties {
+public interface Device1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -300,9 +299,9 @@ public interface Device1 extends DBusInterface, Properties {
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      * @throws BluezAlreadyExistsException when item already exists
-     * @throws BluezAuthenticationCanceledException
+     * @throws BluezAuthenticationCanceledException on BluezAuthenticationCanceledException
      * @throws BluezAuthenticationFailedException when authentication failed
-     * @throws BluezAuthenticationRejectedException
+     * @throws BluezAuthenticationRejectedException on BluezAuthenticationRejectedException
      * @throws BluezAuthenticationTimeoutException when authentication timed out
      * @throws BluezConnectionAttemptFailedException when connection attempt failed
      */

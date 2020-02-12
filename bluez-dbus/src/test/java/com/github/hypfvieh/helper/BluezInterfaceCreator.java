@@ -408,7 +408,6 @@ public class BluezInterfaceCreator {
             }
 
             if (line.startsWith("Properties")) {
-                _is.additionalInterfaces.add("Properties");
                 i += readProperties(_is, _list.subList(i, _list.size()));
                 continue;
             } else if (line.startsWith("Signal")) {

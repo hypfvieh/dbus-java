@@ -1,16 +1,15 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
-
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -28,9 +27,9 @@ public interface MessageAccess1 extends DBusInterface {
      * Set working directory for current session, *name* may<br>
      * be the directory name or '..[/dir]'.<br>
      * <br>
-     *
+     * 
      * @param _name
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      */
@@ -48,9 +47,9 @@ public interface MessageAccess1 extends DBusInterface {
      * <br>
      * Possible filters: Offset and MaxCount<br>
      * <br>
-     *
+     * 
      * @param _filter
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      */
@@ -158,10 +157,10 @@ public interface MessageAccess1 extends DBusInterface {
      * <br>
      * 		Message protected flag<br>
      * <br>
-     *
+     * 
      * @param _folder
      * @param _filter
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      */
@@ -172,7 +171,7 @@ public interface MessageAccess1 extends DBusInterface {
      * <br>
      * Request remote to update its inbox.<br>
      * <br>
-     *
+     * 
      * @throws BluezFailedException on failure
      */
     void UpdateInbox() throws BluezFailedException;
@@ -196,11 +195,11 @@ public interface MessageAccess1 extends DBusInterface {
      * The properties of this transfer are also returned along<br>
      * with the object path, to avoid a call to GetAll.<br>
      * <br>
-     *
+     * 
      * @param _sourcefile
      * @param _folder
      * @param _args
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezFailedException on failure
      */

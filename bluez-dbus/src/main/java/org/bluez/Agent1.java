@@ -8,7 +8,7 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: agent-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name<br>

@@ -1,6 +1,7 @@
 package org.bluez;
 
 import java.util.Map;
+import java.util.Properties;
 
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
@@ -8,11 +9,10 @@ import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name (Target role)<br>
@@ -20,8 +20,6 @@ import org.freedesktop.dbus.types.Variant;
  * <br>
  * <b>Object path:</b><br>
  *             freely definable (Target role)<br>
- *             [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX<br>
- *             (Controller role)<br>
  * <br>
  * <b>Supported properties:</b> <br>
  * <br>
@@ -66,7 +64,7 @@ import org.freedesktop.dbus.types.Variant;
  * <br>
  * <br>
  */
-public interface MediaFolder1 extends DBusInterface, Properties {
+public interface MediaFolder1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -76,10 +74,10 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      * To list the items found use the folder object returned<br>
      * and pass to ChangeFolder.<br>
      * <br>
-     *
+     * 
      * @param _value
      * @param _filter
-     *
+     * 
      * @throws BluezNotSupportedException when operation not supported
      * @throws BluezFailedException on failure
      */
@@ -90,9 +88,9 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      * <br>
      * Return a list of items found<br>
      * <br>
-     *
+     * 
      * @param _filter
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezNotSupportedException when operation not supported
      * @throws BluezFailedException on failure
@@ -109,9 +107,9 @@ public interface MediaFolder1 extends DBusInterface, Properties {
      * exception is NowPlaying folder which should be always<br>
      * present while the player is active.<br>
      * <br>
-     *
+     * 
      * @param _folder
-     *
+     * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezNotSupportedException when operation not supported
      * @throws BluezFailedException on failure

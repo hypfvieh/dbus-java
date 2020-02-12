@@ -2,10 +2,9 @@ package org.bluez;
 
 import org.bluez.exceptions.BluezFailedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: sap-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -21,7 +20,7 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			Indicates if SAP client is connected to the server.<br>
  * <br>
  */
-public interface SimAccess1 extends DBusInterface, Properties {
+public interface SimAccess1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

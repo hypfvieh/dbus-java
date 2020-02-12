@@ -7,11 +7,10 @@ import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotAvailableException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -63,8 +62,13 @@ import org.freedesktop.dbus.types.UInt16;
  * <br>
  * 			Possible Values: 0-127<br>
  * <br>
+ * 		object Endpoint [readonly, optional, experimental]<br>
+ * <br>
+ * 			Endpoint object which the transport is associated<br>
+ * 			with.<br>
+ * <br>
  */
-public interface MediaTransport1 extends DBusInterface, Properties {
+public interface MediaTransport1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

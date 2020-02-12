@@ -3,10 +3,9 @@ package org.bluez;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name (Target role)<br>
@@ -14,9 +13,6 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * <b>Object path:</b><br>
  *             freely definable (Target role)<br>
- *             [variable<br>
- *             prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX/itemX<br>
- *             (Controller role)<br>
  * <br>
  * <b>Supported properties:</b> <br>
  * <br>
@@ -105,14 +101,14 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * <br>
  */
-public interface MediaItem1 extends DBusInterface, Properties {
+public interface MediaItem1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
      * <br>
      * Play item<br>
      * <br>
-     *
+     * 
      * @throws BluezNotSupportedException when operation not supported
      * @throws BluezFailedException on failure
      */
@@ -123,7 +119,7 @@ public interface MediaItem1 extends DBusInterface, Properties {
      * <br>
      * Add item to now playing list<br>
      * <br>
-     *
+     * 
      * @throws BluezNotSupportedException when operation not supported
      * @throws BluezFailedException on failure
      */

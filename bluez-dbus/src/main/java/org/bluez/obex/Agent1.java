@@ -1,12 +1,12 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-agent-api.txt.<br>
  * <br>
  * <b>Service:</b> unique name<br>

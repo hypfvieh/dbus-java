@@ -1,10 +1,9 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -26,7 +25,7 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * <br>
  */
-public interface MediaControl1 extends DBusInterface, Properties {
+public interface MediaControl1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

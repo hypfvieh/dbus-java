@@ -8,11 +8,10 @@ import org.bluez.exceptions.BluezOutOfRangeException;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.DBusSignal;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: health-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -33,7 +32,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
  * <br>
  * <br>
  */
-public interface HealthDevice1 extends DBusInterface, Properties {
+public interface HealthDevice1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

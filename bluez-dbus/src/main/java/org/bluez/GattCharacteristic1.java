@@ -12,12 +12,11 @@ import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -85,6 +84,7 @@ import org.freedesktop.dbus.types.Variant;
  * 				"notify"<br>
  * 				"indicate"<br>
  * 				"authenticated-signed-writes"<br>
+ * 				"extended-properties"<br>
  * 				"reliable-write"<br>
  * 				"writable-auxiliaries"<br>
  * 				"encrypt-read"<br>
@@ -95,9 +95,17 @@ import org.freedesktop.dbus.types.Variant;
  * 				"secure-write" (Server only)<br>
  * 				"authorize"<br>
  * <br>
+ * 		uint16 Handle [read-write, optional] (Server Only)<br>
+ * <br>
+ * 			Characteristic handle. When available in the server it<br>
+ * 			would attempt to use to allocate into the database<br>
+ * 			which may fail, to auto allocate the value 0x0000<br>
+ * 			shall be used which will cause the allocated handle to<br>
+ * 			be set once registered.<br>
+ * <br>
  * <br>
  */
-public interface GattCharacteristic1 extends DBusInterface, Properties {
+public interface GattCharacteristic1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -107,16 +115,17 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * operation was successful.<br>
      * <br>
      * Possible options: "offset": uint16 offset<br>
+     * 		  "mtu": Exchanged MTU (Server only)<br>
      * 		  "device": Object Device (Server only)<br>
      * <br>
-     *
+     * 
      * @param _options
-     *
+     * 
      * @throws BluezFailedException on failure
      * @throws BluezInProgressException when operation already in progress
-     * @throws BluezNotPermittedException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
      * @throws BluezNotAuthorizedException when not authorized
-     * @throws BluezInvalidOffsetException
+     * @throws BluezInvalidOffsetException on BluezInvalidOffsetException
      * @throws BluezNotSupportedException when operation not supported
      */
     byte[] ReadValue(Map<String, Variant<?>> _options) throws BluezFailedException, BluezInProgressException, BluezNotPermittedException, BluezNotAuthorizedException, BluezInvalidOffsetException, BluezNotSupportedException;
@@ -128,18 +137,27 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * characteristic.<br>
      * <br>
      * Possible options: "offset": Start offset<br>
+     * 		  "type": string<br>
+     * Possible values:<br>
+     * "command": Write without<br>
+     * response<br>
+     * "request": Write with response<br>
+     * "reliable": Reliable Write<br>
+     * 		  "mtu": Exchanged MTU (Server only)<br>
      * 		  "device": Device path (Server only)<br>
      * 		  "link": Link type (Server only)<br>
-     * 		  "prepare-authorize": boolean Is prepare request<br>
+     * 		  "prepare-authorize": True if prepare<br>
+     * 	       authorization<br>
+     * 	       request<br>
      * <br>
-     *
+     * 
      * @param _value
      * @param _options
-     *
+     * 
      * @throws BluezFailedException on failure
      * @throws BluezInProgressException when operation already in progress
-     * @throws BluezNotPermittedException
-     * @throws BluezInvalidValueLengthException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
+     * @throws BluezInvalidValueLengthException on BluezInvalidValueLengthException
      * @throws BluezNotAuthorizedException when not authorized
      * @throws BluezNotSupportedException when operation not supported
      */
@@ -148,9 +166,9 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
     /**
      * <b>From bluez documentation:</b><br>
      * <br>
-     * Acquire file descriptor and MTU for writing. Usage of<br>
-     * WriteValue will be locked causing it to return<br>
-     * NotPermitted error.<br>
+     * Acquire file descriptor and MTU for writing. Only<br>
+     * sockets are supported. Usage of WriteValue will be<br>
+     * locked causing it to return NotPermitted error.<br>
      * <br>
      * For server the MTU returned shall be equal or smaller<br>
      * than the negotiated MTU.<br>
@@ -170,12 +188,12 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * reconnections as the MTU has to be renegotiated.<br>
      * <br>
      * Possible options: "device": Object Device (Server only)<br>
-     * 		  "MTU": Exchanged MTU (Server only)<br>
+     * 		  "mtu": Exchanged MTU (Server only)<br>
      * 		  "link": Link type (Server only)<br>
      * <br>
-     *
+     * 
      * @param _options
-     *
+     * 
      * @throws BluezFailedException on failure
      * @throws BluezNotSupportedException when operation not supported
      */
@@ -184,9 +202,9 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
     /**
      * <b>From bluez documentation:</b><br>
      * <br>
-     * Acquire file descriptor and MTU for notify. Usage of<br>
-     * StartNotify will be locked causing it to return<br>
-     * NotPermitted error.<br>
+     * Acquire file descriptor and MTU for notify. Only<br>
+     * sockets are support. Usage of StartNotify will be locked<br>
+     * causing it to return NotPermitted error.<br>
      * <br>
      * For server the MTU returned shall be equal or smaller<br>
      * than the negotiated MTU.<br>
@@ -212,12 +230,12 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * reconnections as the MTU has to be renegotiated.<br>
      * <br>
      * Possible options: "device": Object Device (Server only)<br>
-     * 		  "MTU": Exchanged MTU (Server only)<br>
+     * 		  "mtu": Exchanged MTU (Server only)<br>
      * 		  "link": Link type (Server only)<br>
      * <br>
-     *
+     * 
      * @param _options
-     *
+     * 
      * @throws BluezFailedException on failure
      * @throws BluezNotSupportedException when operation not supported
      */
@@ -229,9 +247,9 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * Starts a notification session from this characteristic<br>
      * if it supports value notifications or indications.<br>
      * <br>
-     *
+     * 
      * @throws BluezFailedException on failure
-     * @throws BluezNotPermittedException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
      * @throws BluezInProgressException when operation already in progress
      * @throws BluezNotSupportedException when operation not supported
      */
@@ -245,7 +263,7 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * characteristic are shared between sessions thus<br>
      * calling StopNotify will release a single session.<br>
      * <br>
-     *
+     * 
      * @throws BluezFailedException on failure
      */
     void StopNotify() throws BluezFailedException;
@@ -256,7 +274,7 @@ public interface GattCharacteristic1 extends DBusInterface, Properties {
      * This method doesn't expect a reply so it is just a<br>
      * confirmation that value was received.<br>
      * <br>
-     *
+     * 
      * @throws BluezFailedException on failure
      */
     void Confirm() throws BluezFailedException;

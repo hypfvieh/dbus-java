@@ -1,14 +1,13 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInProgressException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotInProgressException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -68,7 +67,7 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * <br>
  */
-public interface Transfer1 extends DBusInterface, Properties {
+public interface Transfer1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -89,7 +88,7 @@ public interface Transfer1 extends DBusInterface, Properties {
      * <br>
      * 
      * @throws BluezNotAuthorizedException when not authorized
-     * @throws BluezNotInProgressException
+     * @throws BluezNotInProgressException on BluezNotInProgressException
      */
     void Suspend() throws BluezNotAuthorizedException, BluezNotInProgressException;
 
@@ -100,7 +99,7 @@ public interface Transfer1 extends DBusInterface, Properties {
      * <br>
      * 
      * @throws BluezNotAuthorizedException when not authorized
-     * @throws BluezNotInProgressException
+     * @throws BluezNotInProgressException on BluezNotInProgressException
      */
     void Resume() throws BluezNotAuthorizedException, BluezNotInProgressException;
 

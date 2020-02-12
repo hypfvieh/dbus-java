@@ -9,11 +9,10 @@ import org.bluez.exceptions.BluezInvalidLengthException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: advertising-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -40,8 +39,18 @@ import org.freedesktop.dbus.types.Variant;
  * 					 "appearance"<br>
  * 					 "local-name"<br>
  * <br>
+ * 		array{string} SupportedSecondaryChannels [Experimental]<br>
+ * <br>
+ * 			List of supported Secondary channels. Secondary<br>
+ * 			channels can be used to advertise with the<br>
+ * 			corresponding PHY.<br>
+ * <br>
+ * 			Possible values: "1M"<br>
+ * 					 "2M"<br>
+ * 					 "Coded"<br>
+ * <br>
  */
-public interface LEAdvertisingManager1 extends DBusInterface, Properties {
+public interface LEAdvertisingManager1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -71,8 +80,8 @@ public interface LEAdvertisingManager1 extends DBusInterface, Properties {
      * 
      * @throws BluezInvalidArgumentsException when argument is invalid
      * @throws BluezAlreadyExistsException when item already exists
-     * @throws BluezInvalidLengthException
-     * @throws BluezNotPermittedException
+     * @throws BluezInvalidLengthException on BluezInvalidLengthException
+     * @throws BluezNotPermittedException on BluezNotPermittedException
      */
     void RegisterAdvertisement(DBusPath _advertisement, Map<String, Variant<?>> _options) throws BluezInvalidArgumentsException, BluezAlreadyExistsException, BluezInvalidLengthException, BluezNotPermittedException;
 

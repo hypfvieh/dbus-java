@@ -7,10 +7,10 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: media-api.txt.<br>
  * <br>
- * <b>Service:</b> unique name<br>
+ * <b>Service:</b> unique name (Server role)<br>
  * <b>Interface:</b> org.bluez.MediaEndpoint1<br>
  * <br>
  * <b>Object path:</b><br>
@@ -23,6 +23,12 @@ public interface MediaEndpoint1 extends DBusInterface {
      * <b>From bluez documentation:</b><br>
      * <br>
      * Set configuration for the transport.<br>
+     * <br>
+     * For client role transport must be set with a server<br>
+     * endpoint oject which will be configured and the<br>
+     * properties must contain the following properties:<br>
+     * <br>
+     * 	array{byte} Capabilities<br>
      * <br>
      * 
      * @param _transport
@@ -66,7 +72,6 @@ public interface MediaEndpoint1 extends DBusInterface {
      * cleanup tasks. There is no need to unregister the<br>
      * endpoint, because when this method gets called it has<br>
      * already been unregistered.<br>
-     * <br>
      * <br>
      */
     void Release();

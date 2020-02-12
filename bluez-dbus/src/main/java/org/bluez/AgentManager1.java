@@ -7,7 +7,7 @@ import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: agent-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>

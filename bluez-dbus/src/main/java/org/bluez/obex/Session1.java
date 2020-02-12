@@ -1,12 +1,11 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotSupportedException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -41,7 +40,7 @@ import org.freedesktop.dbus.interfaces.Properties;
  * <br>
  * <br>
  */
-public interface Session1 extends DBusInterface, Properties {
+public interface Session1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

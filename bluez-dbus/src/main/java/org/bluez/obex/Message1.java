@@ -1,17 +1,15 @@
 package org.bluez.obex;
 
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import java.util.Map;
-
 import org.bluez.datatypes.TwoTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezInvalidArgumentsException;
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: obex-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez.obex<br>
@@ -93,7 +91,7 @@ import org.freedesktop.dbus.types.Variant;
  * 			Message protected flag<br>
  * <br>
  */
-public interface Message1 extends DBusInterface, Properties {
+public interface Message1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

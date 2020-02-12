@@ -1,10 +1,9 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: advertising-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -52,11 +51,11 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			not be used.<br>
  * <br>
  * 			Possible values:<br>
- * 				&lt;type&gt; &lt;byte array&gt;<br>
+ * 				<type> <byte array><br>
  * 				...<br>
  * <br>
  * 			Example:<br>
- * 				&lt;Transport Discovery&gt; &lt;Organization Flags...&gt;<br>
+ * 				<Transport Discovery> <Organization Flags...><br>
  * 				0x26                   0x01         0x01...<br>
  * <br>
  * 		bool Discoverable [Experimental]<br>
@@ -110,9 +109,18 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			Timeout of the advertisement in seconds. This defines<br>
  * 			the lifetime of the advertisement.<br>
  * <br>
+ * 		string SecondaryChannel [Experimental]<br>
+ * <br>
+ * 			Secondary channel to be used. Primary channel is<br>
+ * 			always set to "1M" except when "Coded" is set.<br>
+ * <br>
+ * 			Possible value: "1M" (default)<br>
+ * 					"2M"<br>
+ * 					"Coded"<br>
+ * <br>
  * <br>
  */
-public interface LEAdvertisement1 extends DBusInterface, Properties {
+public interface LEAdvertisement1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>

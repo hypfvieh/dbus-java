@@ -10,11 +10,10 @@ import org.bluez.exceptions.BluezNotReadyException;
 import org.bluez.exceptions.BluezNotSupportedException;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: adapter-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -149,7 +148,7 @@ import org.freedesktop.dbus.types.Variant;
  * 			used by the kernel and udev.<br>
  * <br>
  */
-public interface Adapter1 extends DBusInterface, Properties {
+public interface Adapter1 extends DBusInterface {
 
     /**
      * <b>From bluez documentation:</b><br>
@@ -269,6 +268,12 @@ public interface Adapter1 extends DBusInterface, Properties {
      * 	When enabled PropertiesChanged signals will be<br>
      * 	generated for either ManufacturerData and<br>
      * 	ServiceData everytime they are discovered.<br>
+     * <br>
+     * bool Discoverable (Default: false)<br>
+     * <br>
+     * 	Make adapter discoverable while discovering,<br>
+     * 	if the adapter is already discoverable setting<br>
+     * 	this filter won't do anything.<br>
      * <br>
      * When discovery filter is set, Device objects will be<br>
      * created as new devices with matching criteria are<br>

@@ -1,10 +1,9 @@
 package org.bluez;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 
 /**
- * File generated - 2018-07-25.<br>
+ * File generated - 2020-02-12.<br>
  * Based on bluez Documentation: gatt-api.txt.<br>
  * <br>
  * <b>Service:</b> org.bluez<br>
@@ -35,9 +34,17 @@ import org.freedesktop.dbus.interfaces.Properties;
  * 			Array of object paths representing the included<br>
  * 			services of this service.<br>
  * <br>
+ * 		uint16 Handle [read-write, optional] (Server Only)<br>
+ * <br>
+ * 			Service handle. When available in the server it<br>
+ * 			would attempt to use to allocate into the database<br>
+ * 			which may fail, to auto allocate the value 0x0000<br>
+ * 			shall be used which will cause the allocated handle to<br>
+ * 			be set once registered.<br>
+ * <br>
  * <br>
  * <br>
  */
-public interface GattService1 extends DBusInterface, Properties {
+public interface GattService1 extends DBusInterface {
 
 }
