@@ -192,7 +192,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 names.put(c.unique, c);
             }
 
-            LOGGER.warn("Client {} registered", c.unique);
+            LOGGER.info("Client {} registered", c.unique);
 
             try {
                 send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", c.unique));
