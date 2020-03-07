@@ -5,13 +5,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
-import org.freedesktop.dbus.MessageReader;
-import org.freedesktop.dbus.MessageWriter;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.spi.IMessageReader;
+import org.freedesktop.dbus.spi.IMessageWriter;
+import org.freedesktop.dbus.spi.ISocketProvider;
+import org.freedesktop.dbus.spi.InputStreamMessageReader;
+import org.freedesktop.dbus.spi.OutputStreamMessageWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +29,18 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractTransport implements Closeable {
 
+    ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
+    
     private final Logger     logger;
     private final BusAddress address;
 
     private SASL.SaslMode    saslMode;
 
     private int              saslAuthMode;
-    private MessageReader    inputReader;
-    private MessageWriter    outputWriter;
+    private IMessageReader    inputReader;
+    private IMessageWriter    outputWriter;
+    
+    private boolean fileDescriptorSupported;
 
     AbstractTransport(BusAddress _address) {
         address = _address;
@@ -52,6 +62,9 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException on write error or if output was already closed or null
      */
     public void writeMessage(Message _msg) throws IOException {
+        if (!fileDescriptorSupported && Message.ArgumentType.FILEDESCRIPTOR == _msg.getType()) {
+            throw new IllegalArgumentException("File descriptors are not supported!");
+        }
         if (outputWriter != null && !outputWriter.isClosed()) {
             outputWriter.writeMessage(_msg);
         } else {
@@ -79,7 +92,14 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException when connection fails
      */
     abstract void connect() throws IOException;
-     
+    
+    /**
+     * Method to indicate if passing of file descriptors is allowed.
+     *  
+     * @return true to allow FD passing, false otherwise
+     */
+    abstract boolean hasFileDescriptorSupport();
+    
     /**
      * Helper method to authenticate to DBus using SASL.
      * 
@@ -89,19 +109,49 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException on any error
      */
     protected void authenticate(OutputStream _out, InputStream _in, Socket _sock) throws IOException {
-        if (!(new SASL()).auth(saslMode, saslAuthMode, address.getGuid(), _out, _in, _sock)) {
+        SASL sasl = new SASL(hasFileDescriptorSupport());
+        if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _out, _in, _sock)) {
             _out.close();
             throw new IOException("Failed to auth");
         }
+        fileDescriptorSupported = sasl.isFileDescriptorSupported();
     }
 
+    /**
+     * Setup message reader/writer.
+     * Will look for SPI provider first, if none is found default implementation is used.
+     * The default implementation does not support file descriptor passing!
+     * 
+     * @param _socket socket to use
+     */
+    protected void setInputOutput(Socket _socket) {
+        ISocketProvider provider = null;
 
-    protected void setOutputWriter(OutputStream _outputStream) {
-        outputWriter = new MessageWriter(_outputStream);        
-    }
+        try {
+            Iterator<ISocketProvider> providers = spiLoader.iterator();
+            boolean hasProvider = false;
 
-    protected void setInputReader(InputStream _inputStream) {
-        inputReader = new MessageReader(_inputStream);
+            while (provider == null && providers.hasNext()) {
+                provider = providers.next();
+
+                provider.setFileDescriptorSupport(hasFileDescriptorSupport() && fileDescriptorSupported);
+                inputReader = provider.createReader(_socket);
+                outputWriter = provider.createWriter(_socket);
+                hasProvider = true;
+                break;
+            }
+
+            if (!hasProvider) {
+                inputReader = new InputStreamMessageReader(_socket.getInputStream());
+                outputWriter = new OutputStreamMessageWriter(_socket.getOutputStream());
+            }
+            
+        } catch (ServiceConfigurationError _ex) {
+            logger.error("Could not initialize service provider.", _ex);
+        } catch (IOException _ex) {
+            logger.error("Could not initialize default message reader/writer.", _ex);
+        }
+        
     }
     
     protected int getSaslAuthMode() {

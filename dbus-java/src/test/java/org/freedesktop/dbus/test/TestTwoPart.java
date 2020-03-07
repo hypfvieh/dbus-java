@@ -52,7 +52,9 @@ public class TestTwoPart {
             } catch (InterruptedException ex) {
             }
 
-            conn.disconnect();
+            if (conn != null) {
+                conn.disconnect();
+            }
         } catch (DBusException _ex) {
             _ex.printStackTrace();
             fail("Exception in client");

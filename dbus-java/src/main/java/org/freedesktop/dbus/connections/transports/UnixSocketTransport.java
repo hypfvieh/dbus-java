@@ -14,6 +14,7 @@ import jnr.unixsocket.UnixSocketOptions;
 
 /**
  * Transport type representing a transport connection to a unix socket.
+ * 
  * @author hypfvieh
  * @since v3.2.0 - 2019-02-08
  */
@@ -22,8 +23,8 @@ public class UnixSocketTransport extends AbstractTransport {
     private UnixServerSocketChannel unixServerSocket;
 
     UnixSocketTransport(BusAddress _address) throws IOException {
-        super(_address); 
-        
+        super(_address);
+
         if (_address.isAbstract()) {
             unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
         } else if (_address.hasPath()) {
@@ -31,12 +32,18 @@ public class UnixSocketTransport extends AbstractTransport {
         } else {
             throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
         }
-        
+
         setSaslAuthMode(SASL.AUTH_EXTERNAL);
+    }
+
+    @Override
+    boolean hasFileDescriptorSupport() {
+        return true; // file descriptor passing allowed when using UNIX_SOCK
     }
 
     /**
      * Establish a connection to DBus using unix sockets.
+     * 
      * @throws IOException on error
      */
     @Override
@@ -52,27 +59,25 @@ public class UnixSocketTransport extends AbstractTransport {
         }
 
         us.configureBlocking(true);
-        
+
         // MacOS doesn't support SO_PASSCRED
         if (!SystemUtil.isMacOs()) {
             us.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
-        setOutputWriter(us.socket().getOutputStream());
-        setInputReader(us.socket().getInputStream());
-        
+        setInputOutput(us.socket());
+
         authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
     }
-
 
     @Override
     public void close() throws IOException {
         getLogger().debug("Disconnecting Transport");
-        
+
         if (unixServerSocket != null && unixServerSocket.isOpen()) {
             unixServerSocket.close();
         }
-        
+
         super.close();
     }
 }

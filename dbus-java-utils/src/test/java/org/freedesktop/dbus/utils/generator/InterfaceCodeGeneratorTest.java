@@ -44,7 +44,7 @@ class InterfaceCodeGeneratorTest {
     @Test
     void testCreateNetworkManagerWirelessInterface() {
         String objectPath = "/";
-        String busName = "org.freedesktop.NetworkManager.Device";
+        String busName = "org.freedesktop.NetworkManager.Device.Wireless";
         boolean ignoreDtd = true;
 
         Logger logger = LoggerFactory.getLogger(InterfaceCodeGenerator.class);

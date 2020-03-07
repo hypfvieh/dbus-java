@@ -10,9 +10,8 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.spi;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -21,13 +20,13 @@ import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageWriter implements Closeable {
+public class OutputStreamMessageWriter implements IMessageWriter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private OutputStream outputStream;
 
-    public MessageWriter(OutputStream _out) {
+    public OutputStreamMessageWriter(OutputStream _out) {
         this.outputStream = _out;
     }
 
