@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
@@ -980,7 +981,13 @@ public final class DBusConnection extends AbstractConnection {
         	        });
                 
                 // remove all exported objects before disconnecting
-                getExportedObjects().keySet().stream().filter(f -> f != null).forEach(key -> unExportObject(key));
+                Map<String, ExportedObject> exportedObjects = getExportedObjects();
+                synchronized (exportedObjects) {
+                    List<String> exportedKeys = exportedObjects.keySet().stream().filter(f -> f != null).collect(Collectors.toList());
+                    for (String key : exportedKeys) {
+                        unExportObject(key);
+                    }
+                }
 
         	};
 
