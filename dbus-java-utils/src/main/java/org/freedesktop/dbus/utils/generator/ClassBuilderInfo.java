@@ -3,6 +3,7 @@ package org.freedesktop.dbus.utils.generator;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -409,6 +410,51 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassMember {
+    	
+    	/** Set of reserved words in Java. */
+    	private static final Set<String> RESERVED = new HashSet<>();
+    	static {
+    		RESERVED.add("new");
+    		RESERVED.add("void");
+    		RESERVED.add("final");
+    		RESERVED.add("private");
+    		RESERVED.add("protected");
+    		RESERVED.add("public");
+    		RESERVED.add("default");
+    		RESERVED.add("case");
+    		RESERVED.add("switch");
+    		RESERVED.add("if");
+    		RESERVED.add("else");
+    		RESERVED.add("for");
+    		RESERVED.add("while");
+    		RESERVED.add("do");
+    		RESERVED.add("static");
+    		RESERVED.add("return");
+    		RESERVED.add("break");
+    		RESERVED.add("continue");
+    		RESERVED.add("goto");
+    		
+    		RESERVED.add("extends");
+    		RESERVED.add("throw");
+    		RESERVED.add("throws");
+    		RESERVED.add("implements");
+    		RESERVED.add("class");
+    		RESERVED.add("interface");
+    		RESERVED.add("package");
+    		RESERVED.add("import");
+
+    		RESERVED.add("boolean");
+    		RESERVED.add("null");
+
+    		RESERVED.add("byte");
+    		RESERVED.add("int");
+    		RESERVED.add("long");
+    		RESERVED.add("double");
+    		RESERVED.add("float");
+    		RESERVED.add("short");
+
+    	}
+    	
     	/** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
@@ -421,7 +467,8 @@ public class ClassBuilderInfo {
         private final List<String> annotations = new ArrayList<>();
 
         public ClassMember(String _name, String _type, boolean _finalMember) {
-            name = _name;
+            // repair reserved words by adding 'Param' as appendix
+        	name = RESERVED.contains(_name) ? _name + "Param" : _name;
             type = _type;
             finalMember = _finalMember;
         }
