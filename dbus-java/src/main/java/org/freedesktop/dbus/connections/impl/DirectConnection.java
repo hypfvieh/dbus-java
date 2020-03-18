@@ -293,14 +293,14 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
-        if (null == v) {
-            v = new ConcurrentLinkedQueue<>();
-            v.add(handler);
-            getHandledSignals().put(key, v);
-        } else {
-            v.add(handler);
-        }
+       
+        Queue<DBusSigHandler<? extends DBusSignal>> v = 
+                getHandledSignals().computeIfAbsent(key, val -> {
+                    Queue<DBusSigHandler<? extends DBusSignal>> l = new ConcurrentLinkedQueue<>();
+                    return l;
+                });
+    
+        v.add(handler);
     }
 
     @Override
@@ -318,14 +318,13 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected void addGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
-        if (null == v) {
-            v = new ConcurrentLinkedQueue<>();
-            v.add(handler);
-            getGenericHandledSignals().put(key, v);
-        } else {
-            v.add(handler);
-        }
+        Queue<DBusSigHandler<DBusSignal>> v = 
+                getGenericHandledSignals().computeIfAbsent(key, val -> {
+                    Queue<DBusSigHandler<DBusSignal>> l = new ConcurrentLinkedQueue<>();
+                    return l;
+                });
+
+        v.add(handler);
     }
 
     @Override

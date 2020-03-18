@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -893,24 +894,28 @@ public final class DBusConnection extends AbstractConnection {
         Objects.requireNonNull(_rule, "Match rule cannot be null");
         Objects.requireNonNull(_handler, "Handler cannot be null");
 
+        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
+        
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
 
-        if (null == dbusSignalList) {
-            dbusSignalList = new ConcurrentLinkedQueue<>();
-            dbusSignalList.add(_handler);
-            getHandledSignals().put(key, dbusSignalList);
+        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = 
+            getHandledSignals().computeIfAbsent(key, v -> {
+                Queue<DBusSigHandler<? extends DBusSignal>> signalList  = new ConcurrentLinkedQueue<>();
+                addMatch.set(true);
+                return signalList;
+            });
 
-            // add match rule if this rule is new
+        // add handler to signal list
+        dbusSignalList.add(_handler);
+
+        // add match rule if this rule is new
+        if (addMatch.get()) {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException dbee) {
                 logger.debug("Cannot add match rule: " + _rule.toString(), dbee);
                 throw new DBusException("Cannot add match rule.", dbee);
             }
-        } else {
-            // do not call AddMatch here, because the rule was already added before
-            dbusSignalList.add(_handler);
         }
     }
 
@@ -1047,21 +1052,26 @@ public final class DBusConnection extends AbstractConnection {
     @Override
     public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
-        if (null == genericSignalsList) {
-            genericSignalsList = new ConcurrentLinkedQueue<>();
-            genericSignalsList.add(_handler);
-            getGenericHandledSignals().put(key, genericSignalsList);
+        
+        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
 
+        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = 
+                getGenericHandledSignals().computeIfAbsent(key, v -> {
+                    Queue<DBusSigHandler<DBusSignal>> signalsList = new ConcurrentLinkedQueue<>();
+                    addMatch.set(true);
+
+                    return signalsList;
+                });
+
+        genericSignalsList.add(_handler);
+
+        if (addMatch.get()) {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException dbee) {
                 logger.debug("", dbee);
                 throw new DBusException(dbee.getMessage());
             }
-
-        } else {
-            genericSignalsList.add(_handler);
         }
     }
 
