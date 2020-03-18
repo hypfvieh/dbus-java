@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -791,20 +793,19 @@ public final class DBusConnection extends AbstractConnection {
             throws DBusException {
 
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
-            if (null != dbusSignalList) {
-                dbusSignalList.remove(_handler);
-                if (dbusSignalList.isEmpty()) {
-                    getHandledSignals().remove(key);
-                    try {
-                        dbus.RemoveMatch(_rule.toString());
-                    } catch (NotConnected exNc) {
-                        logger.debug("No connection.", exNc);
-                    } catch (DBusExecutionException dbee) {
-                        logger.debug("", dbee);
-                        throw new DBusException(dbee);
-                    }
+        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
+        
+        if (null != dbusSignalList) {
+            dbusSignalList.remove(_handler);
+            if (dbusSignalList.isEmpty()) {
+                getHandledSignals().remove(key);
+                try {
+                    dbus.RemoveMatch(_rule.toString());
+                } catch (NotConnected exNc) {
+                    logger.debug("No connection.", exNc);
+                } catch (DBusExecutionException dbee) {
+                    logger.debug("", dbee);
+                    throw new DBusException(dbee);
                 }
             }
         }
@@ -893,24 +894,23 @@ public final class DBusConnection extends AbstractConnection {
         Objects.requireNonNull(_handler, "Handler cannot be null");
 
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
-            if (null == dbusSignalList) {
-                dbusSignalList = new ArrayList<>();
-                dbusSignalList.add(_handler);
-                getHandledSignals().put(key, dbusSignalList);
+        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
 
-                // add match rule if this rule is new
-                try {
-                    dbus.AddMatch(_rule.toString());
-                } catch (DBusExecutionException dbee) {
-                    logger.debug("Cannot add match rule: " + _rule.toString(), dbee);
-                    throw new DBusException("Cannot add match rule.", dbee);
-                }
-            } else {
-                // do not call AddMatch here, because the rule was already added before
-                dbusSignalList.add(_handler);
+        if (null == dbusSignalList) {
+            dbusSignalList = new ConcurrentLinkedQueue<>();
+            dbusSignalList.add(_handler);
+            getHandledSignals().put(key, dbusSignalList);
+
+            // add match rule if this rule is new
+            try {
+                dbus.AddMatch(_rule.toString());
+            } catch (DBusExecutionException dbee) {
+                logger.debug("Cannot add match rule: " + _rule.toString(), dbee);
+                throw new DBusException("Cannot add match rule.", dbee);
             }
+        } else {
+            // do not call AddMatch here, because the rule was already added before
+            dbusSignalList.add(_handler);
         }
     }
 
@@ -1024,20 +1024,18 @@ public final class DBusConnection extends AbstractConnection {
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        synchronized (getGenericHandledSignals()) {
-            List<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
-            if (null != genericSignalsList) {
-                genericSignalsList.remove(_handler);
-                if (genericSignalsList.isEmpty()) {
-                    getGenericHandledSignals().remove(key);
-                    try {
-                        dbus.RemoveMatch(_rule.toString());
-                    } catch (NotConnected exNc) {
-                        logger.debug("No connection.", exNc);
-                    } catch (DBusExecutionException dbee) {
-                        logger.debug("", dbee);
-                        throw new DBusException(dbee);
-                    }
+        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
+        if (null != genericSignalsList) {
+            genericSignalsList.remove(_handler);
+            if (genericSignalsList.isEmpty()) {
+                getGenericHandledSignals().remove(key);
+                try {
+                    dbus.RemoveMatch(_rule.toString());
+                } catch (NotConnected exNc) {
+                    logger.debug("No connection.", exNc);
+                } catch (DBusExecutionException dbee) {
+                    logger.debug("", dbee);
+                    throw new DBusException(dbee);
                 }
             }
         }
@@ -1049,23 +1047,21 @@ public final class DBusConnection extends AbstractConnection {
     @Override
     public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        synchronized (getGenericHandledSignals()) {
-            List<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
-            if (null == genericSignalsList) {
-                genericSignalsList = new ArrayList<>();
-                genericSignalsList.add(_handler);
-                getGenericHandledSignals().put(key, genericSignalsList);
+        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
+        if (null == genericSignalsList) {
+            genericSignalsList = new ConcurrentLinkedQueue<>();
+            genericSignalsList.add(_handler);
+            getGenericHandledSignals().put(key, genericSignalsList);
 
-                try {
-                    dbus.AddMatch(_rule.toString());
-                } catch (DBusExecutionException dbee) {
-                    logger.debug("", dbee);
-                    throw new DBusException(dbee.getMessage());
-                }
-
-            } else {
-                genericSignalsList.add(_handler);
+            try {
+                dbus.AddMatch(_rule.toString());
+            } catch (DBusExecutionException dbee) {
+                logger.debug("", dbee);
+                throw new DBusException(dbee.getMessage());
             }
+
+        } else {
+            genericSignalsList.add(_handler);
         }
     }
 

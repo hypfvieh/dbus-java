@@ -101,37 +101,37 @@ public abstract class AbstractConnection implements Closeable {
 
     private final Logger        logger = LoggerFactory.getLogger(getClass());
 
-    private final ObjectTree                                                   objectTree;
+    private final ObjectTree                                                    objectTree;
 
-    private final Map<String, ExportedObject>                                  exportedObjects;
-    private final Map<DBusInterface, RemoteObject>                             importedObjects;
+    private final Map<String, ExportedObject>                                   exportedObjects;
+    private final Map<DBusInterface, RemoteObject>                              importedObjects;
 
-    private final PendingCallbackManager                                       callbackManager;
+    private final PendingCallbackManager                                        callbackManager;
 
-    private final FallbackContainer                                            fallbackContainer;
+    private final FallbackContainer                                             fallbackContainer;
 
-    private final Queue<Error>                                                 pendingErrorQueue;
+    private final Queue<Error>                                                  pendingErrorQueue;
 
-    private final Map<SignalTuple, List<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    private final Map<SignalTuple, List<DBusSigHandler<DBusSignal>>>           genericHandledSignals;
-    private final Map<Long, MethodCall>                                        pendingCalls;
+    private final Map<SignalTuple, Queue<DBusSigHandler<? extends DBusSignal>>> handledSignals;
+    private final Map<SignalTuple, Queue<DBusSigHandler<DBusSignal>>>           genericHandledSignals;
+    private final Map<Long, MethodCall>                                         pendingCalls;
 
-    private final IncomingMessageThread                                        readerThread;
-    //private final SenderThread                                                 senderThread;
+    private final IncomingMessageThread                                         readerThread;
+    // private final SenderThread senderThread;
 
-    private final BusAddress                                                   busAddress;
+    private final BusAddress                                                    busAddress;
 
-    private final ExecutorService                                              senderService;
+    private final ExecutorService                                               senderService;
 
-    private volatile boolean                                                   run;
+    private volatile boolean                                                    run;
 
-    private boolean                                                            weakreferences   = false;
-    private boolean                                                            connected        = false;
+    private boolean                                                             weakreferences       = false;
+    private boolean                                                             connected            = false;
 
-    private AbstractTransport                                                  transport;
-    private volatile ThreadPoolExecutor                                        workerThreadPool;
-    private final ReadWriteLock                                                workerThreadPoolLock = new ReentrantReadWriteLock();
-
+    private AbstractTransport                                                   transport;
+    private volatile ThreadPoolExecutor                                         workerThreadPool;
+    private final ReadWriteLock                                                 workerThreadPoolLock =
+            new ReentrantReadWriteLock();
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
         exportedObjects = new HashMap<>();
@@ -488,9 +488,9 @@ public abstract class AbstractConnection implements Closeable {
         DBusMatchRule rule = new DBusMatchRule(signal);
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
         synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
+            Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
             if (null == v) {
-                v = new ArrayList<>();
+                v = new ConcurrentLinkedQueue<>();
                 v.add(handler);
                 getHandledSignals().put(key, v);
             } else {
@@ -860,35 +860,33 @@ public abstract class AbstractConnection implements Closeable {
         List<DBusSigHandler<? extends DBusSignal>> handlers = new ArrayList<>();
         List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
 
-        synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> t;
-            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
-            if (null != t) {
-                handlers.addAll(t);
+        Queue<DBusSigHandler<? extends DBusSignal>> t;
+        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
+        if (null != t) {
+            handlers.addAll(t);
+        }
+        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
+        if (null != t) {
+            handlers.addAll(t);
+        }
+        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
+        if (null != t) {
+            handlers.addAll(t);
+        }
+        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
+        if (null != t) {
+            handlers.addAll(t);
             }
-            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
-            if (null != t) {
-                handlers.addAll(t);
-            }
-            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
-            if (null != t) {
-                handlers.addAll(t);
-            }
-            t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
-            if (null != t) {
-                handlers.addAll(t);
+
+        Queue<DBusSigHandler<DBusSignal>> gt;
+        Set<SignalTuple> allTuples = SignalTuple.getAllPossibleTuples(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource());
+        for( SignalTuple tuple : allTuples ){
+           gt = getGenericHandledSignals().get(tuple);
+            if (null != gt) {
+                genericHandlers.addAll(gt);
             }
         }
-        synchronized (getGenericHandledSignals()) {
-            List<DBusSigHandler<DBusSignal>> t;
-            Set<SignalTuple> allTuples = SignalTuple.getAllPossibleTuples(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource());
-            for( SignalTuple tuple : allTuples ){
-                t = getGenericHandledSignals().get(tuple);
-                if (null != t) {
-                    genericHandlers.addAll(t);
-                }
-            }
-        }
+
         if (handlers.isEmpty() && genericHandlers.isEmpty()) {
             return;
         }
@@ -1191,11 +1189,11 @@ public abstract class AbstractConnection implements Closeable {
         return pendingErrorQueue;
     }
 
-    protected Map<SignalTuple, List<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
+    protected Map<SignalTuple, Queue<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
         return handledSignals;
     }
 
-    protected Map<SignalTuple, List<DBusSigHandler<DBusSignal>>> getGenericHandledSignals() {
+    protected Map<SignalTuple, Queue<DBusSigHandler<DBusSignal>>> getGenericHandledSignals() {
         return genericHandledSignals;
     }
 

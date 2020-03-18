@@ -21,7 +21,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.DBusMatchRule;
@@ -279,13 +281,11 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
-            if (null != v) {
-                v.remove(handler);
-                if (0 == v.size()) {
-                    getHandledSignals().remove(key);
-                }
+        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
+        if (null != v) {
+            v.remove(handler);
+            if (0 == v.size()) {
+                getHandledSignals().remove(key);
             }
         }
     }
@@ -293,28 +293,24 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (getHandledSignals()) {
-            List<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
-            if (null == v) {
-                v = new ArrayList<>();
-                v.add(handler);
-                getHandledSignals().put(key, v);
-            } else {
-                v.add(handler);
-            }
+        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
+        if (null == v) {
+            v = new ConcurrentLinkedQueue<>();
+            v.add(handler);
+            getHandledSignals().put(key, v);
+        } else {
+            v.add(handler);
         }
     }
 
     @Override
     protected void removeGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (getGenericHandledSignals()) {
-            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
-            if (null != v) {
-                v.remove(handler);
-                if (0 == v.size()) {
-                    getGenericHandledSignals().remove(key);
-                }
+        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+        if (null != v) {
+            v.remove(handler);
+            if (0 == v.size()) {
+                getGenericHandledSignals().remove(key);
             }
         }
     }
@@ -322,15 +318,13 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected void addGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        synchronized (getGenericHandledSignals()) {
-            List<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
-            if (null == v) {
-                v = new ArrayList<>();
-                v.add(handler);
-                getGenericHandledSignals().put(key, v);
-            } else {
-                v.add(handler);
-            }
+        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+        if (null == v) {
+            v = new ConcurrentLinkedQueue<>();
+            v.add(handler);
+            getGenericHandledSignals().put(key, v);
+        } else {
+            v.add(handler);
         }
     }
 
