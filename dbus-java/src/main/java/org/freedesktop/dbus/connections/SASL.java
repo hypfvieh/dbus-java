@@ -530,6 +530,11 @@ public class SASL {
                         byte[] buf = new byte[1];
                         if (null == us) {
                             in.read(buf);
+                            if (0 != buf[0]) {
+                                state = SaslAuthState.FAILED;
+                            } else {
+                                state = SaslAuthState.WAIT_AUTH;
+                            }                                
                         } else {
     
                             Credentials credentials;

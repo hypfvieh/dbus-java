@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
@@ -296,6 +297,9 @@ public final class DBusConnection extends AbstractConnection {
      * @throws DBusException if machine-id could not be found
      */
     public static String getDbusMachineId() throws DBusException {
+        if (isWindows()) {
+            return getDbusMachineIdOnWindows();
+        }
     	File uuidfile = determineMachineIdFile();
         String uuid = FileIoUtil.readFileToString(uuidfile);
         if (StringUtil.isEmpty(uuid)) {
@@ -314,6 +318,16 @@ public final class DBusConnection extends AbstractConnection {
 				.filter(f -> f.exists())
 				.findFirst()
 				.orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
+	}
+	
+    private static boolean isWindows() {
+        String osName = System.getProperty("os.name");
+        return osName == null ? false : osName.toLowerCase().startsWith("windows");
+    }
+	
+	private static String getDbusMachineIdOnWindows() {
+	    // we create a fake id on windows
+	    return String.format("%s@%s", SystemUtil.getCurrentUser(), SystemUtil.getHostName());
 	}
 
     private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
@@ -985,7 +999,13 @@ public final class DBusConnection extends AbstractConnection {
         	        });
                 
                 // remove all exported objects before disconnecting
-                getExportedObjects().keySet().stream().filter(f -> f != null).forEach(key -> unExportObject(key));
+                Map<String, ExportedObject> exportedObjects = getExportedObjects();
+                synchronized (exportedObjects) {
+                    List<String> exportedKeys = exportedObjects.keySet().stream().filter(f -> f != null).collect(Collectors.toList());
+                    for (String key : exportedKeys) {
+                        unExportObject(key);
+                    }
+                }
 
         	};
 

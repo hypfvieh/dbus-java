@@ -192,7 +192,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 names.put(c.unique, c);
             }
 
-            LOGGER.warn("Client {} registered", c.unique);
+            LOGGER.info("Client {} registered", c.unique);
 
             try {
                 send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", c.unique));
@@ -285,7 +285,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_EXISTS;
             } else {
 
-                LOGGER.warn("Client {} acquired name {}", c.unique, name);
+                LOGGER.info("Client {} acquired name {}", c.unique, name);
 
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
                 try {
@@ -316,7 +316,7 @@ public class DBusDaemon extends Thread implements Closeable {
             if (!exists) {
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_NON_EXISTANT;
             } else {
-                LOGGER.warn("Client {} acquired name {}", c.unique, name);
+                LOGGER.info("Client {} acquired name {}", c.unique, name);
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_RELEASED;
                 try {
                     send(c, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameLost", "s", name));
@@ -954,7 +954,7 @@ public class DBusDaemon extends Thread implements Closeable {
         }
 
         // start the daemon
-        LOGGER.warn("Binding to {}", addr);
+        LOGGER.info("Binding to {}", addr);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon()) {
 	        daemon.setAddress(address);
 	        daemon.startInForeground();
