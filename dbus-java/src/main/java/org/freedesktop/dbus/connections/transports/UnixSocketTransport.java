@@ -65,9 +65,9 @@ public class UnixSocketTransport extends AbstractTransport {
             us.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
-        setInputOutput(us.socket());
-
         authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
+
+        setInputOutput(us.socket());
     }
 
     @Override

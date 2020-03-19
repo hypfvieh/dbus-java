@@ -125,29 +125,33 @@ public abstract class AbstractTransport implements Closeable {
      * @param _socket socket to use
      */
     protected void setInputOutput(Socket _socket) {
-        ISocketProvider provider = null;
-
         try {
-            Iterator<ISocketProvider> providers = spiLoader.iterator();
-            boolean hasProvider = false;
-
-            while (provider == null && providers.hasNext()) {
-                provider = providers.next();
+            for( ISocketProvider provider : spiLoader ){
+                logger.debug( "Found ISocketProvider {}", provider );
 
                 provider.setFileDescriptorSupport(hasFileDescriptorSupport() && fileDescriptorSupported);
                 inputReader = provider.createReader(_socket);
                 outputWriter = provider.createWriter(_socket);
-                hasProvider = true;
-                break;
+                if( inputReader != null && outputWriter != null ){
+                    logger.debug( "Using ISocketProvider {}", provider );
+                    break;
+                }
             }
+        } catch (ServiceConfigurationError _ex) {
+            logger.error("Could not initialize service provider.", _ex);
+        } catch (IOException _ex) {
+            logger.error("Could not initialize alternative message reader/writer.", _ex);
+        }
 
-            if (!hasProvider) {
+        try{
+            if( inputReader == null || outputWriter == null ){
+                logger.debug( "No alternative ISocketProvider found, using built-in implementation.  "
+                        + "inputReader = {}, outputWriter = {}",
+                        inputReader,
+                        outputWriter );
                 inputReader = new InputStreamMessageReader(_socket.getInputStream());
                 outputWriter = new OutputStreamMessageWriter(_socket.getOutputStream());
             }
-            
-        } catch (ServiceConfigurationError _ex) {
-            logger.error("Could not initialize service provider.", _ex);
         } catch (IOException _ex) {
             logger.error("Could not initialize default message reader/writer.", _ex);
         }
