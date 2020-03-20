@@ -1,0 +1,32 @@
+<project	xmlns="http://maven.apache.org/DECORATION/1.4.0"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 https://maven.apache.org/xsd/decoration-1.4.0.xsd"
+			name="dbus-java">
+
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.8</version>
+  </skin>
+
+    <custom>
+    <fluidoSkin>
+    </fluidoSkin>
+  </custom>
+
+<version position="right"/>
+
+<body>
+    <menu name="Overview">
+        <item name="Home" href="/index.html" />
+        <item name="Quickstart" href="/quick-start.html" />
+        <item name="Code Generation" href="/code-generation.html" />
+        <item name="Exporting Objects" href="/exporting-objects.html" />
+        <item name="Calling Remote Objects" href="/remote-objects.html" />
+    </menu>
+    <menu ref="reports"/>
+    <menu ref="modules"/>
+</body>
+
+</project>
+
