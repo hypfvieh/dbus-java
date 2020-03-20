@@ -9,6 +9,10 @@
     <version>1.8</version>
   </skin>
 
+  <bannerLeft>
+    <name>dbus-java</name>
+  </bannerLeft>
+  
     <custom>
     <fluidoSkin>
     </fluidoSkin>
@@ -17,6 +21,11 @@
 <version position="right"/>
 
 <body>
+    <links>
+      <item name="GitHub Repository" href="https://www.github.com/hypfvieh/dbus-java" />
+      <item name="Maven Central" href="https://search.maven.org/search?q=g:com.github.hypfvieh%20dbus-java" />
+    </links>
+    
     <menu name="Overview">
         <item name="Home" href="/index.html" />
         <item name="Quickstart" href="/quick-start.html" />
