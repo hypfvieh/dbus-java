@@ -81,16 +81,11 @@
                     </execution>
                 </executions>
             </plugin>
-
-                            <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.0</version>
-                    <configuration>
-<!--                        <templateDirectory>${basedir}/src/site</templateDirectory>
-                        <template>maven-site.vm</template>-->
-                    </configuration>
-                </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.9.0</version>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -133,9 +128,8 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
-                
-
             </plugins>
+            
         </pluginManagement>
 
     </build>
@@ -149,12 +143,6 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <downloadUrl>https://github.com/hypfvieh/dbus-java</downloadUrl>
-        <site>
-            <id>github</id>
-            <name>site</name>
-            <url>http://localhost:8080</url>
-        </site>
     </distributionManagement>
 
     <dependencyManagement>
