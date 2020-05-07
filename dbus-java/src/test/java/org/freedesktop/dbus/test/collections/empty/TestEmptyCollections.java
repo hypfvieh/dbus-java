@@ -107,7 +107,7 @@ class TestEmptyCollections {
 		serverconn.disconnect();
 		
 		// give the dbus daemon some time to unregister our calls before restarting test
-		Thread.sleep(300L);
+		Thread.sleep(500L);
 	}
 
 	/**
