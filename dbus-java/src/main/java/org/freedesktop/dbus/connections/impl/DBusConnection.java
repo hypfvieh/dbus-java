@@ -481,16 +481,16 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException(dbee.getMessage());
         }
         switch (rv.intValue()) {
-        case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-            break;
-        case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-            throw new DBusException("Failed to register bus name");
-        case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
-            throw new DBusException("Failed to register bus name");
-        case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-            break;
-        default:
-            break;
+            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
+                break;
+            case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
+                throw new DBusException("Failed to register bus name");
+            case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
+                throw new DBusException("Failed to register bus name");
+            case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
+                break;
+            default:
+                break;
         }
         synchronized (this.busnames) {
             this.busnames.add(_busname);
@@ -983,20 +983,22 @@ public final class DBusConnection extends AbstractConnection {
         	    // this is required as the list also contains internal names like ":1.11"
         	    // it is also required to put the results in a new list, otherwise we would get a
         	    // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
-                List<String> lBusNames = busnames.stream()
-        	        .filter(busName -> busName != null && !(!busName.matches(BUSNAME_REGEX) || busName.length() > MAX_NAME_LENGTH))
-        	        .collect(Collectors.toList());
-
-
-                lBusNames.forEach(busName -> {
-                        try {
-                            releaseBusName(busName);
-
-                        } catch (DBusException _ex) {
-                            logger.error("Error while releasing busName '" + busName + "'.", _ex);
-                        }
-
-        	        });
+        	    synchronized (busnames) {
+                    List<String> lBusNames = busnames.stream()
+            	        .filter(busName -> busName != null && !(!busName.matches(BUSNAME_REGEX) || busName.length() > MAX_NAME_LENGTH))
+            	        .collect(Collectors.toList());
+    
+    
+                    lBusNames.forEach(busName -> {
+                            try {
+                                releaseBusName(busName);
+    
+                            } catch (DBusException _ex) {
+                                logger.error("Error while releasing busName '" + busName + "'.", _ex);
+                            }
+    
+            	        });
+        	    }
                 
                 // remove all exported objects before disconnecting
                 Map<String, ExportedObject> exportedObjects = getExportedObjects();
