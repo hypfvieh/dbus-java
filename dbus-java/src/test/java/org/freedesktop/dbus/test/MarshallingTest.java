@@ -75,7 +75,7 @@ public class MarshallingTest {
         }
         
         // create a message from dumped data (including header and body)
-        Message msg = MessageFactory.createMessage(Message.MessageType.SIGNAL, streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_buf.bin"), streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_header.bin"), streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_body.bin"));
+        Message msg = MessageFactory.createMessage(Message.MessageType.SIGNAL, streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_buf.bin"), streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_header.bin"), streamReader("src/test/resources/" + getClass().getSimpleName() + "/connman_sample_body.bin"), null);
         
         // use the Marshalling tools to get the parameters for the ServicesChanged signal
         Object[] params = Marshalling.deSerializeParameters(msg.getParameters(), types, null);

@@ -106,7 +106,7 @@ public class EmbeddedDBusDaemon implements Closeable {
         // accept new connections
         while (daemonThread.isRunning()) {
              UnixSocketChannel s = uss.accept();
-            if ((new SASL()).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
+            if ((new SASL(true)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
                 // s.setBlocking(false);
                 daemonThread.addSock(s.socket());
             } else {
@@ -130,7 +130,7 @@ public class EmbeddedDBusDaemon implements Closeable {
                 Socket s = ss.accept();
                 boolean authOK = false;
                 try {
-                    authOK = (new SASL()).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), null);
+                    authOK = (new SASL(false)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), null);
                 } catch (Exception e) {
                     LOGGER.debug("", e);
                 }

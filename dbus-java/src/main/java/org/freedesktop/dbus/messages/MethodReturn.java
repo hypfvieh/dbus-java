@@ -14,9 +14,11 @@ package org.freedesktop.dbus.messages;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.freedesktop.dbus.FileDescriptor;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.types.UInt32;
 
 public class MethodReturn extends Message {
     
@@ -67,6 +69,22 @@ public class MethodReturn extends Message {
             });
             getHeaders().put(Message.HeaderField.SIGNATURE, sig);
             setArgs(args);
+        }
+
+        int totalFileDes = 0;
+        for( int x = 0; x < args.length; x++ ){
+            if( args[x] instanceof FileDescriptor ){
+                totalFileDes++;
+            }
+        }
+
+        if( totalFileDes > 0 ){
+            getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
+            hargs.add(new Object[]{
+                    Message.HeaderField.UNIX_FDS, new Object[]{
+                    ArgumentType.UINT32_STRING, new UInt32( totalFileDes )
+                }
+            });
         }
 
         byte[] blen = new byte[4];

@@ -12,7 +12,6 @@
 
 package org.freedesktop.dbus;
 
-import java.io.FileDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

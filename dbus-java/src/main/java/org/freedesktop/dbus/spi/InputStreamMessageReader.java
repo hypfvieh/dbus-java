@@ -10,10 +10,9 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus;
+package org.freedesktop.dbus.spi;
 
 import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,7 @@ import org.freedesktop.dbus.messages.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageReader implements Closeable {
+public class InputStreamMessageReader implements IMessageReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private InputStream inputStream;
@@ -36,10 +35,11 @@ public class MessageReader implements Closeable {
     private byte[]      body   = null;
     private int[]       len    = new int[4];
 
-    public MessageReader(InputStream _in) {
+    public InputStreamMessageReader(InputStream _in) {
         this.inputStream = new BufferedInputStream(_in);
     }
 
+    @Override
     public Message readMessage() throws IOException, DBusException {
         int rv;
         /* Read the 12 byte fixed header, retrying as necessary */
@@ -160,7 +160,7 @@ public class MessageReader implements Closeable {
 
         Message m;
         try {
-            m = MessageFactory.createMessage(type, buf, header, body);
+            m = MessageFactory.createMessage(type, buf, header, body, null);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
             buf = null;
@@ -193,6 +193,7 @@ public class MessageReader implements Closeable {
         inputStream = null;
     }
 
+    @Override
     public boolean isClosed() {
         return inputStream == null;
     }

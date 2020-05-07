@@ -26,6 +26,11 @@ public class TcpTransport extends AbstractTransport {
         setSaslAuthMode(SASL.AUTH_SHA);
     }
 
+    @Override
+    boolean hasFileDescriptorSupport() {
+        return false; // file descriptor passing not possible on TCP connections
+    }
+
     /**
      * Connect to DBus using TCP.
      * @throws IOException on error
@@ -43,8 +48,7 @@ public class TcpTransport extends AbstractTransport {
             socket.connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
         }
         
-        setInputReader(socket.getInputStream());
-        setOutputWriter(socket.getOutputStream());
+        setInputOutput(socket);
 
         authenticate(socket.getOutputStream(), socket.getInputStream(), socket);
     }
