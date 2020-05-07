@@ -7,9 +7,14 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.2.1 (not released yet)
+##### Changes in 3.2.1
   - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76))
   - Fixed unexported objects shown in introspection output ([#80](https://github.com/hypfvieh/dbus-java/issues/80))
+  - Added support for providing alternative implementations of IMessageReader/IMessageWriter ([#81](https://github.com/hypfvieh/dbus-java/issues/81))
+  - Removed support for file descriptor passing, as it is not working with jnr-unixsocket ([#81](https://github.com/hypfvieh/dbus-java/issues/81))
+  - Fixed issue dealing with handled signals ([#97](https://github.com/hypfvieh/dbus-java/issues/97))
+  - Fixes issue with InterfaceCodeGenerator util ([#95](https://github.com/hypfvieh/dbus-java/issues/95))
+  - Fixes issue with InterfaceCodeGenerator util using incorrect type ([#83](https://github.com/hypfvieh/dbus-java/issues/83))
 
 ##### Changes in 3.2.0 
   - Replaced libmatthew with jnr-unixsocket
