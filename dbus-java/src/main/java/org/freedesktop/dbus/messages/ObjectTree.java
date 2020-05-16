@@ -123,11 +123,44 @@ public class ObjectTree {
         root = recursiveAdd(root, _path, _object, _data);
     }
 
+    private TreeNode recursiveRemove(TreeNode _current, String _path) {
+        String[] elements = _path.split("/", 2);
+        if (elements[0].equals(_current.name)) {
+            // this is us or a parent node
+            if (1 == elements.length || "".equals(elements[1])) {
+                // this is us
+                _current.object = null;
+                _current.data = null;
+                if (_current.down != null ) {
+                    // This node has a child node so it needs to be kept
+                    return _current;
+                }
+                return _current.right;
+            }
+
+            if (_current.down != null) {
+                // recurse down
+                _current.down = recursiveRemove(_current.down, elements[1]);
+                if (_current.down == null && _current.data == null) {
+                    // This node has no children anymore and is not exported itself so it can be removed
+                    return _current.right;
+                }
+            }
+            return _current;
+        } else if (_current.right == null) {
+            return _current;
+        } else if (0 > _current.right.name.compareTo(elements[0])) {
+            return _current;
+        } else {
+            // recurse right
+            _current.right = recursiveRemove(_current.right, _path);
+            return _current;
+        }
+    }
+
     public synchronized void remove(String _path) {
         logger.debug("Removing {} from object tree", _path);
-        TreeNode t = recursiveFind(root, _path);
-        t.object = null;
-        t.data = null;
+        recursiveRemove(root, _path);
     }
 
     // CHECKSTYLE:OFF
@@ -148,13 +181,6 @@ public class ObjectTree {
         }
         t = t.down;
         while (null != t) {
-            // omit entries without a bound object
-            // if there is no object, there is nothing to show in introspection
-            // also unexported object will then be removed from introspection output
-            if (t.object == null) {
-                t = t.right;
-                continue;
-            }
             sb.append("<node name=\"");
             sb.append(t.name);
             sb.append("\"/>\n");
