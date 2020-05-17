@@ -7,6 +7,10 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
+##### Changes in 3.2.2 (not released yet):
+  - Fixed issue with introspection caused by changes in [#80](https://github.com/hypfvieh/dbus-java/issues/80) ([#103](https://github.com/hypfvieh/dbus-java/issues/103)), thanks to [AsamK](https://github.com/AsamK)
+
+
 ##### Changes in 3.2.1
   - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76))
   - Fixed unexported objects shown in introspection output ([#80](https://github.com/hypfvieh/dbus-java/issues/80))
