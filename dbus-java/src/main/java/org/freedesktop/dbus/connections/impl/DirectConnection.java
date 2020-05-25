@@ -41,6 +41,8 @@ import org.freedesktop.dbus.messages.ExportedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jnr.posix.util.Platform;
+
 import com.github.hypfvieh.util.StringUtil;
 
 /** Handles a peer to peer connection between two applications withou a bus daemon.
@@ -138,7 +140,11 @@ public class DirectConnection extends AbstractConnection {
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
-        address += "abstract=" + path;
+        if (Platform.IS_FREEBSD) {
+            address += "path=" + path;
+        } else {
+            address += "abstract=" + path;
+        }
         address += ",guid=" + TransportFactory.genGUID();
         LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
         return address;

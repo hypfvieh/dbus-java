@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.transports;
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.SASL;
 
 import com.github.hypfvieh.util.SystemUtil;
@@ -60,8 +61,8 @@ public class UnixSocketTransport extends AbstractTransport {
 
         us.configureBlocking(true);
 
-        // MacOS doesn't support SO_PASSCRED
-        if (!SystemUtil.isMacOs()) {
+        // MacOS and FreeBSD don't support SO_PASSCRED
+        if (!SystemUtil.isMacOs() && !FreeBSDHelper.isFreeBSD()) {
             us.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
