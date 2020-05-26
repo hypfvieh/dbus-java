@@ -31,6 +31,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -40,8 +41,6 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jnr.posix.util.Platform;
 
 import com.github.hypfvieh.util.StringUtil;
 
@@ -140,7 +139,7 @@ public class DirectConnection extends AbstractConnection {
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
-        if (Platform.IS_FREEBSD) {
+        if (FreeBSDHelper.isFreeBSD()) {
             address += "path=" + path;
         } else {
             address += "abstract=" + path;
