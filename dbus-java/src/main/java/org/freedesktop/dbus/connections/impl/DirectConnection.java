@@ -31,6 +31,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -138,7 +139,11 @@ public class DirectConnection extends AbstractConnection {
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
-        address += "abstract=" + path;
+        if (FreeBSDHelper.isFreeBSD()) {
+            address += "path=" + path;
+        } else {
+            address += "abstract=" + path;
+        }
         address += ",guid=" + TransportFactory.genGUID();
         LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
         return address;

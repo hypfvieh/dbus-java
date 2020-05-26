@@ -423,9 +423,13 @@ public class SASL {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
-                    out.write(new byte[] {
-                            0
-                    });                    
+                    if (FreeBSDHelper.isFreeBSD()) {
+                        FreeBSDHelper.send_cred(us);
+                    } else {
+                        out.write(new byte[] {
+                                0
+                        });
+                    }
                     send(out, AUTH);
                     state = SaslAuthState.WAIT_DATA;
                     break;
@@ -570,13 +574,19 @@ public class SASL {
                         if (null == us) {
                             in.read(buf);
                         } else {
-    
                             Credentials credentials;
                             try {
-                                credentials = ((UnixSocket) us).getCredentials();
-                                int kuid = credentials.getUid();
-                                if (kuid >= 0) {
-                                    kernelUid = stupidlyEncode("" + kuid);
+                                if (FreeBSDHelper.isFreeBSD()) {
+                                    long euid = FreeBSDHelper.recv_cred(us);
+                                    if (euid >= 0) {
+                                        kernelUid = stupidlyEncode("" + euid);
+                                    }
+                                } else {
+                                    credentials = ((UnixSocket) us).getCredentials();
+                                    int kuid = credentials.getUid();
+                                    if (kuid >= 0) {
+                                        kernelUid = stupidlyEncode("" + kuid);
+                                    }
                                 }
                                 state = SaslAuthState.WAIT_AUTH;
     
