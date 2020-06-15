@@ -490,6 +490,7 @@ public class SASL {
                                 send(out, SaslCommand.NEGOTIATE_UNIX_FD);
                             }else{
                                 state = SaslAuthState.FINISHED;
+                                send(out, BEGIN);                     
                             }
                             break;
                         case AGREE_UNIX_FD:
@@ -572,7 +573,8 @@ public class SASL {
                     case INITIAL_STATE:
                         byte[] buf = new byte[1];
                         if (null == us) {
-                            in.read(buf);
+                            in.read(buf); // 0
+                            state = SaslAuthState.WAIT_AUTH;
                         } else {
                             Credentials credentials;
                             try {
