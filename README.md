@@ -10,6 +10,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes in 3.2.2 (not released yet):
   - Fixed issue with introspection caused by changes in [#80](https://github.com/hypfvieh/dbus-java/issues/80) ([#103](https://github.com/hypfvieh/dbus-java/issues/103)), thanks to [AsamK](https://github.com/AsamK)
   - Added support for FreeBSD, ([#105](https://github.com/hypfvieh/dbus-java/pull/105)) thanks to [grembo](https://github.com/grembo)
+  - Fixed SASL authentication may get stuck when using TCP ([#106](https://github.com/hypfvieh/dbus-java/pull/106)) thanks to [brett-smith](https://github.com/brett-smith)
 
 
 ##### Changes in 3.2.1
