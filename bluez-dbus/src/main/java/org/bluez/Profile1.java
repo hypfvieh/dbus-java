@@ -1,11 +1,11 @@
 package org.bluez;
 
-import java.io.FileDescriptor;
 import java.util.Map;
 
 import org.bluez.exceptions.BluezCanceledException;
 import org.bluez.exceptions.BluezRejectedException;
 import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.Variant;
 

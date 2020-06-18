@@ -1,7 +1,6 @@
 package com.github.hypfvieh.helper;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -290,7 +289,7 @@ public class BluezInterfaceCreator {
                 }
 
                 if (type.contains("FileDescriptor")) {
-                    imports.add(FileDescriptor.class.getName());
+                    imports.add(org.freedesktop.dbus.FileDescriptor.class.getName());
                 }
                 if (type.contains("Map<")) {
                     imports.add(Map.class.getName());

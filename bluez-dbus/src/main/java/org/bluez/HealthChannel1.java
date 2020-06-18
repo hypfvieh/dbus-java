@@ -1,10 +1,9 @@
 package org.bluez;
 
-import java.io.FileDescriptor;
-
 import org.bluez.exceptions.BluezNotAcquiredException;
 import org.bluez.exceptions.BluezNotAllowedException;
 import org.bluez.exceptions.BluezNotConnectedException;
+import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**

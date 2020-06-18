@@ -1,6 +1,5 @@
 package org.bluez;
 
-import java.io.FileDescriptor;
 import java.util.Map;
 
 import org.bluez.datatypes.TwoTuple;
@@ -11,6 +10,7 @@ import org.bluez.exceptions.BluezInvalidValueLengthException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotPermittedException;
 import org.bluez.exceptions.BluezNotSupportedException;
+import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.Variant;

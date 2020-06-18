@@ -1,11 +1,10 @@
 package org.bluez;
 
-import java.io.FileDescriptor;
-
 import org.bluez.datatypes.ThreeTuple;
 import org.bluez.exceptions.BluezFailedException;
 import org.bluez.exceptions.BluezNotAuthorizedException;
 import org.bluez.exceptions.BluezNotAvailableException;
+import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt16;
 
