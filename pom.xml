@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>bluez-dbus-parent</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/bluez-dbus</url>
@@ -238,7 +238,7 @@
         <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
         <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
         <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
+      <tag>bluez-dbus-parent-0.1.2</tag>
   </scm>
 
     <licenses>
