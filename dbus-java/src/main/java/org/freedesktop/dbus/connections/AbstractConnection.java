@@ -905,6 +905,9 @@ public abstract class AbstractConnection implements Closeable {
                         } else {
                             rs = _signal;
                         }
+                        if (rs == null) {
+                            return;
+                        }
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
                     } catch (DBusException _ex) {
                         logger.warn("Exception while running signal handler '{}' for signal '{}':", h, _signal, _ex);

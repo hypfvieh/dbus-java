@@ -14,6 +14,7 @@ package org.freedesktop.dbus.messages;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.InternalSignal;
@@ -217,8 +219,19 @@ public class DBusSignal extends Message {
                 params[0] = getPath();
                 System.arraycopy(args, 0, params, 1, args.length);
 
-                logger.debug("Creating signal of type {} with parameters {}", clazz, Arrays.deepToString(params));
-                s = con.newInstance(params);
+                Class<?>[] parameterTypes = con.getParameterTypes();
+
+                List<?> collect = Arrays.stream(params).map(p -> p.getClass()).collect(Collectors.toList());
+                Class<?>[] array = collect.toArray(new Class<?>[0]);
+                
+                boolean deepEquals = Arrays.deepEquals(parameterTypes, array);
+                if (deepEquals) {
+                    logger.debug("Creating signal of type {} with parameters {}", clazz, Arrays.deepToString(params));
+                    s = con.newInstance(params);
+                } else {
+                    logger.debug("Received signal with unsupported signature: {}", clazz, Arrays.deepToString(array));
+                    return null;
+                }
             }
             s.getHeaders().putAll(getHeaders());
             s.setWiredata(getWireData());
