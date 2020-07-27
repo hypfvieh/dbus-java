@@ -107,7 +107,7 @@ class TestEmptyCollections {
 		serverconn.disconnect();
 		
 		// give the dbus daemon some time to unregister our calls before restarting test
-		Thread.sleep(500L);
+		Thread.sleep(800L);
 	}
 
 	/**
@@ -158,20 +158,20 @@ class TestEmptyCollections {
 		return Stream.of(
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListPrimitive,
 						s -> new ListStructPrimitive(Collections.emptyList(), s),
-						s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimative", "1,2"),
+						s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimitive", "1,2"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListIntStruct,
 						s -> new ListStructStruct(Collections.emptyList(), s),
 						s -> new ListStructStruct(Arrays.asList(new IntStruct(5, 6)), s)), "ListStruct", "(5,6)"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayPrimitive,
 						s -> new ArrayStructPrimitive(new int[0], s),
-						s -> new ArrayStructPrimitive(new int[] {4,5}, s)), "ArrayPrimative", "4,5"),
+						s -> new ArrayStructPrimitive(new int[] {4,5}, s)), "ArrayPrimitive", "4,5"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayIntStruct,
 						s -> new ArrayStructIntStruct(new IntStruct[0], s),
 						s -> new ArrayStructIntStruct(new IntStruct[] { new IntStruct(9, 12)}, s)),
 						"ArrayIntStruct", "(9,12)"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapPrimitive,
 						s -> new MapStructPrimitive(Collections.emptyMap(), s),
-						s -> new MapStructPrimitive(getIntHashMap(), s)), "MapPrimative", "{test:8}"),
+						s -> new MapStructPrimitive(getIntHashMap(), s)), "MapPrimitive", "{test:8}"),
 				Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMapIntStruct,
 						s -> new MapStructIntStruct(Collections.emptyMap(), s),
 						s -> new MapStructIntStruct(getIntStructHashMap(), s)), "MapIntStruct", "{other:(12,17)}"),
