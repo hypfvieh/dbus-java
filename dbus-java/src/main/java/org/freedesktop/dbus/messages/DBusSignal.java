@@ -14,7 +14,6 @@ package org.freedesktop.dbus.messages;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -38,28 +37,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBusSignal extends Message {
-    private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE       =
+    private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE         =
             new ConcurrentHashMap<>();
 
-    private static final Map<Class<? extends DBusSignal>, Type[]>                            TYPE_CACHE        =
+    private static final Map<Class<? extends DBusSignal>, Type[]>                            TYPE_CACHE          =
             new ConcurrentHashMap<>();
 
-    private static final Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> CONSTRUCTOR_CACHE =
+    private static final Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> CONSTRUCTOR_CACHE   =
             new ConcurrentHashMap<>();
 
-    private static final Map<String, String>                                                 SIGNAL_NAMES      =
+    private static final Map<String, String>                                                 SIGNAL_NAMES        =
             new ConcurrentHashMap<>();
-    private static final Map<String, String>                                                 INT_NAMES         =
+    private static final Map<String, String>                                                 INT_NAMES           =
             new ConcurrentHashMap<>();
 
-    private static final Map<Class<? extends DBusSignal>, List<CachedConstructor>>	   	    CACHED_CONSTRUCTORS =
-    		new ConcurrentHashMap<>();
-    
-    private final Logger                                                                     logger            =
+    private static final Map<Class<? extends DBusSignal>, List<CachedConstructor>>           CACHED_CONSTRUCTORS =
+            new ConcurrentHashMap<>();
+
+    private final Logger                                                                     logger              =
             LoggerFactory.getLogger(getClass());
 
     private Class<? extends DBusSignal>                                                      clazz;
-    private boolean                                                                          bodydone          = false;
+    private boolean                                                                          bodydone            = false;
     private byte[]                                                                           blen;
 
     DBusSignal() {
@@ -194,33 +193,34 @@ public class DBusSignal extends Message {
         logger.debug("Converting signal to type: {}", clazz);
 
         if (!CACHED_CONSTRUCTORS.containsKey(clazz)) {
-        	cacheConstructors(clazz);
+            cacheConstructors(clazz);
         }
-        
-        List<CachedConstructor> list = CACHED_CONSTRUCTORS.get(clazz);
-        
-        Constructor<? extends DBusSignal> con = null;
-		Type[] types = null;
-		
-    	Object[] parameters = getParameters();
-    	
-		List<Class<?>> wantedArgs = Arrays.stream(parameters)
-    			.map(p -> p.getClass())
-    			.collect(Collectors.toList());
 
-    	// find suitable constructor (by checking if parameter types are equal)
-    	for (CachedConstructor type : list) {
-			if (type.parameterTypes.equals(wantedArgs)) {
-				con = type.constructor;
-				types = type.types;
-				break;
-			}
-		}
-    	if (con == null) {
-    		logger.warn("Could not find suitable constructor for class {} with argument-types: {}", clazz.getName(), wantedArgs);
-    		return null;
-    	}
-        
+        List<CachedConstructor> list = CACHED_CONSTRUCTORS.get(clazz);
+
+        Constructor<? extends DBusSignal> con = null;
+        Type[] types = null;
+
+        Object[] parameters = getParameters();
+
+        List<Class<?>> wantedArgs = Arrays.stream(parameters)
+                .map(p -> p.getClass())
+                .collect(Collectors.toList());
+
+        // find suitable constructor (by checking if parameter types are equal)
+        for (CachedConstructor type : list) {
+            if (type.parameterTypes.equals(wantedArgs)) {
+                con = type.constructor;
+                types = type.types;
+                break;
+            }
+        }
+        if (con == null) {
+            logger.warn("Could not find suitable constructor for class {} with argument-types: {}", clazz.getName(),
+                    wantedArgs);
+            return null;
+        }
+
         try {
             DBusSignal s;
             Object[] args = Marshalling.deSerializeParameters(parameters, types, conn);
@@ -235,7 +235,7 @@ public class DBusSignal extends Message {
 
                 List<?> collect = Arrays.stream(params).map(p -> p.getClass()).collect(Collectors.toList());
                 Class<?>[] array = collect.toArray(new Class<?>[0]);
-                
+
                 boolean deepEquals = Arrays.deepEquals(parameterTypes, array);
                 if (deepEquals) {
                     logger.debug("Creating signal of type {} with parameters {}", clazz, Arrays.deepToString(params));
@@ -255,17 +255,17 @@ public class DBusSignal extends Message {
     }
 
     @SuppressWarnings("unchecked")
-	private void cacheConstructors(Class<? extends DBusSignal> _clazz) {
-    	List<CachedConstructor> list = new ArrayList<>();
-    	for (Constructor<?> constructor : _clazz.getDeclaredConstructors()) {
-    		Constructor<? extends DBusSignal> x = (Constructor<? extends DBusSignal>) constructor;
-    		list.add(new CachedConstructor(x));
-		}
-    	
-    	CACHED_CONSTRUCTORS.put(_clazz, list);
-	}
+    private void cacheConstructors(Class<? extends DBusSignal> _clazz) {
+        List<CachedConstructor> list = new ArrayList<>();
+        for (Constructor<?> constructor : _clazz.getDeclaredConstructors()) {
+            Constructor<? extends DBusSignal> x = (Constructor<? extends DBusSignal>) constructor;
+            list.add(new CachedConstructor(x));
+        }
 
-	/**
+        CACHED_CONSTRUCTORS.put(_clazz, list);
+    }
+
+    /**
      * Create a new signal. This contructor MUST be called by all sub classes.
      *
      * @param objectpath The path to the object this is emitted from.
@@ -383,23 +383,20 @@ public class DBusSignal extends Message {
         return "DBusSignal [clazz=" + clazz + "]";
     }
 
-    
     private static class CachedConstructor {
-    	private Class<? extends DBusSignal> clazz;
-    	private Constructor<? extends DBusSignal> constructor;
-    	private List<Class<?>> parameterTypes;
-    	private Type[] types;
+        private Constructor<? extends DBusSignal> constructor;
+        private List<Class<?>>                    parameterTypes;
+        private Type[]                            types;
 
-    	CachedConstructor(Constructor<? extends DBusSignal> _constructor) {
-    		constructor = _constructor;
-    		clazz = _constructor.getDeclaringClass();
-    		parameterTypes = Arrays.stream(constructor.getParameterTypes()).skip(1).collect(Collectors.toList());
-    		types = createTypes(constructor);
-    	}
+        CachedConstructor(Constructor<? extends DBusSignal> _constructor) {
+            constructor = _constructor;
+            parameterTypes = Arrays.stream(constructor.getParameterTypes()).skip(1).collect(Collectors.toList());
+            types = createTypes(constructor);
+        }
 
-		@SuppressWarnings("unchecked")
-		private static Type[] createTypes(Constructor<? extends DBusSignal> constructor) {
-			Type[] ts = constructor.getGenericParameterTypes();
+        @SuppressWarnings("unchecked")
+        private static Type[] createTypes(Constructor<? extends DBusSignal> constructor) {
+            Type[] ts = constructor.getGenericParameterTypes();
             Type[] types = new Type[ts.length - 1];
             for (int i = 1; i <= types.length; i++) {
                 if (ts[i] instanceof TypeVariable) {
