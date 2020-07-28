@@ -12,6 +12,7 @@
 
 package org.freedesktop.dbus.messages;
 
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Type;
@@ -203,6 +204,10 @@ public class DBusSignal extends Message {
 
         Object[] parameters = getParameters();
 
+        // Get all classes required in constructor in order
+        // Primitives will always be wrapped in their wrapper classes
+        // because the parameters are received on the bus and will be converted
+        // in 'Message.extractOne' method which will always return Object and not primitives 
         List<Class<?>> wantedArgs = Arrays.stream(parameters)
                 .map(p -> p.getClass())
                 .collect(Collectors.toList());
@@ -230,20 +235,7 @@ public class DBusSignal extends Message {
                 Object[] params = new Object[args.length + 1];
                 params[0] = getPath();
                 System.arraycopy(args, 0, params, 1, args.length);
-
-                Class<?>[] parameterTypes = con.getParameterTypes();
-
-                List<?> collect = Arrays.stream(params).map(p -> p.getClass()).collect(Collectors.toList());
-                Class<?>[] array = collect.toArray(new Class<?>[0]);
-
-                boolean deepEquals = Arrays.deepEquals(parameterTypes, array);
-                if (deepEquals) {
-                    logger.debug("Creating signal of type {} with parameters {}", clazz, Arrays.deepToString(params));
-                    s = con.newInstance(params);
-                } else {
-                    logger.debug("Received signal with unsupported signature: {}", clazz, Arrays.deepToString(array));
-                    return null;
-                }
+                s = con.newInstance(params);
             }
             s.getHeaders().putAll(getHeaders());
             s.setWiredata(getWireData());
@@ -390,7 +382,16 @@ public class DBusSignal extends Message {
 
         CachedConstructor(Constructor<? extends DBusSignal> _constructor) {
             constructor = _constructor;
-            parameterTypes = Arrays.stream(constructor.getParameterTypes()).skip(1).collect(Collectors.toList());
+            parameterTypes = Arrays.stream(constructor.getParameterTypes())
+                    .skip(1)
+                    .map(c -> { 
+                        // convert primitives to wrapper classes so we can compare it to parameter classes later
+                        if (c.isPrimitive()) { 
+                            return wrap(c);
+                        }
+                        return c;
+                    })
+                    .collect(Collectors.toList());
             types = createTypes(constructor);
         }
 
@@ -406,6 +407,11 @@ public class DBusSignal extends Message {
                 }
             }
             return types;
+        }
+        
+        @SuppressWarnings("unchecked")
+        private static <T> Class<T> wrap(Class<T> c) {
+            return (Class<T>) MethodType.methodType(c).wrap().returnType();
         }
     }
 }
