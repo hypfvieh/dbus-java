@@ -14,7 +14,8 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Fixed issue with introspection caused by changes in [#80](https://github.com/hypfvieh/dbus-java/issues/80) ([#103](https://github.com/hypfvieh/dbus-java/issues/103)), thanks to [AsamK](https://github.com/AsamK)
   - Added support for FreeBSD, ([#105](https://github.com/hypfvieh/dbus-java/pull/105)) thanks to [grembo](https://github.com/grembo)
   - Fixed SASL authentication may get stuck when using TCP ([#106](https://github.com/hypfvieh/dbus-java/pull/106)) thanks to [brett-smith](https://github.com/brett-smith)
-
+ - Fixed issues when dealing with multiple signals of the same name but different signatures ([#110](https://github.com/hypfvieh/dbus-java/pull/110))
+ - Dependency updates
 
 ##### Changes in 3.2.1
   - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76))
