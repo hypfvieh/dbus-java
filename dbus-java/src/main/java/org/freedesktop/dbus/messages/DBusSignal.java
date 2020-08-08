@@ -214,7 +214,7 @@ public class DBusSignal extends Message {
 
         // find suitable constructor (by checking if parameter types are equal)
         for (CachedConstructor type : list) {
-            if (type.parameterTypes.equals(wantedArgs)) {
+            if (type.matchesParameters(wantedArgs)) {
                 con = type.constructor;
                 types = type.types;
                 break;
@@ -393,6 +393,24 @@ public class DBusSignal extends Message {
                     })
                     .collect(Collectors.toList());
             types = createTypes(constructor);
+        }
+
+        public boolean matchesParameters(List<Class<?>> _wantedArgs) {
+            if (parameterTypes != null && _wantedArgs == null) {
+                return false;
+            }
+            if (parameterTypes.size() != _wantedArgs.size()) {
+                return false;
+            }
+            
+            for (int i = 0; i < parameterTypes.size(); i++) {
+                Class<?> class1 = parameterTypes.get(i);
+                if (!class1.isAssignableFrom(_wantedArgs.get(i))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         @SuppressWarnings("unchecked")
