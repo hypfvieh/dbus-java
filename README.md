@@ -10,7 +10,10 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.2.3 (not yet released):
+##### Changes in 3.2.4 (not yet released):
+  - nothing yet
+  
+##### Changes in 3.2.3:
   - Fixed regression introduced with [#110](https://github.com/hypfvieh/dbus-java/pull/110) ([#114](https://github.com/hypfvieh/dbus-java/pull/114))
 
 ##### Changes in 3.2.2:
