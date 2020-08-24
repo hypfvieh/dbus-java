@@ -41,6 +41,7 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -469,7 +470,8 @@ public final class Marshalling {
                 System.arraycopy(newparams, 0, exparams, i, newparams.length);
                 System.arraycopy(_parameters, i + 1, exparams, i + newparams.length, _parameters.length - i - 1);
                 _parameters = exparams;
-                LOGGER.trace("New params: {}, new types: {}", Arrays.deepToString(_parameters), Arrays.deepToString(_types));
+                
+                LOGGER.trace("New params: {}, new types: {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _parameters), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _types));
                 i--;
             } else if (_types[i] instanceof TypeVariable && !(_parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
@@ -628,10 +630,8 @@ public final class Marshalling {
 
     @SuppressWarnings("unchecked")
     public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws Exception {
-        if (LOGGER.isTraceEnabled())
-        {
-            LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types));
-        }
+        LOGGER.trace("Deserializing from {} to {} ", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _parameters), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _types));
+
         if (null == _parameters) {
             return null;
         }

@@ -37,6 +37,7 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,9 +183,9 @@ public class Message {
 
         logger.trace("Message header: {}", Hexdump.toAscii(_headers));
         Object[] hs = extract("a(yv)", _headers, 0);
-        if (logger.isTraceEnabled()) {
-            logger.trace(Arrays.deepToString(hs));
-        }
+        
+        LoggingHelper.arraysDeepString(logger.isTraceEnabled(), hs);
+        
         for (Object o : (List<Object>) hs[0]) {
             this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());
         }
@@ -611,7 +612,7 @@ public class Message {
                 // Arrays are given as a UInt32 for the length in bytes,
                 // padding to the element alignment, then elements in
                 // order. The length is the length from the end of the
-                // initial padding to the end of the last element.
+                // initial padding to the end of the last element.                
                 if (logger.isTraceEnabled()) {
                     if (data instanceof Object[]) {
                         logger.trace("Appending array: {}", Arrays.deepToString((Object[]) data));
@@ -844,7 +845,7 @@ public class Message {
      * @throws DBusException on error
      */
     public void append(String sig, Object... data) throws DBusException {
-        logger.debug("Appending sig: {} data: {}", sig, Arrays.deepToString(data));
+        logger.debug("Appending sig: {} data: {}", sig, LoggingHelper.arraysDeepString(logger.isDebugEnabled(),data));
         byte[] sigb = sig.getBytes();
         int j = 0;
         for (int i = 0; i < sigb.length; i++) {

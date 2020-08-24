@@ -67,6 +67,7 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -794,7 +795,7 @@ public abstract class AbstractConnection implements Closeable {
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
-                    logger.trace("Deserialised {} to types {}", Arrays.deepToString(m.getParameters()), Arrays.deepToString(ts));
+                    logger.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), m.getParameters()), LoggingHelper.arraysDeepString(logger.isTraceEnabled(),ts));
                 } catch (Exception e) {
                     logger.debug("", e);
                     handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));
