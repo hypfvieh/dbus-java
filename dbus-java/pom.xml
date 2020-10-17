@@ -2,15 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
-
-    <artifactId>dbus-java</artifactId>
-
-    <name>${project.artifactId}</name>
-
-    <description>
-        Improved version of the DBus-Java library provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
-    </description>
 
     <parent>
         <groupId>com.github.hypfvieh</groupId>
@@ -18,41 +9,56 @@
         <version>3.2.4-SNAPSHOT</version>
     </parent>
 
-    <properties>
-    </properties>
+    <artifactId>dbus-java</artifactId>
+    <packaging>jar</packaging>
 
-    <build>
-    </build>
+    <name>${project.artifactId}</name>
+    <description>
+        Improved version of the DBus-Java library provided by freedesktop.org (https://dbus.freedesktop.org/doc/dbus-java/).
+    </description>
 
     <dependencies>
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>java-utils</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>com.github.jnr</groupId>
             <artifactId>jnr-unixsocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit testing framework. -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+        </dependency>
+
+        <!-- needed for IDE support -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
         </dependency>
     </dependencies>
-
-    <scm>
-        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
-        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
-        <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
-  </scm>
 
 </project>

@@ -13,6 +13,83 @@
 
     <description>DBus-Java library module parent</description>
 
+    <scm>
+        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
+        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
+        <url>https://github.com/hypfvieh/dbus-java.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser/Library General Public License version 2</name>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
+        </license>
+        <license>
+            <name>Academic Free License version 2.1</name>
+            <url>https://spdx.org/licenses/AFL-2.1.html</url>
+        </license>
+    </licenses>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <developers>
+        <developer>
+            <id>matthew</id>
+            <name>Matthew Johnson</name>
+            <email>src@matthew.ath.cx</email>
+        </developer>
+        <developer>
+            <id>hypfvieh</id>
+            <name>David M.</name>
+            <email>hypfvieh@googlemail.com</email>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>thjomnx</name>
+            <url>https://github.com/thjomnx</url>
+        </contributor>
+        <contributor>
+            <name>RafalSumislawski</name>
+            <url>https://github.com/RafalSumislawski</url>
+        </contributor>
+        <contributor>
+            <name>lbeuster</name>
+            <url>https://github.com/lbeuster</url>
+        </contributor>
+        <contributor>
+            <name>littlefreaky</name>
+            <url>https://github.com/littlefreaky</url>
+        </contributor>
+        <contributor>
+            <name>sshort</name>
+            <url>https://github.com/sshort</url>
+        </contributor>
+        <contributor>
+            <name>michivi</name>
+            <url>https://github.com/michivi</url>
+        </contributor>
+        <contributor>
+            <name>rm5248</name>
+            <url>https://github.com/rm5248</url>
+        </contributor>
+        <contributor>
+            <name>chris-melman</name>
+            <url>https://github.com/chris-melman</url>
+        </contributor>
+    </contributors>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -24,6 +101,73 @@
         <module>dbus-java-osgi</module>
         <module>dbus-java-utils</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.hypfvieh</groupId>
+                <artifactId>dbus-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.30</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.2.3</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- JUnit testing framework. -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>5.6.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>5.6.2</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- needed for IDE support -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.6.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>1.6.2</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Base dependencies for submodules -->
+            <dependency>
+                <groupId>com.github.hypfvieh</groupId>
+                <artifactId>java-utils</artifactId>
+                <version>1.0.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jnr</groupId>
+                <artifactId>jnr-unixsocket</artifactId>
+                <version>0.33</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -83,6 +227,17 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.9.0</version>
             </plugin>
@@ -134,175 +289,6 @@
 
     </build>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.30</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>1.2.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-core</artifactId>
-                <version>1.2.3</version>
-            </dependency>
-
-            <!-- JUnit testing framework. -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.6.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>5.6.2</version>
-            </dependency>
-
-            <!-- needed for IDE support -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.6.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-launcher</artifactId>
-                <version>1.6.2</version>
-            </dependency>
-            
-            <!-- Base dependencies for submodules -->
-            <dependency>
-                <groupId>com.github.hypfvieh</groupId>
-                <artifactId>java-utils</artifactId>
-                <version>1.0.6</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>com.github.jnr</groupId>
-                <artifactId>jnr-unixsocket</artifactId>
-                <version>0.33</version>
-            </dependency>
-
-        </dependencies>        
-    </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <!-- JUnit testing framework. -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- needed for IDE support -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
-
-    <scm>
-        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
-        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
-        <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
-    <licenses>
-        <license>
-            <name>GNU Lesser/Library General Public License version 2</name>
-            <url>https://www.gnu.org/licenses/lgpl.html</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>matthew</id>
-            <name>Matthew Johnson</name>
-            <email>src@matthew.ath.cx</email>
-        </developer>
-        <developer>
-            <id>hypfvieh</id>
-            <name>David M.</name>
-            <email>hypfvieh@googlemail.com</email>
-        </developer>
-    </developers>
-
-    <contributors>
-        <contributor>
-            <name>thjomnx</name>
-            <url>https://github.com/thjomnx</url>
-        </contributor>
-        <contributor>
-            <name>RafalSumislawski</name>
-            <url>https://github.com/RafalSumislawski</url>
-        </contributor>
-        <contributor>
-            <name>lbeuster</name>
-            <url>https://github.com/lbeuster</url>
-        </contributor>
-        <contributor>
-            <name>littlefreaky</name>
-            <url>https://github.com/littlefreaky</url>
-        </contributor>
-        <contributor>
-            <name>sshort</name>
-            <url>https://github.com/sshort</url>
-        </contributor>
-        <contributor>
-            <name>michivi</name>
-            <url>https://github.com/michivi</url>
-        </contributor>
-        <contributor>
-            <name>rm5248</name>
-            <url>https://github.com/rm5248</url>
-        </contributor>
-        <contributor>
-            <name>chris-melman</name>
-            <url>https://github.com/chris-melman</url>
-        </contributor>
-    </contributors>
-
     <profiles>
         <profile>
             <id>release</id>
@@ -317,18 +303,6 @@
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>2.5.3</version>
-                        <configuration>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <useReleaseProfile>false</useReleaseProfile>
-                            <releaseProfiles>release</releaseProfiles>
-                            <goals>deploy</goals>
-                        </configuration>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
