@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
@@ -36,6 +37,8 @@ import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
 
 public class DBusSignal extends Message {
     private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE         =
@@ -268,7 +271,7 @@ public class DBusSignal extends Message {
     protected DBusSignal(String objectpath, Object... args) throws DBusException {
         super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
 
-        if (!objectpath.matches(AbstractConnection.OBJECT_REGEX)) {
+        if (!OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
 
