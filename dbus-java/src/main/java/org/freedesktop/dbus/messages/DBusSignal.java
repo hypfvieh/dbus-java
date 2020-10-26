@@ -12,6 +12,8 @@
 
 package org.freedesktop.dbus.messages;
 
+import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
+
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
@@ -22,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
@@ -37,8 +38,6 @@ import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
 
 public class DBusSignal extends Message {
     private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE         =
@@ -210,7 +209,7 @@ public class DBusSignal extends Message {
         // Get all classes required in constructor in order
         // Primitives will always be wrapped in their wrapper classes
         // because the parameters are received on the bus and will be converted
-        // in 'Message.extractOne' method which will always return Object and not primitives 
+        // in 'Message.extractOne' method which will always return Object and not primitives
         List<Class<?>> wantedArgs = Arrays.stream(parameters)
                 .map(p -> p.getClass())
                 .collect(Collectors.toList());
@@ -387,9 +386,9 @@ public class DBusSignal extends Message {
             constructor = _constructor;
             parameterTypes = Arrays.stream(constructor.getParameterTypes())
                     .skip(1)
-                    .map(c -> { 
+                    .map(c -> {
                         // convert primitives to wrapper classes so we can compare it to parameter classes later
-                        if (c.isPrimitive()) { 
+                        if (c.isPrimitive()) {
                             return wrap(c);
                         }
                         return c;
@@ -405,7 +404,7 @@ public class DBusSignal extends Message {
             if (parameterTypes.size() != _wantedArgs.size()) {
                 return false;
             }
-            
+
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class<?> class1 = parameterTypes.get(i);
                 if (!class1.isAssignableFrom(_wantedArgs.get(i))) {
@@ -429,7 +428,7 @@ public class DBusSignal extends Message {
             }
             return types;
         }
-        
+
         @SuppressWarnings("unchecked")
         private static <T> Class<T> wrap(Class<T> c) {
             return (Class<T>) MethodType.methodType(c).wrap().returnType();
