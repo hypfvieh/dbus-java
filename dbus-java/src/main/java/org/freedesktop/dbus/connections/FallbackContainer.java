@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.connections;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,8 @@ public class FallbackContainer {
         String[] pathel = path.split("/");
         for (String[] fbpath : fallbacks.keySet()) {
             logger.trace("Trying fallback path {} to match {}",
-                    Arrays.deepToString(fbpath), Arrays.deepToString(pathel));
+                    LoggingHelper.arraysDeepString(logger.isTraceEnabled(), fbpath),
+                    LoggingHelper.arraysDeepString(logger.isTraceEnabled(), pathel));
             for (i = 0; i < pathel.length && i < fbpath.length; i++) {
                 if (!pathel[i].equals(fbpath[i])) {
                     break;

@@ -443,7 +443,7 @@ public final class DBusConnection extends AbstractConnection {
      *             If the busname is incorrectly formatted.
      */
     public void releaseBusName(String _busname) throws DBusException {
-        if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name");
         }
         try {
@@ -468,7 +468,7 @@ public final class DBusConnection extends AbstractConnection {
      *             formatted.
      */
     public void requestBusName(String _busname) throws DBusException {
-        if (!_busname.matches(BUSNAME_REGEX) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name");
         }
 
@@ -549,7 +549,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -589,11 +589,11 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: null");
         }
 
-        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        if (!_objectpath.matches(OBJECT_REGEX) || _objectpath.length() > MAX_NAME_LENGTH) {
+        if (_objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectpath).matches()) {
             throw new DBusException("Invalid object path: " + _objectpath);
         }
 
@@ -631,7 +631,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -706,11 +706,11 @@ public final class DBusConnection extends AbstractConnection {
             throw new ClassCastException("Not A DBus Interface");
         }
 
-        if ((!_busname.matches(BUSNAME_REGEX) && !_busname.matches(CONNID_REGEX)) || _busname.length() > MAX_NAME_LENGTH) {
+        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
-        if (!_objectpath.matches(OBJECT_REGEX) || _objectpath.length() > MAX_NAME_LENGTH) {
+        if (!OBJECT_REGEX_PATTERN.matcher(_objectpath).matches() || _objectpath.length() > MAX_NAME_LENGTH) {
             throw new DBusException("Invalid object path: " + _objectpath);
         }
 
@@ -753,11 +753,11 @@ public final class DBusConnection extends AbstractConnection {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (_source.matches(BUSNAME_REGEX)) {
+        if (BUSNAME_REGEX.matcher(_source).matches()) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
             throw new DBusException("Invalid bus name: " + _source);
         }
         removeSigHandler(new DBusMatchRule(_type, _source, null), _handler);
@@ -786,15 +786,15 @@ public final class DBusConnection extends AbstractConnection {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (_source.matches(BUSNAME_REGEX)) {
+        if (BUSNAME_REGEX.matcher(_source).matches()) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
             throw new DBusException("Invalid bus name: " + _source);
         }
         String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         removeSigHandler(new DBusMatchRule(_type, _source, objectpath), _handler);
@@ -849,11 +849,11 @@ public final class DBusConnection extends AbstractConnection {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (_source.matches(BUSNAME_REGEX)) {
+        if (BUSNAME_REGEX.matcher(_source).matches()) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
             throw new DBusException("Invalid bus name: " + _source);
         }
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
@@ -884,15 +884,15 @@ public final class DBusConnection extends AbstractConnection {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        if (_source.matches(BUSNAME_REGEX)) {
+        if (BUSNAME_REGEX.matcher(_source).matches()) {
             throw new DBusException(
                     "Cannot watch for signals based on well known bus name as source, only unique names.");
         }
-        if (!_source.matches(CONNID_REGEX) || _source.length() > MAX_NAME_LENGTH) {
+        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
             throw new DBusException("Invalid bus name: " + _source);
         }
         String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
@@ -985,7 +985,7 @@ public final class DBusConnection extends AbstractConnection {
         	    // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
         	    synchronized (busnames) {
                     List<String> lBusNames = busnames.stream()
-            	        .filter(busName -> busName != null && !(!busName.matches(BUSNAME_REGEX) || busName.length() > MAX_NAME_LENGTH))
+            	        .filter(busName -> busName != null && !(busName.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(busName).matches()))
             	        .collect(Collectors.toList());
     
     

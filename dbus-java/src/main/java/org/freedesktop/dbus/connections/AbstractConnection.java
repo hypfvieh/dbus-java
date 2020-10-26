@@ -67,6 +67,7 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,7 @@ import com.github.hypfvieh.threads.NameableThreadFactory;
  */
 public abstract class AbstractConnection implements Closeable {
 
-    private static final Map<Thread, DBusCallInfo> INFOMAP     = new ConcurrentHashMap<>();
+    private static final Map<Thread, DBusCallInfo> INFOMAP   = new ConcurrentHashMap<>();
     /**
      * Default thread pool size
      */
@@ -88,18 +89,18 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          TCP_CONNECT_TIMEOUT     = 100000;
 
     /** Lame method to setup endianness used on DBus messages */
-    private static byte              endianness       = getSystemEndianness();
+    private static byte              endianness             = getSystemEndianness();
 
-    public static final boolean      FLOAT_SUPPORT    =    (null != System.getenv("DBUS_JAVA_FLOATS"));
-    public static final String       BUSNAME_REGEX    = "^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$";
-    public static final String       CONNID_REGEX     = "^:[0-9]*\\.[0-9]*$";
-    public static final String       OBJECT_REGEX     = "^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$";
-    public static final Pattern      DOLLAR_PATTERN   = Pattern.compile("[$]");
+    public static final boolean      FLOAT_SUPPORT          = (null != System.getenv("DBUS_JAVA_FLOATS"));
+    public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
+    public static final Pattern      CONNID_REGEX           = Pattern.compile("^:[0-9]*\\.[0-9]*$");
+    public static final Pattern      OBJECT_REGEX_PATTERN   = Pattern.compile("^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$");
+    public static final Pattern      DOLLAR_PATTERN         = Pattern.compile("[$]");
 
-    public static final int          MAX_ARRAY_LENGTH = 67108864;
-    public static final int          MAX_NAME_LENGTH  = 255;
+    public static final int          MAX_ARRAY_LENGTH       = 67108864;
+    public static final int          MAX_NAME_LENGTH        = 255;
 
-    private final Logger        logger = LoggerFactory.getLogger(getClass());
+    private final Logger                                                        logger;
 
     private final ObjectTree                                                    objectTree;
 
@@ -134,6 +135,7 @@ public abstract class AbstractConnection implements Closeable {
             new ReentrantReadWriteLock();
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
+        logger = LoggerFactory.getLogger(getClass());
         exportedObjects = new HashMap<>();
         importedObjects = new ConcurrentHashMap<>();
 
@@ -254,7 +256,7 @@ public abstract class AbstractConnection implements Closeable {
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
-        Optional<Entry<String, ExportedObject>> foundInterface = 
+        Optional<Entry<String, ExportedObject>> foundInterface =
         		getExportedObjects().entrySet().stream()
         			.filter(e -> _interface.equals(e.getValue().getObject().get()))
         			.findFirst();
@@ -302,7 +304,7 @@ public abstract class AbstractConnection implements Closeable {
         if (null == objectpath || "".equals(objectpath)) {
             throw new DBusException("Must Specify an Object Path");
         }
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+        if (objectpath.length() > MAX_NAME_LENGTH || !(OBJECT_REGEX_PATTERN.matcher(objectpath).matches())) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         synchronized (getExportedObjects()) {
@@ -333,7 +335,7 @@ public abstract class AbstractConnection implements Closeable {
         if (null == _objectPrefix || "".equals(_objectPrefix)) {
             throw new DBusException("Must Specify an Object Path");
         }
-        if (!_objectPrefix.matches(OBJECT_REGEX) || _objectPrefix.length() > MAX_NAME_LENGTH) {
+        if (_objectPrefix.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPrefix).matches()) {
             throw new DBusException("Invalid object path: " + _objectPrefix);
         }
         ExportedObject eo = new ExportedObject(_object, weakreferences);
@@ -422,7 +424,7 @@ public abstract class AbstractConnection implements Closeable {
             throw new ClassCastException("Not A DBus Signal");
         }
         String objectpath = getImportedObjects().get(object).getObjectPath();
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         removeSigHandler(new DBusMatchRule(type, null, objectpath), handler);
@@ -477,7 +479,7 @@ public abstract class AbstractConnection implements Closeable {
             throw new DBusException("Not an object exported or imported by this connection");
         }
         String objectpath = rObj.getObjectPath();
-        if (!objectpath.matches(OBJECT_REGEX) || objectpath.length() > MAX_NAME_LENGTH) {
+        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         addSigHandler(new DBusMatchRule(type, null, objectpath), handler);
@@ -794,7 +796,7 @@ public abstract class AbstractConnection implements Closeable {
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     m.setArgs(Marshalling.deSerializeParameters(m.getParameters(), ts, conn));
-                    logger.trace("Deserialised {} to types {}", Arrays.deepToString(m.getParameters()), Arrays.deepToString(ts));
+                    logger.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), m.getParameters()), LoggingHelper.arraysDeepString(logger.isTraceEnabled(),ts));
                 } catch (Exception e) {
                     logger.debug("", e);
                     handleException(conn, m, new UnknownMethod("Failure in de-serializing message: " + e));

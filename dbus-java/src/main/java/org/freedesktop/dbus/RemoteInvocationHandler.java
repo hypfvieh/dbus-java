@@ -17,7 +17,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
@@ -32,6 +31,7 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } else {
             try {
-                LOGGER.trace("Converting return parameters from {} to type {}",Arrays.deepToString(rp), m.getGenericReturnType());
+                LOGGER.trace("Converting return parameters from {} to type {}",LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), rp), m.getGenericReturnType());
                 rp = Marshalling.deSerializeParameters(rp, new Type[] {
                         m.getGenericReturnType()
                 }, conn);
