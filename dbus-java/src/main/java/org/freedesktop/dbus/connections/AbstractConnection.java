@@ -78,7 +78,7 @@ import com.github.hypfvieh.threads.NameableThreadFactory;
  */
 public abstract class AbstractConnection implements Closeable {
 
-    private static final Map<Thread, DBusCallInfo> INFOMAP     = new ConcurrentHashMap<>();
+    private static final Map<Thread, DBusCallInfo> INFOMAP   = new ConcurrentHashMap<>();
     /**
      * Default thread pool size
      */
@@ -89,7 +89,7 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          TCP_CONNECT_TIMEOUT     = 100000;
 
     /** Lame method to setup endianness used on DBus messages */
-    private static byte              endianness       = getSystemEndianness();
+    private static byte              endianness             = getSystemEndianness();
 
     public static final boolean      FLOAT_SUPPORT          = (null != System.getenv("DBUS_JAVA_FLOATS"));
     public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
@@ -97,10 +97,10 @@ public abstract class AbstractConnection implements Closeable {
     public static final Pattern      OBJECT_REGEX_PATTERN   = Pattern.compile("^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$");
     public static final Pattern      DOLLAR_PATTERN         = Pattern.compile("[$]");
 
-    public static final int          MAX_ARRAY_LENGTH = 67108864;
-    public static final int          MAX_NAME_LENGTH  = 255;
+    public static final int          MAX_ARRAY_LENGTH       = 67108864;
+    public static final int          MAX_NAME_LENGTH        = 255;
 
-    private final Logger        logger = LoggerFactory.getLogger(getClass());
+    private final Logger                                                        logger;
 
     private final ObjectTree                                                    objectTree;
 
@@ -135,6 +135,7 @@ public abstract class AbstractConnection implements Closeable {
             new ReentrantReadWriteLock();
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
+        logger = LoggerFactory.getLogger(getClass());
         exportedObjects = new HashMap<>();
         importedObjects = new ConcurrentHashMap<>();
 
@@ -255,7 +256,7 @@ public abstract class AbstractConnection implements Closeable {
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
-        Optional<Entry<String, ExportedObject>> foundInterface = 
+        Optional<Entry<String, ExportedObject>> foundInterface =
         		getExportedObjects().entrySet().stream()
         			.filter(e -> _interface.equals(e.getValue().getObject().get()))
         			.findFirst();
