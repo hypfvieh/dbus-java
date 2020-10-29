@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.Marshalling;
@@ -13,6 +14,7 @@ import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
 
 import com.github.hypfvieh.util.StringUtil;
 
@@ -78,7 +80,7 @@ public class StructTreeBuilder {
             if (!treeItem.getSubType().isEmpty()) {
                 createNested(treeItem.getSubType(), info, _generatedClasses);
             }
-            _clzBldr.getImports().addAll(info.getImports());
+            //_clzBldr.getImports().addAll(info.getImports());
         }
 
         return parentType == null ? _clzBldr.getPackageName() + "." + _structName : parentType;
@@ -100,10 +102,10 @@ public class StructTreeBuilder {
         ClassConstructor classConstructor = new ClassConstructor();
 
         for (StructTree inTree : _list) {
-            ClassBuilderInfo.ClassMember member = new ClassBuilderInfo.ClassMember("member" + position, inTree.getDataType().getName(), true);
+            ClassBuilderInfo.MemberOrArgument member = new ClassBuilderInfo.MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
             member.getAnnotations().add("@Position(" + position + ")");
 
-            classConstructor.getArguments().put("member" + position, inTree.getDataType().getName());
+            String constructorArg = "member" + position;
 
             position++;
 
@@ -114,16 +116,27 @@ public class StructTreeBuilder {
                 info.setExtendClass(Struct.class.getName());
                 info.setClassType(ClassType.CLASS);
                 _classes.add(info);
-            } else if (Collection.class.isAssignableFrom(inTree.getDataType())) {
+
+                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
+
+            } else if (Collection.class.isAssignableFrom(inTree.getDataType()) || Map.class.isAssignableFrom(inTree.getDataType())) {
                 ClassBuilderInfo temp = new ClassBuilderInfo();
+
                 temp.setClassName(info.getClassName());
                 temp.setPackageName(info.getPackageName());
                 createNested(inTree.getSubType(), temp, _classes);
                 info.getImports().addAll(temp.getImports());
                 member.getGenerics().addAll(temp.getMembers().stream().map(l -> l.getType()).collect(Collectors.toList()));
+
+                MemberOrArgument argument = new MemberOrArgument(constructorArg, inTree.getDataType().getName());
+                argument.getGenerics().addAll(member.getGenerics());
+                classConstructor.getArguments().add(argument);
+            } else {
+                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
             }
 
             info.getImports().add(Position.class.getName()); // add position annotation as include
+
             info.getImports().add(inTree.getDataType().getName());
             info.getMembers().add(member);
         }

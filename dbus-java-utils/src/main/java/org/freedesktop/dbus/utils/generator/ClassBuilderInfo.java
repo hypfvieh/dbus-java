@@ -4,11 +4,8 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -84,7 +81,7 @@ public class ClassBuilderInfo {
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
     /** Members/Fields of this class. */
-    private final List<ClassMember>      members               = new ArrayList<>();
+    private final List<MemberOrArgument>      members               = new ArrayList<>();
     /** Interfaces implemented by this class. */
     private final Set<String>            implementedInterfaces = new LinkedHashSet<>();
     /** Methods provided by this class. */
@@ -159,7 +156,7 @@ public class ClassBuilderInfo {
         return methods;
     }
 
-    public List<ClassMember> getMembers() {
+    public List<MemberOrArgument> getMembers() {
         return members;
     }
 
@@ -239,17 +236,11 @@ public class ClassBuilderInfo {
         }
 
         // add member fields
-        for (ClassMember member : members) {
+        for (MemberOrArgument member : members) {
             if (!member.getAnnotations().isEmpty()) {
                 content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).collect(Collectors.toList()));
             }
-            String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
-            if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(" ,")) + ">";
-            }
-            content.add(memberIndent + "private " + (member.isFinalMember() ? "final " : "") + memberType + " "
-                    + member.getName() + ";");
-
+            content.add(memberIndent + "private " + member.asOneLineString(allImports, false) + ";");
         }
 
         if (!getConstructors().isEmpty()) {
@@ -257,15 +248,16 @@ public class ClassBuilderInfo {
             for (ClassConstructor constructor : getConstructors()) {
                 String outerIndent = _staticClass ? "        " : "    ";
                 String cstr = outerIndent + "public " + getClassName() + "(";
+
                 if (!constructor.getSuperArguments().isEmpty()) {
-                    cstr += constructor.getSuperArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
+                    cstr += constructor.getSuperArguments().stream().map(e -> e.asOneLineString(allImports, false)).collect(Collectors.joining(", "));
                     if (!constructor.getArguments().isEmpty()) {
                         cstr += ", ";
                     }
                 }
+
                 if (!constructor.getArguments().isEmpty()) {
-                    cstr += constructor.getArguments().entrySet().stream()
-                            .map(e -> TypeConverter.getProperJavaClass(e.getValue(), allImports) + " " + e.getKey()).collect(Collectors.joining(", "));
+                    cstr += constructor.argumentsAsString(allImports);
                 }
 
                 if (constructor.getThrowArguments().isEmpty()) {
@@ -279,11 +271,12 @@ public class ClassBuilderInfo {
                 String innerIndent = _staticClass ? "            " : "        ";
 
                 if (!constructor.getSuperArguments().isEmpty()) {
-                    content.add(innerIndent + "super(" + String.join(", ", constructor.getSuperArguments().keySet()) + ");");
+                    content.add(innerIndent + "super(" + constructor.getSuperArguments().stream().map(c -> c.getName()).collect(Collectors.joining(", ")) + ");");
                 }
+
                 if (!constructor.getArguments().isEmpty()) {
-                    for (Entry<String, String> e : constructor.getArguments().entrySet()) {
-                        content.add(innerIndent + "this." + e.getKey().replaceFirst("^_(.+)", "$1") + " = " + e.getKey() + ";");
+                    for (MemberOrArgument e : constructor.getArguments()) {
+                        content.add(innerIndent + "this." + e.getName().replaceFirst("^_(.+)", "$1") + " = " + e.getName() + ";");
                     }
                 }
 
@@ -294,15 +287,15 @@ public class ClassBuilderInfo {
         content.add("");
 
         // add getter and setter
-        for (ClassMember member : members) {
+        for (MemberOrArgument member : members) {
             String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
 
             if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(" ,")) + ">";
+                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(", ")) + ">";
             }
 
             String getterSetterName = StringUtil.snakeToCamelCase(StringUtil.upperCaseFirstChar(member.getName()));
-            if (!member.isFinalMember()) {
+            if (!member.isFinalArg()) {
                 content.add(memberIndent + "public void set" + getterSetterName + "("
                         + memberType + " arg) {");
                 content.add(memberIndent + "    " + member.getName() + " = arg;");
@@ -325,7 +318,7 @@ public class ClassBuilderInfo {
             String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
             clzMth += mth.getName() + "(";
             if (!mth.getArguments().isEmpty()) {
-                clzMth += mth.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey())
+                clzMth += mth.getArguments().stream().map(e -> e.asOneLineString(allImports, true))
                         .collect(Collectors.joining(", "));
             }
             clzMth += ");";
@@ -429,7 +422,7 @@ public class ClassBuilderInfo {
         /** True if method should be final, false otherwise. */
         private final boolean             finalMethod;
         /** Arguments for this method, key is argument name, value is argument type. */
-        private final Map<String, String> arguments = new LinkedHashMap<>();
+        private final List<MemberOrArgument> arguments = new ArrayList<>();
         /** List of annotations for this method. */
         private final List<String> annotations = new ArrayList<>();
 
@@ -451,7 +444,7 @@ public class ClassBuilderInfo {
             return finalMethod;
         }
 
-        public Map<String, String> getArguments() {
+        public List<MemberOrArgument> getArguments() {
             return arguments;
         }
 
@@ -462,28 +455,32 @@ public class ClassBuilderInfo {
     }
 
     /**
-     * Pojo which represents a class member/field.
+     * Pojo which represents a class member/field or argument.
      *
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
-    public static class ClassMember {
+    public static class MemberOrArgument {
     	/** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
         private final String       type;
         /** True to force this member to be final, false otherwise. */
-        private final boolean      finalMember;
+        private final boolean      finalArg;
         /** List of classes/types or placeholders put into diamond operators to use as generics. */
         private final List<String> generics = new ArrayList<>();
         /** List of annotations for this member. */
         private final List<String> annotations = new ArrayList<>();
 
-        public ClassMember(String _name, String _type, boolean _finalMember) {
+        public MemberOrArgument(String _name, String _type, boolean _finalMember) {
             // repair reserved words by adding 'Param' as appendix
         	name = RESERVED.contains(_name) ? _name + "param" : _name;
             type = _type;
-            finalMember = _finalMember;
+            finalArg = _finalMember;
+        }
+
+        public MemberOrArgument(String _name, String _type) {
+            this(_name, _type, false);
         }
 
         public List<String> getAnnotations() {
@@ -498,12 +495,46 @@ public class ClassBuilderInfo {
             return type;
         }
 
-        public boolean isFinalMember() {
-            return finalMember;
+        public boolean isFinalArg() {
+            return finalArg;
         }
 
         public List<String> getGenerics() {
             return generics;
+        }
+
+        public String getFullType(Set<String> _allImports) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(TypeConverter.getProperJavaClass(getType(), _allImports));
+
+            if (!getGenerics().isEmpty()) {
+                sb.append("<")
+                  .append(getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _allImports)).collect(Collectors.joining(", ")))
+                  .append(">");
+            }
+
+            return sb.toString();
+        }
+
+        public String asOneLineString(Set<String> _allImports, boolean _includeAnnotations) {
+            StringBuilder sb = new StringBuilder();
+
+            if (isFinalArg()) {
+                sb.append("final ");
+            }
+
+            if (_includeAnnotations && !getAnnotations().isEmpty()) {
+                sb.append(String.join(" ", getAnnotations()))
+                  .append(" ");
+            }
+
+            sb.append(getFullType(_allImports));
+
+            sb.append(" ");
+
+            sb.append(getName());
+
+            return sb.toString();
         }
 
     }
@@ -516,9 +547,9 @@ public class ClassBuilderInfo {
      */
     public static class ClassConstructor {
     	/** Map of arguments for the constructor. Key is argument name, value is argument type. */
-        private final Map<String, String> arguments = new LinkedHashMap<>();
+        private final List<MemberOrArgument> arguments = new ArrayList<>();
         /** Map of arguments for the super-constructor. Key is argument name, value is argument type. */
-        private final Map<String, String> superArguments = new LinkedHashMap<>();
+        private final List<MemberOrArgument> superArguments = new ArrayList<>();
 
         /** List of throws arguments. */
         private final List<String> throwArguments = new ArrayList<>();
@@ -527,12 +558,16 @@ public class ClassBuilderInfo {
             return throwArguments;
         }
 
-        public Map<String, String> getArguments() {
+        public List<MemberOrArgument> getArguments() {
             return arguments;
         }
 
-        public Map<String, String> getSuperArguments() {
+        public List<MemberOrArgument> getSuperArguments() {
             return superArguments;
+        }
+
+        public String argumentsAsString(Set<String> _allImports) {
+            return getArguments().stream().map(a -> a.asOneLineString(_allImports, true)).collect(Collectors.joining(", "));
         }
     }
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +24,9 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMember;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMethod;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -230,21 +231,21 @@ public class InterfaceCodeGenerator {
 
 
         for (Entry<String, String> argEntry : args.entrySet()) {
-            innerClass.getMembers().add(new ClassMember(argEntry.getKey(), argEntry.getValue(), true));
+            innerClass.getMembers().add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), true));
         }
 
         ClassConstructor classConstructor = new ClassBuilderInfo.ClassConstructor();
 
-        Map<String, String> argsMap = new LinkedHashMap<>();
+        List<MemberOrArgument> argsList = new ArrayList<>();
         for (Entry<String, String> e : args.entrySet()) {
-            argsMap.put("_" + e.getKey(), e.getValue());
+            argsList.add(new MemberOrArgument("_" + e.getKey(), e.getValue(), false));
         }
 
-        classConstructor.getArguments().putAll(argsMap);
+        classConstructor.getArguments().addAll(argsList);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
 
-        classConstructor.getSuperArguments().put("_path", "String");
-        classConstructor.getSuperArguments().put("_interfaceName", "String");
+        classConstructor.getSuperArguments().add(new MemberOrArgument("_path", "String", false));
+        classConstructor.getSuperArguments().add(new MemberOrArgument("_interfaceName", "String", false));
 
         innerClass.getConstructors().add(classConstructor);
 
@@ -269,8 +270,8 @@ public class InterfaceCodeGenerator {
         if (_methodElement.hasChildNodes()) {
             List<Element> methodArgs = convertToElementList(XmlUtil.applyXpathExpressionToDocument("./arg", _methodElement));
 
-            Map<String, String> inputArgs = new LinkedHashMap<>();
-            Map<String, String> outputArgs = new LinkedHashMap<>();
+            List<MemberOrArgument> inputArgs = new ArrayList<>();
+            List<MemberOrArgument> outputArgs = new ArrayList<>();
 
             int unknownArgNameCnt = 0;
             for (Element argElm : methodArgs) {
@@ -297,9 +298,9 @@ public class InterfaceCodeGenerator {
                 }
 
                 if ("in".equals(argElm.getAttribute("direction"))) {
-                    inputArgs.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
+                    inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
                 } else if ("out".equals(argElm.getAttribute("direction"))) {
-                    outputArgs.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
+                    outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                 }
             }
 
@@ -308,11 +309,14 @@ public class InterfaceCodeGenerator {
             	logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
             	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
             }
+
             logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
-            resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(new ArrayList<>(outputArgs.keySet()).get(0));
+
+            resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
 
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
-            classMethod.getArguments().putAll(inputArgs);
+            classMethod.getArguments().addAll(inputArgs);
+
             _clzBldr.getMethods().add(classMethod);
 
         } else { // method has no arguments
@@ -334,7 +338,7 @@ public class InterfaceCodeGenerator {
      * @param _additionalClasses list where the new created tuple class will be added to
      * @return FQCN of the newly created tuple based class
      */
-    private String createTuple(Map<String, String> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses) {
+    private String createTuple(List<MemberOrArgument> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses) {
     	if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
     		return null;
     	}
@@ -349,12 +353,11 @@ public class InterfaceCodeGenerator {
     	}
 
     	int position = 0;
-    	for (Entry<String, String> entry : _outputArgs.entrySet()) {
-    		ClassMember member = new ClassMember(entry.getKey(), entry.getValue(), true);
-            member.getAnnotations().add("@Position(" + position + ")");
+    	for (MemberOrArgument entry : _outputArgs) {
+            entry.getAnnotations().add("@Position(" + position + ")");
 		}
         ClassConstructor cnstrct = new ClassConstructor();
-        cnstrct.getArguments().putAll(_outputArgs);
+        cnstrct.getArguments().addAll(_outputArgs);
 
     	_additionalClasses.add(info);
 
