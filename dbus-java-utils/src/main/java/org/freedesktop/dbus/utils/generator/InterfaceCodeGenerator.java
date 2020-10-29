@@ -58,7 +58,7 @@ public class InterfaceCodeGenerator {
     public InterfaceCodeGenerator(String _introspectionData, String _objectPath, String _busName) {
         introspectionData = _introspectionData;
         nodeName = _objectPath;
-        busName = _busName;
+        busName = StringUtil.isBlank(_busName) ? "*" : _busName;
     }
 
 
@@ -96,7 +96,7 @@ public class InterfaceCodeGenerator {
 
         Map<File, String> filesAndContents = new LinkedHashMap<>();
 
-        boolean noBusnameGiven = StringUtil.isBlank(busName);
+        boolean noBusnameGiven = "*".equals(busName);
 
         for (Element ife : interfaceElements) {
             String nameAttrib = ife.getAttribute("name");
@@ -497,6 +497,10 @@ public class InterfaceCodeGenerator {
         try {
 
             Map<File, String> analyze = ci2.analyze(ignoreDtd);
+            if (analyze == null) {
+                logger.error("Unable to create interface files");
+                return;
+            }
             writeToFile(outputDir, analyze);
             logger.info("Interface creation finished");
         } catch (Exception _ex) {
@@ -521,8 +525,8 @@ public class InterfaceCodeGenerator {
         System.out.println("        --version                        Show version information");
         System.out.println("        --help                           Show this help");
         System.out.println("");
-        System.out.println("If --inputFile is given busname object argument can be skipped, that will force the util to extract all interfaces found in the given file.");
-        System.out.println("If a busname (not empty or blank) is given, then only interfaces starting with the given busname will be extracted.");
+        System.out.println("If --inputFile is given busname object argument can be skipped (or * can be used), that will force the util to extract all interfaces found in the given file.");
+        System.out.println("If busname (not empty, blank and not '*') is given, then only interfaces starting with the given busname will be extracted.");
     }
 
     static enum DbusInterfaceToFqcn {
