@@ -95,13 +95,19 @@ public class InterfaceCodeGenerator {
 
         Map<File, String> filesAndContents = new LinkedHashMap<>();
 
+        boolean noBusnameGiven = StringUtil.isBlank(busName);
 
         for (Element ife : interfaceElements) {
-            if (!StringUtil.isBlank(busName) && ife.getAttribute("name").startsWith(busName)) {
+            String nameAttrib = ife.getAttribute("name");
+            if (!noBusnameGiven && !nameAttrib.startsWith(busName)) { // busname was set, and current element does not match -> skip
+                logger.info("Skipping: {} - does not match given busName: {}", nameAttrib, busName);
+                continue;
+            } else if (noBusnameGiven) { // no busname given, take all
+                // take all interfaces
                 filesAndContents.putAll(extractAll(ife));
                 continue;
             }
-            // take all interfaces
+            // busname given and matching
             filesAndContents.putAll(extractAll(ife));
         }
 
@@ -130,7 +136,7 @@ public class InterfaceCodeGenerator {
      * Extract all methods/signals etc. from the given interface element.
      *
      * @param _ife interface element
-     * @return List of files and their contents
+     * @return Map of files and their contents
      * @throws IOException when reading xml fails
      * @throws DBusException when DBus fails
      */
@@ -233,15 +239,15 @@ public class InterfaceCodeGenerator {
         for (Entry<String, String> e : args.entrySet()) {
             argsMap.put("_" + e.getKey(), e.getValue());
         }
-        
+
         classConstructor.getArguments().putAll(argsMap);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
-        
+
         classConstructor.getSuperArguments().put("_path", "String");
         classConstructor.getSuperArguments().put("_interfaceName", "String");
 
         innerClass.getConstructors().add(classConstructor);
-        
+
 
         return additionalClasses;
     }
@@ -445,7 +451,7 @@ public class InterfaceCodeGenerator {
         if (objectPath == null) {
             objectPath = "/";
         }
-        
+
         if (outputDir == null) {
             throw new RuntimeException("No output directory (--outputDir) given!");
         }
@@ -454,46 +460,44 @@ public class InterfaceCodeGenerator {
 
         String introspectionData = null;
 
-        if (!StringUtil.isBlank(busName)) {
-            if (!StringUtil.isBlank(inputFile)) {
-                File file = new File(inputFile);
-                if (!file.exists()) {
-                    logger.error("Given input file {} does not exist", file);
-                    System.exit(1);
-                }
-                introspectionData = FileIoUtil.readFileToString(file);
-            } else {
-                try {
-                    logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
-    
-                    DBusConnection conn = DBusConnection.getConnection(busType);
-    
-                    Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
-                    introspectionData = in.Introspect();
-                    if (StringUtil.isBlank(introspectionData)) {
-                        logger.error("Failed to get introspection data");
-                        System.exit(1);
-                    }
-                    conn.disconnect();
-                } catch (DBusExecutionException | DBusException _ex) {
-                    logger.error("Failure in DBus Communications. ", _ex);
-                    System.exit(1);
-    
-                }
+        if (!StringUtil.isBlank(inputFile)) {
+            File file = new File(inputFile);
+            if (!file.exists()) {
+                logger.error("Given input file {} does not exist", file);
+                System.exit(1);
             }
-            
-            InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
+            introspectionData = FileIoUtil.readFileToString(file);
+        } else if (!StringUtil.isBlank(busName)) {
             try {
+                logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
 
-                Map<File, String> analyze = ci2.analyze(ignoreDtd);
-                writeToFile(outputDir, analyze);
-                logger.info("Interface creation finished");
-            } catch (Exception _ex) {
-                logger.error("Error while analyzing introspection data", _ex);
+                DBusConnection conn = DBusConnection.getConnection(busType);
+
+                Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
+                introspectionData = in.Introspect();
+                if (StringUtil.isBlank(introspectionData)) {
+                    logger.error("Failed to get introspection data");
+                    System.exit(1);
+                }
+                conn.disconnect();
+            } catch (DBusExecutionException | DBusException _ex) {
+                logger.error("Failure in DBus Communications. ", _ex);
+                System.exit(1);
+
             }
         } else {
             logger.error("Busname missing!");
             System.exit(1);
+        }
+
+        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
+        try {
+
+            Map<File, String> analyze = ci2.analyze(ignoreDtd);
+            writeToFile(outputDir, analyze);
+            logger.info("Interface creation finished");
+        } catch (Exception _ex) {
+            logger.error("Error while analyzing introspection data", _ex);
         }
     }
 
@@ -513,6 +517,9 @@ public class InterfaceCodeGenerator {
         System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
         System.out.println("        --version                        Show version information");
         System.out.println("        --help                           Show this help");
+        System.out.println("");
+        System.out.println("If --inputFile is given busname object argument can be skipped, that will force the util to extract all interfaces found in the given file.");
+        System.out.println("If a busname (not empty or blank) is given, then only interfaces starting with the given busname will be extracted.");
     }
 
     static enum DbusInterfaceToFqcn {
@@ -532,10 +539,10 @@ public class InterfaceCodeGenerator {
 
             map.put(DbusInterfaceToFqcn.CLASSNAME, StringUtil.upperCaseFirstChar(className));
             map.put(DbusInterfaceToFqcn.PACKAGENAME, packageName.toLowerCase());
-            
+
             if (!packageName.equals(packageName.toLowerCase())) {
-                map.put(DbusInterfaceToFqcn.ORIG_PKGNAME, packageName);    
-                map.put(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME, packageName + "." + className); 
+                map.put(DbusInterfaceToFqcn.ORIG_PKGNAME, packageName);
+                map.put(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME, packageName + "." + className);
             }
             return map;
         }

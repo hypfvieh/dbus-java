@@ -19,12 +19,12 @@ import com.github.hypfvieh.util.StringUtil;
 
 /**
  * Helper to create Java class/interface files with proper formatting.
- * 
+ *
  * @author hypfvieh
  * @since v3.0.1 - 2018-12-22
  */
 public class ClassBuilderInfo {
-    
+
     /** Set of reserved words in Java. */
     private static final Set<String> RESERVED = new HashSet<>();
     static {
@@ -80,7 +80,7 @@ public class ClassBuilderInfo {
         RESERVED.add("volatile");
         RESERVED.add("while");
     }
-    
+
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
     /** Members/Fields of this class. */
@@ -98,7 +98,7 @@ public class ClassBuilderInfo {
     private String                       className;
     /** Package of this class. */
     private String                       packageName;
-    
+
     /** Package name used by DBus. */
     private String                       dbusPackageName;
 
@@ -170,7 +170,7 @@ public class ClassBuilderInfo {
     public List<ClassConstructor> getConstructors() {
         return constructors;
     }
-    
+
     /**
      * Create the Java source for the class information provided.
      * @return String
@@ -182,7 +182,7 @@ public class ClassBuilderInfo {
 
     /**
      * Create the Java source for the class information provided.
-     * 
+     *
      * @param _staticClass this is static inner class
      * @param _otherImports this class needs additional imports (e.g. due to inner class)
      * @return
@@ -198,7 +198,7 @@ public class ClassBuilderInfo {
         if (_otherImports != null) {
             allImports.addAll(_otherImports);
         }
-        
+
         if (!_staticClass) {
             content.add("package " + getPackageName() + ";");
             content.add("");
@@ -214,7 +214,7 @@ public class ClassBuilderInfo {
             allImports.add(DBusInterfaceName.class.getName());
             content.add(classIndent + "@" + DBusInterfaceName.class.getSimpleName() + "(\"" + getDbusPackageName() + "\")");
         }
-        
+
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
         bgn += " " + getClassName();
         if (getExtendClass() != null) {
@@ -249,14 +249,14 @@ public class ClassBuilderInfo {
             }
             content.add(memberIndent + "private " + (member.isFinalMember() ? "final " : "") + memberType + " "
                     + member.getName() + ";");
-        
+
         }
 
         if (!getConstructors().isEmpty()) {
             content.add("");
             for (ClassConstructor constructor : getConstructors()) {
                 String outerIndent = _staticClass ? "        " : "    ";
-                String cstr = outerIndent + getClassName() + "(";
+                String cstr = outerIndent + "public " + getClassName() + "(";
                 if (!constructor.getSuperArguments().isEmpty()) {
                     cstr += constructor.getSuperArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
                     if (!constructor.getArguments().isEmpty()) {
@@ -264,19 +264,20 @@ public class ClassBuilderInfo {
                     }
                 }
                 if (!constructor.getArguments().isEmpty()) {
-                    cstr += constructor.getArguments().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "));
+                    cstr += constructor.getArguments().entrySet().stream()
+                            .map(e -> TypeConverter.getProperJavaClass(e.getValue(), allImports) + " " + e.getKey()).collect(Collectors.joining(", "));
                 }
-                
+
                 if (constructor.getThrowArguments().isEmpty()) {
                     cstr += ") {";
                 } else {
                     cstr += ") throws " + String.join(", ", constructor.getThrowArguments()) + " {";
                 }
-                
+
                 content.add(cstr);
-                
+
                 String innerIndent = _staticClass ? "            " : "        ";
-                
+
                 if (!constructor.getSuperArguments().isEmpty()) {
                     content.add(innerIndent + "super(" + String.join(", ", constructor.getSuperArguments().keySet()) + ");");
                 }
@@ -316,11 +317,11 @@ public class ClassBuilderInfo {
         content.add("");
 
         for (ClassMethod mth : getMethods()) {
-        	
+
         	if (!mth.getAnnotations().isEmpty()) {
         		content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
         	}
-        	
+
             String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
             clzMth += mth.getName() + "(";
             if (!mth.getArguments().isEmpty()) {
@@ -336,7 +337,7 @@ public class ClassBuilderInfo {
             content.addAll(inner.createClassFileContent(true, allImports));
             allImports.addAll(inner.getImports()); // collect additional imports which may have been added by inner class
         }
-        
+
         content.add(classIndent + "}");
 
         // write imports to resulting content if this is not a inner class
@@ -359,7 +360,7 @@ public class ClassBuilderInfo {
         if (getPackageName() == null) { // no package name
         	return getClassName() + ".java";
         }
-        
+
         return getPackageName().replace(".", File.separator) + File.separator + getClassName() + ".java";
     }
 
@@ -390,16 +391,16 @@ public class ClassBuilderInfo {
 
     /**
      * Contains information about annotation to place on classes, members or methods.
-     * 
+     *
      * @author hypfvieh
      * @since v3.2.1 - 2019-11-13
      */
     public static class AnnotationInfo {
         /** Annotation class. */
         private final Class<? extends Annotation> annotationClass;
-        /** Annotation params (e.g. value = "foo", key = "bar"). */ 
+        /** Annotation params (e.g. value = "foo", key = "bar"). */
         private final String annotationParams;
-        
+
         public AnnotationInfo(Class<? extends Annotation> _annotationClass, String _annotationParams) {
             annotationClass = _annotationClass;
             annotationParams = _annotationParams;
@@ -413,10 +414,10 @@ public class ClassBuilderInfo {
             return annotationParams;
         }
     }
-    
+
     /**
      * Pojo which represents a class method.
-     * 
+     *
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
@@ -431,7 +432,7 @@ public class ClassBuilderInfo {
         private final Map<String, String> arguments = new LinkedHashMap<>();
         /** List of annotations for this method. */
         private final List<String> annotations = new ArrayList<>();
-        
+
         public ClassMethod(String _name, String _returnType, boolean _finalMethod) {
             name = _name;
             returnType = _returnType;
@@ -457,12 +458,12 @@ public class ClassBuilderInfo {
 		public List<String> getAnnotations() {
 			return annotations;
 		}
-        
+
     }
 
     /**
      * Pojo which represents a class member/field.
-     * 
+     *
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
@@ -480,7 +481,7 @@ public class ClassBuilderInfo {
 
         public ClassMember(String _name, String _type, boolean _finalMember) {
             // repair reserved words by adding 'Param' as appendix
-        	name = RESERVED.contains(_name) ? _name + "Param" : _name;
+        	name = RESERVED.contains(_name) ? _name + "param" : _name;
             type = _type;
             finalMember = _finalMember;
         }
@@ -509,27 +510,27 @@ public class ClassBuilderInfo {
 
     /**
      * Pojo which represents a class constructor.
-     * 
+     *
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassConstructor {
-    	/** List of arguments for the constructor. Key is argument name, value is argument type. */
+    	/** Map of arguments for the constructor. Key is argument name, value is argument type. */
         private final Map<String, String> arguments = new LinkedHashMap<>();
-        /** List of arguments for the super-constructor. Key is argument name, value is argument type. */
+        /** Map of arguments for the super-constructor. Key is argument name, value is argument type. */
         private final Map<String, String> superArguments = new LinkedHashMap<>();
-        
+
         /** List of throws arguments. */
         private final List<String> throwArguments = new ArrayList<>();
-        
+
         public List<String> getThrowArguments() {
             return throwArguments;
         }
-        
+
         public Map<String, String> getArguments() {
             return arguments;
         }
-        
+
         public Map<String, String> getSuperArguments() {
             return superArguments;
         }
@@ -537,7 +538,7 @@ public class ClassBuilderInfo {
 
     /**
      * Enum to define either the {@link ClassBuilderInfo} is for a CLASS or an INTERFACE.
-     * 
+     *
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
