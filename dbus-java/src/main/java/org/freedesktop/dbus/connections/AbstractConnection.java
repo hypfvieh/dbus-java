@@ -127,7 +127,7 @@ public abstract class AbstractConnection implements Closeable {
     private volatile boolean                                                    run;
 
     private boolean                                                             weakreferences       = false;
-    private boolean                                                             connected            = false;
+    private volatile boolean                                                    connected            = false;
 
     private AbstractTransport                                                   transport;
     private volatile ThreadPoolExecutor                                         workerThreadPool;
@@ -539,6 +539,10 @@ public abstract class AbstractConnection implements Closeable {
 
         logger.debug("Disconnecting Abstract Connection");
 
+        // stop reading new messages
+        readerThread.terminate();
+
+        // terminate the signal handling pool
         workerThreadPoolLock.writeLock().lock();
         try {
             // try to wait for all pending tasks.
@@ -559,8 +563,6 @@ public abstract class AbstractConnection implements Closeable {
         // stop the main thread
         run = false;
         connected = false;
-
-        readerThread.setTerminate(true);
 
         // disconnect from the transport layer
         try {
