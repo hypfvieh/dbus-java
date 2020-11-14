@@ -124,8 +124,6 @@ public abstract class AbstractConnection implements Closeable {
 
     private final ExecutorService                                               senderService;
 
-    private volatile boolean                                                    run;
-
     private boolean                                                             weakreferences       = false;
     private volatile boolean                                                    connected            = false;
 
@@ -167,8 +165,6 @@ public abstract class AbstractConnection implements Closeable {
             disconnect();
             throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }
-        run = true;
-
     }
 
     public abstract DBusInterface getExportedObject(String source, String path) throws DBusException;
@@ -526,8 +522,12 @@ public abstract class AbstractConnection implements Closeable {
     private synchronized void internalDisconnect() {
 
         if (connected == false) { // already disconnected
+            logger.debug("Ignoring disconnect, already disconnected");
             return;
         }
+
+        // stop the main thread
+        connected = false;
 
         logger.debug("Sending disconnected signal");
         try {
@@ -535,7 +535,6 @@ public abstract class AbstractConnection implements Closeable {
         } catch (Exception ex) {
             logger.debug("Exception while disconnecting", ex);
         }
-
 
         logger.debug("Disconnecting Abstract Connection");
 
@@ -559,10 +558,6 @@ public abstract class AbstractConnection implements Closeable {
         for (Runnable runnable : senderService.shutdownNow()) {
             runnable.run();
         }
-
-        // stop the main thread
-        run = false;
-        connected = false;
 
         // disconnect from the transport layer
         try {
@@ -1139,10 +1134,10 @@ public abstract class AbstractConnection implements Closeable {
         try {
             m = transport.readMessage();
         } catch (IOException exIo) {
-            if (!run && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
+            if (!connected && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
                 return null;
             }
-            if (run) {
+            if (connected) {
                 throw new FatalDBusException(exIo.getMessage());
             } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
         }

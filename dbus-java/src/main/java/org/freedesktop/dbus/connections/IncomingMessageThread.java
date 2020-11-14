@@ -48,9 +48,10 @@ public class IncomingMessageThread extends Thread {
                 if (_ex instanceof FatalException) {
                     logger.error("FatalException in connection thread.", _ex);
                     if (connection.isConnected()) {
-                        connection.disconnect();
                         terminate();
+                        connection.disconnect();
                     }
+                    return;
                 }
 
                 if (!terminate) { // only log exceptions if the connection was not intended to be closed
