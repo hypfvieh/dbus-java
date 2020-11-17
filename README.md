@@ -14,6 +14,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
   - Improved usage of regex and length checks [#119](https://github.com/hypfvieh/dbus-java/issues/119) & [PR#120](https://github.com/hypfvieh/dbus-java/pull/120) (thanks to [OlegAndreych](https://github.com/OlegAndreych))
   - Improvements in InterfaceCodeGenerator Util regarding creation of Struct classes ([#121](https://github.com/hypfvieh/dbus-java/issues/121))
+  - Fixed possible race-conditions/dead-locks when disconnecting from DBus ([#123](https://github.com/hypfvieh/dbus-java/pull/123))
   
 ##### Changes in 3.2.3:
   - Fixed regression introduced with [#110](https://github.com/hypfvieh/dbus-java/pull/110) ([#114](https://github.com/hypfvieh/dbus-java/pull/114))
