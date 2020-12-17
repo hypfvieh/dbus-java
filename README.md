@@ -10,7 +10,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.2.4 (not yet released):
+##### Changes in 3.2.4:
   - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
   - Improved usage of regex and length checks [#119](https://github.com/hypfvieh/dbus-java/issues/119) & [PR#120](https://github.com/hypfvieh/dbus-java/pull/120) (thanks to [OlegAndreych](https://github.com/OlegAndreych))
   - Improvements in InterfaceCodeGenerator Util regarding creation of Struct classes ([#121](https://github.com/hypfvieh/dbus-java/issues/121))
