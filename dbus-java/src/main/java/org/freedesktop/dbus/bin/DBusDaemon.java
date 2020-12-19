@@ -65,7 +65,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private static final Logger LOGGER          = LoggerFactory.getLogger(DBusDaemon.class);
 
-    static class Connstruct {
+    public static class Connstruct {
         // CHECKSTYLE:OFF
         public UnixSocket    usock;
         public Socket        tsock;
