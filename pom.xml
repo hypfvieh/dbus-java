@@ -193,16 +193,11 @@
             </dependency>
             
             <!-- Base dependencies for submodules -->
-            <dependency>
-                <groupId>com.github.hypfvieh</groupId>
-                <artifactId>java-utils</artifactId>
-                <version>1.0.6</version>
-            </dependency>
             
             <dependency>
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
-                <version>0.33</version>
+                <version>0.38.5</version>
             </dependency>
 
         </dependencies>        

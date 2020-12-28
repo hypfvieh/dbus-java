@@ -16,10 +16,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.util.TypeUtil;
 
 public class BusAddress {
     private final Logger        logger = LoggerFactory.getLogger(getClass());
@@ -28,7 +27,7 @@ public class BusAddress {
     private final Map<String, String> parameters = new HashMap<>();
 
     private final String rawAddress;
-    
+
     public BusAddress(String address) throws DBusException {
         if (null == address || "".equals(address)) {
             throw new DBusException("Bus address is blank");
@@ -49,7 +48,7 @@ public class BusAddress {
         logger.trace("Transport type: {}", type);
 
         rawAddress = address;
-        
+
         String[] ps = ss[1].split(",");
         for (String p : ps) {
             String[] kv = p.split("=", 2);
@@ -91,17 +90,17 @@ public class BusAddress {
     public boolean hasGuid() {
         return parameters.containsKey("guid");
     }
-    
+
     public String getAbstract() {
         return parameters.get("abstract");
     }
-    
+
     public String getPath() {
         return parameters.get("path");
     }
 
     public int getPort() {
-        return TypeUtil.isValidNetworkPort(parameters.get("port"), true) ? Integer.parseInt(parameters.get("port")) : null;
+        return Util.isValidNetworkPort(parameters.get("port"), true) ? Integer.parseInt(parameters.get("port")) : null;
     }
 
     public String getHost() {
@@ -111,12 +110,12 @@ public class BusAddress {
     public String getGuid() {
         return parameters.get("guid");
     }
-    
+
     @Override
     public String toString() {
         return type + ": " + parameters;
     }
-    
+
     public String getRawAddress() {
         return rawAddress;
     }
@@ -124,7 +123,7 @@ public class BusAddress {
     public boolean isServer() {
         return isListeningSocket();
     }
-    
+
     public static enum AddressBusTypes {
         UNIX,
         TCP;

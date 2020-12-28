@@ -12,11 +12,10 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
-
-import com.github.hypfvieh.util.StringUtil;
 
 /**
  * Helper to create a DBus struct class.
@@ -48,7 +47,7 @@ public class StructTreeBuilder {
 	 */
     public String buildStructClasses(String _dbusSig, String _structName, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _generatedClasses) throws DBusException {
 
-        if (StringUtil.isBlank(_dbusSig) || _generatedClasses == null) {
+        if (Util.isBlank(_dbusSig) || _generatedClasses == null) {
             return null;
         }
 
@@ -63,7 +62,7 @@ public class StructTreeBuilder {
         int cnt = 0;
         for (StructTree treeItem : structTree) {
             ClassBuilderInfo info = new ClassBuilderInfo();
-            info.setClassName(StringUtil.upperCaseFirstChar(_structName));
+            info.setClassName(Util.upperCaseFirstChar(_structName));
             info.setPackageName(_clzBldr.getPackageName());
             info.setExtendClass(Struct.class.getName());
             info.setClassType(ClassType.CLASS);
@@ -111,7 +110,7 @@ public class StructTreeBuilder {
 
             if (Struct.class.isAssignableFrom(inTree.getDataType())) {
                 info = new ClassBuilderInfo();
-                info.setClassName(StringUtil.upperCaseFirstChar(_info.getClassName()) + "Struct");
+                info.setClassName(Util.upperCaseFirstChar(_info.getClassName()) + "Struct");
                 info.setPackageName(_info.getClassName());
                 info.setExtendClass(Struct.class.getName());
                 info.setClassType(ClassType.CLASS);
@@ -180,7 +179,7 @@ public class StructTreeBuilder {
     private List<StructTree> buildTree(String _dbusTypeStr) throws DBusException {
         List<StructTree> root = new ArrayList<>();
 
-        if (StringUtil.isBlank(_dbusTypeStr)) {
+        if (Util.isBlank(_dbusTypeStr)) {
         	return root;
         }
 

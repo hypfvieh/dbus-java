@@ -68,10 +68,9 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.messages.ObjectTree;
 import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.threads.NameableThreadFactory;
 
 /**
  * Handles a connection to DBus.

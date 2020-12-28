@@ -39,10 +39,9 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.util.StringUtil;
 
 /** Handles a peer to peer connection between two applications withou a bus daemon.
  * <p>
@@ -52,7 +51,7 @@ import com.github.hypfvieh.util.StringUtil;
 public class DirectConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String machineId;
-    
+
     /**
      * Create a direct connection to another application.
      * @param address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
@@ -61,11 +60,11 @@ public class DirectConnection extends AbstractConnection {
     public DirectConnection(String address) throws DBusException {
         this(address, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
-    
+
     /**
     * Create a direct connection to another application.
     * @param address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
-    * @param timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket. 
+    * @param timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket.
     * @throws DBusException on error
     */
     public DirectConnection(String address, int timeout) throws DBusException {
@@ -98,7 +97,7 @@ public class DirectConnection extends AbstractConnection {
         } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
         }
 
-        return StringUtil.randomString(32);
+        return Util.randomString(32);
     }
 
     /**
@@ -298,13 +297,13 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void addSigHandler(DBusMatchRule rule, DBusSigHandler<T> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-       
-        Queue<DBusSigHandler<? extends DBusSignal>> v = 
+
+        Queue<DBusSigHandler<? extends DBusSignal>> v =
                 getHandledSignals().computeIfAbsent(key, val -> {
                     Queue<DBusSigHandler<? extends DBusSignal>> l = new ConcurrentLinkedQueue<>();
                     return l;
                 });
-    
+
         v.add(handler);
     }
 
@@ -323,7 +322,7 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected void addGenericSigHandler(DBusMatchRule rule, DBusSigHandler<DBusSignal> handler) throws DBusException {
         SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
-        Queue<DBusSigHandler<DBusSignal>> v = 
+        Queue<DBusSigHandler<DBusSignal>> v =
                 getGenericHandledSignals().computeIfAbsent(key, val -> {
                     Queue<DBusSigHandler<DBusSignal>> l = new ConcurrentLinkedQueue<>();
                     return l;

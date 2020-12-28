@@ -78,11 +78,10 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.TimeMeasure;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.github.hypfvieh.util.TimeMeasure;
 
 /**
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
@@ -160,7 +159,7 @@ public class TestAll {
         clientconn.addSigHandler(SampleSignals.TestObjectSignal.class, new ObjectSignalHandler(1));
         clientconn.addSigHandler(SampleSignals.TestPathSignal.class, new PathSignalHandler(1));
 
-        BadArraySignalHandler<TestSignal> bash = new BadArraySignalHandler<TestSignal>(1);
+        BadArraySignalHandler<TestSignal> bash = new BadArraySignalHandler<>(1);
         clientconn.addSigHandler(TestSignal.class, bash);
         clientconn.removeSigHandler(TestSignal.class, bash);
         System.out.println("done");
@@ -792,7 +791,7 @@ public class TestAll {
     @Test
     public void testStructAsync() throws DBusException, InterruptedException {
         SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
-        SampleStruct struct = new SampleStruct( "fizbuzz", new UInt32( 5248 ), new Variant<Integer>( 2234 ) );
+        SampleStruct struct = new SampleStruct( "fizbuzz", new UInt32( 5248 ), new Variant<>( 2234 ) );
 
 
         @SuppressWarnings("unchecked")

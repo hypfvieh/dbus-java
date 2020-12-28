@@ -11,8 +11,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
-
-import com.github.hypfvieh.util.StringUtil;
+import org.freedesktop.dbus.utils.Util;
 
 /**
  * Helper to create Java class/interface files with proper formatting.
@@ -294,7 +293,7 @@ public class ClassBuilderInfo {
                 memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(", ")) + ">";
             }
 
-            String getterSetterName = StringUtil.snakeToCamelCase(StringUtil.upperCaseFirstChar(member.getName()));
+            String getterSetterName = Util.snakeToCamelCase(Util.upperCaseFirstChar(member.getName()));
             if (!member.isFinalArg()) {
                 content.add(memberIndent + "public void set" + getterSetterName + "("
                         + memberType + " arg) {");
@@ -362,7 +361,7 @@ public class ClassBuilderInfo {
      * @return String
      */
     public String getFqcn() {
-        return StringUtil.isBlank(getPackageName()) ? getClassName() : getPackageName() + "." + getClassName();
+        return Util.isBlank(getPackageName()) ? getClassName() : getPackageName() + "." + getClassName();
     }
 
     /**

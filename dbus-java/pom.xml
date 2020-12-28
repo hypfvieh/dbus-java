@@ -25,10 +25,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>com.github.hypfvieh</groupId>
-            <artifactId>java-utils</artifactId>
-        </dependency>
         
         <dependency>
             <groupId>com.github.jnr</groupId>
@@ -52,7 +48,7 @@
         <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
         <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
         <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
+        <tag>HEAD</tag>
   </scm>
 
 </project>

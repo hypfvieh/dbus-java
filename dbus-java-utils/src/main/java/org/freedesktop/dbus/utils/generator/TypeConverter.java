@@ -18,8 +18,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.Variant;
-
-import com.github.hypfvieh.util.StringUtil;
+import org.freedesktop.dbus.utils.Util;
 
 /**
  * Helper to convert DBus types and java types.
@@ -154,7 +153,7 @@ public class TypeConverter {
         List<Type> dataType = new ArrayList<>();
         String type;
 
-        if (StringUtil.isBlank(_dbusType)) {
+        if (Util.isBlank(_dbusType)) {
         	return null;
         }
 
@@ -216,7 +215,7 @@ public class TypeConverter {
      */
     private static String getTypeAdv(String _dbusType, Set<String> _javaIncludes) throws DBusException {
 
-    	if (StringUtil.isBlank(_dbusType)) {
+    	if (Util.isBlank(_dbusType)) {
     		return null;
     	}
 

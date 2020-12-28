@@ -23,6 +23,8 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.XmlUtil;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMethod;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
@@ -32,10 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
-
-import com.github.hypfvieh.util.FileIoUtil;
-import com.github.hypfvieh.util.StringUtil;
-import com.github.hypfvieh.util.xml.XmlUtil;
 
 /**
  * Replacement for the old CreateInterface tool.
@@ -58,7 +56,7 @@ public class InterfaceCodeGenerator {
     public InterfaceCodeGenerator(String _introspectionData, String _objectPath, String _busName) {
         introspectionData = _introspectionData;
         nodeName = _objectPath;
-        busName = StringUtil.isBlank(_busName) ? "*" : _busName;
+        busName = Util.isBlank(_busName) ? "*" : _busName;
     }
 
 
@@ -85,7 +83,7 @@ public class InterfaceCodeGenerator {
 
         Element root = document.getDocumentElement();
 
-        if (!StringUtil.isBlank(nodeName) && !StringUtil.isBlank(root.getAttribute("name"))) {
+        if (!Util.isBlank(nodeName) && !Util.isBlank(root.getAttribute("name"))) {
             if (!nodeName.equals(root.getAttribute("name"))) {
                 logger.error("Retrieved node '{}' does not match requested node name '{}'!", root.getAttribute("name"), nodeName);
                 return null;
@@ -221,8 +219,8 @@ public class InterfaceCodeGenerator {
         int unknownArgCnt = 0;
         for (Element argElm : signalArgs) {
                 String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
-                String argName = StringUtil.snakeToCamelCase(argElm.getAttribute("name"));
-                if (StringUtil.isBlank(argName)) {
+                String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
+                if (Util.isBlank(argName)) {
                     argName = "arg" + unknownArgCnt;
                     unknownArgCnt++;
                 }
@@ -290,11 +288,11 @@ public class InterfaceCodeGenerator {
                     argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
                 }
 
-                if (StringUtil.isBlank(argName)) {
+                if (Util.isBlank(argName)) {
                     argName = "arg" + unknownArgNameCnt;
                     unknownArgNameCnt++;
                 } else {
-                    argName = StringUtil.snakeToCamelCase(argName);
+                    argName = Util.snakeToCamelCase(argName);
                 }
 
                 if ("in".equals(argElm.getAttribute("direction"))) {
@@ -394,7 +392,7 @@ public class InterfaceCodeGenerator {
                 outputFile.getParentFile().mkdirs();
             }
 
-            if (FileIoUtil.writeTextFile(outputFile.getAbsolutePath(), entry.getValue(), Charset.defaultCharset(), false)) {
+            if (Util.writeTextFile(outputFile.getAbsolutePath(), entry.getValue(), Charset.defaultCharset(), false)) {
                 LoggerFactory.getLogger(InterfaceCodeGenerator.class).info("Created class file {}", outputFile.getAbsolutePath());
             } else {
                 LoggerFactory.getLogger(InterfaceCodeGenerator.class).error("Could not write content to class file {}", outputFile.getName());
@@ -463,14 +461,14 @@ public class InterfaceCodeGenerator {
 
         String introspectionData = null;
 
-        if (!StringUtil.isBlank(inputFile)) {
+        if (!Util.isBlank(inputFile)) {
             File file = new File(inputFile);
             if (!file.exists()) {
                 logger.error("Given input file {} does not exist", file);
                 System.exit(1);
             }
-            introspectionData = FileIoUtil.readFileToString(file);
-        } else if (!StringUtil.isBlank(busName)) {
+            introspectionData = Util.readFileToString(file);
+        } else if (!Util.isBlank(busName)) {
             try {
                 logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
 
@@ -478,7 +476,7 @@ public class InterfaceCodeGenerator {
 
                 Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
                 introspectionData = in.Introspect();
-                if (StringUtil.isBlank(introspectionData)) {
+                if (Util.isBlank(introspectionData)) {
                     logger.error("Failed to get introspection data");
                     System.exit(1);
                 }
@@ -544,7 +542,7 @@ public class InterfaceCodeGenerator {
 
             Map<DbusInterfaceToFqcn, String> map = new LinkedHashMap<>();
 
-            map.put(DbusInterfaceToFqcn.CLASSNAME, StringUtil.upperCaseFirstChar(className));
+            map.put(DbusInterfaceToFqcn.CLASSNAME, Util.upperCaseFirstChar(className));
             map.put(DbusInterfaceToFqcn.PACKAGENAME, packageName.toLowerCase());
 
             if (!packageName.equals(packageName.toLowerCase())) {

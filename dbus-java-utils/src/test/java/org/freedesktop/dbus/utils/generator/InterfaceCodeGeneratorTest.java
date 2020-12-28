@@ -8,12 +8,11 @@ import java.io.File;
 import java.util.Map;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.util.FileIoUtil;
 
 class InterfaceCodeGeneratorTest {
 
@@ -27,7 +26,7 @@ class InterfaceCodeGeneratorTest {
 
 
         if (!StringUtils.isBlank(busName)) {
-            String introspectionData = FileIoUtil.readFileToString("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml");
+            String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"));
 
             InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
             try {
@@ -51,7 +50,7 @@ class InterfaceCodeGeneratorTest {
 
 
         if (!StringUtils.isBlank(busName)) {
-            String introspectionData = FileIoUtil.readFileToString("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml");
+            String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"));
 
             InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
             try {
@@ -75,7 +74,7 @@ class InterfaceCodeGeneratorTest {
 
 
         if (!StringUtils.isBlank(busName)) {
-            String introspectionData = FileIoUtil.readFileToString("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml");
+            String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml"));
 
             InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
             try {

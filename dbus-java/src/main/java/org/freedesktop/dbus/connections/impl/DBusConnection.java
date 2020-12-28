@@ -52,12 +52,9 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.util.FileIoUtil;
-import com.github.hypfvieh.util.StringUtil;
-import com.github.hypfvieh.util.SystemUtil;
 
 /**
  * Handles a connection to DBus.
@@ -229,7 +226,7 @@ public final class DBusConnection extends AbstractConnection {
                     String s = null;
 
                     // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
-                    if (SystemUtil.isMacOs()) {
+                    if (Util.isMacOs()) {
                         s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
 
                     } else { // all others (linux)
@@ -256,10 +253,10 @@ public final class DBusConnection extends AbstractConnection {
                             if (!addressfile.exists()) {
                                 throw new RuntimeException("Cannot Resolve Session Bus Address");
                             }
-                            Properties readProperties = FileIoUtil.readProperties(addressfile);
+                            Properties readProperties = Util.readProperties(addressfile);
                             String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
-                            
-                            if (StringUtil.isEmpty(sessionAddress)) {
+
+                            if (Util.isEmpty(sessionAddress)) {
                                 throw new RuntimeException("Cannot Resolve Session Bus Address");
                             }
 
@@ -267,7 +264,7 @@ public final class DBusConnection extends AbstractConnection {
                             if (sessionAddress.matches("^'[^']+'$")) {
                                 sessionAddress = sessionAddress.replaceFirst("^'([^']+)'$", "$1");
                             }
-                            
+
                             return sessionAddress;
                         } catch (DBusException _ex) {
                             throw new RuntimeException("Cannot Resolve Session Bus Address", _ex);
@@ -301,8 +298,8 @@ public final class DBusConnection extends AbstractConnection {
             return getDbusMachineIdOnWindows();
         }
     	File uuidfile = determineMachineIdFile();
-        String uuid = FileIoUtil.readFileToString(uuidfile);
-        if (StringUtil.isEmpty(uuid)) {
+        String uuid = Util.readFileToString(uuidfile);
+        if (Util.isEmpty(uuid)) {
             throw new DBusException("Cannot Resolve Session Bus Address: MachineId file is empty.");
         }
 
@@ -319,15 +316,15 @@ public final class DBusConnection extends AbstractConnection {
 				.findFirst()
 				.orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
 	}
-	
+
     private static boolean isWindows() {
         String osName = System.getProperty("os.name");
         return osName == null ? false : osName.toLowerCase().startsWith("windows");
     }
-	
+
 	private static String getDbusMachineIdOnWindows() {
 	    // we create a fake id on windows
-	    return String.format("%s@%s", SystemUtil.getCurrentUser(), SystemUtil.getHostName());
+	    return String.format("%s@%s", Util.getCurrentUser(), Util.getHostName());
 	}
 
     private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
@@ -809,7 +806,7 @@ public final class DBusConnection extends AbstractConnection {
 
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
         Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
-        
+
         if (null != dbusSignalList) {
             dbusSignalList.remove(_handler);
             if (dbusSignalList.isEmpty()) {
@@ -909,10 +906,10 @@ public final class DBusConnection extends AbstractConnection {
         Objects.requireNonNull(_handler, "Handler cannot be null");
 
         AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
-        
+
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
 
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = 
+        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList =
             getHandledSignals().computeIfAbsent(key, v -> {
                 Queue<DBusSigHandler<? extends DBusSignal>> signalList  = new ConcurrentLinkedQueue<>();
                 addMatch.set(true);
@@ -987,19 +984,19 @@ public final class DBusConnection extends AbstractConnection {
                     List<String> lBusNames = busnames.stream()
             	        .filter(busName -> busName != null && !(busName.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(busName).matches()))
             	        .collect(Collectors.toList());
-    
-    
+
+
                     lBusNames.forEach(busName -> {
                             try {
                                 releaseBusName(busName);
-    
+
                             } catch (DBusException _ex) {
                                 logger.error("Error while releasing busName '" + busName + "'.", _ex);
                             }
-    
+
             	        });
         	    }
-                
+
                 // remove all exported objects before disconnecting
                 Map<String, ExportedObject> exportedObjects = getExportedObjects();
                 synchronized (exportedObjects) {
@@ -1074,10 +1071,10 @@ public final class DBusConnection extends AbstractConnection {
     @Override
     public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        
+
         AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
 
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = 
+        Queue<DBusSigHandler<DBusSignal>> genericSignalsList =
                 getGenericHandledSignals().computeIfAbsent(key, v -> {
                     Queue<DBusSigHandler<DBusSignal>> signalsList = new ConcurrentLinkedQueue<>();
                     addMatch.set(true);

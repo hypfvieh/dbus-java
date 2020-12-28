@@ -13,12 +13,10 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.hypfvieh.util.FileIoUtil;
-import com.github.hypfvieh.util.StringUtil;
 
 public class LowLevelTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -76,9 +74,9 @@ public class LowLevelTest {
             if (!addressfile.exists()) {
                 throw new RuntimeException("Cannot Resolve Session Bus Address");
             }
-            Properties readProperties = FileIoUtil.readProperties(addressfile);
+            Properties readProperties = Util.readProperties(addressfile);
             String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
-            if (StringUtil.isEmpty(sessionAddress)) {
+            if (Util.isEmpty(sessionAddress)) {
                 throw new RuntimeException("Cannot Resolve Session Bus Address");
             }
             return sessionAddress;
