@@ -12,10 +12,10 @@
 
 package org.freedesktop.dbus.bin;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBus;
 
 /**
  * This class lists all the names currently connected on the bus

@@ -10,17 +10,20 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop;
+package org.freedesktop.dbus.interfaces;
 
 import java.util.Map;
 
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
+
 //CHECKSTYLE:OFF
+
+@DBusInterfaceName("org.freedesktop.DBus")
 public interface DBus extends DBusInterface {
     int DBUS_NAME_FLAG_ALLOW_REPLACEMENT      = 0x01;
     int DBUS_NAME_FLAG_REPLACE_EXISTING       = 0x02;
@@ -70,11 +73,11 @@ public interface DBus extends DBusInterface {
     String[] ListNames();
 
     /**
-     * Returns a list of all names that can be activated on the bus. 
+     * Returns a list of all names that can be activated on the bus.
      * @return Array of strings where each string is a bus name
      */
     String[] ListActivatableNames();
-    
+
     /**
     * Determine if a name has an owner.
     * @param name The name to query.
@@ -89,7 +92,7 @@ public interface DBus extends DBusInterface {
         public final String name;
         public final String oldOwner;
         public final String newOwner;
-    
+
         public NameOwnerChanged(String path, String _name, String _oldOwner, String _newOwner) throws DBusException {
             super(path, new Object[] {
                     _name, _oldOwner, _newOwner
@@ -105,7 +108,7 @@ public interface DBus extends DBusInterface {
     */
     class NameLost extends DBusSignal {
         public final String name;
-    
+
         public NameLost(String path, String _name) throws DBusException {
             super(path, _name);
             this.name = _name;
@@ -117,7 +120,7 @@ public interface DBus extends DBusInterface {
     */
     class NameAcquired extends DBusSignal {
         public final String name;
-    
+
         public NameAcquired(String _path, String _name) throws DBusException {
             super(_path, _name);
             this.name = _name;
@@ -138,12 +141,12 @@ public interface DBus extends DBusInterface {
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
      * Normally, session bus activated services inherit the environment of the bus daemon. This method adds to or modifies that environment when activating services.
      * Some bus instances, such as the standard system bus, may disable access to this method for some or all callers.
-     * Note, both the environment variable names and values must be valid UTF-8. There's no way to update the activation environment with data that is invalid UTF-8. 
+     * Note, both the environment variable names and values must be valid UTF-8. There's no way to update the activation environment with data that is invalid UTF-8.
      *
      * @param environment Environment to add or update
      */
     void UpdateActivationEnvironment(Map<String,String>[] environment);
-    
+
     /**
     * Get the connection unique name that owns the given name.
     * @param name The name to query.
@@ -181,16 +184,16 @@ public interface DBus extends DBusInterface {
      * contribute patches to this specification, or use keys containing
      * "." and starting with a reversed domain name.
      * </p>
-     * 
+     *
      * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
      * @return Credentials
      */
     Map<String, Variant<?>> GetConnectionCredentials(String busName);
-    
-    
+
+
     /**
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
-     * 
+     *
      * Returns auditing data used by Solaris ADT, in an unspecified<br>
      * binary format. If you know what this means, please contribute<br>
      * documentation via the D-Bus bug tracking system.<br>
@@ -198,12 +201,12 @@ public interface DBus extends DBusInterface {
      * the same information should be made available via<br>
      * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
      * in future.<br>
-     * 
+     *
      * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
      * @return auditing data as returned by adt_export_session_data()
      */
     Byte[] GetAdtAuditSessionData(String busName);
-    
+
     /**
     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
     * Returns the security context used by SELinux, in an unspecified<br>
@@ -213,7 +216,7 @@ public interface DBus extends DBusInterface {
     * the same information should be made available via<br>
     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
     * in future.
-    * 
+    *
     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
     *
     * @return some sort of string of bytes, not necessarily UTF-8, not including '\0'
@@ -240,17 +243,17 @@ public interface DBus extends DBusInterface {
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
      * Gets the unique ID of the bus. The unique ID here is shared among all addresses the<br>
      * bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in<br>
-     * <a href="#uuids">the section called "UUIDs”</a>. <br> 
+     * <a href="#uuids">the section called "UUIDs”</a>. <br>
      * Each address the bus is listening on also has its own unique<br>
      * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">the section called "Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
      * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>”</a> and returned
      * by org.freedesktop.DBus.Peer.GetMachineId().<br>
      * For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
-     *    
+     *
      * @return id Unique ID identifying the bus daemon
      */
     String GetId();
 
-    
+
 }
 //CHECKSTYLE:ON

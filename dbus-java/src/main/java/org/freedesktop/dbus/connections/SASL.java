@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

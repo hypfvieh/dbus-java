@@ -3,9 +3,9 @@ package org.freedesktop.dbus.connections.transports;
 import java.io.IOException;
 import java.util.Random;
 
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.BusAddress.AddressBusTypes;
+import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.LoggerFactory;
 
 /**

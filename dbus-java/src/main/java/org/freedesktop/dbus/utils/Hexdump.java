@@ -25,7 +25,7 @@
  *
  */
 
-package org.freedesktop;
+package org.freedesktop.dbus.utils;
 
 import java.io.PrintStream;
 

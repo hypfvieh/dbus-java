@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.freedesktop.DBus;
-import org.freedesktop.Hexdump;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
@@ -41,6 +39,7 @@ import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -52,6 +51,7 @@ import org.freedesktop.dbus.spi.InputStreamMessageReader;
 import org.freedesktop.dbus.spi.OutputStreamMessageWriter;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

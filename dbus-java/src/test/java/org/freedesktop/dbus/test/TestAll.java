@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
@@ -39,6 +38,7 @@ import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Local;
 import org.freedesktop.dbus.interfaces.Peer;

@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -45,6 +44,7 @@ import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
@@ -338,7 +338,7 @@ public final class DBusConnection extends AbstractConnection {
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();
         addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.Local.Disconnected.class, h);
-        addSigHandlerWithoutMatch(org.freedesktop.DBus.NameAcquired.class, h);
+        addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
         if (_registerSelf) {
@@ -1111,9 +1111,9 @@ public final class DBusConnection extends AbstractConnection {
                     }
                 } catch (DBusException exDb) {
                 }
-            } else if (_signal instanceof org.freedesktop.DBus.NameAcquired) {
+            } else if (_signal instanceof org.freedesktop.dbus.interfaces.DBus.NameAcquired) {
                 synchronized (busnames) {
-                    busnames.add(((org.freedesktop.DBus.NameAcquired) _signal).name);
+                    busnames.add(((org.freedesktop.dbus.interfaces.DBus.NameAcquired) _signal).name);
                 }
             }
         }

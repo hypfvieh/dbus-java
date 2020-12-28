@@ -10,6 +10,13 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
+##### Changes in 3.3.0 (not released yet):
+  *CAUTION* - This version may contain breaking changes!!
+  - Removed usage of java-utils
+  - Moved Hexdump class from org.freedesktop to org.freedesktop.dbus.utils
+  - Moved DBus interface from org.freedesktop to org.freedesktop.dbus.interfaces
+  - Modulize dbus-java ([PR#125](https://github.com/hypfvieh/dbus-java/pull/125), thanks to [brett-smith](https://github.com/brett-smith))
+
 ##### Changes in 3.2.4:
   - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
   - Improved usage of regex and length checks [#119](https://github.com/hypfvieh/dbus-java/issues/119) & [PR#120](https://github.com/hypfvieh/dbus-java/pull/120) (thanks to [OlegAndreych](https://github.com/OlegAndreych))
