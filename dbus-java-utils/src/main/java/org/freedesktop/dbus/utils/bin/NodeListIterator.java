@@ -10,22 +10,37 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
+package org.freedesktop.dbus.utils.bin;
 
 import java.util.Iterator;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class IterableNodeList implements Iterable<Node> {
-    private NodeList nl;
+class NodeListIterator implements Iterator<Node> {
+    // CHECKSTYLE:OFF
+    NodeList nl;
+    int      i;
+    // CHECKSTYLE:ON
 
-    IterableNodeList(NodeList _nl) {
+    NodeListIterator(NodeList _nl) {
         this.nl = _nl;
+        i = 0;
     }
 
     @Override
-    public Iterator<Node> iterator() {
-        return new NodeListIterator(nl);
+    public boolean hasNext() {
+        return i < nl.getLength();
     }
+
+    @Override
+    public Node next() {
+        Node n = nl.item(i);
+        i++;
+        return n;
+    }
+
+    @Override
+    public void remove() {
+    };
 }

@@ -10,9 +10,9 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
+package org.freedesktop.dbus.utils.bin;
 
-import static org.freedesktop.dbus.bin.IdentifierMangler.mangle;
+import static org.freedesktop.dbus.utils.bin.IdentifierMangler.mangle;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -680,7 +680,7 @@ public class CreateInterface {
 
     private final PrintStreamFactory factory;
 
-    static class Config {
+    public static class Config {
         // CHECKSTYLE:OFF
         DBusBusType     bus       = DBusBusType.SESSION;
         String  busname   = null;
