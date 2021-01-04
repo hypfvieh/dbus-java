@@ -10,7 +10,7 @@
    Full licence texts are included in the LICENSE file with this program.
 */
 
-package org.freedesktop.dbus.bin;
+package org.freedesktop.dbus.utils.bin;
 
 import java.util.Arrays;
 

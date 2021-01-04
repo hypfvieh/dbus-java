@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.bin;
+package org.freedesktop.dbus.utils.bin;
 
 import java.io.IOException;
 import java.io.PrintStream;
