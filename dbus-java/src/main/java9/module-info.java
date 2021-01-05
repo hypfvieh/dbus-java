@@ -1,5 +1,4 @@
 module org.freedesktop.dbus {
-    exports org.freedesktop;
     exports org.freedesktop.dbus;
     exports org.freedesktop.dbus.bin;
     exports org.freedesktop.dbus.annotations;
@@ -15,9 +14,12 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.types;
     exports org.freedesktop.dbus.utils;
 
+    requires java.datatransfer;
+    requires java.desktop;
+    requires transitive java.xml;
+    
     requires transitive org.slf4j;
     requires transitive org.jnrproject.unixsocket;
-    requires transitive java.utils;
     requires transitive org.jnrproject.posix;
     requires transitive org.jnrproject.constants;
     requires transitive org.jnrproject.ffi;

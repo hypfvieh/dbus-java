@@ -38,13 +38,13 @@ public class SASL {
     public static final int    MAX_TIME_TRAVEL_SECONDS     = 60 * 5;
     public static final int    COOKIE_TIMEOUT              = 240;
     public static final String COOKIE_CONTEXT              = "org_freedesktop_java";
-    
+
     private static Collator col = Collator.getInstance();
     static {
         col.setDecomposition(Collator.FULL_DECOMPOSITION);
         col.setStrength(Collator.PRIMARY);
     }
-    
+
     private String challenge = "";
     private String cookie    = "";
 
@@ -53,7 +53,7 @@ public class SASL {
     private boolean fileDescriptorSupported;
     /** whether file descriptor passing is supported on the current connection. */
     private boolean hasFileDescriptorSupport;
-    
+
     /**
      * Create a new SASL auth handler.
      * Defaults to disable file descriptor passing.
@@ -61,10 +61,10 @@ public class SASL {
     public SASL() {
         this(false);
     }
-    
+
     /**
      * Create a new SASL auth handler.
-     * 
+     *
      * @param _hasFileDescriptorSupport true to support file descriptor passing (usually only works with UNIX_SOCKET).
      */
     public SASL(boolean _hasFileDescriptorSupport) {
@@ -235,7 +235,7 @@ public class SASL {
     public void send(OutputStream out, SaslCommand command, String... data) throws IOException {
         StringBuffer sb = new StringBuffer();
         sb.append(command.name());
-        
+
         for (String s : data) {
             sb.append(' ');
             sb.append(s);
@@ -245,7 +245,7 @@ public class SASL {
         logger.trace("sending: {}", sb);
         out.write(sb.toString().getBytes());
     }
-    
+
     public SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
         switch (_auth) {
         case AUTH_SHA:
@@ -325,9 +325,9 @@ public class SASL {
                     } catch (IOException ioe) {
                         logger.debug("", ioe);
                     }
-    
+
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);
-    
+
                     _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
                     return SaslResult.CONTINUE;
                 default:
@@ -414,7 +414,7 @@ public class SASL {
         int failed = 0;
         int current = 0;
         SaslAuthState state = SaslAuthState.INITIAL_STATE;
-        
+
         while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
 
             logger.trace("Mode: {} AUTH state: {}", mode, state);
@@ -469,11 +469,11 @@ public class SASL {
                             break;
                         case ERROR:
                             // when asking for file descriptor support, ERROR means FD support is not supported
-                            if (state == SaslAuthState.NEGOTIATE_UNIX_FD) { 
+                            if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
                                 state = SaslAuthState.FINISHED;
                                 logger.trace("File descriptors NOT supported by server");
                                 fileDescriptorSupported = false;
-                                send(out, BEGIN);                            
+                                send(out, BEGIN);
                             } else {
                                 send(out, CANCEL);
                                 state = SaslAuthState.WAIT_REJECT;
@@ -490,7 +490,7 @@ public class SASL {
                                 send(out, SaslCommand.NEGOTIATE_UNIX_FD);
                             }else{
                                 state = SaslAuthState.FINISHED;
-                                send(out, BEGIN);                     
+                                send(out, BEGIN);
                             }
                             break;
                         case AGREE_UNIX_FD:
@@ -591,7 +591,7 @@ public class SASL {
                                     }
                                 }
                                 state = SaslAuthState.WAIT_AUTH;
-    
+
                             } catch (SocketException _ex) {
                                 state = SaslAuthState.FAILED;
                             }
@@ -682,7 +682,7 @@ public class SASL {
                                 } else {
                                     send(out, AGREE_UNIX_FD);
                                 }
-                                
+
                             break;
                             default:
                                 send(out, ERROR, "Got invalid command");
@@ -705,16 +705,16 @@ public class SASL {
         SERVER, CLIENT;
     }
 
-    static enum SaslCommand {
-        AUTH,     
-        DATA,     
-        REJECTED, 
-        OK,       
-        BEGIN,    
-        CANCEL,   
+    public static enum SaslCommand {
+        AUTH,
+        DATA,
+        REJECTED,
+        OK,
+        BEGIN,
+        CANCEL,
         ERROR,
         NEGOTIATE_UNIX_FD,
-        AGREE_UNIX_FD;  
+        AGREE_UNIX_FD;
     }
 
     static enum SaslAuthState {
@@ -731,10 +731,10 @@ public class SASL {
     }
 
     static enum SaslResult {
-        OK,      
+        OK,
         CONTINUE,
-        ERROR,   
-        REJECT;  
+        ERROR,
+        REJECT;
     }
 
     public static class Command {
@@ -743,10 +743,10 @@ public class SASL {
         private int    mechs;
         private String data;
         private String response;
-    
+
         public Command() {
         }
-    
+
         public Command(String s) throws IOException {
             String[] ss = s.split(" ");
             logger.trace("Creating command from: {}", Arrays.toString(ss));
@@ -791,33 +791,33 @@ public class SASL {
             } else if (0 == col.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
                 command = NEGOTIATE_UNIX_FD;
             } else if (0 == col.compare(ss[0], "AGREE_UNIX_FD")) {
-                command = AGREE_UNIX_FD;                
+                command = AGREE_UNIX_FD;
             } else {
                 throw new IOException("Invalid Command " + ss[0]);
             }
             logger.trace("Created command: {}", this);
         }
-    
+
         public SaslCommand getCommand() {
             return command;
         }
-    
+
         public int getMechs() {
             return mechs;
         }
-    
+
         public String getData() {
             return data;
         }
-    
+
         public String getResponse() {
             return response;
         }
-    
+
         public void setResponse(String s) {
             response = s;
         }
-    
+
         @Override
         public String toString() {
             return "Command(" + command + ", " + mechs + ", " + data + ")";
@@ -827,5 +827,5 @@ public class SASL {
     public boolean isFileDescriptorSupported() {
         return fileDescriptorSupported;
     }
-    
+
 }

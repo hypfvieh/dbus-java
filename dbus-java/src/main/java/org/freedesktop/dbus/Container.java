@@ -25,7 +25,7 @@ import org.freedesktop.dbus.annotations.Position;
  * and holds common methods.
  */
 public abstract class Container {
-    private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
+    private static Map<Type, Type[]> typecache = new HashMap<>();
 
     static void putTypeCache(Type k, Type[] v) {
         typecache.put(k, v);
@@ -47,10 +47,8 @@ public abstract class Container {
         int diff = 0;
         for (Field f : fs) {
             Position p = f.getAnnotation(Position.class);
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
-            
+            f.setAccessible(true);
+
             if (null == p) {
                 diff++;
                 continue;
