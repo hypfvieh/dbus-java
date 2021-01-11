@@ -312,7 +312,7 @@ public final class DBusConnection extends AbstractConnection {
 		return locationPriorityList.stream()
 				.filter(s -> s != null)
 				.map(s -> new File(s))
-				.filter(f -> f.exists())
+				.filter(f -> f.exists() && f.length() > 0)
 				.findFirst()
 				.orElseThrow(() -> new DBusException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
 	}
