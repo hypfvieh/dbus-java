@@ -372,11 +372,6 @@ public class DBusSignal extends Message {
         bodydone = true;
     }
 
-    @Override
-    public String toString() {
-        return "DBusSignal [clazz=" + clazz + "]";
-    }
-
     private static class CachedConstructor {
         private Constructor<? extends DBusSignal> constructor;
         private List<Class<?>>                    parameterTypes;
