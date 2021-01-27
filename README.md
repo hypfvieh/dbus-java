@@ -16,6 +16,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - Moved Hexdump class from org.freedesktop to org.freedesktop.dbus.utils
   - Moved DBus interface from org.freedesktop to org.freedesktop.dbus.interfaces
   - Modulize dbus-java ([PR#125](https://github.com/hypfvieh/dbus-java/pull/125), thanks to [brett-smith](https://github.com/brett-smith))
+  - DBusConnection.getConnection(DBusBusType _bustype) will no longer throw RuntimeException but DBusConnectionException if something went wrong establishing DBus connection [#128](https://github.com/hypfvieh/dbus-java/issues/128)
 
 ##### Changes in 3.2.4:
   - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
