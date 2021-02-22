@@ -22,15 +22,20 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.StrongReference;
 import org.freedesktop.dbus.Tuple;
+import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.annotations.DBusProperties;
+import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -49,11 +54,18 @@ public class ExportedObject {
         }
         introspectiondata = "";
         methods = getExportedMethods(_object.getClass());
-        introspectiondata +=
-                " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "  <method name=\"Introspect\">\n"
-                        + "   <arg type=\"s\" direction=\"out\"/>\n" + "  </method>\n" + " </interface>\n";
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" + "  <method name=\"Ping\">\n"
-                + "  </method>\n" + " </interface>\n";
+        introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" +
+                "  <method name=\"Introspect\">\n" +
+                "   <arg type=\"s\" direction=\"out\"/>\n" +
+                "  </method>\n" +
+                " </interface>\n";
+        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" +
+                "  <method name=\"Ping\">\n" +
+                "  </method>\n" +
+                "  <method name=\"GetMachineId\">\n" +
+                "   <arg type=\"s\" name=\"machine_uuid\" direction=\"out\"/>\n" +
+                "  </method>\n" +
+                " </interface>\n";
     }
 
     private String getAnnotations(AnnotatedElement c) {
@@ -80,6 +92,49 @@ public class ExportedObject {
                     + "\" value=\"" + value + "\" />\n";
         }
         return ans;
+    }
+
+    protected String getProperty(DBusProperty property) throws DBusException {
+        Class<?> propertyTypeClass = property.type();
+        String propertyTypeString;
+        if (TypeRef.class.isAssignableFrom(propertyTypeClass)) {
+            Type actualType = Arrays.stream(propertyTypeClass.getGenericInterfaces())
+                    .filter(t -> t instanceof ParameterizedType)
+                    .map(t -> (ParameterizedType) t)
+                    .filter(t -> TypeRef.class.equals(t.getRawType()))
+                    .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
+                    .findFirst()
+                    .orElseThrow(() ->
+                            new DBusException("Could not read TypeRef type for property '" + property.name() + "'")
+                    );
+            propertyTypeString = Marshalling.getDBusType(new Type[]{actualType});
+        } else if (List.class.equals(propertyTypeClass)) {
+            // default non generic list types
+            propertyTypeString = "av";
+        } else if (Map.class.equals(propertyTypeClass)) {
+            // default non generic map type
+            propertyTypeString = "a{vv}";
+        } else {
+            propertyTypeString = Marshalling.getDBusType(new Type[]{propertyTypeClass});
+        }
+
+        String access = property.access().getAccessName();
+        return "<property name=\"" + property.name() + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
+    }
+
+    protected String getProperties(Class<?> c) throws DBusException {
+        StringBuilder xml = new StringBuilder();
+        DBusProperties properties = c.getAnnotation(DBusProperties.class);
+        if (properties != null) {
+            for (DBusProperty property : properties.value()) {
+                xml.append("  ").append(getProperty(property)).append("\n");
+            }
+        }
+        DBusProperty property = c.getAnnotation(DBusProperty.class);
+        if (property != null) {
+            xml.append("  ").append(getProperty(property)).append("\n");
+        }
+        return xml.toString();
     }
 
     private Map<MethodTuple, Method> getExportedMethods(Class<?> c) throws DBusException {
@@ -165,6 +220,7 @@ public class ExportedObject {
                         m.put(new MethodTuple(name, ms), meth);
                     }
                 }
+                introspectiondata += getProperties(c);
                 for (Class<?> sig : c.getDeclaredClasses()) {
                     if (DBusSignal.class.isAssignableFrom(sig)) {
                         String name;
