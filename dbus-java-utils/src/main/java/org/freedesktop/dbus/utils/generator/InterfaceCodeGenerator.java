@@ -16,6 +16,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.freedesktop.dbus.Tuple;
+import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -23,8 +25,10 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.XmlUtil;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMethod;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
@@ -164,6 +168,9 @@ public class InterfaceCodeGenerator {
             switch (element.getTagName().toLowerCase()) {
             case "method":
                 additionalClasses.addAll(extractMethods(element, interfaceClass));
+                break;
+            case "property":
+                additionalClasses.addAll(extractProperties(element, interfaceClass));
                 break;
             case"signal":
                 additionalClasses.addAll(extractSignals(element, interfaceClass));
@@ -325,6 +332,76 @@ public class InterfaceCodeGenerator {
 
         return additionalClasses;
 
+    }
+
+    /**
+     * Extract &lt;property&gt; elements properties.
+     *
+     * @param _propertyElement method XML element
+     * @param _clzBldr         {@link ClassBuilderInfo} object
+     * @return List of {@link ClassBuilderInfo} which have been created (maybe empty, never null)
+     * @throws DBusException on DBus Error
+     */
+    private List<ClassBuilderInfo> extractProperties(Element _propertyElement, ClassBuilderInfo _clzBldr) throws DBusException {
+        List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
+
+        String attrName = _propertyElement.getAttribute("name");
+        String attrAccess = _propertyElement.getAttribute("access");
+        String attrType = _propertyElement.getAttribute("type");
+
+        String access;
+        if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)) {
+            access = DBusProperty.Access.READ.name();
+        } else if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)) {
+            access = DBusProperty.Access.WRITE.name();
+        } else {
+            access = DBusProperty.Access.READ_WRITE.name();
+        }
+        _clzBldr.getImports().add(DBusProperty.Access.class.getCanonicalName());
+
+        String type;
+        if ("av".equals(attrType)) {
+            // raw type list
+            type = List.class.getName();
+            _clzBldr.getImports().add(type);
+        } else if ("a{vv}".equals(attrType)) {
+            // raw type map
+            type = Map.class.getName();
+            _clzBldr.getImports().add(type);
+        } else if (attrType.contains("(")) {
+            // contains structure
+            String structPart = attrType.replaceAll("(\\(.+\\))", "$1");
+            type = buildStructClass(structPart, "Property" + attrName + "Struct", _clzBldr, additionalClasses);
+        } else {
+            type = TypeConverter.getJavaTypeFromDBusType(attrType, _clzBldr.getImports());
+        }
+        if (type == null) {
+            type = Variant.class.getName();
+        }
+        type = type.replaceAll(CharSequence.class.getName(), String.class.getName());
+        boolean isComplex = type.contains("<");
+
+        String clzzName;
+        if (!isComplex) {
+            clzzName = ClassBuilderInfo.getClassName(type);
+        } else {
+            type = TypeRef.class.getName() + "<" + type + ">";
+            String typeRefInterfaceName = "Property" + attrName + "Type";
+            ClassBuilderInfo propertyTypeRef = new ClassBuilderInfo();
+            propertyTypeRef.setClassType(ClassType.INTERFACE);
+            propertyTypeRef.setClassName(typeRefInterfaceName);
+            propertyTypeRef.setExtendClass(type);
+            _clzBldr.getInnerClasses().add(propertyTypeRef);
+            clzzName = _clzBldr.getClassName() + "." + typeRefInterfaceName;
+        }
+
+        String annotationParams = "name = \"" + attrName + "\", " +
+                "type = " + clzzName + ".class, " +
+                "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
+        AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
+        _clzBldr.getAnnotations().add(annotationInfo);
+
+        return additionalClasses;
     }
 
     /**
