@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus.messages;
 
 import java.io.UnsupportedEncodingException;
@@ -183,9 +171,9 @@ public class Message {
 
         logger.trace("Message header: {}", Hexdump.toAscii(_headers));
         Object[] hs = extract("a(yv)", _headers, 0);
-        
+
         LoggingHelper.arraysDeepString(logger.isTraceEnabled(), hs);
-        
+
         for (Object o : (List<Object>) hs[0]) {
             this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());
         }
@@ -425,7 +413,7 @@ public class Message {
     public byte[][] getWireData() {
         return wiredata;
     }
-    
+
     public List<FileDescriptor> getFiledescriptors(){
         return filedescriptors;
     }
@@ -612,7 +600,7 @@ public class Message {
                 // Arrays are given as a UInt32 for the length in bytes,
                 // padding to the element alignment, then elements in
                 // order. The length is the length from the end of the
-                // initial padding to the end of the last element.                
+                // initial padding to the end of the last element.
                 if (logger.isTraceEnabled()) {
                     if (data instanceof Object[]) {
                         logger.trace("Appending array: {}", Arrays.deepToString((Object[]) data));
@@ -1313,7 +1301,7 @@ public class Message {
     public byte getEndianess() {
         return big ? Endian.BIG : Endian.LITTLE;
     }
-    
+
     /** Defines constants representing the flags which can be set on a message. */
     public interface Flags {
         byte NO_REPLY_EXPECTED = 0x01;

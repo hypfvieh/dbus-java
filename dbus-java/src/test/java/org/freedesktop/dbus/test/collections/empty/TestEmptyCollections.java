@@ -1,13 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2019 Technolution BV
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
 package org.freedesktop.dbus.test.collections.empty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,23 +37,23 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * The test structure is a bit of a complex constructions. However the goal is very simple
- * 
+ *
  * The class tests all structs implementing IEmptyCollectionStruct
- * 
+ *
  * There are two tests:
- * 
+ *
  * Empty test:
- * 
- * The test creates an empty object with emptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}. 
- * This interface returns the {@link IEmptyCollectionStruct#getValidationValue()} that value can be 
+ *
+ * The test creates an empty object with emptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}.
+ * This interface returns the {@link IEmptyCollectionStruct#getValidationValue()} that value can be
  * used to determine whether (de)serialization of object with an empty collection is executed correctly.
  *
  * Non Empty test:
- * 
- * The test creates an non empty object with nonEmptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}. 
- * This interface returns the {@link IEmptyCollectionStruct#getStringTestValue()} that value can be 
+ *
+ * The test creates an non empty object with nonEmptyFactory function and the testString and sends the object to the {@link ISampleCollectionInterface}.
+ * This interface returns the {@link IEmptyCollectionStruct#getStringTestValue()} that value can be
  * used to determine whether (de)serialization of non empty collection is executed correctly.
  *
  */
@@ -105,7 +95,7 @@ class TestEmptyCollections {
 		}
 		clientconn.disconnect();
 		serverconn.disconnect();
-		
+
 		// give the dbus daemon some time to unregister our calls before restarting test
 		Thread.sleep(800L);
 	}
@@ -113,7 +103,7 @@ class TestEmptyCollections {
 	/**
 	 * Parameterized test that collection will still know the next value. The Server
 	 * will throw error or return wrong string if the test fails
-	 * 
+	 *
 	 * @param arguments this contains the information required to build and call a
 	 *                  function
 	 * @param name      the name is used for validation and naming purpose should
@@ -131,7 +121,7 @@ class TestEmptyCollections {
 	/**
 	 * Parameterized test that collection will still know the next value. The Server
 	 * will throw error or return wrong string if the test fails
-	 * 
+	 *
 	 * @param arguments this contains the information required to build and call a
 	 *                  function
 	 * @param name      the name is used for validation and naming purpose should
@@ -145,7 +135,7 @@ class TestEmptyCollections {
 		String result = arguments.function.apply(clientObj, object);
 		assertEquals(validationValue, result);
 	}
-	
+
 	/**
 	 * List of arguments for each scenario:
 	 * 1: Interface function to use for to test this struct
@@ -220,7 +210,7 @@ class TestEmptyCollections {
 	private static List<List<List<IntStruct>>> getDeepList() {
 		return Arrays.asList(Arrays.asList(Arrays.asList(new IntStruct(111, 44))));
 	}
-	
+
 	private static Map<String, IntStruct> getIntStructHashMap() {
 		Map<String, IntStruct> map = new HashMap<>();
 		map.put("other", new IntStruct(12, 17));

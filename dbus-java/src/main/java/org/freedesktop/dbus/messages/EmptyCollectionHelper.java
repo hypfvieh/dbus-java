@@ -1,14 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2019 Technolution BV
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus.messages;
 
 import java.util.Arrays;
@@ -17,7 +6,7 @@ final class EmptyCollectionHelper {
 
 	/**
 	 * This function determine the new offset in signature for empty Dictionary/Map collections.
-	 *  Normally the element inside a collection determines the new offset, 
+	 *  Normally the element inside a collection determines the new offset,
 	 *  however in case of empty collections there is no element to determine the sub signature of the list
 	 *  so this function determines which part of the signature to skip
 	 * @param sigb the total signature
@@ -27,10 +16,10 @@ final class EmptyCollectionHelper {
 	static int determineSignatureOffsetDict(byte[] sigb, int currentOffset) {
 		return determineEndOfBracketStructure(sigb, currentOffset, '{' , '}');
 	}
-	
+
 	/**
 	 * This function determine the new offset in signature for empty Array/List collections.
-	 *  Normally the element inside a collection determines the new offset, 
+	 *  Normally the element inside a collection determines the new offset,
 	 *  however in case of empty collections there is no element to determine the sub signature of the list
 	 *  so this function determines which part of the signature to skip
 	 * @param sigb the total signature
@@ -39,12 +28,12 @@ final class EmptyCollectionHelper {
 	 */
 	static int determineSignatureOffsetArray(byte[] sigb, int currentOffset) {
 		String sigSubString = determineSubSignature(sigb, currentOffset);
-		
+
 		// End of string so can't have any more offset
 		if (sigSubString.isEmpty()) {
 			return currentOffset;
 		}
-		
+
 		ECollectionSubType newtype = determineCollectionSubType((char)sigb[currentOffset]);
 		switch (newtype) {
 			case ARRAY:
@@ -59,7 +48,7 @@ final class EmptyCollectionHelper {
 				return currentOffset;
 			default:
 				break;
-	
+
 		}
 		throw new IllegalStateException("Unable to parse signature for empty collection");
 	}
@@ -71,24 +60,24 @@ final class EmptyCollectionHelper {
 	/**
 	 * This is a generic function to determine the end of a structure that has opening and closing characters.
 	 * Currently used for Struct () and Dict {}
-     * 
+     *
 	 */
 	private static int determineEndOfBracketStructure(byte[] sigb, int currentOffset, char openChar, char closeChar) {
 		String sigSubString = determineSubSignature(sigb, currentOffset);
-		
+
 		// End of string so can't have any more offset
 		if (sigSubString.isEmpty()) {
 			return currentOffset;
 		}
 		int i = 0;
 		int depth = 0;
-		
+
 		for(char chr : sigSubString.toCharArray()) {
 			//book keeping of depth of nested structures to solve opening closing bracket problem
 			if (chr == openChar) {
 				depth ++;
 			} else if (chr == closeChar) {
-				depth --;					
+				depth --;
 			}
 			if (depth == 0) {
 				return currentOffset + i;
@@ -97,7 +86,7 @@ final class EmptyCollectionHelper {
 		}
 		throw new IllegalStateException("Unable to parse signature for empty collection");
 	}
-	
+
 	private static String determineSubSignature(byte[] sigb, int currentOffset) {
 		byte[] restSigbytes = Arrays.copyOfRange(sigb, currentOffset, sigb.length);
 		return new String(restSigbytes);
@@ -129,5 +118,5 @@ final class EmptyCollectionHelper {
 		DICT,
 		ARRAY,
 		PRIMITIVE
-	}	
+	}
 }

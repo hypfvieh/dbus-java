@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus.utils.bin;
 
 import static org.freedesktop.dbus.utils.bin.IdentifierMangler.mangle;
@@ -246,7 +234,7 @@ public class CreateInterface {
     String parseSignal(Element signal, Set<String> imports, Map<StructStruct, Type[]> structs, Set<String> anns) throws DBusException {
         logger.debug("parseSignal");
 
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         List<String> porder = new ArrayList<>();
         char defaultname = 'a';
         imports.add("org.freedesktop.dbus.messages.DBusSignal");
@@ -319,7 +307,7 @@ public class CreateInterface {
         String file;
         String path;
 
-        Set<String> imports = new TreeSet<String>();
+        Set<String> imports = new TreeSet<>();
         String methods = "";
         String signals = "";
         String annotations;
@@ -426,11 +414,11 @@ public class CreateInterface {
 
         out.println("package " + pack + ";");
 
-        Set<String> imports = new TreeSet<String>();
+        Set<String> imports = new TreeSet<>();
         imports.add("org.freedesktop.dbus.annotations.Position");
         imports.add("org.freedesktop.dbus.Struct");
         imports.add(pack + ".*");
-        Map<StructStruct, Type[]> structs = new HashMap<StructStruct, Type[]>(existing);
+        Map<StructStruct, Type[]> structs = new HashMap<>(existing);
         String[] types = new String[type.length];
         for (int i = 0; i < type.length; i++) {
             types[i] = collapseType(type[i], imports, structs, false, false);
@@ -461,7 +449,7 @@ public class CreateInterface {
         out.println("}");
 
         structs = StructStruct.fillPackages(structs, pack);
-        Map<StructStruct, Type[]> tocreate = new HashMap<StructStruct, Type[]>(structs);
+        Map<StructStruct, Type[]> tocreate = new HashMap<>(structs);
         for (StructStruct ss : existing.keySet()) {
             tocreate.remove(ss);
         }
@@ -513,9 +501,9 @@ public class CreateInterface {
 
         ArrayList<InterfaceDefinition> interfaceDefs = new ArrayList<>();
 
-        Map<StructStruct, Type[]> structs = new HashMap<StructStruct, Type[]>();
-        Set<String> exceptions = new TreeSet<String>();
-        Set<String> annotations = new TreeSet<String>();
+        Map<StructStruct, Type[]> structs = new HashMap<>();
+        Set<String> exceptions = new TreeSet<>();
+        Set<String> annotations = new TreeSet<>();
 
         for (Node iface : new IterableNodeList(root.getChildNodes())) {
 
@@ -527,7 +515,7 @@ public class CreateInterface {
 
             if ("interface".equals(iface.getNodeName())) {
 
-                Map<String, Integer> tuples = new HashMap<String, Integer>();
+                Map<String, Integer> tuples = new HashMap<>();
                 String name = ((Element) iface).getAttribute("name");
                 String pack = name;
 

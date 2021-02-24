@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus.messages;
 
 import java.lang.annotation.Annotation;
@@ -48,9 +36,9 @@ public class ExportedObject {
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
         if (_weakreferences) {
-            this.object = new WeakReference<DBusInterface>(_object);
+            this.object = new WeakReference<>(_object);
         } else {
-            this.object = new StrongReference<DBusInterface>(_object);
+            this.object = new StrongReference<>(_object);
         }
         introspectiondata = "";
         methods = getExportedMethods(_object.getClass());
@@ -139,9 +127,9 @@ public class ExportedObject {
 
     private Map<MethodTuple, Method> getExportedMethods(Class<?> c) throws DBusException {
         if (DBusInterface.class.equals(c)) {
-            return new HashMap<MethodTuple, Method>();
+            return new HashMap<>();
         }
-        Map<MethodTuple, Method> m = new HashMap<MethodTuple, Method>();
+        Map<MethodTuple, Method> m = new HashMap<>();
         for (Class<?> i : c.getInterfaces()) {
             if (DBusInterface.class.equals(i)) {
                 // add this class's public methods

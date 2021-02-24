@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus;
 
 import java.util.ArrayList;
@@ -102,7 +90,7 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
-        Set<Map.Entry<K, V>> s = new TreeSet<Map.Entry<K, V>>();
+        Set<Map.Entry<K, V>> s = new TreeSet<>();
         for (int i = 0; i < entries.length; i++) {
             s.add(new Entry(i));
         }
@@ -128,7 +116,7 @@ public class DBusMap<K, V> implements Map<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public Set<K> keySet() {
-        Set<K> s = new TreeSet<K>();
+        Set<K> s = new TreeSet<>();
         for (Object[] entry : entries) {
             s.add((K) entry[0]);
         }

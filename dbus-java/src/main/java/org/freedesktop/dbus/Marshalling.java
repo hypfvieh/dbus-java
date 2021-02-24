@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus;
 
 import java.lang.reflect.Array;
@@ -470,7 +458,7 @@ public final class Marshalling {
                 System.arraycopy(newparams, 0, exparams, i, newparams.length);
                 System.arraycopy(_parameters, i + 1, exparams, i + newparams.length, _parameters.length - i - 1);
                 _parameters = exparams;
-                
+
                 LOGGER.trace("New params: {}, new types: {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _parameters), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _types));
                 i--;
             } else if (_types[i] instanceof TypeVariable && !(_parameters[i] instanceof Variant)) {

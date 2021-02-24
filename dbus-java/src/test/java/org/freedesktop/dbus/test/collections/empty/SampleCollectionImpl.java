@@ -1,13 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2019 Technolution BV
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
 package org.freedesktop.dbus.test.collections.empty;
 
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
@@ -37,7 +27,7 @@ public class SampleCollectionImpl implements ISampleCollectionInterface {
 
 	@Override
 	public String testDeepList(DeepListStruct param) {
-		return testValue(param);	
+		return testValue(param);
 	}
 
 	@Override
@@ -95,7 +85,7 @@ public class SampleCollectionImpl implements ISampleCollectionInterface {
 		if (param.getValue() == null) {
 			throw new IllegalArgumentException("Incorrect param value");
 		}
-		return param.isEmpty() ? param.getValidationValue() : param.getStringTestValue();		
+		return param.isEmpty() ? param.getValidationValue() : param.getStringTestValue();
 	}
-	
+
 }

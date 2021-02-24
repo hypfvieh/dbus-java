@@ -1,15 +1,3 @@
-/*
-   D-Bus Java Implementation
-   Copyright (c) 2005-2006 Matthew Johnson
-   Copyright (c) 2017-2019 David M.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of either the GNU Lesser General Public License Version 2 or the
-   Academic Free Licence Version 2.1.
-
-   Full licence texts are included in the LICENSE file with this program.
-*/
-
 package org.freedesktop.dbus.test;
 
 import java.util.ArrayList;
@@ -218,7 +206,7 @@ public final class Profile {
                 ProfilerInstance pi = new ProfilerInstance();
                 conn.exportObject("/Profiler", pi);
                 Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
-                HashMap<String, String> m = new HashMap<String, String>();
+                HashMap<String, String> m = new HashMap<>();
                 for (int i = 0; i < MAP_LENGTH; i++) {
                     m.put("" + i, "hello");
                 }
