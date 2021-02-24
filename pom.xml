@@ -277,22 +277,17 @@
         <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
         <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
         <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <licenses>
         <license>
-            <name>GNU Lesser/Library General Public License version 2</name>
-            <url>https://www.gnu.org/licenses/lgpl.html</url>
-        </license>
+	       <name>MIT License</name>
+	       <url>https://github.com/hypfvieh/dbus-java/blob/master/LICENSE</url>
+	   </license>
     </licenses>
 
     <developers>
-        <developer>
-            <id>matthew</id>
-            <name>Matthew Johnson</name>
-            <email>src@matthew.ath.cx</email>
-        </developer>
         <developer>
             <id>hypfvieh</id>
             <name>David M.</name>
@@ -301,6 +296,11 @@
     </developers>
 
     <contributors>
+        <contributor>
+            <name>Matthew Johnson</name>
+            <email>src@matthew.ath.cx</email>
+        </contributor>
+    
         <contributor>
             <name>thjomnx</name>
             <url>https://github.com/thjomnx</url>
@@ -333,6 +333,11 @@
             <name>chris-melman</name>
             <url>https://github.com/chris-melman</url>
         </contributor>
+        <contributor>
+            <name>mk868</name>
+            <url>https://github.com/mk868</url>
+        </contributor>
+
     </contributors>
 
     <profiles>
