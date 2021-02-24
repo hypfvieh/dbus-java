@@ -80,12 +80,5 @@
             <version>0.0.0</version>
         </dependency> 
     </dependencies>
-
-    <scm>
-        <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
-        <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
-        <url>https://github.com/hypfvieh/dbus-java.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
+   
 </project>
