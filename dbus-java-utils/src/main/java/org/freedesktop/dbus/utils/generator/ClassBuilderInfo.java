@@ -8,6 +8,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
@@ -79,6 +81,8 @@ public class ClassBuilderInfo {
 
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
+    /** Annotations of this class. */
+    private final List<AnnotationInfo>   annotations           = new ArrayList<>();
     /** Members/Fields of this class. */
     private final List<MemberOrArgument>      members               = new ArrayList<>();
     /** Interfaces implemented by this class. */
@@ -137,6 +141,10 @@ public class ClassBuilderInfo {
 
     public void setClassType(ClassType _classType) {
         classType = _classType;
+    }
+
+    public List<AnnotationInfo> getAnnotations() {
+        return annotations;
     }
 
     public Set<String> getImplementedInterfaces() {
@@ -211,15 +219,22 @@ public class ClassBuilderInfo {
             content.add(classIndent + "@" + DBusInterfaceName.class.getSimpleName() + "(\"" + getDbusPackageName() + "\")");
         }
 
+        for (AnnotationInfo annotation : annotations) {
+            allImports.add(annotation.getAnnotationClass().getName());
+            String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
+            if (annotation.getAnnotationParams() != null) {
+                annotationCode += "(" + annotation.getAnnotationParams() + ")";
+            }
+            content.add(annotationCode);
+        }
+
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
         bgn += " " + getClassName();
         if (getExtendClass() != null) {
-            if (!getExtendClass().startsWith("java.lang.")) {
-                getImports().add(getExtendClass()); // add class import if extends-argument is not a java.lang. class
-                allImports.add(getExtendClass());
-            }
-
-            bgn += " extends " + getClassName(getExtendClass());
+            Set<String> imports = getImportsForType(getExtendClass());
+            getImports().addAll(imports);
+            allImports.addAll(imports);
+            bgn += " extends " + getSimpleTypeClasses(getExtendClass());
         }
         if (!getImplementedInterfaces().isEmpty()) {
             bgn += " implements " + getImplementedInterfaces().stream().map(e -> getClassName(e)).collect(Collectors.joining(", "));
@@ -379,6 +394,54 @@ public class ClassBuilderInfo {
             clzzName = clzzName.substring(clzzName.lastIndexOf(".") + 1);
         }
         return clzzName;
+    }
+
+    /**
+     * Simplify class names in the type. Please go to unit tests for usage examples.
+     *
+     * @param _type type described in the string format
+     * @return type with simplified class names
+     */
+    static String getSimpleTypeClasses(String _type) {
+        if (_type == null) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer();
+        Pattern compile = Pattern.compile("([^, <>?]+)");
+        Matcher matcher = compile.matcher(_type);
+        while (matcher.find()) {
+            String match = matcher.group();
+            matcher.appendReplacement(sb, getClassName(match));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    /**
+     * Get all classes that should be imported for the input type, this method works fine with generic types.
+     * Please go to unit tests for usage examples.
+     *
+     * @param _type type described in the string format
+     * @return set of classes required for imports
+     */
+    static Set<String> getImportsForType(String _type) {
+        Set<String> imports = new HashSet<>();
+        if (!_type.contains("<")) {
+            if (!_type.startsWith("java.lang.") && _type.contains(".")) {
+                imports.add(_type);
+            }
+            return imports;
+        }
+        Pattern compile = Pattern.compile("([^, <>?]+)");
+        Matcher matcher = compile.matcher(_type);
+        while (matcher.find()) {
+            String match = matcher.group();
+
+            if (!match.startsWith("java.lang.") && match.contains(".")) {
+                imports.add(match);
+            }
+        }
+        return imports;
     }
 
     /**
