@@ -19,6 +19,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
   - DBusConnection.getConnection(DBusBusType _bustype) will no longer throw RuntimeException but DBusConnectionException if something went wrong establishing DBus connection [#128](https://github.com/hypfvieh/dbus-java/issues/128)
   - Support annotation to specify properties provided by an exported object (DBusProperty annotation) ([PR#131](https://github.com/hypfvieh/dbus-java/pull/131)/[#130](https://github.com/hypfvieh/dbus-java/issues/130)), thanks to [mk868](https://github.com/mk868)
   - Added support for the new DBusProperty annotations in InterfaceCodeGenerator Util ([PR#132](https://github.com/hypfvieh/dbus-java/pull/132)), thanks to [mk868](https://github.com/mk868)
+  - License changed from LGPLv2 to MIT
 
 ##### Changes in 3.2.4:
   - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
