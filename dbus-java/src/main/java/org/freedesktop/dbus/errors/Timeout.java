@@ -3,10 +3,10 @@ package org.freedesktop.dbus.errors;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
 /**
- * Thrown if there is no reply to a method call
+ * Thrown if a operation timed out
  */
-public class NoReply extends DBusExecutionException {
-    public NoReply(String message) {
+public class Timeout extends DBusExecutionException {
+    public Timeout(String message) {
         super(message);
     }
 }
