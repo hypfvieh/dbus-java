@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -300,6 +301,21 @@ public abstract class AbstractConnection implements Closeable {
                 getObjectTree().add(objectpath, eo, eo.getIntrospectiondata());
             }
         }
+    }
+
+    /**
+     * Export an object so that its methods can be called on DBus. The path to the object will be taken from the
+     * {@link DBusInterface#getObjectPath()} method, make sure it is implemented and returns immutable value.
+     * If you want export object with multiple paths, please use {@link AbstractConnection#exportObject(String, DBusInterface)}.
+     *
+     * @param object
+     *            The object to export.
+     * @throws DBusException
+     *             If the object path is already exporting an object or if object path is incorrectly formatted.
+     */
+    public void exportObject(DBusInterface object) throws DBusException {
+        Objects.requireNonNull(object, "object must not be null");
+        exportObject(object.getObjectPath(), object);
     }
 
     /**
