@@ -18,7 +18,9 @@ public interface DBusInterface {
      *
      * @return boolean
      */
-    boolean isRemote();
+    default boolean isRemote() {
+        return false;
+    }
 
     /**
      * Returns the path of this object.
