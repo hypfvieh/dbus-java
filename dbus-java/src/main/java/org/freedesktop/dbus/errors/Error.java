@@ -101,7 +101,7 @@ public class Error extends Message {
 
     @SuppressWarnings("unchecked")
     private static Class<? extends DBusExecutionException> createExceptionClass(String name) {
-        if (name == "org.freedesktop.DBus.Local.Disconnected") {
+        if ("org.freedesktop.DBus.Local.Disconnected".equals(name)) {
             return NotConnected.class;
         }
         Class<? extends DBusExecutionException> c = null;

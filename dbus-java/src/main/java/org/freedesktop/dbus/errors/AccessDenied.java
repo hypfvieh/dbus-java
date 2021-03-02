@@ -5,8 +5,9 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 /**
  * Thrown if a message is denied due to a security policy
  */
-@SuppressWarnings("serial")
 public class AccessDenied extends DBusExecutionException {
+    private static final long serialVersionUID = 368173196466740803L;
+
     public AccessDenied(String message) {
         super(message);
     }
