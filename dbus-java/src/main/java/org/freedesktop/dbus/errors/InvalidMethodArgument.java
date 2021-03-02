@@ -5,8 +5,10 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 /**
  * Thrown if a arguments passed to the method are invalid
  */
-public class InvalidArgs extends DBusExecutionException {
-    public InvalidArgs(String message) {
+public class InvalidMethodArgument extends DBusExecutionException {
+    private static final long serialVersionUID = 2504012938615867394L;
+
+    public InvalidMethodArgument(String message) {
         super(message);
     }
 }
