@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -43,9 +43,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
-  <scm>
-    <tag>dbus-java-3.3.0</tag>
-  </scm>
 </project>
