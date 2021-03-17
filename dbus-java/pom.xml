@@ -5,6 +5,7 @@
     <packaging>jar</packaging>
 
     <artifactId>dbus-java</artifactId>
+  <version>3.3.0</version>
 
     <name>${project.artifactId}</name>
 
@@ -15,7 +16,7 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
 
     <properties>
