@@ -10,7 +10,10 @@ Using this version as replacement for 2.7.x however, will not work without chang
 
 #### Changes
 
-##### Changes in 3.3.0 (not released yet):
+##### Changes in 3.3.1 (not released yet):
+   - Nothing yet
+   
+##### Changes in 3.3.0 (Released: 2021-03-17):
   *CAUTION* - This version may contain breaking changes!!
   - Removed usage of java-utils
   - Moved Hexdump class from org.freedesktop to org.freedesktop.dbus.utils
