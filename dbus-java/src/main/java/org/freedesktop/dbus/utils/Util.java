@@ -51,7 +51,7 @@ public final class Util {
     /**
      * Trys to read a properties file.
      * Returns null if properties file could not be loaded
-     * @param _file
+     * @param _file property file to read
      * @return Properties Object or null
      */
     public static Properties readProperties(File _file) {
@@ -67,7 +67,7 @@ public final class Util {
 
     /**
      * Tries to read a properties file from an inputstream.
-     * @param _stream
+     * @param _stream input stream providing property file content
      * @return properties object/null
      */
     public static Properties readProperties(InputStream _stream) {
@@ -258,22 +258,31 @@ public final class Util {
      * Reads a file to a List&lt;String&gt; (each line is one entry in list).
      * Line endings (line feed/carriage return) are NOT removed!
      *
-     * @param _fileName
-     * @return
+     * @param _fileName file to read
+     * @return list containing text
      */
     public static List<String> readFileToList(String _fileName) {
         List<String> localText = getTextfileFromUrl(_fileName, Charset.defaultCharset(), false);
         return localText;
     }
 
+    /**
+     * Reads a file to a String.
+     * Line endings (line feed/carriage return) are NOT removed!
+     *
+     * @param _file file to read
+     * @return String containing content, maybe null
+     */
     public static String readFileToString(File _file) {
         return String.join(System.lineSeparator(), readFileToList(_file.getAbsolutePath()));
     }
 
     /**
-     * @see #getTextfileFromUrl(String, Charset)
-     * @param _url
-     * @param _charset
+     * Reads a text file from the given URL using the provided charset.
+     * Using the _silent argument optionally disables all error logging.
+     *
+     * @param _url url providing the file to read
+     * @param _charset charset to use
      * @param _silent true to not log exceptions, false otherwise
      * @return list of string or null on error
      */

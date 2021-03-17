@@ -25,6 +25,8 @@ public class StructHelper {
      * @param _variant variant to convert
      * @param _structClass {@link Struct} subclass to create
      *
+     * @param <T> type of struct
+     *
      * @return instance of _structClass or null if _variant is not Struct compatible or any input parameter is null
      *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
@@ -61,6 +63,8 @@ public class StructHelper {
      * @param _constructorArgs argument-classes expected by constructor
      * @param _values values passed to the constructor
      * @param _classToConstruct {@link Struct} subclass to instantiate
+     *
+     * @param <T> type of struct
      *
      * @return instance of _classToConstruct or null if any input argument is null
      *

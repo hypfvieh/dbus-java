@@ -163,6 +163,9 @@ public abstract class AbstractConnection implements Closeable {
      *
      * @param _rule rule to remove
      * @param _handler handler to remove
+     *
+     * @param <T> signal type
+     *
      * @throws DBusException on error
      */
     protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
@@ -175,6 +178,9 @@ public abstract class AbstractConnection implements Closeable {
      *
      * @param _rule rule to add
      * @param _handler handler to use
+     *
+     * @param <T> signal type
+     *
      * @throws DBusException on error
      */
     protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;

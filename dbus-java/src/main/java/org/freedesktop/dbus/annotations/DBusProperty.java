@@ -1,8 +1,12 @@
 package org.freedesktop.dbus.annotations;
 
-import org.freedesktop.dbus.types.Variant;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.annotation.*;
+import org.freedesktop.dbus.types.Variant;
 
 /**
  * Appends information about properties in the interface. The annotated properties are added to the introspection data.
@@ -10,18 +14,18 @@ import java.lang.annotation.*;
  * <p>
  * Usage:
  * </p>
- * <pre>{@code
- * @DBusInterfaceName("com.example.Bar")
- * @DBusProperty(name = "Name", type = String.class)
- * @DBusProperty(name = "ListOfVariables", type = List.class, access = Access.READ)
- * @DBusProperty(name = "MapOfStringList", type = ComplexTypeWithMapAndList.class, access = Access.READ)
+ * <pre>
+ * {@literal @}DBusInterfaceName("com.example.Bar")
+ * {@literal @}DBusProperty(name = "Name", type = String.class)
+ * {@literal @}DBusProperty(name = "ListOfVariables", type = List.class, access = Access.READ)
+ * {@literal @}DBusProperty(name = "MapOfStringList", type = ComplexTypeWithMapAndList.class, access = Access.READ)
  * public interface Bar extends DBusInterface {
  *
  *   // TypeRef allows to provide detailed information about type
- *   interface ComplexTypeWithMapAndList extends TypeRef<Map<String, List<String>>> {
+ *   interface ComplexTypeWithMapAndList extends TypeRef&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; {
  *   }
  * }
- * }</pre>
+ * </pre>
  *
  * @see org.freedesktop.dbus.interfaces.DBusInterface
  * @see org.freedesktop.dbus.TypeRef

@@ -277,7 +277,7 @@ public final class DBusConnection extends AbstractConnection {
      * Use system variable DBUS_MACHINE_ID_LOCATION to use other location
      *
      * @return machine-id string, never null
-     * @throws DBusException if machine-id could not be found
+     * @throws DBusConnectionException if machine-id could not be found
      */
     public static String getDbusMachineId() throws DBusConnectionException {
         if (Util.isWindows()) {
