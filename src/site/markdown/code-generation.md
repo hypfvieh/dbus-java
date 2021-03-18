@@ -22,7 +22,8 @@ Therefore it is recommended to run the code generator using Maven or your develo
  * Install Maven
  * Download and extract the dbus-java sources
  * Open a terminal and change to the directory where you extracted the dbus-java sources
- * Change to the sub directory 'dbus-java-utils'
+ * Build the sources: `mvn clean install -DskipTests=true`
+ * Change to the sub directory `dbus-java-utils`
  * Now you can continue with the steps below 
 
 ## New code generation
