@@ -8,6 +8,23 @@ will then return an XML file, which you can then run the code generator against
 in order to produce a Java interface that you can then use to get a remote
 object, or use as an interface for your program.
 
+The instructions below will assume you use the dbus-java source to run the code generator.
+It is also possible to run the code generator using the dbus-java-utils artificat, but this
+requires the classpath with all dependencies and transitive dependencies.
+Therefore it is recommended to run the code generator using Maven or your development IDE 
+(e.g. Eclipse) to execute the code generator.
+
+## Requirements
+ * dbus-java sources (https://github.com/hypfvieh/dbus-java/archive/master.zip)
+ * Maven
+
+## Prerequisites
+ * Install Maven
+ * Download and extract the dbus-java sources
+ * Open a terminal and change to the directory where you extracted the dbus-java sources
+ * Change to the sub directory 'dbus-java-utils'
+ * Now you can continue with the steps below 
+
 ## New code generation
  * You can directly obtain the required interface information by reading the introspection data directly from DBus:
  
@@ -15,6 +32,7 @@ object, or use as an interface for your program.
           -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
           -Dexec.executable="java" \
           -Dexec.args="%classpath --system --outputDir /tmp/classes org.bluez /org/bluez"	
+          
  * You can also use introspection data which is stored in an xml file:
  
         mvn exec:java \
@@ -23,19 +41,3 @@ object, or use as an interface for your program.
           -Dexec.args="%classpath --inputFile /tmp/org.freedesktop.UDisks2.xml --outputDir /tmp/classes ' '"
 
 In both cases the generated classes/interfaces will be written to the provided output directory.
-
-## Old code generation
-
-1. Obtain the introspection XML file from the service that you wish to use or
-  implement.  These introspection XML files are often in the source code of
-  the reference application.  If the application is running on DBus, you can
-  obtain the introspection XML using a dbus-send query such as the following
-  (change the 'dest' and path as appropriate):
-
-        dbus-send --print-reply=literal --type=method_call --dest=org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.DBus.Introspectable.Introspect
-
-2. Run the code generator on the given XML file.
-
-        org.freedesktop.dbus.utils.bin.CreateInterface /path/to/introspection.xml
-
-3. The code will be printed to stdout; copy and paste it into a file.
