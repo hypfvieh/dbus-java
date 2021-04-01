@@ -126,7 +126,7 @@ public class DirectConnection extends AbstractConnection {
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
-        if (FreeBSDHelper.isFreeBSD()) {
+        if (FreeBSDHelper.isFreeBSD() || Util.isMacOs()) {
             address += "path=" + path;
         } else {
             address += "abstract=" + path;
