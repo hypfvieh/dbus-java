@@ -68,6 +68,8 @@ public final class DBusConnection extends AbstractConnection {
     private static final ConcurrentMap<String, DBusConnection> CONNECTIONS                = new ConcurrentHashMap<>();
     private DBus                                     dbus;
 
+	private static String                            dbusMachineIdFile;
+	
     private final String                             machineId;
 
     /** Count how many 'connections' we manage internally.
@@ -271,49 +273,63 @@ public final class DBusConnection extends AbstractConnection {
     private AtomicInteger getConcurrentConnections() {
         return concurrentConnections;
     }
+    
+    /**
+     * Set a specific machine-id file path to read the machine ID from. The
+     * system variable DBUS_MACHINE_ID_LOCATION will take precedence 
+     * over this.
+     * 
+     * @param dbusMachineIdFile file containing DBus machine ID.
+     */
+    public static void setDbusMachineIdFile(String dbusMachineIdFile) {
+        DBusConnection.dbusMachineIdFile = dbusMachineIdFile;
+    }
 
     /**
-     * Extracts the machine-id usually found in /var/lib/dbus/machine-id.
-     * Use system variable DBUS_MACHINE_ID_LOCATION to use other location
+     * Extracts the machine-id usually found on Linux in various system directories, or 
+     * generate a fake id for non-Linux platforms. Use system variable 
+     * DBUS_MACHINE_ID_LOCATION to use another location or {@link #setDbusMachineIdFile(String)}.
      *
      * @return machine-id string, never null
-     * @throws DBusConnectionException if machine-id could not be found
+     * @throws DBusConnectionException if machine-id could not be found or is empty
      */
     public static String getDbusMachineId() throws DBusConnectionException {
-        if (Util.isWindows()) {
-            return getDbusMachineIdOnWindows();
+        File uuidfile = determineMachineIdFile();
+        if(uuidfile != null) {
+            String uuid = Util.readFileToString(uuidfile);
+            if(uuid.length() > 0)
+                return uuid;
+            else
+                throw new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file is empty.");
         }
-    	File uuidfile = determineMachineIdFile();
-        String uuid = Util.readFileToString(uuidfile);
-        if (Util.isEmpty(uuid)) {
-            throw new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file is empty.");
+        if (Util.isWindows() || Util.isMacOs()) {
+            /* Linux *should* have a machine-id */
+            return getFakeDbusMachineId();
         }
-
-        return uuid;
+        throw new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file can not be found");
     }
 
     /**
      * Tries to find the DBus machine-id file in different locations.
      *
      * @return File with machine-id
-     * @throws DBusConnectionException when no machine-id file could be found
      */
-	private static File determineMachineIdFile() throws DBusConnectionException {
-		List<String> locationPriorityList = Arrays.asList(System.getenv(DBUS_MACHINE_ID_SYS_VAR),
+	private static File determineMachineIdFile() {
+		List<String> locationPriorityList = Arrays.asList(System.getenv(DBUS_MACHINE_ID_SYS_VAR), dbusMachineIdFile,
 				"/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
 		return locationPriorityList.stream()
 				.filter(s -> s != null)
 				.map(s -> new File(s))
 				.filter(f -> f.exists() && f.length() > 0)
 				.findFirst()
-				.orElseThrow(() -> new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file can not be found"));
+				.orElse(null);
 	}
 
 	/**
 	 * Generates a fake machine-id when DBus is running on Windows.
 	 * @return String
 	 */
-	private static String getDbusMachineIdOnWindows() {
+	private static String getFakeDbusMachineId() {
 	    // we create a fake id on windows
 	    return String.format("%s@%s", Util.getCurrentUser(), Util.getHostName());
 	}
