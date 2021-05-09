@@ -12,8 +12,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MethodTuple;
@@ -28,11 +33,14 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.utils.DBusNamingUtil;
 
 public class ExportedObject {
-    private Map<MethodTuple, Method> methods;
+    private Map<MethodTuple, Method> methods = new HashMap<>();
     private Reference<DBusInterface> object;
-    private String                   introspectiondata;
+    private String                   introspectionData;
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
         if (_weakreferences) {
@@ -40,32 +48,30 @@ public class ExportedObject {
         } else {
             this.object = new StrongReference<>(_object);
         }
-        introspectiondata = "";
-        methods = getExportedMethods(_object.getClass());
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Introspectable\">\n" +
-                "  <method name=\"Introspect\">\n" +
-                "   <arg type=\"s\" direction=\"out\"/>\n" +
-                "  </method>\n" +
-                " </interface>\n";
-        introspectiondata += " <interface name=\"org.freedesktop.DBus.Peer\">\n" +
-                "  <method name=\"Ping\">\n" +
-                "  </method>\n" +
-                "  <method name=\"GetMachineId\">\n" +
-                "   <arg type=\"s\" name=\"machine_uuid\" direction=\"out\"/>\n" +
-                "  </method>\n" +
-                " </interface>\n";
+        Set<Class<?>> implementedInterfaces = getDBusInterfaces(_object.getClass());
+        implementedInterfaces.add(Introspectable.class);
+        implementedInterfaces.add(Peer.class);
+
+        this.introspectionData = generateIntrospectionXml(implementedInterfaces);
     }
 
-    private String getAnnotations(AnnotatedElement c) {
-        String ans = "";
+    /**
+     * Generates the introspection data xml for annotations
+     *
+     * @param c input interface/method/signal
+     * @return xml with annotation definition
+     */
+    protected String generateAnnotationsXml(AnnotatedElement c) {
+        StringBuilder ans = new StringBuilder();
         for (Annotation a : c.getDeclaredAnnotations()) {
 
-            if (!a.annotationType().isAssignableFrom(DBusInterface.class)) { // skip all interfaces not compatible with
-                                                                             // DBusInterface (mother of all DBus
-                                                                             // related interfaces)
+            if (!a.annotationType().isAnnotationPresent(DBusInterfaceName.class)) {
+                // skip all interfaces not compatible with
+                // DBusInterface (mother of all DBus
+                // related interfaces)
                 continue;
             }
-            Class<?> t = a.annotationType();
+            Class<? extends Annotation> t = a.annotationType();
             String value = "";
             try {
                 Method m = t.getMethod("value");
@@ -76,13 +82,21 @@ public class ExportedObject {
                 // ignore
             }
 
-            ans += "  <annotation name=\"" + AbstractConnection.DOLLAR_PATTERN.matcher(t.getName()).replaceAll(".")
-                    + "\" value=\"" + value + "\" />\n";
+            String name = DBusNamingUtil.getAnnotationName(t);
+            ans.append("  <annotation name=\"").append(name)
+                    .append("\" value=\"").append(value).append("\" />\n");
         }
-        return ans;
+        return ans.toString();
     }
 
-    protected String getProperty(DBusProperty property) throws DBusException {
+    /**
+     * Generates the introspection data for the single property.
+     *
+     * @param property input property annotation
+     * @return xml with property definition
+     * @throws DBusException in case of unknown data types
+     */
+    protected String generatePropertyXml(DBusProperty property) throws DBusException {
         Class<?> propertyTypeClass = property.type();
         String propertyTypeString;
         if (TypeRef.class.isAssignableFrom(propertyTypeClass)) {
@@ -110,139 +124,193 @@ public class ExportedObject {
         return "<property name=\"" + property.name() + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
     }
 
-    protected String getProperties(Class<?> c) throws DBusException {
+    /**
+     * Generates the introspection data for the input interface properties.
+     *
+     * @param c input interface
+     * @return xml with property definitions
+     * @throws DBusException in case of unknown data types
+     */
+    protected String generatePropertiesXml(Class<?> c) throws DBusException {
         StringBuilder xml = new StringBuilder();
         DBusProperties properties = c.getAnnotation(DBusProperties.class);
         if (properties != null) {
             for (DBusProperty property : properties.value()) {
-                xml.append("  ").append(getProperty(property)).append("\n");
+                xml.append("  ").append(generatePropertyXml(property)).append("\n");
             }
         }
         DBusProperty property = c.getAnnotation(DBusProperty.class);
         if (property != null) {
-            xml.append("  ").append(getProperty(property)).append("\n");
+            xml.append("  ").append(generatePropertyXml(property)).append("\n");
         }
         return xml.toString();
     }
 
-    private Map<MethodTuple, Method> getExportedMethods(Class<?> c) throws DBusException {
-        if (DBusInterface.class.equals(c)) {
-            return new HashMap<>();
-        }
-        Map<MethodTuple, Method> m = new HashMap<>();
-        for (Class<?> i : c.getInterfaces()) {
-            if (DBusInterface.class.equals(i)) {
-                // add this class's public methods
-                if (null != c.getAnnotation(DBusInterfaceName.class)) {
-                    String name = c.getAnnotation(DBusInterfaceName.class).value();
-                    introspectiondata += " <interface name=\"" + name + "\">\n";
-                    DBusSignal.addInterfaceMap(c.getName(), name);
+    /**
+     * Generates the introspection data for the input interface methods
+     *
+     * @param c input interface
+     * @return xml with method definitions
+     */
+    protected String generateMethodsXml(Class<?> c) throws DBusException {
+        StringBuilder sb = new StringBuilder();
+        for (Method meth : c.getDeclaredMethods()) {
+            if (!Modifier.isPublic(meth.getModifiers())) {
+                continue;
+            }
+            String ms = "";
+            String methodName = DBusNamingUtil.getMethodName(meth);
+            if (methodName.length() > AbstractConnection.MAX_NAME_LENGTH) {
+                throw new DBusException(
+                        "Introspected method name exceeds 255 characters. Cannot export objects with method "
+                                + methodName);
+            }
+            sb.append("  <method name=\"").append(methodName).append("\" >\n");
+            sb.append(generateAnnotationsXml(meth));
+            for (Class<?> ex : meth.getExceptionTypes()) {
+                if (DBusExecutionException.class.isAssignableFrom(ex)) {
+                    sb.append("   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\"")
+                            .append(AbstractConnection.DOLLAR_PATTERN.matcher(ex.getName()).replaceAll("."))
+                            .append("\" />\n");
+                }
+            }
+            for (Type pt : meth.getGenericParameterTypes()) {
+                for (String s : Marshalling.getDBusType(pt)) {
+                    sb.append("   <arg type=\"").append(s).append("\" direction=\"in\"/>\n");
+                    ms += s;
+                }
+            }
+            if (!Void.TYPE.equals(meth.getGenericReturnType())) {
+                if (Tuple.class.isAssignableFrom(meth.getReturnType())) {
+                    ParameterizedType tc = (ParameterizedType) meth.getGenericReturnType();
+                    Type[] ts = tc.getActualTypeArguments();
+
+                    for (Type t : ts) {
+                        if (t != null) {
+                            for (String s : Marshalling.getDBusType(t)) {
+                                sb.append("   <arg type=\"").append(s).append("\" direction=\"out\"/>\n");
+                            }
+                        }
+                    }
+                } else if (Object[].class.equals(meth.getGenericReturnType())) {
+                    throw new DBusException("Return type of Object[] cannot be introspected properly");
                 } else {
-                    // don't let people export things which don't have a
-                    // valid D-Bus interface name
-                    if (c.getName().equals(c.getSimpleName())) {
-                        throw new DBusException("DBusInterfaces cannot be declared outside a package");
-                    }
-                    if (c.getName().length() > AbstractConnection.MAX_NAME_LENGTH) {
-                        throw new DBusException(
-                                "Introspected interface name exceeds 255 characters. Cannot export objects of type "
-                                        + c.getName());
-                    } else {
-                        introspectiondata += " <interface name=\""
-                                + AbstractConnection.DOLLAR_PATTERN.matcher(c.getName()).replaceAll(".") + "\">\n";
+                    for (String s : Marshalling.getDBusType(meth.getGenericReturnType())) {
+                        sb.append("   <arg type=\"").append(s).append("\" direction=\"out\"/>\n");
                     }
                 }
-                introspectiondata += getAnnotations(c);
-                for (Method meth : c.getDeclaredMethods()) {
-                    if (Modifier.isPublic(meth.getModifiers())) {
-                        String ms = "";
-                        String name;
-                        if (meth.isAnnotationPresent(DBusMemberName.class)) {
-                            name = meth.getAnnotation(DBusMemberName.class).value();
-                        } else {
-                            name = meth.getName();
-                        }
-                        if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException(
-                                    "Introspected method name exceeds 255 characters. Cannot export objects with method "
-                                            + name);
-                        }
-                        introspectiondata += "  <method name=\"" + name + "\" >\n";
-                        introspectiondata += getAnnotations(meth);
-                        for (Class<?> ex : meth.getExceptionTypes()) {
-                            if (DBusExecutionException.class.isAssignableFrom(ex)) {
-                                introspectiondata +=
-                                        "   <annotation name=\"org.freedesktop.DBus.Method.Error\" value=\""
-                                                + AbstractConnection.DOLLAR_PATTERN.matcher(ex.getName())
-                                                        .replaceAll(".")
-                                                + "\" />\n";
-                            }
-                        }
-                        for (Type pt : meth.getGenericParameterTypes()) {
-                            for (String s : Marshalling.getDBusType(pt)) {
-                                introspectiondata += "   <arg type=\"" + s + "\" direction=\"in\"/>\n";
-                                ms += s;
-                            }
-                        }
-                        if (!Void.TYPE.equals(meth.getGenericReturnType())) {
-                            if (Tuple.class.isAssignableFrom(meth.getReturnType())) {
-                                ParameterizedType tc = (ParameterizedType) meth.getGenericReturnType();
-                                Type[] ts = tc.getActualTypeArguments();
+            }
+            sb.append("  </method>\n");
+            methods.put(new MethodTuple(methodName, ms), meth);
+        }
 
-                                for (Type t : ts) {
-                                    if (t != null) {
-                                        for (String s : Marshalling.getDBusType(t)) {
-                                            introspectiondata += "   <arg type=\"" + s + "\" direction=\"out\"/>\n";
-                                        }
-                                    }
-                                }
-                            } else if (Object[].class.equals(meth.getGenericReturnType())) {
-                                throw new DBusException("Return type of Object[] cannot be introspected properly");
-                            } else {
-                                for (String s : Marshalling.getDBusType(meth.getGenericReturnType())) {
-                                    introspectiondata += "   <arg type=\"" + s + "\" direction=\"out\"/>\n";
-                                }
-                            }
-                        }
-                        introspectiondata += "  </method>\n";
-                        m.put(new MethodTuple(name, ms), meth);
-                    }
-                }
-                introspectiondata += getProperties(c);
-                for (Class<?> sig : c.getDeclaredClasses()) {
-                    if (DBusSignal.class.isAssignableFrom(sig)) {
-                        String name;
-                        if (sig.isAnnotationPresent(DBusMemberName.class)) {
-                            name = sig.getAnnotation(DBusMemberName.class).value();
-                            DBusSignal.addSignalMap(sig.getSimpleName(), name);
-                        } else {
-                            name = sig.getSimpleName();
-                        }
-                        if (name.length() > AbstractConnection.MAX_NAME_LENGTH) {
-                            throw new DBusException(
-                                    "Introspected signal name exceeds 255 characters. Cannot export objects with signals of type "
-                                            + name);
-                        }
-                        introspectiondata += "  <signal name=\"" + name + "\">\n";
-                        Constructor<?> con = sig.getConstructors()[0];
-                        Type[] ts = con.getGenericParameterTypes();
-                        for (int j = 1; j < ts.length; j++) {
-                            for (String s : Marshalling.getDBusType(ts[j])) {
-                                introspectiondata += "   <arg type=\"" + s + "\" direction=\"out\" />\n";
-                            }
-                        }
-                        introspectiondata += getAnnotations(sig);
-                        introspectiondata += "  </signal>\n";
+        return sb.toString();
+    }
 
+    /**
+     * Generates the introspection data for the input interface signals
+     *
+     * @param c input interface
+     * @return xml with signal definitions
+     * @throws DBusException in case of invalid signal name / data types
+     */
+    protected String generateSignalsXml(Class<?> c) throws DBusException {
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> sig : c.getDeclaredClasses()) {
+            if (DBusSignal.class.isAssignableFrom(sig)) {
+                String signalName = DBusNamingUtil.getSignalName(sig);
+                if (sig.isAnnotationPresent(DBusMemberName.class)) {
+                    DBusSignal.addSignalMap(sig.getSimpleName(), signalName);
+                }
+                if (signalName.length() > AbstractConnection.MAX_NAME_LENGTH) {
+                    throw new DBusException(
+                            "Introspected signal name exceeds 255 characters. Cannot export objects with signals of type "
+                                    + signalName);
+                }
+                sb.append("  <signal name=\"").append(signalName).append("\">\n");
+                Constructor<?> con = sig.getConstructors()[0];
+                Type[] ts = con.getGenericParameterTypes();
+                for (int j = 1; j < ts.length; j++) {
+                    for (String s : Marshalling.getDBusType(ts[j])) {
+                        sb.append("   <arg type=\"").append(s).append("\" direction=\"out\" />\n");
                     }
                 }
-                introspectiondata += " </interface>\n";
-            } else {
-                // recurse
-                m.putAll(getExportedMethods(i));
+                sb.append(generateAnnotationsXml(sig));
+                sb.append("  </signal>\n");
             }
         }
-        return m;
+        return sb.toString();
+    }
+
+    /**
+     * Get all valid DBus interfaces which are implemented in a given class.
+     * The search is performed without recursion taking into account object inheritance.
+     * A valid DBus interface must directly extend the {@link DBusInterface}.
+     *
+     * @param inputClazz input object class
+     * @return set of DBus interfaces implements in the input class
+     */
+    protected Set<Class<?>> getDBusInterfaces(Class<?> inputClazz) {
+        Objects.requireNonNull(inputClazz, "inputClazz must not be null");
+        Set<Class<?>> result = new HashSet<>();
+
+        // set of already checked classes/interfaces - used to avoid loops/redundant reflection calls
+        Set<Class<?>> checked = new HashSet<>();
+        // queue with classes/interfaces to check
+        Queue<Class<?>> toCheck = new LinkedList<>();
+        toCheck.add(inputClazz);
+
+        while (!toCheck.isEmpty()) {
+            Class<?> clazz = toCheck.poll();
+            checked.add(clazz); // avoid checking this class in the next loops
+
+            // if it's class and it has super class, queue to check it later
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null && DBusInterface.class.isAssignableFrom(superClass)) {
+                toCheck.add(superClass);
+            }
+
+            List<Class<?>> interfaces = List.of(clazz.getInterfaces());
+            if (clazz.isInterface() && interfaces.contains(DBusInterface.class)) {
+                // clazz is interface and directly extends the DBusInterface
+                result.add(clazz);
+            }
+
+            // iterate over the sub-interfaces and select the ones that extend DBusInterface
+            // this is required especially for nested interfaces
+            interfaces.stream()
+                    .filter(DBusInterface.class::isAssignableFrom)
+                    .filter(i -> i != DBusInterface.class)
+                    .filter(i -> !checked.contains(i))
+                    .forEach(toCheck::add);
+        }
+
+        return result;
+    }
+
+    private String generateIntrospectionXml(Set<Class<?>> interfaces) throws DBusException {
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> iface : interfaces) {
+            String ifaceName = DBusNamingUtil.getInterfaceName(iface);
+            // don't let people export things which don't have a
+            // valid D-Bus interface name
+            if (ifaceName.equals(iface.getSimpleName())) {
+                throw new DBusException("DBusInterfaces cannot be declared outside a package");
+            }
+            if (ifaceName.length() > AbstractConnection.MAX_NAME_LENGTH) {
+                throw new DBusException(
+                        "Introspected interface name exceeds 255 characters. Cannot export objects of type "
+                                + ifaceName);
+            }
+            sb.append(" <interface name=\"").append(ifaceName).append("\">\n");
+            sb.append(generateAnnotationsXml(iface));
+            sb.append(generateMethodsXml(iface));
+            sb.append(generatePropertiesXml(iface));
+            sb.append(generateSignalsXml(iface));
+            sb.append(" </interface>\n");
+        }
+
+        return sb.toString();
     }
 
     public Map<MethodTuple, Method> getMethods() {
@@ -254,7 +322,7 @@ public class ExportedObject {
     }
 
     public String getIntrospectiondata() {
-        return introspectiondata;
+        return introspectionData;
     }
 
 }
