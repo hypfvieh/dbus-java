@@ -250,7 +250,7 @@ public class InterfaceCodeGenerator {
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
 
         classConstructor.getSuperArguments().add(new MemberOrArgument("_path", "String", false));
-        classConstructor.getSuperArguments().add(new MemberOrArgument("_interfaceName", "String", false));
+        classConstructor.getSuperArguments().addAll(argsList);
 
         innerClass.getConstructors().add(classConstructor);
 
