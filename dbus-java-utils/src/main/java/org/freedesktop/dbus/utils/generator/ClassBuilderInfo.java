@@ -263,8 +263,10 @@ public class ClassBuilderInfo {
                 String outerIndent = _staticClass ? "        " : "    ";
                 String cstr = outerIndent + "public " + getClassName() + "(";
 
-                if (!constructor.getSuperArguments().isEmpty()) {
-                    cstr += constructor.getSuperArguments().stream().map(e -> e.asOneLineString(allImports, false)).collect(Collectors.joining(", "));
+                List<ClassBuilderInfo.MemberOrArgument> filteredSuperArguments = new ArrayList<>(constructor.getSuperArguments());
+                filteredSuperArguments.removeIf(e -> constructor.getArguments().contains(e));
+                if (!filteredSuperArguments.isEmpty()) {
+                    cstr += filteredSuperArguments.stream().map(e -> e.asOneLineString(allImports, false)).collect(Collectors.joining(", "));
                     if (!constructor.getArguments().isEmpty()) {
                         cstr += ", ";
                     }
