@@ -11,7 +11,7 @@ Using this version as replacement for 2.7.x however, will not work without chang
 #### Changes
 
 ##### Changes in 3.3.1 (not released yet):
-   - Nothing yet
+   - Fixed some issues in InterfaceCodeGenerator related to signal constructors, thanks to [poeschel](https://github.com/poeschel) ([PR#146](https://github.com/hypfvieh/dbus-java/pull/146))
    
 ##### Changes in 3.3.0 (Released: 2021-03-17):
   *CAUTION* - This version may contain breaking changes!!
