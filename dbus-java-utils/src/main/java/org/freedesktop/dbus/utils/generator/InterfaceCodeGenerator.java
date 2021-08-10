@@ -429,7 +429,7 @@ public class InterfaceCodeGenerator {
 
     	int position = 0;
     	for (MemberOrArgument entry : _outputArgs) {
-            entry.getAnnotations().add("@Position(" + position + ")");
+            entry.getAnnotations().add("@Position(" + position++ + ")");
 		}
         ClassConstructor cnstrct = new ClassConstructor();
         cnstrct.getArguments().addAll(_outputArgs);
