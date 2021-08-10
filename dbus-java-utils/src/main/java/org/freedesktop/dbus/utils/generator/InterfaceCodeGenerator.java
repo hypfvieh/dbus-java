@@ -302,9 +302,10 @@ public class InterfaceCodeGenerator {
                     argName = Util.snakeToCamelCase(argName);
                 }
 
-                if ("in".equals(argElm.getAttribute("direction"))) {
+                String dirAttr = argElm.getAttribute("direction");
+                if ("in".equals(dirAttr) || "".equals(dirAttr)) {
                     inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
-                } else if ("out".equals(argElm.getAttribute("direction"))) {
+                } else if ("out".equals(dirAttr)) {
                     outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                 }
             }
