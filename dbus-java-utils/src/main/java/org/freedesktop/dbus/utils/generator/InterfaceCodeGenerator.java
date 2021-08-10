@@ -314,11 +314,10 @@ public class InterfaceCodeGenerator {
             if (outputArgs.size() > 1) { // multi-value return
             	logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
             	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
+            } else {
+                logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
+                resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
             }
-
-            logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
-
-            resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
 
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
             classMethod.getArguments().addAll(inputArgs);
