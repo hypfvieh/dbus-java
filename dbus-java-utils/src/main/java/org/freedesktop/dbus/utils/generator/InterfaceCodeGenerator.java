@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.swing.text.Position;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -50,19 +50,18 @@ import org.xml.sax.InputSource;
 public class InterfaceCodeGenerator {
 
     private final DocumentBuilderFactory docFac = DocumentBuilderFactory.newInstance();
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger                 logger = LoggerFactory.getLogger(getClass());
 
-    private String nodeName;
-    private String busName;
+    private String                       nodeName;
+    private String                       busName;
 
-    private String introspectionData;
+    private String                       introspectionData;
 
     public InterfaceCodeGenerator(String _introspectionData, String _objectPath, String _busName) {
         introspectionData = _introspectionData;
         nodeName = _objectPath;
         busName = Util.isBlank(_busName) ? "*" : _busName;
     }
-
 
     /**
      * Analyze the DBus interface given in constructor by parsing the introspection data.
@@ -148,7 +147,7 @@ public class InterfaceCodeGenerator {
         String interfaceName = _ife.getAttribute("name");
         Map<DbusInterfaceToFqcn, String> fqcn = DbusInterfaceToFqcn.toFqcn(interfaceName);
         String packageName = fqcn.get(DbusInterfaceToFqcn.PACKAGENAME);
-        String className =  fqcn.get(DbusInterfaceToFqcn.CLASSNAME);
+        String className = fqcn.get(DbusInterfaceToFqcn.CLASSNAME);
 
         logger.info("Creating interface: {}.{}", packageName, className);
 
@@ -172,7 +171,7 @@ public class InterfaceCodeGenerator {
             case "property":
                 additionalClasses.addAll(extractProperties(element, interfaceClass));
                 break;
-            case"signal":
+            case "signal":
                 additionalClasses.addAll(extractSignals(element, interfaceClass));
                 break;
             }
@@ -185,7 +184,6 @@ public class InterfaceCodeGenerator {
 
         return filesToCreate;
     }
-
 
     /**
      * Extract &lt;signal&gt; element properties.
@@ -225,15 +223,14 @@ public class InterfaceCodeGenerator {
 
         int unknownArgCnt = 0;
         for (Element argElm : signalArgs) {
-                String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
-                String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
-                if (Util.isBlank(argName)) {
-                    argName = "arg" + unknownArgCnt;
-                    unknownArgCnt++;
-                }
-                args.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
+            String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
+            String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
+            if (Util.isBlank(argName)) {
+                argName = "arg" + unknownArgCnt;
+                unknownArgCnt++;
+            }
+            args.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
         }
-
 
         for (Entry<String, String> argEntry : args.entrySet()) {
             innerClass.getMembers().add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), true));
@@ -253,7 +250,6 @@ public class InterfaceCodeGenerator {
         classConstructor.getSuperArguments().addAll(argsList);
 
         innerClass.getConstructors().add(classConstructor);
-
 
         return additionalClasses;
     }
@@ -302,22 +298,22 @@ public class InterfaceCodeGenerator {
                     argName = Util.snakeToCamelCase(argName);
                 }
 
-                if ("in".equals(argElm.getAttribute("direction"))) {
+                String dirAttr = argElm.getAttribute("direction");
+                if ("in".equals(dirAttr) || "".equals(dirAttr)) {
                     inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
-                } else if ("out".equals(argElm.getAttribute("direction"))) {
+                } else if ("out".equals(dirAttr)) {
                     outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                 }
             }
 
             String resultType;
             if (outputArgs.size() > 1) { // multi-value return
-            	logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
-            	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
+                logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
+                resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
+            } else {
+                logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
+                resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
             }
-
-            logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
-
-            resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
 
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
             classMethod.getArguments().addAll(inputArgs);
@@ -338,7 +334,7 @@ public class InterfaceCodeGenerator {
      * Extract &lt;property&gt; elements properties.
      *
      * @param _propertyElement method XML element
-     * @param _clzBldr         {@link ClassBuilderInfo} object
+     * @param _clzBldr {@link ClassBuilderInfo} object
      * @return List of {@link ClassBuilderInfo} which have been created (maybe empty, never null)
      * @throws DBusException on DBus Error
      */
@@ -414,33 +410,36 @@ public class InterfaceCodeGenerator {
      * @return FQCN of the newly created tuple based class
      */
     private String createTuple(List<MemberOrArgument> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses) {
-    	if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
-    		return null;
-    	}
+        if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
+            return null;
+        }
 
-    	ClassBuilderInfo info = new ClassBuilderInfo();
-    	info.setClassName(_className);
-    	info.setPackageName(_parentClzBldr.getPackageName());
-    	info.setExtendClass(Tuple.class.getName());
+        ClassBuilderInfo info = new ClassBuilderInfo();
+        info.setClassName(_className);
+        info.setPackageName(_parentClzBldr.getPackageName());
+        info.setExtendClass(Tuple.class.getName());
 
-    	if (!_outputArgs.isEmpty()) {
-    		info.getImports().add(Position.class.getName());
-    	}
+        if (!_outputArgs.isEmpty()) {
+            info.getImports().add(Position.class.getName());
+        }
 
-    	int position = 0;
-    	for (MemberOrArgument entry : _outputArgs) {
-            entry.getAnnotations().add("@Position(" + position + ")");
-		}
+        ArrayList<MemberOrArgument> cnstrctArgs = new ArrayList<>();
+        int position = 0;
+        for (MemberOrArgument entry : _outputArgs) {
+            entry.getAnnotations().add("@Position(" + position++ + ")");
+            cnstrctArgs.add(new MemberOrArgument(entry.getName(), entry.getType()));
+        }
         ClassConstructor cnstrct = new ClassConstructor();
-        cnstrct.getArguments().addAll(_outputArgs);
+        cnstrct.getArguments().addAll(cnstrctArgs);
 
-    	_additionalClasses.add(info);
+        info.getConstructors().add(cnstrct);
+        info.getMembers().addAll(_outputArgs);
+        _additionalClasses.add(info);
 
-		return info.getFqcn();
-	}
+        return info.getFqcn();
+    }
 
-
-	/**
+    /**
      * Creates a class for a DBus Struct-Object.
      *
      * @param _dbusTypeStr Dbus Type definition string
@@ -605,17 +604,19 @@ public class InterfaceCodeGenerator {
     }
 
     static enum DbusInterfaceToFqcn {
-        PACKAGENAME, ORIG_PKGNAME, CLASSNAME, DBUS_INTERFACE_NAME;
+        PACKAGENAME,
+        ORIG_PKGNAME,
+        CLASSNAME,
+        DBUS_INTERFACE_NAME;
 
         public static Map<DbusInterfaceToFqcn, String> toFqcn(String _interfaceName) {
-            String packageName ;
+            String packageName;
             if (_interfaceName.contains(".")) {
                 packageName = _interfaceName.substring(0, _interfaceName.lastIndexOf("."));
             } else {
                 packageName = _interfaceName;
             }
             String className = _interfaceName.substring(_interfaceName.lastIndexOf(".") + 1);
-
 
             Map<DbusInterfaceToFqcn, String> map = new LinkedHashMap<>();
 
@@ -630,4 +631,3 @@ public class InterfaceCodeGenerator {
         }
     }
 }
-

@@ -49,7 +49,7 @@ public class TypeConverter {
     public static String getProperJavaClass(String _argType, Set<String> _includes) {
         String clazzName = null;
         if (_argType == null) {
-        	return _argType;
+            return _argType;
         }
 
         // this is something with generics, so we do not convert boxed type to primitives
@@ -70,7 +70,7 @@ public class TypeConverter {
             while (matcher.find()) {
                 String match = matcher.group();
                 if (_includes.contains(match)) {
-                    String plainClazzName = match.substring(match.lastIndexOf(".") +1);
+                    String plainClazzName = match.substring(match.lastIndexOf(".") + 1);
                     clazzName = clazzName.replace(match, plainClazzName);
                 }
             }
@@ -91,14 +91,14 @@ public class TypeConverter {
      * @return converted type or original input
      */
     private static String convertJavaType(String _fqcn, boolean _usePrimitives) {
-    	if (_fqcn == null) {
-    		return _fqcn;
-    	}
-    	String clazzName = _fqcn;
+        if (_fqcn == null) {
+            return _fqcn;
+        }
+        String clazzName = _fqcn;
 
-    	if (_fqcn.contains(".")) {
-    		clazzName = _fqcn.substring(_fqcn.lastIndexOf(".") + 1);
-    	}
+        if (_fqcn.contains(".")) {
+            clazzName = _fqcn.substring(_fqcn.lastIndexOf(".") + 1);
+        }
 
         if (CLASS_MAP.containsKey(_fqcn)) {
             return CLASS_MAP.get(_fqcn);
@@ -121,22 +121,22 @@ public class TypeConverter {
      */
     private static String convertJavaBoxedTypeToPrimitive(String _clazzName) {
         switch (_clazzName) {
-            case "Boolean":
-                return "boolean";
-            case "Integer":
-                return "int";
-            case "Long":
-                return "long";
-            case "Double":
-                return "double";
-            case "Float":
-                return "float";
-            case "Byte":
-                return "byte";
-            case "Char":
-                return "char";
-            default:
-                return _clazzName;
+        case "Boolean":
+            return "boolean";
+        case "Integer":
+            return "int";
+        case "Long":
+            return "long";
+        case "Double":
+            return "double";
+        case "Float":
+            return "float";
+        case "Byte":
+            return "byte";
+        case "Char":
+            return "char";
+        default:
+            return _clazzName;
         }
     }
 
@@ -154,7 +154,7 @@ public class TypeConverter {
         String type;
 
         if (Util.isBlank(_dbusType)) {
-        	return null;
+            return null;
         }
 
         if (_dbusType.length() == 1) {
@@ -166,7 +166,7 @@ public class TypeConverter {
                     })
                     .collect(Collectors.joining(""));
 
-             _javaIncludes.add(type);
+            _javaIncludes.add(type);
         } else {
             type = getTypeAdv(_dbusType, _javaIncludes);
         }
@@ -215,9 +215,9 @@ public class TypeConverter {
      */
     private static String getTypeAdv(String _dbusType, Set<String> _javaIncludes) throws DBusException {
 
-    	if (Util.isBlank(_dbusType)) {
-    		return null;
-    	}
+        if (Util.isBlank(_dbusType)) {
+            return null;
+        }
 
         List<Type> dataType = new ArrayList<>();
         Marshalling.getJavaType(_dbusType, dataType, 1);
