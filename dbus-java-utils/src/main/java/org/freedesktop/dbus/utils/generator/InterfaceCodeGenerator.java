@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.swing.text.Position;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -302,9 +302,10 @@ public class InterfaceCodeGenerator {
                     argName = Util.snakeToCamelCase(argName);
                 }
 
-                if ("in".equals(argElm.getAttribute("direction"))) {
+                String dirAttr = argElm.getAttribute("direction");
+                if ("in".equals(dirAttr) || "".equals(dirAttr)) {
                     inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
-                } else if ("out".equals(argElm.getAttribute("direction"))) {
+                } else if ("out".equals(dirAttr)) {
                     outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                 }
             }
@@ -313,11 +314,10 @@ public class InterfaceCodeGenerator {
             if (outputArgs.size() > 1) { // multi-value return
             	logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
             	resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
+            } else {
+                logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
+                resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
             }
-
-            logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
-
-            resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
 
             ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
             classMethod.getArguments().addAll(inputArgs);
@@ -427,13 +427,17 @@ public class InterfaceCodeGenerator {
     		info.getImports().add(Position.class.getName());
     	}
 
+		ArrayList<MemberOrArgument> cnstrctArgs = new ArrayList<>();
     	int position = 0;
     	for (MemberOrArgument entry : _outputArgs) {
-            entry.getAnnotations().add("@Position(" + position + ")");
-		}
+            entry.getAnnotations().add("@Position(" + position++ + ")");
+            cnstrctArgs.add(new MemberOrArgument(entry.getName(), entry.getType()));
+        }
         ClassConstructor cnstrct = new ClassConstructor();
-        cnstrct.getArguments().addAll(_outputArgs);
+        cnstrct.getArguments().addAll(cnstrctArgs);
 
+        info.getConstructors().add(cnstrct);
+        info.getMembers().addAll(_outputArgs);
     	_additionalClasses.add(info);
 
 		return info.getFqcn();
