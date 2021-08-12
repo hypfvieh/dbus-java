@@ -427,12 +427,14 @@ public class InterfaceCodeGenerator {
     		info.getImports().add(Position.class.getName());
     	}
 
+		ArrayList<MemberOrArgument> cnstrctArgs = new ArrayList<>();
     	int position = 0;
     	for (MemberOrArgument entry : _outputArgs) {
             entry.getAnnotations().add("@Position(" + position++ + ")");
-		}
+            cnstrctArgs.add(new MemberOrArgument(entry.getName(), entry.getType()));
+        }
         ClassConstructor cnstrct = new ClassConstructor();
-        cnstrct.getArguments().addAll(_outputArgs);
+        cnstrct.getArguments().addAll(cnstrctArgs);
 
         info.getConstructors().add(cnstrct);
         info.getMembers().addAll(_outputArgs);
