@@ -84,7 +84,7 @@ public class ClassBuilderInfo {
     /** Annotations of this class. */
     private final List<AnnotationInfo>   annotations           = new ArrayList<>();
     /** Members/Fields of this class. */
-    private final List<MemberOrArgument>      members               = new ArrayList<>();
+    private final List<MemberOrArgument> members               = new ArrayList<>();
     /** Interfaces implemented by this class. */
     private final Set<String>            implementedInterfaces = new LinkedHashSet<>();
     /** Methods provided by this class. */
@@ -103,7 +103,7 @@ public class ClassBuilderInfo {
     private String                       dbusPackageName;
 
     /** Type of this class (interface or class). */
-    private ClassType                     classType;
+    private ClassType                    classType;
     /** Class which this class may extend. */
     private String                       extendClass;
 
@@ -177,6 +177,7 @@ public class ClassBuilderInfo {
 
     /**
      * Create the Java source for the class information provided.
+     * 
      * @return String
      */
     public String createClassFileContent() {
@@ -315,7 +316,7 @@ public class ClassBuilderInfo {
                 content.add(memberIndent + "public void set" + getterSetterName + "("
                         + memberType + " arg) {");
                 content.add(memberIndent + "    " + member.getName() + " = arg;");
-                content.add(memberIndent +"}");
+                content.add(memberIndent + "}");
             }
             content.add("");
             content.add(memberIndent + "public " + memberType + " get" + getterSetterName + "() {");
@@ -327,9 +328,9 @@ public class ClassBuilderInfo {
 
         for (ClassMethod mth : getMethods()) {
 
-        	if (!mth.getAnnotations().isEmpty()) {
-        		content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
-        	}
+            if (!mth.getAnnotations().isEmpty()) {
+                content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
+            }
 
             String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
             clzMth += mth.getName() + "(";
@@ -351,7 +352,7 @@ public class ClassBuilderInfo {
 
         // write imports to resulting content if this is not a inner class
         if (!_staticClass) {
-            content.add(2,"");
+            content.add(2, "");
             content.addAll(2, allImports.stream().filter(l -> !l.startsWith("java.lang.")).map(l -> "import " + l + ";").collect(Collectors.toList()));
         }
 
@@ -360,14 +361,15 @@ public class ClassBuilderInfo {
 
     /**
      * Create the filename with path this java class should use.
+     * 
      * @return String, null if class name was null
      */
     public String getFileName() {
-    	if (getClassName() == null) { // no class name
-    		return null;
-    	}
+        if (getClassName() == null) { // no class name
+            return null;
+        }
         if (getPackageName() == null) { // no package name
-        	return getClassName() + ".java";
+            return getClassName() + ".java";
         }
 
         return getPackageName().replace(".", File.separator) + File.separator + getClassName() + ".java";
@@ -375,6 +377,7 @@ public class ClassBuilderInfo {
 
     /**
      * Creates the fully qualified classname based on the provided classname and package.
+     * 
      * @return String
      */
     public String getFqcn() {
@@ -383,6 +386,7 @@ public class ClassBuilderInfo {
 
     /**
      * Extract the class name from a given FQCN (fully qualified classname).
+     * 
      * @param _fqcn fqcn to analyze
      * @return classname, null if input was null
      */
@@ -456,7 +460,7 @@ public class ClassBuilderInfo {
         /** Annotation class. */
         private final Class<? extends Annotation> annotationClass;
         /** Annotation params (e.g. value = "foo", key = "bar"). */
-        private final String annotationParams;
+        private final String                      annotationParams;
 
         public AnnotationInfo(Class<? extends Annotation> _annotationClass, String _annotationParams) {
             annotationClass = _annotationClass;
@@ -479,16 +483,16 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassMethod {
-    	/** Name of this method. */
-        private final String              name;
+        /** Name of this method. */
+        private final String                 name;
         /** Return value of the method. */
-        private final String              returnType;
+        private final String                 returnType;
         /** True if method should be final, false otherwise. */
-        private final boolean             finalMethod;
+        private final boolean                finalMethod;
         /** Arguments for this method, key is argument name, value is argument type. */
-        private final List<MemberOrArgument> arguments = new ArrayList<>();
+        private final List<MemberOrArgument> arguments   = new ArrayList<>();
         /** List of annotations for this method. */
-        private final List<String> annotations = new ArrayList<>();
+        private final List<String>           annotations = new ArrayList<>();
 
         public ClassMethod(String _name, String _returnType, boolean _finalMethod) {
             name = _name;
@@ -512,9 +516,9 @@ public class ClassBuilderInfo {
             return arguments;
         }
 
-		public List<String> getAnnotations() {
-			return annotations;
-		}
+        public List<String> getAnnotations() {
+            return annotations;
+        }
 
     }
 
@@ -525,20 +529,20 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class MemberOrArgument {
-    	/** Name of member/field. */
+        /** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
         private final String       type;
         /** True to force this member to be final, false otherwise. */
         private final boolean      finalArg;
         /** List of classes/types or placeholders put into diamond operators to use as generics. */
-        private final List<String> generics = new ArrayList<>();
+        private final List<String> generics    = new ArrayList<>();
         /** List of annotations for this member. */
         private final List<String> annotations = new ArrayList<>();
 
         public MemberOrArgument(String _name, String _type, boolean _finalMember) {
             // repair reserved words by adding 'Param' as appendix
-        	name = RESERVED.contains(_name) ? _name + "param" : _name;
+            name = RESERVED.contains(_name) ? _name + "param" : _name;
             type = _type;
             finalArg = _finalMember;
         }
@@ -573,8 +577,8 @@ public class ClassBuilderInfo {
 
             if (!getGenerics().isEmpty()) {
                 sb.append("<")
-                  .append(getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _allImports)).collect(Collectors.joining(", ")))
-                  .append(">");
+                        .append(getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _allImports)).collect(Collectors.joining(", ")))
+                        .append(">");
             }
 
             return sb.toString();
@@ -589,7 +593,7 @@ public class ClassBuilderInfo {
 
             if (_includeAnnotations && !getAnnotations().isEmpty()) {
                 sb.append(String.join(" ", getAnnotations()))
-                  .append(" ");
+                        .append(" ");
             }
 
             sb.append(getFullType(_allImports));
@@ -610,13 +614,13 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassConstructor {
-    	/** Map of arguments for the constructor. Key is argument name, value is argument type. */
-        private final List<MemberOrArgument> arguments = new ArrayList<>();
+        /** Map of arguments for the constructor. Key is argument name, value is argument type. */
+        private final List<MemberOrArgument> arguments      = new ArrayList<>();
         /** Map of arguments for the super-constructor. Key is argument name, value is argument type. */
         private final List<MemberOrArgument> superArguments = new ArrayList<>();
 
         /** List of throws arguments. */
-        private final List<String> throwArguments = new ArrayList<>();
+        private final List<String>           throwArguments = new ArrayList<>();
 
         public List<String> getThrowArguments() {
             return throwArguments;

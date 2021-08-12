@@ -27,24 +27,26 @@ import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
  */
 public class StructTreeBuilder {
 
-	/**
-	 * Builds the struct(s) found in _dbusSig.
-	 * If the struct is wrapped in a {@link Collection}, it will be unwrapped.
-	 * <br><br>
-	 * The resulting String will return the parent class name.
-	 * This can be the Structs classname or e.g. List/Set class if the struct was wrapped in a {@link Collection}.
-	 * <br><br>
-	 * Structs which are inside of another struct will get the appendix 'Struct' for each iteration.
-	 * This may lead to classes with names like FooStructStructStruct (FooStruct-&gt;(InnerStruct-&gt;InnerInnerStruct)).
-	 *
-	 * @param _dbusSig dbus Type string
-	 * @param _structName name the struct should have
-	 * @param _clzBldr class builder with the class where the struct was first seen
-	 * @param _generatedClasses a list, this will contain additional struct classes created, if any. Should never be null!
-	 *
-	 * @return Struct class name or Collection type name
-	 * @throws DBusException on DBus Error
-	 */
+    /**
+     * Builds the struct(s) found in _dbusSig.
+     * If the struct is wrapped in a {@link Collection}, it will be unwrapped.
+     * <br>
+     * <br>
+     * The resulting String will return the parent class name.
+     * This can be the Structs classname or e.g. List/Set class if the struct was wrapped in a {@link Collection}.
+     * <br>
+     * <br>
+     * Structs which are inside of another struct will get the appendix 'Struct' for each iteration.
+     * This may lead to classes with names like FooStructStructStruct (FooStruct-&gt;(InnerStruct-&gt;InnerInnerStruct)).
+     *
+     * @param _dbusSig dbus Type string
+     * @param _structName name the struct should have
+     * @param _clzBldr class builder with the class where the struct was first seen
+     * @param _generatedClasses a list, this will contain additional struct classes created, if any. Should never be null!
+     *
+     * @return Struct class name or Collection type name
+     * @throws DBusException on DBus Error
+     */
     public String buildStructClasses(String _dbusSig, String _structName, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _generatedClasses) throws DBusException {
 
         if (Util.isBlank(_dbusSig) || _generatedClasses == null) {
@@ -79,7 +81,7 @@ public class StructTreeBuilder {
             if (!treeItem.getSubType().isEmpty()) {
                 createNested(treeItem.getSubType(), info, _generatedClasses);
             }
-            //_clzBldr.getImports().addAll(info.getImports());
+            // _clzBldr.getImports().addAll(info.getImports());
         }
 
         return parentType == null ? _clzBldr.getPackageName() + "." + _structName : parentType;
@@ -144,7 +146,6 @@ public class StructTreeBuilder {
 
     }
 
-
     /**
      * Helper to print a StructTree to STDOUT (for debugging purposes).
      *
@@ -180,10 +181,10 @@ public class StructTreeBuilder {
         List<StructTree> root = new ArrayList<>();
 
         if (Util.isBlank(_dbusTypeStr)) {
-        	return root;
+            return root;
         }
 
-    	List<Type> dataType = new ArrayList<>();
+        List<Type> dataType = new ArrayList<>();
         Marshalling.getJavaType(_dbusTypeStr, dataType, 1);
 
         for (Type type : dataType) {
@@ -210,14 +211,14 @@ public class StructTreeBuilder {
     private List<StructTree> buildTree(ParameterizedType _pType) throws DBusException {
         List<StructTree> trees = new ArrayList<>();
         if (_pType == null) {
-        	return trees;
+            return trees;
         }
 
         for (Type type : _pType.getActualTypeArguments()) {
             if (type instanceof ParameterizedType) {
-                 StructTree tree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
-                 tree.subType.addAll(buildTree((ParameterizedType) type));
-                 trees.add(tree);
+                StructTree tree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
+                tree.subType.addAll(buildTree((ParameterizedType) type));
+                trees.add(tree);
             } else {
                 StructTree tree = new StructTree(type.getTypeName());
                 trees.add(tree);
@@ -233,7 +234,7 @@ public class StructTreeBuilder {
      * @since v3.0.1 - 2018-12-22
      */
     static class StructTree {
-        private final Class<?> dataType;
+        private final Class<?>         dataType;
         private final List<StructTree> subType = new ArrayList<>();
 
         public StructTree(String _dataType) {

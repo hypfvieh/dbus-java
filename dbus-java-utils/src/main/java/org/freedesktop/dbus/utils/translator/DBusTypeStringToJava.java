@@ -15,6 +15,7 @@ import org.freedesktop.dbus.types.DBusStructType;
 /**
  * Reads a DBus signature string and converts it to java classes tree.<br>
  * Uses a DBus signature string like "a(ia{sv})" and converts it something like:
+ * 
  * <pre>
  * java.util.List
  *    org.freedesktop.dbus.Struct
@@ -23,6 +24,7 @@ import org.freedesktop.dbus.types.DBusStructType;
  *                java.lang.String
  *                org.freedesktop.dbus.types.Variant
  * </pre>
+ * 
  * Each indent step represents another step in the hierarchy.<br>
  * Classes listed in the same indent level are part of the same structure (e.g. Map, Struct).
  * <p>
@@ -81,7 +83,7 @@ public class DBusTypeStringToJava {
             DBusStructType s = (DBusStructType) _t;
             System.out.println(repeat(INDENT, _indent) + Struct.class.getName());
             for (Type ty : s.getActualTypeArguments()) {
-                recursive(ty, _indent +2);
+                recursive(ty, _indent + 2);
             }
         } else {
             String str = _t.getTypeName();
@@ -101,7 +103,7 @@ public class DBusTypeStringToJava {
      */
     private static String repeat(String _string, int _cnt) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < _cnt ; i++) {
+        for (int i = 0; i < _cnt; i++) {
             sb.append(_string);
         }
         return sb.toString();
