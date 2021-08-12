@@ -434,6 +434,7 @@ public class InterfaceCodeGenerator {
         ClassConstructor cnstrct = new ClassConstructor();
         cnstrct.getArguments().addAll(_outputArgs);
 
+        info.getMembers().addAll(_outputArgs);
     	_additionalClasses.add(info);
 
 		return info.getFqcn();
