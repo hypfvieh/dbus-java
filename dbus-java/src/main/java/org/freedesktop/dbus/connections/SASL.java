@@ -23,6 +23,7 @@ import java.util.Random;
 
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -423,7 +424,7 @@ public class SASL {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
-                    if (FreeBSDHelper.isFreeBSD()) {
+                    if (us instanceof UnixSocket && ( Util.isMacOs() || FreeBSDHelper.isFreeBSD() ) ) {
                         FreeBSDHelper.send_cred(us);
                     } else {
                         out.write(new byte[] {
@@ -578,7 +579,7 @@ public class SASL {
                         } else {
                             Credentials credentials;
                             try {
-                                if (FreeBSDHelper.isFreeBSD()) {
+                                if (Util.isMacOs() || FreeBSDHelper.isFreeBSD()) {
                                     long euid = FreeBSDHelper.recv_cred(us);
                                     if (euid >= 0) {
                                         kernelUid = stupidlyEncode("" + euid);
