@@ -424,7 +424,7 @@ public class SASL {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
-                    if (us instanceof UnixSocket && ( Util.isMacOs() || FreeBSDHelper.isFreeBSD() ) ) {
+                    if (us instanceof UnixSocket && ( Util.isMacOs() || FreeBSDHelper.isFreeBSD())) {
                         FreeBSDHelper.send_cred(us);
                     } else {
                         out.write(new byte[] {
