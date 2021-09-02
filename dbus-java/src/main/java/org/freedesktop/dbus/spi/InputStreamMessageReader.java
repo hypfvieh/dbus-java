@@ -16,15 +16,15 @@ import org.slf4j.LoggerFactory;
 public class InputStreamMessageReader implements IMessageReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private SocketChannel inputStream;
-    private byte[]  buf;
+    private SocketChannel inputChannel;
+    private byte[]        buf;
     private byte[]        tbuf;
     private byte[]        header;
     private byte[]        body;
     private int[]         len;
 
     public InputStreamMessageReader(SocketChannel _in) {
-        this.inputStream = _in;
+        inputChannel = _in;
         len = new int[4];
     }
 
@@ -41,7 +41,7 @@ public class InputStreamMessageReader implements IMessageReader {
         if (len[0] < 12) {
             try {
                 ByteBuffer wrapBuf = ByteBuffer.wrap(buf, len[0], 12 - len[0]);
-                rv = inputStream.read(wrapBuf);
+                rv = inputChannel.read(wrapBuf);
             } catch (SocketTimeoutException exSt) {
                 return null;
             } catch (EOFException _ex) {
@@ -78,7 +78,7 @@ public class InputStreamMessageReader implements IMessageReader {
         if (len[1] < 4) {
             try {
                 ByteBuffer wrapTBuf = ByteBuffer.wrap(tbuf, len[1], 4 - len[1]);
-                rv = inputStream.read(wrapTBuf);
+                rv = inputChannel.read(wrapTBuf);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -112,7 +112,7 @@ public class InputStreamMessageReader implements IMessageReader {
         if (len[2] < headerlen) {
             try {
                 ByteBuffer wrapHeader = ByteBuffer.wrap(header, 8 + len[2], headerlen - len[2]);
-                rv = inputStream.read(wrapHeader);
+                rv = inputChannel.read(wrapHeader);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -138,7 +138,7 @@ public class InputStreamMessageReader implements IMessageReader {
         if (len[3] < body.length) {
             try {
                 ByteBuffer wrapBody = ByteBuffer.wrap(body, len[3], body.length - len[3]);
-                rv = inputStream.read(wrapBody);
+                rv = inputChannel.read(wrapBody);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -160,32 +160,35 @@ public class InputStreamMessageReader implements IMessageReader {
             tbuf = null;
             body = null;
             header = null;
+            buf = null;
             throw dbe;
         } catch (RuntimeException exRe) { // this really smells badly!
             logger.debug("", exRe);
             tbuf = null;
             body = null;
             header = null;
+            buf = null;
             throw exRe;
         }
         logger.debug("=> {}", m);
         tbuf = null;
         body = null;
         header = null;
+        buf = null;
         return m;
     }
 
     @Override
     public void close() throws IOException {
         logger.trace("Closing Message Reader");
-        if (inputStream != null) {
-            inputStream.close();
+        if (inputChannel != null) {
+            inputChannel.close();
         }
-        inputStream = null;
+        inputChannel = null;
     }
 
     @Override
     public boolean isClosed() {
-        return inputStream == null;
+        return inputChannel == null;
     }
 }
