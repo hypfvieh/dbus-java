@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.spi;
 
-import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
@@ -16,28 +16,32 @@ import org.slf4j.LoggerFactory;
 public class InputStreamMessageReader implements IMessageReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private InputStream inputStream;
-    private byte[]      buf    = null;
-    private byte[]      tbuf   = null;
-    private byte[]      header = null;
-    private byte[]      body   = null;
-    private int[]       len    = new int[4];
+    private SocketChannel inputStream;
+    private byte[]  buf;
+    private byte[]        tbuf;
+    private byte[]        header;
+    private byte[]        body;
+    private int[]         len;
 
-    public InputStreamMessageReader(InputStream _in) {
-        this.inputStream = new BufferedInputStream(_in);
+    public InputStreamMessageReader(SocketChannel _in) {
+        this.inputStream = _in;
+        len = new int[4];
     }
 
     @Override
     public Message readMessage() throws IOException, DBusException {
         int rv;
-        /* Read the 12 byte fixed header, retrying as necessary */
+
         if (null == buf) {
             buf = new byte[12];
             len[0] = 0;
         }
+
+        /* Read the 12 byte fixed header, retrying as necessary */
         if (len[0] < 12) {
             try {
-                rv = inputStream.read(buf, len[0], 12 - len[0]);
+                ByteBuffer wrapBuf = ByteBuffer.wrap(buf, len[0], 12 - len[0]);
+                rv = inputStream.read(wrapBuf);
             } catch (SocketTimeoutException exSt) {
                 return null;
             } catch (EOFException _ex) {
@@ -63,7 +67,6 @@ public class InputStreamMessageReader implements IMessageReader {
         byte type = buf[1];
         byte protover = buf[3];
         if (protover > Message.PROTOCOL) {
-            buf = null;
             throw new MessageProtocolVersionException(String.format("Protocol version %s is unsupported", protover));
         }
 
@@ -74,7 +77,8 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[1] < 4) {
             try {
-                rv = inputStream.read(tbuf, len[1], 4 - len[1]);
+                ByteBuffer wrapTBuf = ByteBuffer.wrap(tbuf, len[1], 4 - len[1]);
+                rv = inputStream.read(wrapTBuf);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -107,7 +111,8 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[2] < headerlen) {
             try {
-                rv = inputStream.read(header, 8 + len[2], headerlen - len[2]);
+                ByteBuffer wrapHeader = ByteBuffer.wrap(header, 8 + len[2], headerlen - len[2]);
+                rv = inputStream.read(wrapHeader);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -132,7 +137,8 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[3] < body.length) {
             try {
-                rv = inputStream.read(body, len[3], body.length - len[3]);
+                ByteBuffer wrapBody = ByteBuffer.wrap(body, len[3], body.length - len[3]);
+                rv = inputStream.read(wrapBody);
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -151,21 +157,18 @@ public class InputStreamMessageReader implements IMessageReader {
             m = MessageFactory.createMessage(type, buf, header, body, null);
         } catch (DBusException dbe) {
             logger.debug("", dbe);
-            buf = null;
             tbuf = null;
             body = null;
             header = null;
             throw dbe;
         } catch (RuntimeException exRe) { // this really smells badly!
             logger.debug("", exRe);
-            buf = null;
             tbuf = null;
             body = null;
             header = null;
             throw exRe;
         }
         logger.debug("=> {}", m);
-        buf = null;
         tbuf = null;
         body = null;
         header = null;

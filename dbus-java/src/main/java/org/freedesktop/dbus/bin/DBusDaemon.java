@@ -7,8 +7,8 @@ import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -43,8 +43,6 @@ import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jnr.unixsocket.UnixSocket;
-
 /**
  * A replacement DBusDaemon
  */
@@ -55,23 +53,16 @@ public class DBusDaemon extends Thread implements Closeable {
 
     public static class Connstruct {
         // CHECKSTYLE:OFF
-        public UnixSocket    usock;
-        public Socket        tsock;
         public InputStreamMessageReader min;
         public OutputStreamMessageWriter mout;
         public String        unique;
+        public SocketChannel socketChannel;
         // CHECKSTYLE:ON
 
-        Connstruct(UnixSocket sock) throws IOException {
-            this.usock = sock;
-            min = new InputStreamMessageReader(sock.getInputStream());
-            mout = new OutputStreamMessageWriter(sock.getOutputStream());
-        }
-
-        Connstruct(Socket sock) throws IOException {
-            this.tsock = sock;
-            min = new InputStreamMessageReader(sock.getInputStream());
-            mout = new OutputStreamMessageWriter(sock.getOutputStream());
+        Connstruct(SocketChannel _sock) throws IOException {
+            this.socketChannel = _sock;
+            min = new InputStreamMessageReader(socketChannel);
+            mout = new OutputStreamMessageWriter(socketChannel);
         }
 
         @Override
@@ -802,11 +793,8 @@ public class DBusDaemon extends Thread implements Closeable {
         }
         if (exists) {
             try {
-                if (null != c.usock) {
-                    c.usock.close();
-                }
-                if (null != c.tsock) {
-                    c.tsock.close();
+                if (null != c.socketChannel) {
+                    c.socketChannel.close();
                 }
             } catch (IOException exIo) {
             }
@@ -832,7 +820,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    public void addSock(Socket s) throws IOException {
+    public void addSock(SocketChannel s) throws IOException {
 
         LOGGER.debug("enter");
 

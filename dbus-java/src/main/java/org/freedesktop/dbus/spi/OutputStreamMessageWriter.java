@@ -1,7 +1,8 @@
 package org.freedesktop.dbus.spi;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
@@ -12,10 +13,10 @@ public class OutputStreamMessageWriter implements IMessageWriter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private OutputStream outputStream;
+    private SocketChannel outputChannel;
 
-    public OutputStreamMessageWriter(OutputStream _out) {
-        this.outputStream = _out;
+    public OutputStreamMessageWriter(SocketChannel _out) {
+        this.outputChannel = _out;
     }
 
     @Override
@@ -36,22 +37,22 @@ public class OutputStreamMessageWriter implements IMessageWriter {
             if (null == buf) {
                 break;
             }
-            outputStream.write(buf);
+
+            outputChannel.write(ByteBuffer.wrap(buf));
         }
-        outputStream.flush();
     }
 
     @Override
     public void close() throws IOException {
         logger.debug("Closing Message Writer");
-        if (outputStream != null) {
-            outputStream.close();
+        if (outputChannel != null) {
+            outputChannel.close();
         }
-        outputStream = null;
+        outputChannel = null;
     }
 
     @Override
     public boolean isClosed() {
-        return outputStream == null;
+        return outputChannel == null;
     }
 }

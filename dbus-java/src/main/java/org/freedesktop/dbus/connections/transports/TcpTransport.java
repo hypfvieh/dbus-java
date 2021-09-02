@@ -2,24 +2,24 @@ package org.freedesktop.dbus.connections.transports;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.StandardProtocolFamily;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 
 /**
  * Transport type representing a transport connection to TCP.
- * 
+ *
  * @author hypfvieh
  * @since v3.2.0 - 2019-02-08
  */
 public class TcpTransport extends AbstractTransport {
 
-    private Socket socket;
-    private final int        timeout;
+    private SocketChannel socket;
+    private final int     timeout;
 
-    
     TcpTransport(BusAddress _address, int _timeout) {
         super(_address);
         timeout = _timeout;
@@ -35,27 +35,32 @@ public class TcpTransport extends AbstractTransport {
      * Connect to DBus using TCP.
      * @throws IOException on error
      */
+    @Override
     void connect() throws IOException {
-        
+
         if (getAddress().isListeningSocket()) {
-            try (ServerSocket ss = new ServerSocket()) {
-                ss.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
-                socket = ss.accept();
+
+            try (ServerSocketChannel open = ServerSocketChannel.open(StandardProtocolFamily.INET)) {
+                open.configureBlocking(true);
+                open.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
+                socket = open.accept();
             }
         } else {
-            socket = new Socket();
+            socket = SocketChannel.open(StandardProtocolFamily.INET);
+            socket.configureBlocking(true);
+
             getLogger().trace("Setting timeout to {} on Socket", timeout);
-            socket.connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
+            socket.socket().connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
         }
-        
+
         setInputOutput(socket);
 
-        authenticate(socket.getOutputStream(), socket.getInputStream(), socket);
+        authenticate(socket);
     }
 
     @Override
     public void close() throws IOException {
-        if (socket != null && !socket.isClosed()) {
+        if (socket != null && socket.isOpen()) {
             socket.close();
         }
         super.close();

@@ -2,9 +2,10 @@ package org.freedesktop.dbus.bin;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.StandardProtocolFamily;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -93,6 +94,9 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     private void startUnixSocket(BusAddress address) throws IOException {
         LOGGER.debug("enter");
+
+        // TODO: Use TransportFactory
+
         UnixServerSocketChannel uss;
         uss = UnixServerSocketChannel.open();
 
@@ -106,9 +110,8 @@ public class EmbeddedDBusDaemon implements Closeable {
         // accept new connections
         while (daemonThread.isRunning()) {
              UnixSocketChannel s = uss.accept();
-            if ((new SASL(true)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.socket().getOutputStream(), s.socket().getInputStream(), s.socket())) {
-                // s.setBlocking(false);
-                daemonThread.addSock(s.socket());
+            if ((new SASL(true)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s)) {
+                daemonThread.addSock(s);
             } else {
                 s.close();
             }
@@ -122,15 +125,19 @@ public class EmbeddedDBusDaemon implements Closeable {
 
         LOGGER.debug("enter");
 
-        try (ServerSocket ss = new ServerSocket(address.getPort(), 10, InetAddress.getByName(address.getHost()))) {
-            listenSocket = ss;
+        // TODO: Use TransportFactory
+
+        try (ServerSocketChannel open = ServerSocketChannel.open(StandardProtocolFamily.INET)) {
+            open.configureBlocking(true);
+            open.bind(new InetSocketAddress(address.getHost(), address.getPort()));
+            listenSocket = open.accept();
 
             // accept new connections
             while (daemonThread.isRunning()) {
-                Socket s = ss.accept();
+                SocketChannel s = open.accept();
                 boolean authOK = false;
                 try {
-                    authOK = (new SASL(false)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s.getOutputStream(), s.getInputStream(), null);
+                    authOK = (new SASL(false)).auth(SASL.SaslMode.SERVER, authTypes, address.getGuid(), s);
                 } catch (Exception e) {
                     LOGGER.debug("", e);
                 }

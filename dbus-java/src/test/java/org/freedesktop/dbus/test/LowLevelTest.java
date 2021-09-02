@@ -23,6 +23,8 @@ public class LowLevelTest {
 
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException {
+        System.setProperty(TransportFactory.DBUS_JAVA_DISABLE_JNR_UNIXSOCKET, "true");
+
         String addr = getAddress();
         logger.debug(addr);
         BusAddress address = new BusAddress(addr);
@@ -54,7 +56,10 @@ public class LowLevelTest {
     }
 
     static String getAddress() throws DBusException {
+        //System.setProperty("DBUS_SESSION_BUS_ADDRESS", "unix:path=/tmp/test");
+
         String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+        s = "unix:path=/tmp/test";
         if (s == null) {
             // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
             // $DISPLAY`

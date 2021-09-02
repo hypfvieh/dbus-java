@@ -14,8 +14,8 @@
     <description>DBus-Java library module parent</description>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit5.version>5.7.0</junit5.version>
     </properties>
@@ -162,7 +162,7 @@
                                 <goal>compile</goal>
                             </goals>
                             <configuration>
-                                <release>11</release>
+                                <release>16</release>
                                 <compileSourceRoots>
                                     <compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot>
                                     <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>

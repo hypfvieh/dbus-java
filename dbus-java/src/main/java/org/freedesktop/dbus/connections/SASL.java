@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.channels.NetworkChannel;
+import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
@@ -21,8 +24,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.JnrUnixSocketHelper;
+import org.freedesktop.dbus.utils.NativeUnixSocketHelper;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,6 +239,44 @@ public class SASL {
         }
     }
 
+    public SASL.Command receive(SocketChannel _sock) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        ByteBuffer buf = ByteBuffer.allocate(64);
+
+        boolean runLoop = true;
+        while (runLoop) {
+            int read = _sock.read(buf);
+            buf.position(0);
+            if (read == -1) {
+                throw new IOException("Stream unexpectedly short (broken pipe)");
+            }
+
+            for (int i = buf.position(); i < read; i++) {
+                byte c = buf.get();
+                switch (c) {
+                    case 0:
+                    case '\r':
+                        continue;
+                    case '\n':
+                        runLoop = false;
+                        break;
+                    default:
+                        sb.append((char) c);
+                    }
+            }
+            buf.clear();
+
+        }
+
+        logger.trace("received: {}", sb);
+        try {
+            return new Command(sb.toString());
+        } catch (Exception e) {
+            logger.error("Cannot create command.", e);
+            return new Command();
+        }
+    }
+
     public void send(OutputStream out, SaslCommand command, String... data) throws IOException {
         StringBuffer sb = new StringBuffer();
         sb.append(command.name());
@@ -245,6 +289,20 @@ public class SASL {
         sb.append('\n');
         logger.trace("sending: {}", sb);
         out.write(sb.toString().getBytes());
+    }
+
+    public void send(SocketChannel _sock, SaslCommand _command, String... _data) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        sb.append(_command.name());
+
+        for (String s : _data) {
+            sb.append(' ');
+            sb.append(s);
+        }
+        sb.append('\r');
+        sb.append('\n');
+        logger.trace("sending: {}", sb);
+        _sock.write(ByteBuffer.wrap(sb.toString().getBytes()));
     }
 
     public SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
@@ -395,16 +453,16 @@ public class SASL {
      * Mode selects whether to run as a SASL server or client.
      * Types is a bitmask of the available auth types.
      *
-     * @param mode mode
-     * @param types types
-     * @param guid guid
-     * @param out out
-     * @param in in
-     * @param us us
+     * @param _mode mode
+     * @param _types types
+     * @param _guid guid
+     * @param _out out
+     * @param _in in
+     * @param _us us
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */
-    public boolean auth(SaslMode mode, int types, String guid, OutputStream out, InputStream in, Socket us) throws IOException {
+    public boolean auth(SaslMode _mode, int _types, String _guid, OutputStream _out, InputStream _in, Socket _us) throws IOException {
         String luid = null;
         String kernelUid = null;
 
@@ -418,37 +476,37 @@ public class SASL {
 
         while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
 
-            logger.trace("Mode: {} AUTH state: {}", mode, state);
+            logger.trace("Mode: {} AUTH state: {}", _mode, state);
 
-            switch (mode) {
+            switch (_mode) {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
-                    if (us instanceof UnixSocket && ( Util.isMacOs() || FreeBSDHelper.isFreeBSD())) {
-                        FreeBSDHelper.send_cred(us);
+                    if (_us instanceof UnixSocket && (Util.isMacOs() || FreeBSDHelper.isFreeBSD())) {
+                        FreeBSDHelper.send_cred(_us);
                     } else {
-                        out.write(new byte[] {
+                        _out.write(new byte[] {
                                 0
                         });
                     }
-                    send(out, AUTH);
+                    send(_out, AUTH);
                     state = SaslAuthState.WAIT_DATA;
                     break;
                 case WAIT_DATA:
-                    c = receive(in);
+                    c = receive(_in);
                     switch (c.getCommand()) {
                         case DATA:
                             switch (doChallenge(current, c)) {
                                 case CONTINUE:
-                                    send(out, DATA, c.getResponse());
+                                    send(_out, DATA, c.getResponse());
                                     break;
                                 case OK:
-                                    send(out, DATA, c.getResponse());
+                                    send(_out, DATA, c.getResponse());
                                     state = SaslAuthState.WAIT_OK;
                                     break;
                                 case ERROR:
                                 default:
-                                    send(out, ERROR, c.getResponse());
+                                    send(_out, ERROR, c.getResponse());
                                     break;
                             }
                         break;
@@ -456,13 +514,13 @@ public class SASL {
                             failed |= current;
                             int available = c.getMechs() & (~failed);
                             if (0 != (available & AUTH_EXTERNAL)) {
-                                send(out, AUTH, "EXTERNAL", luid);
+                                send(_out, AUTH, "EXTERNAL", luid);
                                 current = AUTH_EXTERNAL;
                             } else if (0 != (available & AUTH_SHA)) {
-                                send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
+                                send(_out, AUTH, "DBUS_COOKIE_SHA1", luid);
                                 current = AUTH_SHA;
                             } else if (0 != (available & AUTH_ANON)) {
-                                send(out, AUTH, "ANONYMOUS");
+                                send(_out, AUTH, "ANONYMOUS");
                                 current = AUTH_ANON;
                             } else {
                                 state = SaslAuthState.FAILED;
@@ -474,9 +532,9 @@ public class SASL {
                                 state = SaslAuthState.FINISHED;
                                 logger.trace("File descriptors NOT supported by server");
                                 fileDescriptorSupported = false;
-                                send(out, BEGIN);
+                                send(_out, BEGIN);
                             } else {
-                                send(out, CANCEL);
+                                send(_out, CANCEL);
                                 state = SaslAuthState.WAIT_REJECT;
                             }
                             break;
@@ -488,10 +546,10 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
-                                send(out, SaslCommand.NEGOTIATE_UNIX_FD);
+                                send(_out, SaslCommand.NEGOTIATE_UNIX_FD);
                             }else{
                                 state = SaslAuthState.FINISHED;
-                                send(out, BEGIN);
+                                send(_out, BEGIN);
                             }
                             break;
                         case AGREE_UNIX_FD:
@@ -499,24 +557,24 @@ public class SASL {
                                 state = SaslAuthState.FINISHED;
                                 logger.trace("File descriptors supported by server");
                                 fileDescriptorSupported = true;
-                                send(out, BEGIN);
+                                send(_out, BEGIN);
                             }
                             break;
                         default:
-                            send(out, ERROR, "Got invalid command");
+                            send(_out, ERROR, "Got invalid command");
                             break;
                         }
                     break;
                 case WAIT_OK:
-                    c = receive(in);
+                    c = receive(_in);
                     switch (c.getCommand()) {
                     case OK:
-                        send(out, BEGIN);
+                        send(_out, BEGIN);
                         state = SaslAuthState.AUTHENTICATED;
                         break;
                     case ERROR:
                     case DATA:
-                        send(out, CANCEL);
+                        send(_out, CANCEL);
                         state = SaslAuthState.WAIT_REJECT;
                         break;
                     case REJECTED:
@@ -524,37 +582,37 @@ public class SASL {
                         int available = c.getMechs() & (~failed);
                         state = SaslAuthState.WAIT_DATA;
                         if (0 != (available & AUTH_EXTERNAL)) {
-                            send(out, AUTH, "EXTERNAL", luid);
+                            send(_out, AUTH, "EXTERNAL", luid);
                             current = AUTH_EXTERNAL;
                         } else if (0 != (available & AUTH_SHA)) {
-                            send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
+                            send(_out, AUTH, "DBUS_COOKIE_SHA1", luid);
                             current = AUTH_SHA;
                         } else if (0 != (available & AUTH_ANON)) {
-                            send(out, AUTH, "ANONYMOUS");
+                            send(_out, AUTH, "ANONYMOUS");
                             current = AUTH_ANON;
                         } else {
                             state = SaslAuthState.FAILED;
                         }
                         break;
                     default:
-                        send(out, ERROR, "Got invalid command");
+                        send(_out, ERROR, "Got invalid command");
                         break;
                     }
                     break;
                 case WAIT_REJECT:
-                    c = receive(in);
+                    c = receive(_in);
                     switch (c.getCommand()) {
                         case REJECTED:
                             failed |= current;
                             int available = c.getMechs() & (~failed);
                             if (0 != (available & AUTH_EXTERNAL)) {
-                                send(out, AUTH, "EXTERNAL", luid);
+                                send(_out, AUTH, "EXTERNAL", luid);
                                 current = AUTH_EXTERNAL;
                             } else if (0 != (available & AUTH_SHA)) {
-                                send(out, AUTH, "DBUS_COOKIE_SHA1", luid);
+                                send(_out, AUTH, "DBUS_COOKIE_SHA1", luid);
                                 current = AUTH_SHA;
                             } else if (0 != (available & AUTH_ANON)) {
-                                send(out, AUTH, "ANONYMOUS");
+                                send(_out, AUTH, "ANONYMOUS");
                                 current = AUTH_ANON;
                             } else {
                                 state = SaslAuthState.FAILED;
@@ -573,19 +631,19 @@ public class SASL {
                 switch (state) {
                     case INITIAL_STATE:
                         byte[] buf = new byte[1];
-                        if (null == us) {
-                            in.read(buf); // 0
+                        if (null == _us) {
+                            _in.read(buf); // 0
                             state = SaslAuthState.WAIT_AUTH;
                         } else {
                             Credentials credentials;
                             try {
                                 if (Util.isMacOs() || FreeBSDHelper.isFreeBSD()) {
-                                    long euid = FreeBSDHelper.recv_cred(us);
+                                    long euid = FreeBSDHelper.recv_cred(_us);
                                     if (euid >= 0) {
                                         kernelUid = stupidlyEncode("" + euid);
                                     }
                                 } else {
-                                    credentials = ((UnixSocket) us).getCredentials();
+                                    credentials = ((UnixSocket) _us).getCredentials();
                                     int kuid = credentials.getUid();
                                     if (kuid >= 0) {
                                         kernelUid = stupidlyEncode("" + kuid);
@@ -599,78 +657,78 @@ public class SASL {
                         }
                     break;
                     case WAIT_AUTH:
-                        c = receive(in);
+                        c = receive(_in);
                         switch (c.getCommand()) {
                             case AUTH:
                                 switch (doResponse(current, luid, kernelUid, c)) {
                                     case CONTINUE:
-                                        send(out, DATA, c.getResponse());
+                                        send(_out, DATA, c.getResponse());
                                         current = c.getMechs();
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
                                     case OK:
-                                        send(out, SaslCommand.OK, guid);
+                                        send(_out, SaslCommand.OK, _guid);
                                         state = SaslAuthState.WAIT_BEGIN;
                                         current = 0;
                                         break;
                                     case REJECT:
                                     default:
-                                        send(out, REJECTED, getTypes(types));
+                                        send(_out, REJECTED, getTypes(_types));
                                         current = 0;
                                         break;
                                 }
                                 break;
                             case ERROR:
-                                send(out, REJECTED, getTypes(types));
+                                send(_out, REJECTED, getTypes(_types));
                                 break;
                             case BEGIN:
                                 state = SaslAuthState.FAILED;
                                 break;
                             default:
-                                send(out, ERROR, "Got invalid command");
+                                send(_out, ERROR, "Got invalid command");
                                 break;
                             }
                     break;
                     case WAIT_DATA:
-                        c = receive(in);
+                        c = receive(_in);
                     switch (c.getCommand()) {
                     case DATA:
                         switch (doResponse(current, luid, kernelUid, c)) {
                             case CONTINUE:
-                                send(out, DATA, c.getResponse());
+                                send(_out, DATA, c.getResponse());
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
-                                send(out, SaslCommand.OK, guid);
+                                send(_out, SaslCommand.OK, _guid);
                                 state = SaslAuthState.WAIT_BEGIN;
                                 current = 0;
                                 break;
                             case REJECT:
                             default:
-                                send(out, REJECTED, getTypes(types));
+                                send(_out, REJECTED, getTypes(_types));
                                 current = 0;
                                 break;
                             }
                         break;
                         case ERROR:
                         case CANCEL:
-                            send(out, REJECTED, getTypes(types));
+                            send(_out, REJECTED, getTypes(_types));
                             state = SaslAuthState.WAIT_AUTH;
                         break;
                         case BEGIN:
                             state = SaslAuthState.FAILED;
                         break;
                         default:
-                            send(out, ERROR, "Got invalid command");
+                            send(_out, ERROR, "Got invalid command");
                         break;
                     }
                     break;
                     case WAIT_BEGIN:
-                        c = receive(in);
+                        c = receive(_in);
                         switch (c.getCommand()) {
                             case ERROR:
                             case CANCEL:
-                                send(out, REJECTED, getTypes(types));
+                                send(_out, REJECTED, getTypes(_types));
                                 state = SaslAuthState.WAIT_AUTH;
                             break;
                             case BEGIN:
@@ -679,14 +737,314 @@ public class SASL {
                             case NEGOTIATE_UNIX_FD:
                                 logger.debug("File descriptor negotiation requested");
                                 if (!hasFileDescriptorSupport) {
-                                    send(out, ERROR);
+                                    send(_out, ERROR);
                                 } else {
-                                    send(out, AGREE_UNIX_FD);
+                                    send(_out, AGREE_UNIX_FD);
                                 }
 
                             break;
                             default:
-                                send(out, ERROR, "Got invalid command");
+                                send(_out, ERROR, "Got invalid command");
+                            break;
+                        }
+                    break;
+                    default:
+                        state = SaslAuthState.FAILED;
+                    }
+                break;
+            default:
+                return false;
+            }
+        }
+
+        return state == SaslAuthState.FINISHED;
+    }
+
+    public boolean auth(SaslMode _mode, int _types, String _guid, SocketChannel _sock) throws IOException {
+        String luid = null;
+        String kernelUid = null;
+
+        long uid = POSIXFactory.getJavaPOSIX().getuid();
+        luid = stupidlyEncode("" + uid);
+
+        SASL.Command c;
+        int failed = 0;
+        int current = 0;
+        SaslAuthState state = SaslAuthState.INITIAL_STATE;
+
+        while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
+
+            logger.trace("Mode: {} AUTH state: {}", _mode, state);
+
+            switch (_mode) {
+            case CLIENT:
+                switch (state) {
+                case INITIAL_STATE:
+                    // TODO: Howto do this for BSD?
+//                    if (FreeBSDHelper.isFreeBSD()) {
+//                        FreeBSDHelper.send_cred(_us);
+//                    } else {
+                    _sock.write(ByteBuffer.wrap(new byte[] {0}));
+//                    }
+                    send(_sock, AUTH);
+                    state = SaslAuthState.WAIT_DATA;
+                    break;
+                case WAIT_DATA:
+                    c = receive(_sock);
+                    switch (c.getCommand()) {
+                        case DATA:
+                            switch (doChallenge(current, c)) {
+                                case CONTINUE:
+                                    send(_sock, DATA, c.getResponse());
+                                    break;
+                                case OK:
+                                    send(_sock, DATA, c.getResponse());
+                                    state = SaslAuthState.WAIT_OK;
+                                    break;
+                                case ERROR:
+                                default:
+                                    send(_sock, ERROR, c.getResponse());
+                                    break;
+                            }
+                        break;
+                        case REJECTED:
+                            failed |= current;
+                            int available = c.getMechs() & (~failed);
+                            if (0 != (available & AUTH_EXTERNAL)) {
+                                send(_sock, AUTH, "EXTERNAL", luid);
+                                current = AUTH_EXTERNAL;
+                            } else if (0 != (available & AUTH_SHA)) {
+                                send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
+                                current = AUTH_SHA;
+                            } else if (0 != (available & AUTH_ANON)) {
+                                send(_sock, AUTH, "ANONYMOUS");
+                                current = AUTH_ANON;
+                            } else {
+                                state = SaslAuthState.FAILED;
+                            }
+                            break;
+                        case ERROR:
+                            // when asking for file descriptor support, ERROR means FD support is not supported
+                            if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
+                                state = SaslAuthState.FINISHED;
+                                logger.trace("File descriptors NOT supported by server");
+                                fileDescriptorSupported = false;
+                                send(_sock, BEGIN);
+                            } else {
+                                send(_sock, CANCEL);
+                                state = SaslAuthState.WAIT_REJECT;
+                            }
+                            break;
+                        case OK:
+                            logger.trace("Authenticated");
+                            state = SaslAuthState.AUTHENTICATED;
+
+                            if (hasFileDescriptorSupport) {
+                                state = SaslAuthState.WAIT_DATA;
+                                logger.trace("Asking for file descriptor support");
+                                // if authentication was successful, ask remote end for file descriptor support
+                                send(_sock, SaslCommand.NEGOTIATE_UNIX_FD);
+                            }else{
+                                state = SaslAuthState.FINISHED;
+                                send(_sock, BEGIN);
+                            }
+                            break;
+                        case AGREE_UNIX_FD:
+                            if (hasFileDescriptorSupport) {
+                                state = SaslAuthState.FINISHED;
+                                logger.trace("File descriptors supported by server");
+                                fileDescriptorSupported = true;
+                                send(_sock, BEGIN);
+                            }
+                            break;
+                        default:
+                            send(_sock, ERROR, "Got invalid command");
+                            break;
+                        }
+                    break;
+                case WAIT_OK:
+                    c = receive(_sock);
+                    switch (c.getCommand()) {
+                    case OK:
+                        send(_sock, BEGIN);
+                        state = SaslAuthState.AUTHENTICATED;
+                        break;
+                    case ERROR:
+                    case DATA:
+                        send(_sock, CANCEL);
+                        state = SaslAuthState.WAIT_REJECT;
+                        break;
+                    case REJECTED:
+                        failed |= current;
+                        int available = c.getMechs() & (~failed);
+                        state = SaslAuthState.WAIT_DATA;
+                        if (0 != (available & AUTH_EXTERNAL)) {
+                            send(_sock, AUTH, "EXTERNAL", luid);
+                            current = AUTH_EXTERNAL;
+                        } else if (0 != (available & AUTH_SHA)) {
+                            send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
+                            current = AUTH_SHA;
+                        } else if (0 != (available & AUTH_ANON)) {
+                            send(_sock, AUTH, "ANONYMOUS");
+                            current = AUTH_ANON;
+                        } else {
+                            state = SaslAuthState.FAILED;
+                        }
+                        break;
+                    default:
+                        send(_sock, ERROR, "Got invalid command");
+                        break;
+                    }
+                    break;
+                case WAIT_REJECT:
+                    c = receive(_sock);
+                    switch (c.getCommand()) {
+                        case REJECTED:
+                            failed |= current;
+                            int available = c.getMechs() & (~failed);
+                            if (0 != (available & AUTH_EXTERNAL)) {
+                                send(_sock, AUTH, "EXTERNAL", luid);
+                                current = AUTH_EXTERNAL;
+                            } else if (0 != (available & AUTH_SHA)) {
+                                send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
+                                current = AUTH_SHA;
+                            } else if (0 != (available & AUTH_ANON)) {
+                                send(_sock, AUTH, "ANONYMOUS");
+                                current = AUTH_ANON;
+                            } else {
+                                state = SaslAuthState.FAILED;
+                            }
+                        break;
+                        default:
+                            state = SaslAuthState.FAILED;
+                            break;
+                    }
+                    break;
+                default:
+                    state = SaslAuthState.FAILED;
+                }
+                break;
+            case SERVER:
+                switch (state) {
+                    case INITIAL_STATE:
+                        ByteBuffer buf = ByteBuffer.allocate(1);
+                        if (_sock instanceof NetworkChannel) {
+                            _sock.read(buf); // 0
+                            state = SaslAuthState.WAIT_AUTH;
+                        } else {
+                            try {
+                                // TODO: how to solve this in freebsd?
+//                              if (FreeBSDHelper.isFreeBSD()) {
+//                                  long euid = FreeBSDHelper.recv_cred(_us);
+//                                  if (euid >= 0) {
+//                                      kernelUid = stupidlyEncode("" + euid);
+//                                  }
+//                              }
+                                int kuid = -1;
+                                if (TransportFactory.JNR_UNIXSOCKET_AVAILABLE) {
+                                    kuid = JnrUnixSocketHelper.getUid(_sock);
+                                } else {
+                                    kuid = NativeUnixSocketHelper.getUid(_sock);
+                                }
+                                if (kuid >= 0) {
+                                    kernelUid = stupidlyEncode("" + kuid);
+                                }
+                                state = SaslAuthState.WAIT_AUTH;
+
+                            } catch (SocketException _ex) {
+                                state = SaslAuthState.FAILED;
+                            }
+                        }
+                    break;
+                    case WAIT_AUTH:
+                        c = receive(_sock);
+                        switch (c.getCommand()) {
+                            case AUTH:
+                                switch (doResponse(current, luid, kernelUid, c)) {
+                                    case CONTINUE:
+                                        send(_sock, DATA, c.getResponse());
+                                        current = c.getMechs();
+                                        state = SaslAuthState.WAIT_DATA;
+                                        break;
+                                    case OK:
+                                        send(_sock, SaslCommand.OK, _guid);
+                                        state = SaslAuthState.WAIT_BEGIN;
+                                        current = 0;
+                                        break;
+                                    case REJECT:
+                                    default:
+                                        send(_sock, REJECTED, getTypes(_types));
+                                        current = 0;
+                                        break;
+                                }
+                                break;
+                            case ERROR:
+                                send(_sock, REJECTED, getTypes(_types));
+                                break;
+                            case BEGIN:
+                                state = SaslAuthState.FAILED;
+                                break;
+                            default:
+                                send(_sock, ERROR, "Got invalid command");
+                                break;
+                            }
+                    break;
+                    case WAIT_DATA:
+                        c = receive(_sock);
+                    switch (c.getCommand()) {
+                    case DATA:
+                        switch (doResponse(current, luid, kernelUid, c)) {
+                            case CONTINUE:
+                                send(_sock, DATA, c.getResponse());
+                                state = SaslAuthState.WAIT_DATA;
+                                break;
+                            case OK:
+                                send(_sock, SaslCommand.OK, _guid);
+                                state = SaslAuthState.WAIT_BEGIN;
+                                current = 0;
+                                break;
+                            case REJECT:
+                            default:
+                                send(_sock, REJECTED, getTypes(_types));
+                                current = 0;
+                                break;
+                            }
+                        break;
+                        case ERROR:
+                        case CANCEL:
+                            send(_sock, REJECTED, getTypes(_types));
+                            state = SaslAuthState.WAIT_AUTH;
+                        break;
+                        case BEGIN:
+                            state = SaslAuthState.FAILED;
+                        break;
+                        default:
+                            send(_sock, ERROR, "Got invalid command");
+                        break;
+                    }
+                    break;
+                    case WAIT_BEGIN:
+                        c = receive(_sock);
+                        switch (c.getCommand()) {
+                            case ERROR:
+                            case CANCEL:
+                                send(_sock, REJECTED, getTypes(_types));
+                                state = SaslAuthState.WAIT_AUTH;
+                            break;
+                            case BEGIN:
+                                    state = SaslAuthState.FINISHED;
+                            break;
+                            case NEGOTIATE_UNIX_FD:
+                                logger.debug("File descriptor negotiation requested");
+                                if (!hasFileDescriptorSupport) {
+                                    send(_sock, ERROR);
+                                } else {
+                                    send(_sock, AGREE_UNIX_FD);
+                                }
+
+                            break;
+                            default:
+                                send(_sock, ERROR, "Got invalid command");
                             break;
                         }
                     break;
