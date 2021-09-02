@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.connections.transports;
 
 import java.io.IOException;
+import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.FreeBSDHelper;
@@ -47,7 +48,7 @@ public class UnixSocketTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    void connect() throws IOException {
+    SocketChannel connectImpl() throws IOException {
         UnixSocketChannel us;
         if (getAddress().isListeningSocket()) {
             unixServerSocket = UnixServerSocketChannel.open();
@@ -65,9 +66,7 @@ public class UnixSocketTransport extends AbstractTransport {
             us.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
-        authenticate(us.socket().getOutputStream(), us.socket().getInputStream(), us.socket());
-
-        setInputOutput(us);
+        return us;
     }
 
     @Override

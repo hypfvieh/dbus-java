@@ -45,7 +45,7 @@ public class OutputStreamMessageWriter implements IMessageWriter {
     @Override
     public void close() throws IOException {
         logger.debug("Closing Message Writer");
-        if (outputChannel != null) {
+        if (outputChannel != null && outputChannel.isOpen()) {
             outputChannel.close();
         }
         outputChannel = null;
@@ -53,6 +53,6 @@ public class OutputStreamMessageWriter implements IMessageWriter {
 
     @Override
     public boolean isClosed() {
-        return outputChannel == null;
+        return outputChannel != null && !outputChannel.isOpen();
     }
 }

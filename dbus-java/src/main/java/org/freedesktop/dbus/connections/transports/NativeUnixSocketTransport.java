@@ -26,11 +26,11 @@ import org.freedesktop.dbus.connections.SASL;
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-01
  */
-public class NewUnixSocketTransport extends AbstractTransport {
+public class NativeUnixSocketTransport extends AbstractTransport {
     private final UnixDomainSocketAddress unixSocketAddress;
     private ServerSocketChannel unixServerSocket;
 
-    NewUnixSocketTransport(BusAddress _address) throws IOException {
+    NativeUnixSocketTransport(BusAddress _address) throws IOException {
         super(_address);
 
         if (_address.isAbstract()) {
@@ -55,7 +55,7 @@ public class NewUnixSocketTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    void connect() throws IOException {
+    SocketChannel connectImpl() throws IOException {
         SocketChannel us;
         if (getAddress().isListeningSocket()) {
             unixServerSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
@@ -73,9 +73,7 @@ public class NewUnixSocketTransport extends AbstractTransport {
 //            us.setOption(ExtendedSocketOptions.SO_PEERCRED, us.getOption(ExtendedSocketOptions.SO_PEERCRED));
 //        }
 
-        authenticate(us);
-
-        setInputOutput(us);
+        return us;
     }
 
     @Override

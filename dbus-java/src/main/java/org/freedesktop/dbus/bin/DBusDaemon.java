@@ -157,7 +157,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String Hello() {
 
-            LOGGER.debug("enter");
+
 
             synchronized (c) {
                 if (null != c.unique) {
@@ -181,21 +181,21 @@ public class DBusDaemon extends Thread implements Closeable {
                 LOGGER.debug("", dbe);
             }
 
-            LOGGER.debug("exit");
+
 
             return c.unique;
         }
 
         @Override
         public String[] ListNames() {
-            LOGGER.debug("enter");
+
             String[] ns;
             synchronized (names) {
                 Set<String> nss = names.keySet();
                 ns = nss.toArray(new String[0]);
             }
 
-            LOGGER.debug("exit");
+
 
             return ns;
         }
@@ -203,21 +203,21 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public boolean NameHasOwner(String name) {
 
-            LOGGER.debug("enter");
+
 
             boolean rv;
             synchronized (names) {
                 rv = names.containsKey(name);
             }
 
-            LOGGER.debug("exit");
+
 
             return rv;
         }
 
         @Override
         public String GetNameOwner(String name) {
-            LOGGER.debug("enter");
+
             Connstruct owner = names.get(name);
             String o;
             if (null == owner) {
@@ -226,31 +226,31 @@ public class DBusDaemon extends Thread implements Closeable {
                 o = owner.unique;
             }
 
-            LOGGER.debug("exit");
+
 
             return o;
         }
 
         @Override
         public UInt32 GetConnectionUnixUser(String connection_name) {
-            LOGGER.debug("enter");
-            LOGGER.debug("exit");
+
+
             return new UInt32(0);
         }
 
         @Override
         public UInt32 StartServiceByName(String name, UInt32 flags) {
 
-            LOGGER.debug("enter");
 
-            LOGGER.debug("exit");
+
+
 
             return new UInt32(0);
         }
 
         @Override
         public UInt32 RequestName(String name, UInt32 flags) {
-            LOGGER.debug("enter");
+
 
             boolean exists = false;
             synchronized (names) {
@@ -275,14 +275,14 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            LOGGER.debug("exit");
+
 
             return new UInt32(rv);
         }
 
         @Override
         public UInt32 ReleaseName(String name) {
-            LOGGER.debug("enter");
+
 
             boolean exists = false;
             synchronized (names) {
@@ -305,7 +305,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            LOGGER.debug("exit");
+
 
             return new UInt32(rv);
         }
@@ -313,7 +313,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void AddMatch(String matchrule) throws MatchRuleInvalid {
 
-            LOGGER.debug("enter");
+
 
             LOGGER.trace("Adding match rule: {}", matchrule);
 
@@ -323,7 +323,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            LOGGER.debug("exit");
+
 
             return;
         }
@@ -331,11 +331,11 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void RemoveMatch(String matchrule) throws MatchRuleInvalid {
 
-            LOGGER.debug("enter");
+
 
             LOGGER.trace("Removing match rule: {}", matchrule);
 
-            LOGGER.debug("exit");
+
 
             return;
         }
@@ -343,9 +343,9 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String[] ListQueuedOwners(String name) {
 
-            LOGGER.debug("enter");
 
-            LOGGER.debug("exit");
+
+
 
             return new String[0];
         }
@@ -353,18 +353,18 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public UInt32 GetConnectionUnixProcessID(String connection_name) {
 
-            LOGGER.debug("enter");
 
-            LOGGER.debug("exit");
+
+
 
             return new UInt32(0);
         }
 
         @Override
         public Byte[] GetConnectionSELinuxSecurityContext(String a) {
-            LOGGER.debug("enter");
 
-            LOGGER.debug("exit");
+
+
 
             return new Byte[0];
         }
@@ -373,7 +373,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @SuppressWarnings("unchecked")
         private void handleMessage(Connstruct _c, Message _m) throws DBusException {
 
-            LOGGER.debug("enter");
+
 
             LOGGER.trace("Handling message {}  from {}", _m, _c.unique);
 
@@ -417,7 +417,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 send(_c, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _c.unique, "org.freedesktop.DBus.Error.UnknownMethod", _m.getSerial(), "s", "This service does not support " + _m.getName()));
             }
 
-            LOGGER.debug("exit");
+
 
         }
 
@@ -448,7 +448,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void run() {
 
-            LOGGER.debug("enter");
+
 
             while (isRunning()) {
                 Message msg;
@@ -484,7 +484,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            LOGGER.debug("exit");
+
 
         }
 
@@ -530,7 +530,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void run() {
 
-            logger.debug("enter");
+
 
             while (isRunning()) {
 
@@ -572,7 +572,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            logger.debug("exit");
+
 
         }
     }
@@ -595,7 +595,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void run() {
 
-            LOGGER.debug("enter");
+
 
             while (isRunning() && lrun) {
 
@@ -623,7 +623,7 @@ public class DBusDaemon extends Thread implements Closeable {
             }
             conn = null;
 
-            LOGGER.debug("exit");
+
 
         }
     }
@@ -655,7 +655,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private void send(Connstruct c, Message m, boolean head) {
 
-        LOGGER.debug("enter");
+
         if (null == c) {
             LOGGER.trace("Queing message {} for all connections", m);
         } else {
@@ -687,28 +687,26 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
-        LOGGER.debug("exit");
+
 
     }
 
     private List<Connstruct> findSignalMatches(DBusSignal sig) {
 
-        LOGGER.debug("enter");
+
 
         List<Connstruct> l;
         synchronized (sigrecips) {
             l = new ArrayList<>(sigrecips);
         }
 
-        LOGGER.debug("exit");
+
 
         return l;
     }
 
     @Override
     public void run() {
-
-        LOGGER.debug("enter");
 
         while (isRunning()) {
             try {
@@ -774,13 +772,9 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
-        LOGGER.debug("exit");
-
     }
 
     private void removeConnection(Connstruct c) {
-
-        LOGGER.debug("enter");
 
         boolean exists = false;
         synchronized (conns) {
@@ -816,13 +810,9 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
-        LOGGER.debug("exit");
-
     }
 
     public void addSock(SocketChannel s) throws IOException {
-
-        LOGGER.debug("enter");
 
         LOGGER.debug("New Client");
 
@@ -832,8 +822,6 @@ public class DBusDaemon extends Thread implements Closeable {
             conns.put(c, r);
         }
         r.start();
-
-        LOGGER.debug("exit");
 
     }
 
@@ -864,7 +852,7 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public static void main(String[] args) throws Exception {
-        LOGGER.debug("enter");
+
         String addr = null;
         String pidfile = null;
         String addrfile = null;
@@ -935,6 +923,6 @@ public class DBusDaemon extends Thread implements Closeable {
 	        daemon.setAddress(address);
 	        daemon.startInForeground();
         }
-        LOGGER.debug("exit");
+
     }
 }

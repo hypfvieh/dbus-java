@@ -41,14 +41,16 @@ public final class TransportFactory {
     }
 
     /**
-     * Creates a new transport encapsulating connection to a unix socket or TCP socket.
+     * Creates a new transport encapsulating connection to a UNIX or TCP socket.
      *
      * @param _address Address parameter
      * @param _timeout timeout in milliseconds
+     * @param _connect open the connection before return
+     *
      * @return {@link AbstractTransport}
      * @throws IOException when transport could not be created
      */
-    public static AbstractTransport createTransport(BusAddress _address, int _timeout) throws IOException {
+    public static AbstractTransport createTransport(BusAddress _address, int _timeout, boolean _connect) throws IOException {
         LoggerFactory.getLogger(TransportFactory.class).debug("Connecting to {}", _address);
 
         AbstractTransport transport;
@@ -61,26 +63,41 @@ public final class TransportFactory {
             throw new IOException("Unknown address type " + _address.getType());
         }
 
-        transport.connect();
+        if (_connect) {
+            transport.connect();
+        }
         return transport;
     }
 
     private static AbstractTransport getUnixTransport(BusAddress _address) throws IOException {
         if (Util.getJavaVersion() >= 16 && !JNR_UNIXSOCKET_AVAILABLE) {
-            return new NewUnixSocketTransport(_address);
+            return new NativeUnixSocketTransport(_address);
         }
         return new UnixSocketTransport(_address);
     }
 
     /**
-     * Creates a new transport encapsulating connection to a unix socket or TCP socket.
+     * Creates a new transport encapsulating connection to a UNIX or TCP socket.
      *
      * @param _address Address parameter
      * @return {@link AbstractTransport}
      * @throws IOException when transport could not be created
      */
     public static AbstractTransport createTransport(BusAddress _address) throws IOException {
-        return createTransport(_address, 10000);
+        return createTransport(_address, 10000, true);
+    }
+
+    /**
+     * Creates a new transport encapsulating connection to a UNIX or TCP socket.
+     *
+     * @param _address Address parameter
+     * @param _timeout timeout in milliseconds
+     *
+     * @return {@link AbstractTransport}
+     * @throws IOException when transport could not be created
+     */
+    public static AbstractTransport createTransport(BusAddress _address, int _timeout) throws IOException {
+        return createTransport(_address, _timeout, true);
     }
 
     public static String genGUID() {

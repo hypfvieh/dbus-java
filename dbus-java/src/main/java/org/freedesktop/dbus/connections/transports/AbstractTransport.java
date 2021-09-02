@@ -2,12 +2,11 @@ package org.freedesktop.dbus.connections.transports;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+
+import javax.security.sasl.AuthenticationException;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
@@ -91,7 +90,7 @@ public abstract class AbstractTransport implements Closeable {
      * using whatever transport type (e.g. TCP/Unix socket).
      * @throws IOException when connection fails
      */
-    abstract void connect() throws IOException;
+    abstract SocketChannel connectImpl() throws IOException;
 
     /**
      * Method to indicate if passing of file descriptors is allowed.
@@ -101,27 +100,29 @@ public abstract class AbstractTransport implements Closeable {
     abstract boolean hasFileDescriptorSupport();
 
     /**
-     * Helper method to authenticate to DBus using SASL.
+     * Establish connection on created transport.
      *
-     * @param _out output stream
-     * @param _in input stream
-     * @param _sock socket
-     * @throws IOException on any error
+     * @return {@link SocketChannel}
+     * @throws IOException if connection fails
      */
-    protected void authenticate(OutputStream _out, InputStream _in, Socket _sock) throws IOException {
-        SASL sasl = new SASL(hasFileDescriptorSupport());
-        if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _out, _in, _sock)) {
-            _out.close();
-            throw new IOException("Failed to auth");
-        }
-        fileDescriptorSupported = sasl.isFileDescriptorSupported();
+    public final SocketChannel connect() throws IOException {
+        var channel = connectImpl();
+        authenticate(channel);
+        setInputOutput(channel);
+        return channel;
     }
 
-    protected void authenticate(SocketChannel _sock) throws IOException {
+    /**
+     * Helper method to authenticate to DBus using SASL.
+     *
+     * @param _sock socketchannel
+     * @throws IOException on any error
+     */
+    private void authenticate(SocketChannel _sock) throws IOException {
         SASL sasl = new SASL(hasFileDescriptorSupport());
         if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock)) {
             _sock.close();
-            throw new IOException("Failed to auth");
+            throw new AuthenticationException("Failed to authenticate");
         }
         fileDescriptorSupported = sasl.isFileDescriptorSupported();
     }
@@ -133,7 +134,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @param _socket socket to use
      */
-    protected void setInputOutput(SocketChannel _socket) {
+    private void setInputOutput(SocketChannel _socket) {
         try {
             for (ISocketProvider provider : spiLoader) {
                 logger.debug("Found ISocketProvider {}", provider);
@@ -152,18 +153,14 @@ public abstract class AbstractTransport implements Closeable {
             logger.error("Could not initialize alternative message reader/writer.", _ex);
         }
 
-//        try {
-            if (inputReader == null || outputWriter == null) {
-                logger.debug("No alternative ISocketProvider found, using built-in implementation.  "
-                        + "inputReader = {}, outputWriter = {}",
-                        inputReader,
-                        outputWriter);
-                inputReader = new InputStreamMessageReader(_socket);
-                outputWriter = new OutputStreamMessageWriter(_socket);
-            }
-//        } catch (IOException _ex) {
-//            logger.error("Could not initialize default message reader/writer.", _ex);
-//        }
+        if (inputReader == null || outputWriter == null) {
+            logger.debug("No alternative ISocketProvider found, using built-in implementation.  "
+                    + "inputReader = {}, outputWriter = {}",
+                    inputReader,
+                    outputWriter);
+            inputReader = new InputStreamMessageReader(_socket);
+            outputWriter = new OutputStreamMessageWriter(_socket);
+        }
 
     }
 

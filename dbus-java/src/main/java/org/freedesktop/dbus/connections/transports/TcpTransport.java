@@ -36,7 +36,7 @@ public class TcpTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    void connect() throws IOException {
+    SocketChannel connectImpl() throws IOException {
 
         if (getAddress().isListeningSocket()) {
 
@@ -53,9 +53,7 @@ public class TcpTransport extends AbstractTransport {
             socket.socket().connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
         }
 
-        setInputOutput(socket);
-
-        authenticate(socket);
+        return socket;
     }
 
     @Override

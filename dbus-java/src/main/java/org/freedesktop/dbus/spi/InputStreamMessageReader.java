@@ -77,8 +77,7 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[1] < 4) {
             try {
-                ByteBuffer wrapTBuf = ByteBuffer.wrap(tbuf, len[1], 4 - len[1]);
-                rv = inputChannel.read(wrapTBuf);
+                rv = inputChannel.read(ByteBuffer.wrap(tbuf, len[1], 4 - len[1]));
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -111,8 +110,7 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[2] < headerlen) {
             try {
-                ByteBuffer wrapHeader = ByteBuffer.wrap(header, 8 + len[2], headerlen - len[2]);
-                rv = inputChannel.read(wrapHeader);
+                rv = inputChannel.read(ByteBuffer.wrap(header, 8 + len[2], headerlen - len[2]));
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -137,8 +135,7 @@ public class InputStreamMessageReader implements IMessageReader {
         }
         if (len[3] < body.length) {
             try {
-                ByteBuffer wrapBody = ByteBuffer.wrap(body, len[3], body.length - len[3]);
-                rv = inputChannel.read(wrapBody);
+                rv = inputChannel.read(ByteBuffer.wrap(body, len[3], body.length - len[3]));
             } catch (SocketTimeoutException exSt) {
                 return null;
             }
@@ -155,21 +152,19 @@ public class InputStreamMessageReader implements IMessageReader {
         Message m;
         try {
             m = MessageFactory.createMessage(type, buf, header, body, null);
-        } catch (DBusException dbe) {
-            logger.debug("", dbe);
+        } catch (DBusException | RuntimeException _ex) {
+            if (_ex instanceof RuntimeException) {
+                logger.error("Runtime exception while creating message.", _ex);
+            } else {
+                logger.debug("", _ex);
+            }
             tbuf = null;
             body = null;
             header = null;
             buf = null;
-            throw dbe;
-        } catch (RuntimeException exRe) { // this really smells badly!
-            logger.debug("", exRe);
-            tbuf = null;
-            body = null;
-            header = null;
-            buf = null;
-            throw exRe;
+            throw _ex;
         }
+
         logger.debug("=> {}", m);
         tbuf = null;
         body = null;
@@ -181,7 +176,7 @@ public class InputStreamMessageReader implements IMessageReader {
     @Override
     public void close() throws IOException {
         logger.trace("Closing Message Reader");
-        if (inputChannel != null) {
+        if (inputChannel != null && inputChannel.isOpen()) {
             inputChannel.close();
         }
         inputChannel = null;
@@ -189,6 +184,6 @@ public class InputStreamMessageReader implements IMessageReader {
 
     @Override
     public boolean isClosed() {
-        return inputChannel == null;
+        return inputChannel != null && !inputChannel.isOpen();
     }
 }
