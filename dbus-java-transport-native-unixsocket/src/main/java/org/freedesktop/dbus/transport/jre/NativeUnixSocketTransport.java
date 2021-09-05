@@ -1,4 +1,5 @@
-package org.freedesktop.dbus.connections.transports;
+package org.freedesktop.dbus.transport.jre;
+
 
 import java.io.IOException;
 import java.net.StandardProtocolFamily;
@@ -8,6 +9,8 @@ import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
 /**
  * Transport type representing a transport connection to a unix socket.
@@ -26,26 +29,26 @@ import org.freedesktop.dbus.connections.SASL;
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-01
  */
-public class NativeUnixSocketTransport extends AbstractTransport {
+public class NativeUnixSocketTransport extends AbstractUnixTransport {
     private final UnixDomainSocketAddress unixSocketAddress;
     private ServerSocketChannel unixServerSocket;
 
-    NativeUnixSocketTransport(BusAddress _address) throws IOException {
+    NativeUnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
         super(_address);
 
         if (_address.isAbstract()) {
-            throw new UnsupportedOperationException("Abstract sockets are not supported using java native unix sockets");
+            throw new TransportConfigurationException("Abstract sockets are not supported using java native unix sockets");
         } else if (_address.hasPath()) {
             unixSocketAddress = UnixDomainSocketAddress.of(_address.getPath());
         } else {
-            throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
+            throw new TransportConfigurationException("Unix socket url has to specify 'path' or 'abstract'");
         }
 
         setSaslAuthMode(SASL.AUTH_EXTERNAL);
     }
 
     @Override
-    boolean hasFileDescriptorSupport() {
+    protected boolean hasFileDescriptorSupport() {
         return true; // file descriptor passing allowed when using UNIX_SOCK
     }
 
@@ -55,7 +58,7 @@ public class NativeUnixSocketTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    SocketChannel connectImpl() throws IOException {
+    public SocketChannel connectImpl() throws IOException {
         SocketChannel us;
         if (getAddress().isListeningSocket()) {
             unixServerSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
@@ -85,5 +88,15 @@ public class NativeUnixSocketTransport extends AbstractTransport {
         }
 
         super.close();
+    }
+
+    @Override
+    public boolean isAbstractAllowed() {
+        return false;
+    }
+
+    @Override
+    public int getUid(SocketChannel _sock) throws IOException {
+        return NativeUnixSocketHelper.getUid(_sock);
     }
 }

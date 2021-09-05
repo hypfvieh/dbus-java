@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>3.3.1-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/${project.artifactId}</url>
@@ -14,8 +14,8 @@
     <description>DBus-Java library module parent</description>
 
     <properties>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit5.version>5.7.0</junit5.version>
     </properties>
@@ -24,6 +24,9 @@
         <module>dbus-java</module>
         <module>dbus-java-osgi</module>
         <module>dbus-java-utils</module>
+        <module>dbus-java-transport-native-unixsocket</module>
+        <module>dbus-java-transport-jnr-unixsocket</module>
+        <module>dbus-java-transport-tcp</module>
     </modules>
 
     <build>
@@ -146,30 +149,29 @@
                     <version>3.8.1</version>
                     <executions>
                         <execution>
-                            <id>compile8</id>
+                            <id>compile</id>
                             <goals>
                                 <goal>compile</goal>
                             </goals>
                             <configuration>
-                                <source>1.8</source>
-                                <target>1.8</target>
+                                <release>11</release>
                             </configuration>
                         </execution>
-                        <execution>
-                            <id>compile11</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                            <configuration>
-                                <release>16</release>
-                                <compileSourceRoots>
-                                    <compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot>
-                                    <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
-                                </compileSourceRoots>
-                                <multiReleaseOutput>true</multiReleaseOutput>
-                            </configuration>
-                        </execution>
+<!--                         <execution> -->
+<!--                             <id>compile17</id> -->
+<!--                             <phase>compile</phase> -->
+<!--                             <goals> -->
+<!--                                 <goal>compile</goal> -->
+<!--                             </goals> -->
+<!--                             <configuration> -->
+<!--                                 <release>16</release> -->
+<!--                                 <compileSourceRoots> -->
+<!--                                     <compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot> -->
+<!--                                     <compileSourceRoot>${project.basedir}/src/main/java16</compileSourceRoot> -->
+<!--                                 </compileSourceRoots> -->
+<!--                                 <multiReleaseOutput>true</multiReleaseOutput> -->
+<!--                             </configuration> -->
+<!--                         </execution> -->
                     </executions>
                 </plugin>
                 <plugin>

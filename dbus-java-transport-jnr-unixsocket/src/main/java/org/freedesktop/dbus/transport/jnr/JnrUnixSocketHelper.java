@@ -1,13 +1,13 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.transport.jnr;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.nio.file.attribute.UserPrincipal;
 
-import jdk.net.ExtendedSocketOptions;
-import jdk.net.UnixDomainPrincipal;
+import jnr.unixsocket.Credentials;
+import jnr.unixsocket.UnixSocketOptions;
 
-public class NativeUnixSocketHelper {
+public class JnrUnixSocketHelper {
+
 
     /**
      * Get the UID of peer credentials.
@@ -21,11 +21,8 @@ public class NativeUnixSocketHelper {
         if (_sock == null) {
             return -1;
         }
-
-        UnixDomainPrincipal creds = _sock.getOption(ExtendedSocketOptions.SO_PEERCRED);
-        UserPrincipal user = creds.user();
-
-        return Integer.parseInt(user.getName());
+        Credentials credentials = _sock.getOption(UnixSocketOptions.SO_PEERCRED);
+        return credentials.getUid();
     }
 
 }

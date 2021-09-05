@@ -21,7 +21,6 @@ import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.ServiceUnknown;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -88,8 +87,6 @@ public class TestAll {
 
     @BeforeEach
     public void setUp() throws DBusException {
-        System.setProperty(TransportFactory.DBUS_JAVA_DISABLE_JNR_UNIXSOCKET, "true");
-
         serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
         clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
         serverconn.setWeakReferences(true);

@@ -23,8 +23,6 @@ public class LowLevelTest {
 
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException {
-        System.setProperty(TransportFactory.DBUS_JAVA_DISABLE_JNR_UNIXSOCKET, "true");
-
         String addr = getAddress();
         logger.debug(addr);
         BusAddress address = new BusAddress(addr);

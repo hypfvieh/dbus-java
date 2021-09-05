@@ -21,11 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.JnrUnixSocketHelper;
-import org.freedesktop.dbus.utils.NativeUnixSocketHelper;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -405,7 +404,7 @@ public class SASL {
         }
     }
 
-    public boolean auth(SaslMode _mode, int _types, String _guid, SocketChannel _sock) throws IOException {
+    public boolean auth(SaslMode _mode, int _types, String _guid, SocketChannel _sock, AbstractTransport _transport) throws IOException {
         String luid = null;
         String kernelUid = null;
 
@@ -586,10 +585,8 @@ public class SASL {
 //                                  }
 //                              }
                                 int kuid = -1;
-                                if (TransportFactory.JNR_UNIXSOCKET_AVAILABLE) {
-                                    kuid = JnrUnixSocketHelper.getUid(_sock);
-                                } else {
-                                    kuid = NativeUnixSocketHelper.getUid(_sock);
+                                if (_transport instanceof AbstractUnixTransport) {
+                                    kuid = ((AbstractUnixTransport) _transport).getUid(_sock);
                                 }
                                 if (kuid >= 0) {
                                     kernelUid = stupidlyEncode("" + kuid);
@@ -747,7 +744,7 @@ public class SASL {
         FAILED;
     }
 
-    static enum SaslResult {
+    public static enum SaslResult {
         OK,
         CONTINUE,
         ERROR,

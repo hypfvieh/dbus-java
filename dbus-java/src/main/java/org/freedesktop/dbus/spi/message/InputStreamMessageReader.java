@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.spi;
+package org.freedesktop.dbus.spi.message;
 
 import java.io.EOFException;
 import java.io.IOException;

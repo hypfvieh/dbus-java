@@ -1,11 +1,12 @@
-package org.freedesktop.dbus.connections.transports;
+package org.freedesktop.dbus.transport.jnr;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.utils.Util;
 
 import jnr.unixsocket.UnixServerSocketChannel;
@@ -19,11 +20,11 @@ import jnr.unixsocket.UnixSocketOptions;
  * @author hypfvieh
  * @since v3.2.0 - 2019-02-08
  */
-public class UnixSocketTransport extends AbstractTransport {
+public class UnixSocketTransport extends AbstractUnixTransport {
     private final UnixSocketAddress unixSocketAddress;
     private UnixServerSocketChannel unixServerSocket;
 
-    UnixSocketTransport(BusAddress _address) throws IOException {
+    UnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
         super(_address);
 
         if (_address.isAbstract()) {
@@ -31,14 +32,14 @@ public class UnixSocketTransport extends AbstractTransport {
         } else if (_address.hasPath()) {
             unixSocketAddress = new UnixSocketAddress(_address.getPath());
         } else {
-            throw new IOException("Unix socket url has to specify 'path' or 'abstract'");
+            throw new TransportConfigurationException("Unix socket url has to specify 'path' or 'abstract'");
         }
 
         setSaslAuthMode(SASL.AUTH_EXTERNAL);
     }
 
     @Override
-    boolean hasFileDescriptorSupport() {
+    protected boolean hasFileDescriptorSupport() {
         return true; // file descriptor passing allowed when using UNIX_SOCK
     }
 
@@ -48,7 +49,7 @@ public class UnixSocketTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    SocketChannel connectImpl() throws IOException {
+    public SocketChannel connectImpl() throws IOException {
         UnixSocketChannel us;
         if (getAddress().isListeningSocket()) {
             unixServerSocket = UnixServerSocketChannel.open();
@@ -78,5 +79,15 @@ public class UnixSocketTransport extends AbstractTransport {
         }
 
         super.close();
+    }
+
+    @Override
+    protected boolean isAbstractAllowed() {
+        return true;
+    }
+
+    @Override
+    public int getUid(SocketChannel _sock) throws IOException {
+        return JnrUnixSocketHelper.getUid(_sock);
     }
 }

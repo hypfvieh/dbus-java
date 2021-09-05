@@ -18,7 +18,6 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.FreeBSDHelper;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -116,7 +115,7 @@ public class DirectConnection extends AbstractConnection {
     */
     public static String createDynamicSession() {
         String address = "unix:";
-        String path = "/tmp/dbus-XXXXXXXXXX";
+        String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
         Random r = new Random();
         do {
             StringBuffer sb = new StringBuffer();
@@ -126,7 +125,7 @@ public class DirectConnection extends AbstractConnection {
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
         } while ((new File(path)).exists());
-        if (FreeBSDHelper.isFreeBSD() || Util.isMacOs()) {
+        if (Util.isFreeBsd() || Util.isMacOs()) {
             address += "path=" + path;
         } else {
             address += "abstract=" + path;

@@ -429,6 +429,11 @@ public final class Util {
         return osName == null ? false : osName.toLowerCase().startsWith("mac");
     }
 
+    public static boolean isFreeBsd() {
+        String osName = System.getProperty("os.name");
+        return osName == null ? false : osName.toLowerCase().startsWith("freebsd");
+    }
+
     /**
      * Checks if the running OS is a MS Windows OS.
      * @return true if Windows, false otherwise

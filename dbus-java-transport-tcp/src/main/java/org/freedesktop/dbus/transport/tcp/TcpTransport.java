@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.connections.transports;
+package org.freedesktop.dbus.transport.tcp;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
 
 /**
  * Transport type representing a transport connection to TCP.
@@ -27,7 +28,7 @@ public class TcpTransport extends AbstractTransport {
     }
 
     @Override
-    boolean hasFileDescriptorSupport() {
+    protected boolean hasFileDescriptorSupport() {
         return false; // file descriptor passing not possible on TCP connections
     }
 
@@ -36,17 +37,17 @@ public class TcpTransport extends AbstractTransport {
      * @throws IOException on error
      */
     @Override
-    SocketChannel connectImpl() throws IOException {
+    public SocketChannel connectImpl() throws IOException {
 
         if (getAddress().isListeningSocket()) {
 
-            try (ServerSocketChannel open = ServerSocketChannel.open(StandardProtocolFamily.INET)) {
+            try (ServerSocketChannel open = ServerSocketChannel.open()) {
                 open.configureBlocking(true);
                 open.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
                 socket = open.accept();
             }
         } else {
-            socket = SocketChannel.open(StandardProtocolFamily.INET);
+            socket = SocketChannel.open();
             socket.configureBlocking(true);
 
             getLogger().trace("Setting timeout to {} on Socket", timeout);
@@ -62,6 +63,11 @@ public class TcpTransport extends AbstractTransport {
             socket.close();
         }
         super.close();
+    }
+
+    @Override
+    protected boolean isAbstractAllowed() {
+        return false;
     }
 }
 

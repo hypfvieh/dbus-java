@@ -6,17 +6,16 @@ import java.nio.channels.SocketChannel;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import javax.security.sasl.AuthenticationException;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.spi.IMessageReader;
-import org.freedesktop.dbus.spi.IMessageWriter;
-import org.freedesktop.dbus.spi.ISocketProvider;
-import org.freedesktop.dbus.spi.InputStreamMessageReader;
-import org.freedesktop.dbus.spi.OutputStreamMessageWriter;
+import org.freedesktop.dbus.spi.message.IMessageReader;
+import org.freedesktop.dbus.spi.message.IMessageWriter;
+import org.freedesktop.dbus.spi.message.ISocketProvider;
+import org.freedesktop.dbus.spi.message.InputStreamMessageReader;
+import org.freedesktop.dbus.spi.message.OutputStreamMessageWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +27,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractTransport implements Closeable {
 
-    ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
+    private final ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
 
-    private final Logger     logger;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final BusAddress address;
 
     private SASL.SaslMode    saslMode;
@@ -41,8 +40,12 @@ public abstract class AbstractTransport implements Closeable {
 
     private boolean fileDescriptorSupported;
 
-    AbstractTransport(BusAddress _address) {
+    protected AbstractTransport(BusAddress _address) {
         address = _address;
+
+        if (!isAbstractAllowed() && _address.isAbstract()) {
+            throw new UnsupportedOperationException("Abstract sockets are not supported by transport " + getClass().getName());
+        }
 
         if (_address.isListeningSocket()) {
             saslMode = SASL.SaslMode.SERVER;
@@ -51,7 +54,6 @@ public abstract class AbstractTransport implements Closeable {
         }
 
         saslAuthMode = SASL.AUTH_NONE;
-        logger = LoggerFactory.getLogger(getClass());
     }
 
     /**
@@ -86,18 +88,24 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Abstract method implemented by concrete sub classes to establish a connection
-     * using whatever transport type (e.g. TCP/Unix socket).
-     * @throws IOException when connection fails
-     */
-    abstract SocketChannel connectImpl() throws IOException;
-
-    /**
      * Method to indicate if passing of file descriptors is allowed.
      *
      * @return true to allow FD passing, false otherwise
      */
-    abstract boolean hasFileDescriptorSupport();
+    protected abstract boolean hasFileDescriptorSupport();
+
+    /**
+     * Return true if the transport supports 'abstract' sockets.
+     * @return true if abstract sockets supported, false otherwise
+     */
+    protected abstract boolean isAbstractAllowed();
+
+    /**
+     * Abstract method implemented by concrete sub classes to establish a connection
+     * using whatever transport type (e.g. TCP/Unix socket).
+     * @throws IOException when connection fails
+     */
+    protected abstract SocketChannel connectImpl() throws IOException;
 
     /**
      * Establish connection on created transport.
@@ -120,7 +128,7 @@ public abstract class AbstractTransport implements Closeable {
      */
     private void authenticate(SocketChannel _sock) throws IOException {
         SASL sasl = new SASL(hasFileDescriptorSupport());
-        if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock)) {
+        if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock, this)) {
             _sock.close();
             throw new AuthenticationException("Failed to authenticate");
         }

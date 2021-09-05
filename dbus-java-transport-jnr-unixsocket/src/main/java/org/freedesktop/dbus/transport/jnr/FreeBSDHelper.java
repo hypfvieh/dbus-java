@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.transport.jnr;
 
 import java.io.IOException;
 import java.net.Socket;

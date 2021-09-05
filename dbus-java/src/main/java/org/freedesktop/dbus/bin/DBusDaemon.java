@@ -35,8 +35,8 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
-import org.freedesktop.dbus.spi.InputStreamMessageReader;
-import org.freedesktop.dbus.spi.OutputStreamMessageWriter;
+import org.freedesktop.dbus.spi.message.InputStreamMessageReader;
+import org.freedesktop.dbus.spi.message.OutputStreamMessageWriter;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
@@ -896,7 +896,7 @@ public class DBusDaemon extends Thread implements Closeable {
             addr = DirectConnection.createDynamicTCPSession();
         }
 
-        BusAddress address = new BusAddress(addr);
+        BusAddress address = new BusAddress(addr + ",listen");
         if (!address.hasGuid()) {
             addr += ",guid=" + TransportFactory.genGUID();
             address = new BusAddress(addr);

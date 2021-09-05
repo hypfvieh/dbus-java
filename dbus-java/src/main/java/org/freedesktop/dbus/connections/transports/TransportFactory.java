@@ -1,12 +1,17 @@
 package org.freedesktop.dbus.connections.transports;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.BusAddress.AddressBusTypes;
+import org.freedesktop.dbus.exceptions.TransportConfigurationException;
+import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.Util;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -17,27 +22,22 @@ import org.slf4j.LoggerFactory;
  */
 public final class TransportFactory {
 
-    /**
-     * System property to disable the usage of jnr-unixsockets.
-     */
-    public static final String DBUS_JAVA_DISABLE_JNR_UNIXSOCKET = "dbus.java.disable.jnr-unixsocket";
-    public static final boolean JNR_UNIXSOCKET_AVAILABLE = checkJnrUnixSocketAvailable();
+    private static final TransportFactory INSTANCE = new TransportFactory();
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final List<ITransportProvider> providers = new ArrayList<>();
 
     private TransportFactory() {
-
-    }
-
-    private static boolean checkJnrUnixSocketAvailable() {
-        if (Boolean.getBoolean(DBUS_JAVA_DISABLE_JNR_UNIXSOCKET)) {
-            return false;
-        }
-
         try {
-            Class.forName("jnr.unixsocket.UnixSocketAddress");
-            return true;
-        } catch (ClassNotFoundException _ex) {
-            return false;
+            ServiceLoader<ITransportProvider> spiLoader = ServiceLoader.load(ITransportProvider.class);
+            for (ITransportProvider provider : spiLoader) {
+                logger.debug("Found {} {}", ITransportProvider.class.getSimpleName(), provider.getTransportName());
+                providers.add(provider);
+            }
+        } catch (ServiceConfigurationError _ex) {
+            logger.error("Could not initialize service provider.", _ex);
         }
+
     }
 
     /**
@@ -53,27 +53,27 @@ public final class TransportFactory {
     public static AbstractTransport createTransport(BusAddress _address, int _timeout, boolean _connect) throws IOException {
         LoggerFactory.getLogger(TransportFactory.class).debug("Connecting to {}", _address);
 
-        AbstractTransport transport;
+        AbstractTransport transport = null;
 
-        if (_address.getBusType() == AddressBusTypes.UNIX) {
-            transport = getUnixTransport(_address);
-        } else if (_address.getBusType() == AddressBusTypes.TCP) {
-            transport = new TcpTransport(_address, _timeout);
-        } else {
-            throw new IOException("Unknown address type " + _address.getType());
+        for (ITransportProvider provider : INSTANCE.providers) {
+            try {
+                transport = provider.createTransport(_address, _timeout);
+                if (transport != null) {
+                    break;
+                }
+            } catch (TransportConfigurationException _ex) {
+                INSTANCE.logger.error("Could not initialize transport", _ex);
+            }
+        }
+
+        if (transport == null) {
+            throw new IOException("Unknown address type " + _address.getType() + " or no transport provider found for this address type");
         }
 
         if (_connect) {
             transport.connect();
         }
         return transport;
-    }
-
-    private static AbstractTransport getUnixTransport(BusAddress _address) throws IOException {
-        if (Util.getJavaVersion() >= 16 && !JNR_UNIXSOCKET_AVAILABLE) {
-            return new NativeUnixSocketTransport(_address);
-        }
-        return new UnixSocketTransport(_address);
     }
 
     /**
