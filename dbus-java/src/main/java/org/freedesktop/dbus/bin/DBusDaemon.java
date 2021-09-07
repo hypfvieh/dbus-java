@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
@@ -891,9 +890,9 @@ public class DBusDaemon extends Thread implements Closeable {
 
         // generate a random address if none specified
         if (null == addr && unix) {
-            addr = DirectConnection.createDynamicSession();
+            addr = TransportFactory.createDynamicSession("UNIX");
         } else if (null == addr && tcp) {
-            addr = DirectConnection.createDynamicTCPSession();
+            addr = TransportFactory.createDynamicSession("TCP");
         }
 
         BusAddress address = new BusAddress(addr + ",listen");

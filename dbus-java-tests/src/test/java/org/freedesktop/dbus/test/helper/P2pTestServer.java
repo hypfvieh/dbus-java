@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
@@ -117,7 +118,7 @@ public class P2pTestServer implements SampleRemoteInterface {
     }
 
     public static void main(String[] args) throws Exception {
-        String address = DirectConnection.createDynamicSession();
+        String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
         // String address = "tcp:host=localhost,port=12344,guid="+Transport.genGUID();
         PrintWriter w = new PrintWriter(new FileOutputStream("address"));
         w.println(address);

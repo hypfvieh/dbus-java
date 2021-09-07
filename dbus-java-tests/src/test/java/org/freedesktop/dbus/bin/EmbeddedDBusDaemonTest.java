@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -15,7 +15,7 @@ public class EmbeddedDBusDaemonTest {
     @Test
     public void test_start_stop() throws Exception {
 
-        String address = DirectConnection.createDynamicTCPSession();
+        String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
         for (int i = 0; i < 2; i++) {
 
             // initialize

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -18,7 +19,7 @@ public class TestPeer2Peer {
 
     private volatile boolean finished = false;
 
-    private static final String CONNECTION_ADDRESS = DirectConnection.createDynamicSession();
+    private static final String CONNECTION_ADDRESS = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
 
     @Test
     public void testP2p() throws InterruptedException {

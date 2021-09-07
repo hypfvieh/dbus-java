@@ -1,7 +1,6 @@
 package org.freedesktop.dbus.connections;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class BusAddress {
     private final Logger        logger = LoggerFactory.getLogger(getClass());
 
-    private final AddressBusTypes     type;
+    private final String              type;
     private final Map<String, String> parameters = new HashMap<>();
 
     private final String rawAddress;
@@ -29,7 +28,7 @@ public class BusAddress {
             throw new DBusException("Bus address is invalid: " + address);
         }
 
-        type = AddressBusTypes.toEnum(ss[0]);
+        type = ss[0] != null ? ss[0].toLowerCase() : null;
         if (type == null) {
             throw new DBusException("Unsupported transport type: " + ss[0]);
         }
@@ -49,11 +48,11 @@ public class BusAddress {
     }
 
     public String getType() {
-        return type.getBusType();
+        return type;
     }
 
-    public AddressBusTypes getBusType() {
-        return type;
+    public String getBusType() {
+        return type.toUpperCase();
     }
 
     public boolean isAbstract() {
@@ -113,22 +112,13 @@ public class BusAddress {
         return isListeningSocket();
     }
 
-    public static enum AddressBusTypes {
-        UNIX,
-        TCP;
-
-        public String getBusType() {
-            return name().toLowerCase(Locale.ROOT);
-        }
-
-        public static AddressBusTypes toEnum(String _str) {
-            for (AddressBusTypes itm : values()) {
-                if (itm.getBusType().equals(_str.toLowerCase(Locale.ROOT))) {
-                    return itm;
-                }
+    public BusAddress getListenerAddress() {
+        if (!isListeningSocket()) {
+            try {
+                return new BusAddress(rawAddress + ",listen=true");
+            } catch (DBusException _ex) {
             }
-            return null;
         }
+        return this;
     }
-
 }

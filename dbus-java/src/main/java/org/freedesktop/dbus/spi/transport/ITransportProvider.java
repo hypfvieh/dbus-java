@@ -34,4 +34,18 @@ public interface ITransportProvider {
      */
     AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException;
 
+    /**
+     * Type of transport.
+     * Should return an identifier for the supported socket type (e.g. UNIX for unix socket, TCP for tcp sockets).
+     * 
+     * @return String, never null
+     */
+    String getSupportedBusType();
+
+    /**
+     * Creates a new (dynamic) session for this transport.
+     * 
+     * @return String containing bus address
+     */
+    String createDynamicSessionAddress();
 }

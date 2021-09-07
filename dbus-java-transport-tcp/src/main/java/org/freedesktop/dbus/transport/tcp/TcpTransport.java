@@ -2,7 +2,6 @@ package org.freedesktop.dbus.transport.tcp;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.StandardProtocolFamily;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 

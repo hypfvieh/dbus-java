@@ -3,9 +3,12 @@ package org.freedesktop.dbus.connections.transports;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
@@ -25,14 +28,29 @@ public final class TransportFactory {
     private static final TransportFactory INSTANCE = new TransportFactory();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final List<ITransportProvider> providers = new ArrayList<>();
+    private final Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
 
     private TransportFactory() {
         try {
             ServiceLoader<ITransportProvider> spiLoader = ServiceLoader.load(ITransportProvider.class);
             for (ITransportProvider provider : spiLoader) {
-                logger.debug("Found {} {}", ITransportProvider.class.getSimpleName(), provider.getTransportName());
-                providers.add(provider);
+                String providerBusType = provider.getSupportedBusType();
+                if (providerBusType == null) { // invalid transport, ignore
+                    logger.warn("Transport {} is invalid: No bustype configured", provider.getClass());
+                    continue;
+                }
+                providerBusType = providerBusType.toUpperCase();
+
+                logger.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
+
+                if (providers.containsKey(providerBusType)) {
+                    throw new RuntimeException("Found transport "
+                            + providers.get(providerBusType).getClass().getName()
+                            + " and "
+                            + provider.getClass().getName() + " both providing transport for socket type "
+                            + providerBusType + ", please only add one of them to classpath.");
+                }
+                providers.put(providerBusType, provider);
             }
         } catch (ServiceConfigurationError _ex) {
             logger.error("Could not initialize service provider.", _ex);
@@ -54,26 +72,49 @@ public final class TransportFactory {
         LoggerFactory.getLogger(TransportFactory.class).debug("Connecting to {}", _address);
 
         AbstractTransport transport = null;
+        ITransportProvider provider = INSTANCE.providers.get(_address.getBusType());
+        if (provider == null) {
+            throw new IOException("No transport provider found for bustype " + _address.getBusType());
+        }
 
-        for (ITransportProvider provider : INSTANCE.providers) {
-            try {
-                transport = provider.createTransport(_address, _timeout);
-                if (transport != null) {
-                    break;
-                }
-            } catch (TransportConfigurationException _ex) {
-                INSTANCE.logger.error("Could not initialize transport", _ex);
-            }
+        try {
+            transport = provider.createTransport(_address, _timeout);
+        } catch (TransportConfigurationException _ex) {
+            INSTANCE.logger.error("Could not initialize transport", _ex);
         }
 
         if (transport == null) {
-            throw new IOException("Unknown address type " + _address.getType() + " or no transport provider found for this address type");
+            throw new IOException("Unknown address type " + _address.getType() + " or no transport provider found for bus type " + _address.getBusType());
         }
 
         if (_connect) {
             transport.connect();
         }
         return transport;
+    }
+
+    /**
+     * Creates a new dynamic bus address for the given bus type.
+     * 
+     * @param _busType bus type (e.g. UNIX or TCP), never null
+     * @return String containing BusAddress or null
+     */
+    public static String createDynamicSession(String _busType) {
+        Objects.requireNonNull(_busType, "Bustype required");
+        ITransportProvider provider = INSTANCE.providers.get(_busType.toUpperCase());
+        if (provider != null) {
+            return provider.createDynamicSessionAddress();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a {@link List} of all bustypes supported in the current runtime.
+     * 
+     * @return {@link List}, maybe empty
+     */
+    public static List<String> getRegisteredBusTypes() {
+        return new ArrayList<>(INSTANCE.providers.keySet());
     }
 
     /**

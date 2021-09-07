@@ -1,16 +1,13 @@
 package org.freedesktop.dbus.connections.impl;
 
-import java.io.File;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.freedesktop.dbus.DBusMatchRule;
@@ -18,7 +15,6 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
@@ -85,54 +81,6 @@ public class DirectConnection extends AbstractConnection {
         }
 
         return Util.randomString(32);
-    }
-
-    /**
-    * Creates a bus address for a randomly generated tcp port.
-    * @return a random bus address.
-    */
-    public static String createDynamicTCPSession() {
-        String address = "tcp:host=localhost";
-        int port;
-        try {
-            ServerSocket s = new ServerSocket();
-            s.bind(null);
-            port = s.getLocalPort();
-            s.close();
-        } catch (Exception e) {
-            Random r = new Random();
-            port = 32768 + (Math.abs(r.nextInt()) % 28232);
-        }
-        address += ",port=" + port;
-        address += ",guid=" + TransportFactory.genGUID();
-        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
-        return address;
-    }
-
-    /**
-    * Creates a bus address for a randomly generated abstract unix socket.
-    * @return a random bus address.
-    */
-    public static String createDynamicSession() {
-        String address = "unix:";
-        String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
-        Random r = new Random();
-        do {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < 10; i++) {
-                sb.append((char) ((Math.abs(r.nextInt()) % 26) + 65));
-            }
-            path = path.replaceAll("..........$", sb.toString());
-            LoggerFactory.getLogger(DirectConnection.class).trace("Trying path {}", path);
-        } while ((new File(path)).exists());
-        if (Util.isFreeBsd() || Util.isMacOs()) {
-            address += "path=" + path;
-        } else {
-            address += "abstract=" + path;
-        }
-        address += ",guid=" + TransportFactory.genGUID();
-        LoggerFactory.getLogger(DirectConnection.class).debug("Created Session address: {}", address);
-        return address;
     }
 
     DBusInterface dynamicProxy(String path) throws DBusException {

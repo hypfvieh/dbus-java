@@ -41,7 +41,7 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         } else if (_address.hasPath()) {
             unixSocketAddress = UnixDomainSocketAddress.of(_address.getPath());
         } else {
-            throw new TransportConfigurationException("Unix socket url has to specify 'path' or 'abstract'");
+            throw new TransportConfigurationException("Native unix socket url has to specify 'path'");
         }
 
         setSaslAuthMode(SASL.AUTH_EXTERNAL);
