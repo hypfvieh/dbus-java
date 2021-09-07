@@ -14,22 +14,23 @@ import org.freedesktop.dbus.test.helper.P2pTestServer;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 public class TestPeer2Peer {
 
     private volatile boolean finished = false;
 
-    private static final String CONNECTION_ADDRESS = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
+    private static final String CONNECTION_ADDRESS = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), false);
 
     @Test
     public void testP2p() throws InterruptedException {
         P2pServer p2pServer = new P2pServer();
         p2pServer.start();
-        Thread.sleep(500L);
+        Thread.sleep(1000L);
 
         try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS)) {
             Thread.sleep(500L);
-            System.out.println("Client: Connected");
+            LoggerFactory.getLogger(getClass()).info("Client: Connected");
             SampleRemoteInterface tri = (SampleRemoteInterface) dc.getRemoteObject("/Test");
             System.out.println(tri.getName());
             System.out.println(tri.testfloat(new float[] {
@@ -50,7 +51,7 @@ public class TestPeer2Peer {
             assertTrue(introspect.startsWith("<!DOCTYPE"));
 
             dc.disconnect();
-            System.out.println("Client: Disconnected");
+            LoggerFactory.getLogger(getClass()).info("Client: Disconnected");
             finished = true;
         } catch (IOException | DBusException _ex) {
             _ex.printStackTrace();
@@ -65,9 +66,9 @@ public class TestPeer2Peer {
         public void run() {
             try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {
                 dc.exportObject("/Test", new P2pTestServer());
-                System.out.println("Server: Export created");
+                LoggerFactory.getLogger(getClass()).info("Server: Export created");
 
-                System.out.println("Server: Listening");
+                LoggerFactory.getLogger(getClass()).info("Server: Listening");
                 dc.listen();
 
                 while (!finished) {

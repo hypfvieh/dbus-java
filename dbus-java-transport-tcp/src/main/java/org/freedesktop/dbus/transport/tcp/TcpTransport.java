@@ -38,11 +38,12 @@ public class TcpTransport extends AbstractTransport {
     @Override
     public SocketChannel connectImpl() throws IOException {
 
+        InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
         if (getAddress().isListeningSocket()) {
 
             try (ServerSocketChannel open = ServerSocketChannel.open()) {
                 open.configureBlocking(true);
-                open.bind(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()));
+                open.bind(socketAddress);
                 socket = open.accept();
             }
         } else {
@@ -50,7 +51,7 @@ public class TcpTransport extends AbstractTransport {
             socket.configureBlocking(true);
 
             getLogger().trace("Setting timeout to {} on Socket", timeout);
-            socket.socket().connect(new InetSocketAddress(getAddress().getHost(), getAddress().getPort()), timeout);
+            socket.socket().connect(socketAddress, timeout);
         }
 
         return socket;

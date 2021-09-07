@@ -125,7 +125,6 @@ public final class DBusConnection extends AbstractConnection {
     public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared, int _timeout)
             throws DBusException {
 
-        // CONNECTIONS.getOrDefault(address, defaultValue)
         if (_shared) {
             synchronized (CONNECTIONS) {
                 DBusConnection c = CONNECTIONS.get(_address);

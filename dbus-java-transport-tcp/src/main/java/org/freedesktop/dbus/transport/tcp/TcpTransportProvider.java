@@ -28,7 +28,7 @@ public class TcpTransportProvider implements ITransportProvider {
     }
 
     @Override
-    public String createDynamicSessionAddress() {
+    public String createDynamicSessionAddress(boolean _listeningSocket) {
         String address = "tcp:host=localhost";
         int port;
         try {
@@ -41,6 +41,9 @@ public class TcpTransportProvider implements ITransportProvider {
             port = 32768 + (Math.abs(r.nextInt()) % 28232);
         }
         address += ",port=" + port;
+        if (_listeningSocket) {
+            address += ",listen=true";
+        }
         address += ",guid=" + TransportFactory.genGUID();
         LoggerFactory.getLogger(getClass()).debug("Created Session address: {}", address);
         return address;

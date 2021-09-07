@@ -890,16 +890,12 @@ public class DBusDaemon extends Thread implements Closeable {
 
         // generate a random address if none specified
         if (null == addr && unix) {
-            addr = TransportFactory.createDynamicSession("UNIX");
+            addr = TransportFactory.createDynamicSession("UNIX", true);
         } else if (null == addr && tcp) {
-            addr = TransportFactory.createDynamicSession("TCP");
+            addr = TransportFactory.createDynamicSession("TCP", true);
         }
 
-        BusAddress address = new BusAddress(addr + ",listen");
-        if (!address.hasGuid()) {
-            addr += ",guid=" + TransportFactory.genGUID();
-            address = new BusAddress(addr);
-        }
+        BusAddress address = new BusAddress(addr);
 
         // print address to stdout
         if (printaddress) {

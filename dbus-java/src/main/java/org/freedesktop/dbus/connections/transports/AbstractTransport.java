@@ -156,16 +156,13 @@ public abstract class AbstractTransport implements Closeable {
                 }
             }
         } catch (ServiceConfigurationError _ex) {
-            logger.error("Could not initialize service provider.", _ex);
+            logger.error("Could not initialize service provider", _ex);
         } catch (IOException _ex) {
-            logger.error("Could not initialize alternative message reader/writer.", _ex);
+            logger.error("Could not initialize alternative message reader/writer", _ex);
         }
 
         if (inputReader == null || outputWriter == null) {
-            logger.debug("No alternative ISocketProvider found, using built-in implementation.  "
-                    + "inputReader = {}, outputWriter = {}",
-                    inputReader,
-                    outputWriter);
+            logger.debug("No alternative ISocketProvider found, using built-in implementation");
             inputReader = new InputStreamMessageReader(_socket);
             outputWriter = new OutputStreamMessageWriter(_socket);
         }

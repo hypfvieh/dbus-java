@@ -97,13 +97,15 @@ public final class TransportFactory {
      * Creates a new dynamic bus address for the given bus type.
      * 
      * @param _busType bus type (e.g. UNIX or TCP), never null
+     * @param _listeningAddress true if a listening (server) address should be created, false otherwise
+     * 
      * @return String containing BusAddress or null
      */
-    public static String createDynamicSession(String _busType) {
+    public static String createDynamicSession(String _busType, boolean _listeningAddress) {
         Objects.requireNonNull(_busType, "Bustype required");
         ITransportProvider provider = INSTANCE.providers.get(_busType.toUpperCase());
         if (provider != null) {
-            return provider.createDynamicSessionAddress();
+            return provider.createDynamicSessionAddress(_listeningAddress);
         }
         return null;
     }

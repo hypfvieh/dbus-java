@@ -28,7 +28,7 @@ public class NativeTransportProvider implements ITransportProvider {
     }
 
     @Override
-    public String createDynamicSessionAddress() {
+    public String createDynamicSessionAddress(boolean _listeningSocket) {
         String address = "unix:";
         String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
         Random r = new Random();
@@ -42,6 +42,11 @@ public class NativeTransportProvider implements ITransportProvider {
         } while ((new File(path)).exists());
 
         address += "path=" + path + ",";
+
+        if (_listeningSocket) {
+            address += "listen=true,";
+        }
+
         address += "guid=" + TransportFactory.genGUID();
         LoggerFactory.getLogger(getClass()).debug("Created Session address: {}", address);
         return address;

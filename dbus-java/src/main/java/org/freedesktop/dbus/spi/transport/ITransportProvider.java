@@ -45,7 +45,9 @@ public interface ITransportProvider {
     /**
      * Creates a new (dynamic) session for this transport.
      * 
+     * @param _listeningSocket true when listening address should be created
+     * 
      * @return String containing bus address
      */
-    String createDynamicSessionAddress();
+    String createDynamicSessionAddress(boolean _listeningSocket);
 }

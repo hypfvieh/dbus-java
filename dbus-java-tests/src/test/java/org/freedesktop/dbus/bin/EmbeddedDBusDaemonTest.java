@@ -15,8 +15,8 @@ public class EmbeddedDBusDaemonTest {
     @Test
     public void test_start_stop() throws Exception {
 
-        String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
         for (int i = 0; i < 2; i++) {
+            String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), true);
 
             // initialize
             EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon();

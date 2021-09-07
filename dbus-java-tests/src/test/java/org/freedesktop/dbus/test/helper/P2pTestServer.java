@@ -118,7 +118,7 @@ public class P2pTestServer implements SampleRemoteInterface {
     }
 
     public static void main(String[] args) throws Exception {
-        String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0));
+        String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), false);
         // String address = "tcp:host=localhost,port=12344,guid="+Transport.genGUID();
         PrintWriter w = new PrintWriter(new FileOutputStream("address"));
         w.println(address);
