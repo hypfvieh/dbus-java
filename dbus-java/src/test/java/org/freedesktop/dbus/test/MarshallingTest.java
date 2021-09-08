@@ -1,15 +1,24 @@
 package org.freedesktop.dbus.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import jnr.ffi.annotations.In;
-import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.ObjectPath;
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -22,8 +31,6 @@ import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MarshallingTest {
     
