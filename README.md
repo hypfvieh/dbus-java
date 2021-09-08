@@ -13,6 +13,8 @@ Using this version as replacement for 2.7.x however, will not work without chang
 ##### Changes in 3.3.1 (not released yet):
    - Fixed some issues in InterfaceCodeGenerator related to signal constructors, thanks to [poeschel](https://github.com/poeschel) ([PR#146](https://github.com/hypfvieh/dbus-java/pull/146))
    - Fixed some issues in InterfaceCodeGenerator related to usage of Tuples, thanks to [poeschel](https://github.com/poeschel) ([PR#147](https://github.com/hypfvieh/dbus-java/pull/147))
+   - Improved SASL authentication with domain sockets on OS X, thanks to [brett-smith](https://github.com/brett-smith) ([PR#148](https://github.com/hypfvieh/dbus-java/pull/148))
+   - Fixed some issues related to marshalling/unmarshalling of Tuples, thanks to [poeschel](https://github.com/poeschel) ([PR#149](https://github.com/hypfvieh/dbus-java/pull/149))
    
 ##### Changes in 3.3.0 (Released: 2021-03-17):
   *CAUTION* - This version may contain breaking changes!!
