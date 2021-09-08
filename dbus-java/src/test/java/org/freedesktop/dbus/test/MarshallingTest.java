@@ -1,11 +1,13 @@
 package org.freedesktop.dbus.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.nio.file.Files;
@@ -24,6 +26,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
+import org.freedesktop.dbus.test.helper.structs.MarkTuple;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Assertions;
@@ -86,7 +89,20 @@ public class MarshallingTest {
         assertTrue(params[1] instanceof List, "Second param is not a List");
         
     }
-    
+
+    @Test
+    public void testDeserializeParametersWithTuple() throws Exception {
+        Object[] ob = { new String("rootfs.1"), new String("marked slot rootfs.1 as good")};
+        Method m = Installer.class.getDeclaredMethod("Mark", String.class, String.class);
+        Type[] ts = new Type[] { m.getGenericReturnType() };
+
+        Object[] params = Marshalling.deSerializeParameters(ob, ts, null);
+
+        assertTrue(params[0] instanceof MarkTuple, "First param is not a MarkTuple");
+        MarkTuple mt = (MarkTuple) params[0];
+        assertEquals(mt.getSlotName(), "rootfs.1", "Slot name does not match after deSerialization");
+        assertEquals(mt.getMessage(), "marked slot rootfs.1 as good", "Message does not match after deSerialization");
+    }
     
     /*
      ****************************************** 
@@ -157,5 +173,9 @@ public class MarshallingTest {
         }
 
         
+    }
+
+    public interface Installer extends DBusInterface {
+        public MarkTuple Mark(String state, String slotIdentifier);
     }
 }
