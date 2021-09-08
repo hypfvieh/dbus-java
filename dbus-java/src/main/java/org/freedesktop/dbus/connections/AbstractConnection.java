@@ -558,7 +558,7 @@ public abstract class AbstractConnection implements Closeable {
             workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
 
         } catch (InterruptedException _ex) {
-            logger.error("Interrupted while waiting for worker threads to be terminated.", _ex);
+            logger.debug("Interrupted while waiting for worker threads to be terminated.", _ex);
         } finally {
             workerThreadPoolLock.writeLock().unlock();
         }

@@ -261,7 +261,7 @@ public class SASL {
         _sock.write(ByteBuffer.wrap(sb.toString().getBytes()));
     }
 
-    public SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
+    SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
         switch (_auth) {
         case AUTH_SHA:
             String[] reply = stupidlyDecode(c.getData()).split(" ");
@@ -307,7 +307,7 @@ public class SASL {
         }
     }
 
-    public SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
+    SaslResult doResponse(int _auth, String _uid, String _kernelUid, SASL.Command _c) {
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance("SHA");
@@ -344,7 +344,7 @@ public class SASL {
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);
 
                     _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
-                    return SaslResult.CONTINUE;
+                    return SaslResult.OK;
                 default:
                     return SaslResult.ERROR;
                 }

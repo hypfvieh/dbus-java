@@ -86,12 +86,11 @@
                                 <exclude>TestAll</exclude>
                                 <exclude>DBusConnectionTest</exclude>
                                 <exclude>LowLevelTest</exclude>
-                                <exclude>TestPeer2Peer</exclude>
                                 <exclude>TestCross</exclude>
                                 <exclude>TestEmptyCollections</exclude>
                                 <exclude>TestDisconnectStuff</exclude>
                                 <exclude>StressTest</exclude>
-                                <exclude>TestTwoPart</exclude>
+<!--                                 <exclude>TestTwoPart</exclude> -->
                             </excludes>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>
