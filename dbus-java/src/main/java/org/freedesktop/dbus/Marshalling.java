@@ -628,6 +628,21 @@ public final class Marshalling {
             _types = ((ParameterizedType) _types[0]).getActualTypeArguments();
         }
 
+        if (_types.length == 1 && Tuple.class.isAssignableFrom((Class<?>) _types[0])) {
+            String typeName = _types[0].getTypeName();
+            Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
+            if (constructors.length != 1) {
+                throw new DBusException("Error deserializing message: We had a Tuple type but wrong number of constructors for this Tuple. There should be exactly one.");
+            }
+
+            if (constructors[0].getParameterCount() != _parameters.length) {
+                throw new DBusException("Error deserializing message: We had a Tuple type but it had wrong number of constructor arguments. The number of constructor arguments should match the number of parameters to deserialize.");
+            }
+
+            Object o = constructors[0].newInstance(_parameters);
+            return new Object[] {o};
+        }
+
         for (int i = 0; i < _parameters.length; i++) {
             // CHECK IF ARRAYS HAVE THE SAME LENGTH <-- has to happen after expanding parameters
             if (i >= _types.length) {
