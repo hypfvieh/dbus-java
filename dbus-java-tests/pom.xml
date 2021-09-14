@@ -48,32 +48,32 @@
                             <skip>true</skip>
                         </configuration>
                     </execution>
-<!--                     <execution> -->
-<!--                         <id>native-tests</id> -->
-<!--                         <phase>test</phase> -->
-<!--                         <goals> -->
-<!--                             <goal>test</goal> -->
-<!--                         </goals> -->
-<!--                         <configuration> -->
-<!--                             <classpathDependencyExcludes> -->
-<!--                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude> -->
-<!--                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude> -->
-<!--                             </classpathDependencyExcludes> -->
-<!--                         </configuration> -->
-<!--                     </execution> -->
-<!--                     <execution> -->
-<!--                         <id>jnr-tests</id> -->
-<!--                         <phase>test</phase> -->
-<!--                         <goals> -->
-<!--                             <goal>test</goal> -->
-<!--                         </goals> -->
-<!--                         <configuration> -->
-<!--                             <classpathDependencyExcludes> -->
-<!--                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude> -->
-<!--                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude> -->
-<!--                             </classpathDependencyExcludes> -->
-<!--                         </configuration> -->
-<!--                     </execution> -->
+                    <execution>
+                        <id>native-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
+                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jnr-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
+                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>tcp-tests</id>
                         <phase>test</phase>
@@ -81,11 +81,6 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <excludes>
-                                <!-- Would be nice to run these tests with also TCP, but they are all failing or stale -->
-                                <exclude>TestAll</exclude>
-                                <exclude>StressTest</exclude>
-                            </excludes>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>

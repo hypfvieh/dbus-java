@@ -54,10 +54,8 @@ public interface SampleRemoteInterface2 extends DBusInterface {
     @IntrospectionDescription("Test Complex Variants")
     void complexv(Variant<? extends Object> v);
 
-    //CHECKSTYLE:OFF
     @IntrospectionDescription("Test Introspect on a different interface")
     String Introspect();
-    //CHECKSTYLE:ON
 
     @IntrospectionDescription("Returns the given struct")
     SampleStruct returnSamplestruct( SampleStruct struct );

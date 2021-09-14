@@ -403,17 +403,18 @@ public class SASL {
                 return new String[] {};
         }
     }
+    
     /**
      * Performs SASL auth on the given socketchannel.
      * Mode selects whether to run as a SASL server or client.
      * Types is a bitmask of the available auth types.
      *
-     * @param mode mode
-     * @param types types
-     * @param guid guid
-     * @param out out
-     * @param in in
-     * @param us us
+     * @param _mode mode
+     * @param _types types
+     * @param _guid guid
+     * @param _sock socket channel
+     * @param _transport transport
+     * 
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */

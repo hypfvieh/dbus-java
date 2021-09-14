@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  *
  */
-public class StressTest extends AbstractBaseTest {
+public class StressTest extends AbstractDBusBaseTest {
 
     private static final String OBJECT_PATH = "/org/freedesktop/dbus/test/RemoteObjectImpl";
 
