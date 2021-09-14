@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Properties;
 
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -16,18 +17,17 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
 
-public class LowLevelTest extends AbstractBaseTest {
+public class LowLevelTest extends AbstractDBusBaseTest {
 
     @Test
-    public void testLowLevel() throws ParseException, IOException, DBusException {
-        String addr = getAddress();
-        logger.debug(addr);
-        BusAddress address = new BusAddress(addr);
-        logger.debug(address + "");
+    public void testLowLevel() throws ParseException, IOException, DBusException, InterruptedException {
+        BusAddress address = new BusAddress(getAddress());
+        logger.debug("Testing using address: {}", address);
 
         try (AbstractTransport conn = TransportFactory.createTransport(address)) {
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
             conn.writeMessage(m);
+            waitIfTcp();
             m = conn.readMessage();
             logger.debug(m.getClass() + "");
             logger.debug(m + "");
@@ -36,21 +36,28 @@ public class LowLevelTest extends AbstractBaseTest {
             logger.debug(m + "");
             m = new MethodCall("org.freedesktop.DBus", "/", null, "Hello", (byte) 0, null);
             conn.writeMessage(m);
+            waitIfTcp();
             m = conn.readMessage();
             logger.debug(m + "");
 
             m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", (byte) 0, "su", "org.testname", 0);
             conn.writeMessage(m);
+            waitIfTcp();
             m = conn.readMessage();
             logger.debug(m + "");
             m = new DBusSignal(null, "/foo", "org.foo", "Foo", null);
             conn.writeMessage(m);
+            waitIfTcp();
             m = conn.readMessage();
             logger.debug(m + "");
         }
     }
 
     static String getAddress() throws DBusException {
+        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX")) {
+            return System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
+        }
+
         String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
         if (s == null) {
             // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<

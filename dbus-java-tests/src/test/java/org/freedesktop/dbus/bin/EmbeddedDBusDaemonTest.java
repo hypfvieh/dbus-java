@@ -19,8 +19,7 @@ public class EmbeddedDBusDaemonTest {
             String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), true);
 
             // initialize
-            EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon();
-            daemon.setAddress(address);
+            EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address);
 
             // start the daemon in background to not block the test
             AtomicReference<Exception> exception = new AtomicReference<>();

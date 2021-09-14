@@ -1,26 +1,18 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-
-import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartInterface;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartObject;
 import org.freedesktop.dbus.test.helper.twopart.TwoPartTestClient.TwoPartTestObject;
 import org.freedesktop.dbus.test.helper.twopart.TwoPartTestServer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class TestTwoPart extends AbstractBaseTest {
+public class TestTwoPart extends AbstractDBusBaseTest {
 
     private volatile boolean testDone = false;
     private volatile boolean serverReady = false;
-
-    private static EmbeddedDBusDaemon edbus;
 
     @Test
     public void testTwoPart() throws InterruptedException {
@@ -62,23 +54,6 @@ public class TestTwoPart extends AbstractBaseTest {
         } catch (DBusException _ex) {
             _ex.printStackTrace();
             fail("Exception in client");
-        }
-    }
-
-    @BeforeAll
-    public static void beforeAll() throws DBusException {
-        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX")) {
-            edbus = new EmbeddedDBusDaemon();
-            String addr = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), true);
-            edbus.setAddress(addr);
-            edbus.startInBackground();
-        }
-    }
-
-    @AfterAll
-    public static void afterAll() throws IOException {
-        if (edbus != null) {
-            edbus.close();
         }
     }
 

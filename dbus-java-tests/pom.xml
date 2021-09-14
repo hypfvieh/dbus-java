@@ -85,12 +85,9 @@
                                 <!-- Would be nice to run these tests with also TCP, but they are all failing or stale -->
                                 <exclude>TestAll</exclude>
                                 <exclude>DBusConnectionTest</exclude>
-                                <exclude>LowLevelTest</exclude>
-                                <exclude>TestCross</exclude>
                                 <exclude>TestEmptyCollections</exclude>
                                 <exclude>TestDisconnectStuff</exclude>
                                 <exclude>StressTest</exclude>
-<!--                                 <exclude>TestTwoPart</exclude> -->
                             </excludes>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>

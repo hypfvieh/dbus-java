@@ -66,15 +66,20 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractConnection implements Closeable {
 
-    private static final Map<Thread, DBusCallInfo> INFOMAP   = new ConcurrentHashMap<>();
+    private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
     /**
-     * Default thread pool size
+     * Default thread pool size.
      */
-    private static final int         THREADCOUNT = 4;
+    private static final int THREADCOUNT            = 4;
     /**
-     * Connect timeout, used for TCP only
+     * Connect timeout, used for TCP only.
      */
-    public static final int          TCP_CONNECT_TIMEOUT     = 100000;
+    public static final int TCP_CONNECT_TIMEOUT     = 100000;
+
+    /**
+     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
+     */
+    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
 
     /** Lame method to setup endianness used on DBus messages */
     private static byte              endianness             = getSystemEndianness();

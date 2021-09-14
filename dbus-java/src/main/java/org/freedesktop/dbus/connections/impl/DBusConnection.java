@@ -208,7 +208,7 @@ public final class DBusConnection extends AbstractConnection {
                 && (address == null || address.startsWith("unix"))) { // no address or unix socket address
 
             // no UNIX transport available, or lookup did not return anything useful
-            address = System.getProperty("DBUS_TCP_SESSION");
+            address = System.getProperty(TCP_ADDRESS_PROPERTY);
         }
 
         return getConnection(address, true, _shared, _timeout);

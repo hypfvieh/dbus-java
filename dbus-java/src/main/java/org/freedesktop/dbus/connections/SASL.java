@@ -589,7 +589,6 @@ public class SASL {
                             _sock.read(buf); // 0
                             state = SaslAuthState.WAIT_AUTH;
                         } else {
-                            Credentials credentials;
                             try {
                                 // TODO: how to solve this in freebsd?
 //                              if (FreeBSDHelper.isFreeBSD()) {

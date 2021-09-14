@@ -404,7 +404,8 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         testArray(SamplesInterface.class, tests, "IdentityInt64Array", Long.TYPE, null);
         testArray(SamplesInterface.class, tests, "IdentityDoubleArray", Double.TYPE, null);
 
-        testArray(SamplesInterface.class, tests, "IdentityArray", Variant.class, new Variant<>("aoeu"));
+        Variant<String> content = new Variant<>("aoeu");
+        testArray(SamplesInterface.class, tests, "IdentityArray", Variant.class, content);
         testArray(SamplesInterface.class, tests, "IdentityUInt16Array", UInt16.class, new UInt16(12));
         testArray(SamplesInterface.class, tests, "IdentityUInt32Array", UInt32.class, new UInt32(190));
         testArray(SamplesInterface.class, tests, "IdentityUInt64Array", UInt64.class, new UInt64(103948));
