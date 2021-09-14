@@ -58,7 +58,7 @@ public class InputStreamMessageReader implements IMessageReader {
             return null;
         }
         if (len[0] < 12) {
-            logger.debug("Only got {} of 12 bytes of header", len[0]);
+            logger.trace("Only got {} of 12 bytes of header", len[0]);
             return null;
         }
 
@@ -87,7 +87,7 @@ public class InputStreamMessageReader implements IMessageReader {
             len[1] += rv;
         }
         if (len[1] < 4) {
-            logger.debug("Only got {} of 4 bytes of header", len[1]);
+            logger.trace("Only got {} of 4 bytes of header", len[1]);
             return null;
         }
 
@@ -120,7 +120,7 @@ public class InputStreamMessageReader implements IMessageReader {
             len[2] += rv;
         }
         if (len[2] < headerlen) {
-            logger.debug("Only got {} of {} bytes of header", len[2], headerlen);
+            logger.trace("Only got {} of {} bytes of header", len[2], headerlen);
             return null;
         }
 
@@ -145,7 +145,7 @@ public class InputStreamMessageReader implements IMessageReader {
             len[3] += rv;
         }
         if (len[3] < body.length) {
-            logger.debug("Only got {} of {} bytes of body", len[3], body.length);
+            logger.trace("Only got {} of {} bytes of body", len[3], body.length);
             return null;
         }
 
