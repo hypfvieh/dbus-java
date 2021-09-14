@@ -12,7 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -201,7 +201,7 @@ public class ExportedObject {
                 }
             }
             sb.append("  </method>\n");
-            methods.put(new MethodTuple(methodName, ms), meth);
+            methods.putIfAbsent(new MethodTuple(methodName, ms), meth);
         }
 
         return sb.toString();
@@ -252,10 +252,10 @@ public class ExportedObject {
      */
     protected Set<Class<?>> getDBusInterfaces(Class<?> inputClazz) {
         Objects.requireNonNull(inputClazz, "inputClazz must not be null");
-        Set<Class<?>> result = new HashSet<>();
+        Set<Class<?>> result = new LinkedHashSet<>();
 
         // set of already checked classes/interfaces - used to avoid loops/redundant reflection calls
-        Set<Class<?>> checked = new HashSet<>();
+        Set<Class<?>> checked = new LinkedHashSet<>();
         // queue with classes/interfaces to check
         Queue<Class<?>> toCheck = new LinkedList<>();
         toCheck.add(inputClazz);
