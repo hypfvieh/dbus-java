@@ -55,6 +55,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>
@@ -68,6 +69,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>
@@ -81,6 +83,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-native-unixsocket</classpathDependencyExclude>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>
