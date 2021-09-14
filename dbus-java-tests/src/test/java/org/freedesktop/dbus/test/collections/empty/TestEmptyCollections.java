@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.test.collections.empty;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +13,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.test.AbstractDBusBaseTest;
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimitive;
 import org.freedesktop.dbus.test.collections.empty.structs.DeepArrayStruct;
@@ -57,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * used to determine whether (de)serialization of non empty collection is executed correctly.
  *
  */
-class TestEmptyCollections {
+class TestEmptyCollections extends AbstractDBusBaseTest {
 
 	private DBusConnection serverconn;
 	private DBusConnection clientconn;

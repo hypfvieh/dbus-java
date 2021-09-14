@@ -84,9 +84,6 @@
                             <excludes>
                                 <!-- Would be nice to run these tests with also TCP, but they are all failing or stale -->
                                 <exclude>TestAll</exclude>
-                                <exclude>DBusConnectionTest</exclude>
-                                <exclude>TestEmptyCollections</exclude>
-                                <exclude>TestDisconnectStuff</exclude>
                                 <exclude>StressTest</exclude>
                             </excludes>
                             <classpathDependencyExcludes>
