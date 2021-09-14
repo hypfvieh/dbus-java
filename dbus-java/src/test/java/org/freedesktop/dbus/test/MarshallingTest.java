@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -32,7 +29,7 @@ import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class MarshallingTest {
+public class MarshallingTest extends AbstractBaseTest {
     
 	@Test
 	public void parseComplexMessageReturnsCorrectTypes() throws DBusException {
@@ -92,7 +89,9 @@ public class MarshallingTest {
 
     @Test
     public void testDeserializeParametersWithTuple() throws Exception {
-        Object[] ob = { new String("rootfs.1"), new String("marked slot rootfs.1 as good")};
+        Object[] ob = {
+                "rootfs.1", "marked slot rootfs.1 as good"
+        };
         Method m = Installer.class.getDeclaredMethod("Mark", String.class, String.class);
         Type[] ts = new Type[] { m.getGenericReturnType() };
 
