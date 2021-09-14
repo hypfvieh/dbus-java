@@ -330,7 +330,7 @@ public class SASL {
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);
 
                     _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
-                    return SaslResult.CONTINUE;
+                    return SaslResult.OK;
                 default:
                     return SaslResult.ERROR;
                 }
@@ -584,7 +584,8 @@ public class SASL {
                                     if (euid >= 0) {
                                         kernelUid = stupidlyEncode("" + euid);
                                     }
-                                } else {
+                                } else if (us instanceof UnixSocket) {
+                                	 
                                     credentials = ((UnixSocket) us).getCredentials();
                                     int kuid = credentials.getUid();
                                     if (kuid >= 0) {
