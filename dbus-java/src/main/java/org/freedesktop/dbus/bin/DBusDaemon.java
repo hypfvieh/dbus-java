@@ -52,19 +52,17 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private static final Logger LOGGER          = LoggerFactory.getLogger(DBusDaemon.class);
 
-    private Map<ConnectionStruct, DBusDaemonReaderThread>      conns           = new ConcurrentHashMap<>();
-    private Map<String, ConnectionStruct>                      names           = Collections.synchronizedMap(new HashMap<>());
-    private MagicMap<Message, WeakReference<ConnectionStruct>> outqueue        = new MagicMap<>("out");
-    private MagicMap<Message, WeakReference<ConnectionStruct>> inqueue         = new MagicMap<>("in");
-    private MagicMap<Message, WeakReference<ConnectionStruct>> localqueue      = new MagicMap<>("local");
-    private List<ConnectionStruct>                             sigrecips       = new ArrayList<>();
-    private final AtomicBoolean                          run             = new AtomicBoolean(true);
-    private int                                          nextUnique      = 0;
-    private Object                                       uniqueLock      = new Object();
-    // CHECKSTYLE:OFF
-    DBusServer                                           dbusServer      = new DBusServer();
-    DBusDaemonSenderThread                                               sender          = new DBusDaemonSenderThread();
-    // CHECKSTYLE:ON
+    private Map<ConnectionStruct, DBusDaemonReaderThread>      conns      = new ConcurrentHashMap<>();
+    private Map<String, ConnectionStruct>                      names      = Collections.synchronizedMap(new HashMap<>());
+    private MagicMap<Message, WeakReference<ConnectionStruct>> outqueue   = new MagicMap<>("out");
+    private MagicMap<Message, WeakReference<ConnectionStruct>> inqueue    = new MagicMap<>("in");
+    private MagicMap<Message, WeakReference<ConnectionStruct>> localqueue = new MagicMap<>("local");
+    private List<ConnectionStruct>                             sigrecips  = new ArrayList<>();
+    private final AtomicBoolean                                run        = new AtomicBoolean(false);
+    private int                                                nextUnique = 0;
+    private Object                                             uniqueLock = new Object();
+    private DBusServer                                         dbusServer = new DBusServer();
+    private DBusDaemonSenderThread                             sender     = new DBusDaemonSenderThread();
 
     public DBusDaemon() {
         setName(getClass().getSimpleName() + "-Thread");
@@ -119,8 +117,17 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     @Override
+    public synchronized void start() {
+        super.start();
+
+        dbusServer.start();
+        sender.start();
+    }
+
+    @Override
     public void run() {
-    
+        run.set(true);
+
         while (isRunning()) {
             try {
                 Message m;
@@ -188,12 +195,14 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public boolean isRunning() {
-        return this.run.get() && isAlive();
+        return run.get() && isAlive();
     }
 
     @Override
     public void close() {
         run.set(false);
+        sender.terminate();
+        dbusServer.terminate();
         interrupt();
     }
 
@@ -236,8 +245,7 @@ public class DBusDaemon extends Thread implements Closeable {
     
     }
 
-    public void addSock(SocketChannel _sock) throws IOException {
-    
+    void addSock(SocketChannel _sock) throws IOException {
         LOGGER.debug("New Client");
     
         ConnectionStruct c = new ConnectionStruct(_sock);
@@ -327,8 +335,7 @@ public class DBusDaemon extends Thread implements Closeable {
     
         // start the daemon
         LOGGER.info("Binding to {}", addr);
-        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon()) {
-            daemon.setAddress(address);
+        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address)) {
             daemon.startInForeground();
         }
     
@@ -356,6 +363,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
         private final String machineId;
         private ConnectionStruct connStruct;
+        private volatile AtomicBoolean running = new AtomicBoolean(true);
 
         public DBusServer() {
             setName("Server");
@@ -598,7 +606,7 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public void run() {
 
-            while (isRunning()) {
+            while (isRunning() && running.get()) {
                 Message msg;
                 List<WeakReference<ConnectionStruct>> wcs;
                 // block on outqueue
@@ -632,6 +640,11 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
+        }
+
+        public void terminate() {
+            running.set(false);
+            interrupt();
         }
 
         @Override
@@ -668,6 +681,8 @@ public class DBusDaemon extends Thread implements Closeable {
 
     public class DBusDaemonSenderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
+        private volatile AtomicBoolean running = new AtomicBoolean(true);
+
 
         public DBusDaemonSenderThread() {
             setName(getClass().getSimpleName());
@@ -675,7 +690,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public void run() {
-            while (isRunning()) {
+            while (isRunning() && running.get()) {
 
                 logger.trace("Acquiring lock on outqueue and blocking for data");
 
@@ -714,6 +729,11 @@ public class DBusDaemon extends Thread implements Closeable {
                     logger.info("Discarding {} connection reaped", m);
                 }
             }
+        }
+
+        public void terminate() {
+            running.set(false);
+            interrupt();
         }
     }
 

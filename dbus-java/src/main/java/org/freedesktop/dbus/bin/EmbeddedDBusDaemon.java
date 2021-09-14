@@ -22,11 +22,23 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedDBusDaemon.class);
 
-    private BusAddress address;
+    private final BusAddress address;
 
     private DBusDaemon daemonThread;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    public EmbeddedDBusDaemon(BusAddress _address) {
+        address = Objects.requireNonNull(_address, "Address required");
+        if (_address.getRawAddress().startsWith("tcp")) {
+            String addrStr = _address.getRawAddress().replace(",listen=true", "");
+            System.setProperty(AbstractConnection.TCP_ADDRESS_PROPERTY, addrStr);
+        }
+    }
+
+    public EmbeddedDBusDaemon(String _address) throws DBusException {
+        this(new BusAddress(_address));
+    }
 
     /**
      *
@@ -36,20 +48,13 @@ public class EmbeddedDBusDaemon implements Closeable {
         closed.set(true);
         if (daemonThread != null) {
             daemonThread.close();
-            daemonThread.dbusServer.interrupt();
-            daemonThread.sender.interrupt();
             daemonThread = null;
         }
     }
 
     public void startInForeground() {
-
-        Objects.requireNonNull(address, "busAddress not set");
-
         daemonThread = new DBusDaemon();
         daemonThread.start();
-        daemonThread.sender.start();
-        daemonThread.dbusServer.start();
 
         try {
             listen();
@@ -66,6 +71,10 @@ public class EmbeddedDBusDaemon implements Closeable {
         thread.setDaemon(true);
         thread.setUncaughtExceptionHandler((th, ex) -> LOGGER.error("Got uncaught exception", ex));
         thread.start();
+    }
+
+    public boolean isRunning() {
+        return daemonThread == null ? false : daemonThread.isRunning();
     }
 
     private void listen() throws IOException {
@@ -89,17 +98,4 @@ public class EmbeddedDBusDaemon implements Closeable {
             }
         }
     }
-
-    public void setAddress(BusAddress _address) {
-        address = Objects.requireNonNull(_address, "Address required");
-        if (_address.getRawAddress().startsWith("tcp")) {
-            String addrStr = _address.getRawAddress().replace(",listen=true", "");
-            System.setProperty("DBUS_TCP_SESSION", addrStr);
-        }
-    }
-
-    public void setAddress(String _address) throws DBusException {
-        setAddress(new BusAddress(_address));
-    }
-
 }
