@@ -6,6 +6,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportFactory;
@@ -32,7 +33,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        this.closed.set(true);
+        closed.set(true);
         if (daemonThread != null) {
             daemonThread.close();
             daemonThread.dbusServer.interrupt();
@@ -76,8 +77,8 @@ public class EmbeddedDBusDaemon implements Closeable {
         }
     }
 
-    private void startSocket(BusAddress address) throws IOException {
-        try (AbstractTransport transport = TransportFactory.createTransport(address)) {
+    private void startSocket(BusAddress _address) throws IOException {
+        try (AbstractTransport transport = TransportFactory.createTransport(_address, AbstractConnection.TCP_CONNECT_TIMEOUT, false)) {
             while (daemonThread.isRunning()) {
                 try {
                     SocketChannel s = transport.connect();
@@ -89,12 +90,16 @@ public class EmbeddedDBusDaemon implements Closeable {
         }
     }
 
-    public void setAddress(BusAddress address) {
-        this.address = address;
+    public void setAddress(BusAddress _address) {
+        address = Objects.requireNonNull(_address, "Address required");
+        if (_address.getRawAddress().startsWith("tcp")) {
+            String addrStr = _address.getRawAddress().replace(",listen=true", "");
+            System.setProperty("DBUS_TCP_SESSION", addrStr);
+        }
     }
 
-    public void setAddress(String address) throws DBusException {
-        setAddress(new BusAddress(address));
+    public void setAddress(String _address) throws DBusException {
+        setAddress(new BusAddress(_address));
     }
 
 }

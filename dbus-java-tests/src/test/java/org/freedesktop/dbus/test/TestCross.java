@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -20,7 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestCross {
+public class TestCross extends AbstractBaseTest {
 
     private ServerThread serverThread;
 

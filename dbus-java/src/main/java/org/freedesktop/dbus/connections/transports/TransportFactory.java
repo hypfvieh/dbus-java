@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
+import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
@@ -44,13 +45,16 @@ public final class TransportFactory {
                 logger.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
 
                 if (providers.containsKey(providerBusType)) {
-                    throw new RuntimeException("Found transport "
+                    throw new TransportRegistrationException("Found transport "
                             + providers.get(providerBusType).getClass().getName()
                             + " and "
                             + provider.getClass().getName() + " both providing transport for socket type "
                             + providerBusType + ", please only add one of them to classpath.");
                 }
                 providers.put(providerBusType, provider);
+            }
+            if (providers.isEmpty()) {
+                throw new TransportRegistrationException("No dbus-java-transport found in classpath, please add a transport module");
             }
         } catch (ServiceConfigurationError _ex) {
             logger.error("Could not initialize service provider.", _ex);

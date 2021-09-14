@@ -114,7 +114,7 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException if connection fails
      */
     public final SocketChannel connect() throws IOException {
-        var channel = connectImpl();
+        SocketChannel channel = connectImpl();
         authenticate(channel);
         setInputOutput(channel);
         return channel;

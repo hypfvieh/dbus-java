@@ -1,9 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  *
  */
-public class StressTest {
+public class StressTest extends AbstractBaseTest {
 
     private static final String OBJECT_PATH = "/org/freedesktop/dbus/test/RemoteObjectImpl";
 

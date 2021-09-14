@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.test;
+package org.freedesktop.dbus.test.helper;
 
 import java.util.List;
 import java.util.Map;

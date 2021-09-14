@@ -15,11 +15,8 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class LowLevelTest {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class LowLevelTest extends AbstractBaseTest {
 
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException {

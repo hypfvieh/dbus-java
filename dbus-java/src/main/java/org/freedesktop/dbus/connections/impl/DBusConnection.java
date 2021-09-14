@@ -27,6 +27,7 @@ import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
+import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusConnectionException;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -189,14 +190,28 @@ public final class DBusConnection extends AbstractConnection {
      *
      */
     public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
+        String address = null;
+
         switch (_bustype) {
             case SYSTEM:
-                return getConnection(getSystemConnection(), true, _shared, _timeout);
+                address = getSystemConnection();
+                break;
             case SESSION:
-                return getConnection(getSessionConnection(), true, _shared, _timeout);
+                address = getSessionConnection();
+                break;
             default:
                 throw new DBusException("Invalid Bus Type: " + _bustype);
         }
+
+        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX") // no unix transport
+                && TransportFactory.getRegisteredBusTypes().contains("TCP") // but tcp transport
+                && (address == null || address.startsWith("unix"))) { // no address or unix socket address
+
+            // no UNIX transport available, or lookup did not return anything useful
+            address = System.getProperty("DBUS_TCP_SESSION");
+        }
+
+        return getConnection(address, true, _shared, _timeout);
     }
 
     /**
@@ -227,7 +242,6 @@ public final class DBusConnection extends AbstractConnection {
         // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
         if (Util.isMacOs()) {
             s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
-
         } else { // all others (linux)
             s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
         }

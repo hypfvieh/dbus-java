@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.test;
+package org.freedesktop.dbus.test.helper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +27,6 @@ class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
     public int getCount() {
         return count;
     }
-
-
 }
 
 /**

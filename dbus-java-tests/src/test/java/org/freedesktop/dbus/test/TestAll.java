@@ -1,12 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.lang.reflect.Type;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -75,7 +68,7 @@ import org.junit.jupiter.api.Test;
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
  */
 // CHECKSTYLE:OFF
-public class TestAll {
+public class TestAll extends AbstractBaseTest {
 
     public static final String TEST_OBJECT_PATH = "/TestAll";
 

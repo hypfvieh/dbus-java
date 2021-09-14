@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -11,7 +8,7 @@ import org.junit.jupiter.api.Test;
 /**
  *
  */
-public class DBusConnectionTest {
+public class DBusConnectionTest extends AbstractBaseTest {
 
     @Test
     public void test_busnames_should_be_auto_released_on_close_of_non_shared_connection() throws Exception {

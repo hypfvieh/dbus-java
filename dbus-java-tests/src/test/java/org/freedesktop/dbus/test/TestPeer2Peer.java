@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DirectConnection;
@@ -16,7 +13,7 @@ import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
-public class TestPeer2Peer {
+public class TestPeer2Peer extends AbstractBaseTest {
 
     private volatile boolean finished = false;
 
