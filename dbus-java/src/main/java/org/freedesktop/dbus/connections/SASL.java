@@ -403,7 +403,20 @@ public class SASL {
                 return new String[] {};
         }
     }
-
+    /**
+     * Performs SASL auth on the given socketchannel.
+     * Mode selects whether to run as a SASL server or client.
+     * Types is a bitmask of the available auth types.
+     *
+     * @param mode mode
+     * @param types types
+     * @param guid guid
+     * @param out out
+     * @param in in
+     * @param us us
+     * @return true if the auth was successful and false if it failed.
+     * @throws IOException on failure
+     */
     public boolean auth(SaslMode _mode, int _types, String _guid, SocketChannel _sock, AbstractTransport _transport) throws IOException {
         String luid = null;
         String kernelUid = null;
@@ -576,6 +589,7 @@ public class SASL {
                             _sock.read(buf); // 0
                             state = SaslAuthState.WAIT_AUTH;
                         } else {
+                            Credentials credentials;
                             try {
                                 // TODO: how to solve this in freebsd?
 //                              if (FreeBSDHelper.isFreeBSD()) {

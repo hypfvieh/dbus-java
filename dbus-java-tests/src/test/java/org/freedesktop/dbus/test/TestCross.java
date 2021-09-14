@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 public class TestCross extends AbstractBaseTest {
 
     private ServerThread serverThread;
+    private CrossTestServer cts;
+
 
     private volatile boolean serverReady = false;
 
@@ -73,11 +75,16 @@ public class TestCross extends AbstractBaseTest {
             fail("Exception while processing DBus");
         } 
 
+        while (serverThread.isAlive()) {
+            Thread.sleep(300L);
+        }
+
+        assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
+
     }
 
 
     private class ServerThread extends Thread {
-        private CrossTestServer cts;
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION)) {
@@ -101,7 +108,6 @@ public class TestCross extends AbstractBaseTest {
                     System.out.println("---> " + s + " untested");
                 }
                 conn.disconnect();
-                assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
             } catch (DBusException | IOException exDe) {
                 exDe.printStackTrace();
                 fail("Exception while server running");
