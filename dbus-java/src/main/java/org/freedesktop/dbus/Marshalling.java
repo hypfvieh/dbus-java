@@ -628,7 +628,7 @@ public final class Marshalling {
             _types = ((ParameterizedType) _types[0]).getActualTypeArguments();
         }
 
-        if (_types.length == 1 && _types[0] instanceof Tuple) {
+        if (_types.length == 1 && _types[0] instanceof Class && Tuple.class.isAssignableFrom((Class<?>) _types[0])) {
             String typeName = _types[0].getTypeName();
             Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
             if (constructors.length != 1) {

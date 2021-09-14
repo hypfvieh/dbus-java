@@ -89,7 +89,9 @@ public class MarshallingTest extends AbstractBaseTest {
 
     @Test
     public void testDeserializeParametersWithTuple() throws Exception {
-        Object[] ob = { new String("rootfs.1"), new String("marked slot rootfs.1 as good")};
+        Object[] ob = {
+                "rootfs.1", "marked slot rootfs.1 as good"
+        };
         Method m = Installer.class.getDeclaredMethod("Mark", String.class, String.class);
         Type[] ts = new Type[] { m.getGenericReturnType() };
 
