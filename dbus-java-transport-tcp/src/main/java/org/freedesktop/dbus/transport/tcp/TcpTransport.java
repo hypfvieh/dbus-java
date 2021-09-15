@@ -17,8 +17,10 @@ import org.freedesktop.dbus.connections.transports.AbstractTransport;
  */
 public class TcpTransport extends AbstractTransport {
 
-    private SocketChannel socket;
-    private final int     timeout;
+    private final int           timeout;
+
+    private SocketChannel       socket;
+    private ServerSocketChannel serverSocket;
 
     TcpTransport(BusAddress _address, int _timeout) {
         super(_address);
@@ -40,12 +42,12 @@ public class TcpTransport extends AbstractTransport {
 
         InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
         if (getAddress().isListeningSocket()) {
-
-            try (ServerSocketChannel open = ServerSocketChannel.open()) {
-                open.configureBlocking(true);
-                open.bind(socketAddress);
-                socket = open.accept();
+            if (serverSocket == null || !serverSocket.isOpen()) {
+                serverSocket = ServerSocketChannel.open();
+                serverSocket.configureBlocking(true);
+                serverSocket.bind(socketAddress);
             }
+            socket = serverSocket.accept();
         } else {
             socket = SocketChannel.open();
             socket.configureBlocking(true);
@@ -59,8 +61,14 @@ public class TcpTransport extends AbstractTransport {
 
     @Override
     public void close() throws IOException {
+        getLogger().debug("Disconnecting Transport");
+
         if (socket != null && socket.isOpen()) {
             socket.close();
+        }
+
+        if (serverSocket != null && serverSocket.isOpen()) {
+            serverSocket.close();
         }
         super.close();
     }

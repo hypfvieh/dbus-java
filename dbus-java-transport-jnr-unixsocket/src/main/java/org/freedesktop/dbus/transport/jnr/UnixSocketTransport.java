@@ -22,7 +22,9 @@ import jnr.unixsocket.UnixSocketOptions;
  */
 public class UnixSocketTransport extends AbstractUnixTransport {
     private final UnixSocketAddress unixSocketAddress;
-    private UnixServerSocketChannel unixServerSocket;
+
+    private UnixSocketChannel       socket;
+    private UnixServerSocketChannel serverSocket;
 
     UnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
         super(_address);
@@ -50,32 +52,37 @@ public class UnixSocketTransport extends AbstractUnixTransport {
      */
     @Override
     public SocketChannel connectImpl() throws IOException {
-        UnixSocketChannel us;
         if (getAddress().isListeningSocket()) {
-            unixServerSocket = UnixServerSocketChannel.open();
 
-            unixServerSocket.socket().bind(unixSocketAddress);
-            us = unixServerSocket.accept();
+            if (serverSocket == null || !serverSocket.isOpen()) {
+                serverSocket = UnixServerSocketChannel.open();
+                serverSocket.configureBlocking(true);
+                serverSocket.socket().bind(unixSocketAddress);
+            }
+            socket = serverSocket.accept();
         } else {
-            us = UnixSocketChannel.open(unixSocketAddress);
+            socket = UnixSocketChannel.open(unixSocketAddress);
+            socket.configureBlocking(true);
         }
-
-        us.configureBlocking(true);
 
         // MacOS and FreeBSD don't support SO_PASSCRED
         if (!Util.isMacOs() && !FreeBSDHelper.isFreeBSD()) {
-            us.setOption(UnixSocketOptions.SO_PASSCRED, true);
+            socket.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 
-        return us;
+        return socket;
     }
 
     @Override
     public void close() throws IOException {
         getLogger().debug("Disconnecting Transport");
 
-        if (unixServerSocket != null && unixServerSocket.isOpen()) {
-            unixServerSocket.close();
+        if (socket != null && socket.isOpen()) {
+            socket.close();
+        }
+
+        if (serverSocket != null && serverSocket.isOpen()) {
+            serverSocket.close();
         }
 
         super.close();

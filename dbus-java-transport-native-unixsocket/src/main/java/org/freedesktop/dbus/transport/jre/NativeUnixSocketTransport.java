@@ -31,7 +31,8 @@ import org.freedesktop.dbus.exceptions.TransportConfigurationException;
  */
 public class NativeUnixSocketTransport extends AbstractUnixTransport {
     private final UnixDomainSocketAddress unixSocketAddress;
-    private ServerSocketChannel unixServerSocket;
+    private SocketChannel                 socket;
+    private ServerSocketChannel           serverSocket;
 
     NativeUnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
         super(_address);
@@ -59,16 +60,17 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
      */
     @Override
     public SocketChannel connectImpl() throws IOException {
-        SocketChannel us;
         if (getAddress().isListeningSocket()) {
-            unixServerSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
-            unixServerSocket.bind(unixSocketAddress);
-            us = unixServerSocket.accept();
+            if (serverSocket == null || !serverSocket.isOpen()) {
+                serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
+                serverSocket.bind(unixSocketAddress);
+            }
+            socket = serverSocket.accept();
         } else {
-            us = SocketChannel.open(unixSocketAddress);
+            socket = SocketChannel.open(unixSocketAddress);
         }
 
-        us.configureBlocking(true);
+        socket.configureBlocking(true);
 
         // TODO: No longer needed? See jdk.net.ExtendedSocketOptions.SO_PEERCRED (line 198)
         // MacOS and FreeBSD don't support SO_PASSCRED
@@ -76,15 +78,19 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
 //            us.setOption(ExtendedSocketOptions.SO_PEERCRED, us.getOption(ExtendedSocketOptions.SO_PEERCRED));
 //        }
 
-        return us;
+        return socket;
     }
 
     @Override
     public void close() throws IOException {
         getLogger().debug("Disconnecting Transport");
 
-        if (unixServerSocket != null && unixServerSocket.isOpen()) {
-            unixServerSocket.close();
+        if (socket != null && socket.isOpen()) {
+            socket.close();
+        }
+
+        if (serverSocket != null && serverSocket.isOpen()) {
+            serverSocket.close();
         }
 
         super.close();
