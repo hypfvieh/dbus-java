@@ -403,7 +403,7 @@ public class SASL {
                 return new String[] {};
         }
     }
-    
+
     /**
      * Performs SASL auth on the given socketchannel.
      * Mode selects whether to run as a SASL server or client.
@@ -414,7 +414,7 @@ public class SASL {
      * @param _guid guid
      * @param _sock socket channel
      * @param _transport transport
-     * 
+     *
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */

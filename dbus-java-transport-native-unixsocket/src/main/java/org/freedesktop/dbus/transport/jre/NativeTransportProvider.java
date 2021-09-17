@@ -5,9 +5,9 @@ import java.util.Random;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.LoggerFactory;
 
 public class NativeTransportProvider implements ITransportProvider {
@@ -47,7 +47,7 @@ public class NativeTransportProvider implements ITransportProvider {
             address += "listen=true,";
         }
 
-        address += "guid=" + TransportFactory.genGUID();
+        address += "guid=" + Util.genGUID();
         LoggerFactory.getLogger(getClass()).debug("Created Session address: {}", address);
         return address;
     }

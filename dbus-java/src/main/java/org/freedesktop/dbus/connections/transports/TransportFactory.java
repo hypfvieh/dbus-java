@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +13,6 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
-import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +21,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author hypfvieh
  * @since v3.2.0 - 2019-02-08
+ *
+ * @deprecated use {@link TransportBuilder} instead
  */
+@Deprecated(forRemoval = true, since = "4.0.0")
 public final class TransportFactory {
 
     private static final TransportFactory INSTANCE = new TransportFactory();
@@ -62,6 +63,7 @@ public final class TransportFactory {
 
     }
 
+
     /**
      * Creates a new transport encapsulating connection to a UNIX or TCP socket.
      *
@@ -99,10 +101,10 @@ public final class TransportFactory {
 
     /**
      * Creates a new dynamic bus address for the given bus type.
-     * 
+     *
      * @param _busType bus type (e.g. UNIX or TCP), never null
      * @param _listeningAddress true if a listening (server) address should be created, false otherwise
-     * 
+     *
      * @return String containing BusAddress or null
      */
     public static String createDynamicSession(String _busType, boolean _listeningAddress) {
@@ -116,7 +118,7 @@ public final class TransportFactory {
 
     /**
      * Returns a {@link List} of all bustypes supported in the current runtime.
-     * 
+     *
      * @return {@link List}, maybe empty
      */
     public static List<String> getRegisteredBusTypes() {
@@ -147,11 +149,5 @@ public final class TransportFactory {
         return createTransport(_address, _timeout, true);
     }
 
-    public static String genGUID() {
-        Random r = new Random();
-        byte[] buf = new byte[16];
-        r.nextBytes(buf);
-        String guid = Hexdump.toHex(buf);
-        return guid.replaceAll(" ", "");
-    }
+
 }

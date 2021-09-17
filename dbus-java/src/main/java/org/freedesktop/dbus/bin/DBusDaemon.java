@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -74,13 +74,13 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     private void send(ConnectionStruct _connStruct, Message _msg, boolean _head) {
-    
+
         if (null == _connStruct) {
             LOGGER.trace("Queing message {} for all connections", _msg);
         } else {
             LOGGER.trace("Queing message {} for {}", _msg, _connStruct.unique);
         }
-    
+
         // send to all connections
         if (null == _connStruct) {
             synchronized (conns) {
@@ -140,7 +140,7 @@ public class DBusDaemon extends Thread implements Closeable {
                             return;
                         }
                     }
-    
+
                     m = inqueue.head();
                     wcs = inqueue.remove(m);
                 }
@@ -161,7 +161,7 @@ public class DBusDaemon extends Thread implements Closeable {
                                     LOGGER.debug("", dbe);
                                     send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                                 }
-    
+
                                 if ("org.freedesktop.DBus".equals(m.getDestination())) {
                                     synchronized (localqueue) {
                                         localqueue.putLast(m, wc);
@@ -175,7 +175,7 @@ public class DBusDaemon extends Thread implements Closeable {
                                         }
                                     } else {
                                         ConnectionStruct dest = names.get(m.getDestination());
-    
+
                                         if (null == dest) {
                                             send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
                                         } else {
@@ -191,7 +191,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 LOGGER.debug("", dbe);
             }
         }
-    
+
     }
 
     public boolean isRunning() {
@@ -207,7 +207,7 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     private void removeConnection(ConnectionStruct c) {
-    
+
         boolean exists = false;
         synchronized (conns) {
             if (conns.containsKey(c)) {
@@ -242,17 +242,17 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
         }
-    
+
     }
 
     void addSock(SocketChannel _sock) throws IOException {
         LOGGER.debug("New Client");
-    
+
         ConnectionStruct c = new ConnectionStruct(_sock);
         DBusDaemonReaderThread r = new DBusDaemonReaderThread(c);
         conns.put(c, r);
         r.start();
-    
+
     }
 
     public static void syntax() {
@@ -272,14 +272,14 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public static void main(String[] args) throws Exception {
-    
+
         String addr = null;
         String pidfile = null;
         String addrfile = null;
         boolean printaddress = false;
         boolean unix = true;
         boolean tcp = false;
-    
+
         // parse options
         try {
             for (int i = 0; i < args.length; i++) {
@@ -308,37 +308,37 @@ public class DBusDaemon extends Thread implements Closeable {
         } catch (ArrayIndexOutOfBoundsException exAioob) {
             syntax();
         }
-    
+
         // generate a random address if none specified
         if (null == addr && unix) {
-            addr = TransportFactory.createDynamicSession("UNIX", true);
+            addr = TransportBuilder.createDynamicSession("UNIX", true);
         } else if (null == addr && tcp) {
-            addr = TransportFactory.createDynamicSession("TCP", true);
+            addr = TransportBuilder.createDynamicSession("TCP", true);
         }
-    
+
         BusAddress address = new BusAddress(addr);
-    
+
         // print address to stdout
         if (printaddress) {
             System.out.println(addr);
         }
-    
+
         // print address to file
         if (null != addrfile) {
             saveFile(addr, addrfile);
         }
-    
+
         // print PID to file
         if (null != pidfile) {
             saveFile(System.getProperty("Pid"), pidfile);
         }
-    
+
         // start the daemon
         LOGGER.info("Binding to {}", addr);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address)) {
             daemon.startInForeground();
         }
-    
+
     }
 
     public static class ConnectionStruct {
@@ -366,7 +366,7 @@ public class DBusDaemon extends Thread implements Closeable {
         private volatile AtomicBoolean running = new AtomicBoolean(true);
 
         public DBusServer() {
-            setName("Server");
+            setName("DBusServer");
             String ascii;
             try {
                 ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
@@ -788,24 +788,24 @@ public class DBusDaemon extends Thread implements Closeable {
 
     static class MagicMap<A, B> {
         private final Logger          logger = LoggerFactory.getLogger(getClass());
-    
+
         private Map<A, LinkedList<B>> m;
         private LinkedList<A>         q;
         private String                name;
-    
+
         MagicMap(String _name) {
             m = new HashMap<>();
             q = new LinkedList<>();
             this.name = _name;
         }
-    
+
         public A head() {
             return q.getFirst();
         }
-    
+
         public void putFirst(A _a, B _b) {
             logger.debug("<{}> Queueing {{} => {}}", name, _a, _b);
-    
+
             if (m.containsKey(_a)) {
                 m.get(_a).add(_b);
             } else {
@@ -815,10 +815,10 @@ public class DBusDaemon extends Thread implements Closeable {
             }
             q.addFirst(_a);
         }
-    
+
         public void putLast(A _a, B _b) {
             logger.debug("<{}> Queueing {{} => {}}", name, _a, _b);
-    
+
             if (m.containsKey(_a)) {
                 m.get(_a).add(_b);
             } else {
@@ -828,14 +828,14 @@ public class DBusDaemon extends Thread implements Closeable {
             }
             q.addLast(_a);
         }
-    
+
         public List<B> remove(A _a) {
             logger.debug("<{}> Removing {{}}", name, _a);
-    
+
             q.remove(_a);
             return m.remove(_a);
         }
-    
+
         public int size() {
             return q.size();
         }

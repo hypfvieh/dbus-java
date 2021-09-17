@@ -9,7 +9,7 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
@@ -24,7 +24,7 @@ public class LowLevelTest extends AbstractDBusBaseTest {
         BusAddress address = new BusAddress(getAddress());
         logger.debug("Testing using address: {}", address);
 
-        try (AbstractTransport conn = TransportFactory.createTransport(address)) {
+        try (AbstractTransport conn = TransportBuilder.create(address).build()) {
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
             conn.writeMessage(m);
             waitIfTcp();
@@ -54,7 +54,7 @@ public class LowLevelTest extends AbstractDBusBaseTest {
     }
 
     static String getAddress() throws DBusException {
-        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX")) {
+        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
             return System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
         }
 

@@ -39,7 +39,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
@@ -113,8 +113,6 @@ public abstract class AbstractConnection implements Closeable {
     private final IncomingMessageThread                                         readerThread;
     // private final SenderThread senderThread;
 
-    private final BusAddress                                                    busAddress;
-
     private final ExecutorService                                               senderService;
 
     private boolean                                                             weakreferences       = false;
@@ -124,6 +122,8 @@ public abstract class AbstractConnection implements Closeable {
     private volatile ThreadPoolExecutor                                         workerThreadPool;
     private final ReadWriteLock                                                 workerThreadPoolLock =
             new ReentrantReadWriteLock();
+
+    private final TransportBuilder transportBuilder;
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
@@ -150,8 +150,8 @@ public abstract class AbstractConnection implements Closeable {
         readerThread = new IncomingMessageThread(this);
 
         try {
-            busAddress = new BusAddress(address);
-            transport = TransportFactory.createTransport(busAddress, timeout);
+            transportBuilder = TransportBuilder.create(address);
+            transport = transportBuilder.withTimeout(timeout).build();
             connected = true;
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
@@ -1193,7 +1193,7 @@ public abstract class AbstractConnection implements Closeable {
      * @return new {@link BusAddress} object
      */
     public BusAddress getAddress() {
-        return busAddress;
+        return transportBuilder.getAddress();
     }
 
     public boolean isConnected() {

@@ -27,7 +27,7 @@ import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusConnectionException;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -70,7 +70,7 @@ public final class DBusConnection extends AbstractConnection {
     private DBus                                     dbus;
 
 	private static String                            dbusMachineIdFile;
-	
+
     private final String                             machineId;
 
     /** Count how many 'connections' we manage internally.
@@ -203,8 +203,8 @@ public final class DBusConnection extends AbstractConnection {
                 throw new DBusException("Invalid Bus Type: " + _bustype);
         }
 
-        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX") // no unix transport
-                && TransportFactory.getRegisteredBusTypes().contains("TCP") // but tcp transport
+        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
+                && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
                 && (address == null || address.startsWith("unix"))) { // no address or unix socket address
 
             // no UNIX transport available, or lookup did not return anything useful
@@ -286,12 +286,12 @@ public final class DBusConnection extends AbstractConnection {
     private AtomicInteger getConcurrentConnections() {
         return concurrentConnections;
     }
-    
+
     /**
      * Set a specific machine-id file path to read the machine ID from. The
-     * system variable DBUS_MACHINE_ID_LOCATION will take precedence 
+     * system variable DBUS_MACHINE_ID_LOCATION will take precedence
      * over this.
-     * 
+     *
      * @param dbusMachineIdFile file containing DBus machine ID.
      */
     public static void setDbusMachineIdFile(String dbusMachineIdFile) {
@@ -299,8 +299,8 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     /**
-     * Extracts the machine-id usually found on Linux in various system directories, or 
-     * generate a fake id for non-Linux platforms. Use system variable 
+     * Extracts the machine-id usually found on Linux in various system directories, or
+     * generate a fake id for non-Linux platforms. Use system variable
      * DBUS_MACHINE_ID_LOCATION to use another location or {@link #setDbusMachineIdFile(String)}.
      *
      * @return machine-id string, never null

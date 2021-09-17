@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
@@ -20,8 +20,8 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
     @Test
     public void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
-        String protocolType = TransportFactory.getRegisteredBusTypes().get(0);
-        String newAddress = TransportFactory.createDynamicSession(protocolType, false);
+        String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+        String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
         BusAddress busAddress = new BusAddress(newAddress);
         BusAddress listenBusAddress = new BusAddress(newAddress + ",listen=true");
@@ -67,7 +67,7 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
     public void test_start_stop() throws Exception {
 
         for (int i = 0; i < 2; i++) {
-            String address = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), true);
+            String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), true);
 
             // initialize
             EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address);

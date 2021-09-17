@@ -3,7 +3,7 @@ package org.freedesktop.dbus.test;
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DirectConnection;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -17,7 +17,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
 
     private volatile boolean finished = false;
 
-    private static final String CONNECTION_ADDRESS = TransportFactory.createDynamicSession(TransportFactory.getRegisteredBusTypes().get(0), false);
+    private static final String CONNECTION_ADDRESS = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), false);
 
     @Test
     public void testP2p() throws InterruptedException {

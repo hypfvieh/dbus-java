@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
-import org.freedesktop.dbus.connections.transports.TransportFactory;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Base test which will start a embedded DBus daemon if no UNIX transport is found.
- * 
+ *
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-14
  */
@@ -23,27 +23,27 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
 
     /**
      * Wait 300 ms if the current test uses TCP transport.
-     * 
+     *
      * @throws InterruptedException on interruption
      */
     protected static void waitIfTcp() throws InterruptedException {
-        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX")) {
+        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
             Thread.sleep(300L);
         }
     }
 
     /**
      * Start an embedded Dbus daemon (in background) if the test uses TCP transport.
-     * 
+     *
      * @throws DBusException if start of daemon failed
      * @throws InterruptedException on interruption
      */
     @BeforeAll
     public static void beforeAll() throws DBusException, InterruptedException {
         Logger logger = LoggerFactory.getLogger(AbstractDBusBaseTest.class);
-        if (!TransportFactory.getRegisteredBusTypes().contains("UNIX")) {
-            String busType = TransportFactory.getRegisteredBusTypes().get(0);
-            String addr = TransportFactory.createDynamicSession(busType, true);
+        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
+            String busType = TransportBuilder.getRegisteredBusTypes().get(0);
+            String addr = TransportBuilder.createDynamicSession(busType, true);
             logger.info("Creating {} based DBus daemon on address {}", busType, addr);
             edbus = new EmbeddedDBusDaemon(addr);
             edbus.startInBackground();
@@ -65,7 +65,7 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
 
     /**
      * Shutdown embedded Dbus daemon after test (if any).
-     * 
+     *
      * @throws IOException shutdown failed
      */
     @AfterAll
