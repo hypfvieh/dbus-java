@@ -1,12 +1,25 @@
 package org.freedesktop.dbus.connections.transports;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -16,6 +29,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +51,13 @@ public class TransportBuilder {
     private int timeout = AbstractConnection.TCP_CONNECT_TIMEOUT;
     private boolean autoConnect = true;
     private SaslAuthMode authMode = null;
+
+    /** user to set on socket file if this is a server transport (null to do nothing). */
+    private String fileOwner;
+    /** group to set on socket file if this is a server transport (null to do nothing). */
+    private String fileGroup;
+    /** unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if null) */
+    private Set<PosixFilePermission> fileUnixPermissions;
 
     static Map<String, ITransportProvider> getTransportProvider() {
         Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
@@ -185,6 +206,107 @@ public class TransportBuilder {
     }
 
     /**
+     * The owner of the socket file if a unix socket is used and this is a server transport.
+     * <p>
+     * Default is the user of the running JVM process.<br><br>
+     * <b>Please note:</b><br>
+     * The running process user has to have suitable permissions to change the owner
+     * of the file. Otherwise the file owner will not be changed!
+     *
+     * @param _user user to set, if null is given JVM process user is used
+     *
+     * @return this
+     */
+    public TransportBuilder withUnixSocketFileOwner(String _user) {
+        fileOwner = _user;
+        return this;
+    }
+
+    /**
+     * The group of the socket file if a unix socket is used and this is a server transport.
+     * <p>
+     * Default is the group of the running JVM process.<br><br>
+     * <b>Please note:</b><br>
+     * The running process user has to have suitable permissions to change the group
+     * of the file. Otherwise the file group will not be changed!
+     *
+     * @param _group group to set, if null is given JVM process group is used
+     *
+     * @return this
+     */
+    public TransportBuilder withUnixSocketFileGroup(String _group) {
+        fileGroup = _group;
+        return this;
+    }
+
+    /**
+     * The permissions which will be set on socket file if a unix socket is used and this is a server transport.
+     * <p>
+     * This method does nothing when used on windows systems.
+     * <b>Please note:</b><br>
+     * The running process user has to have suitable permissions to change the permissions
+     * of the file. Otherwise the file permissions will not be changed!
+     *
+     * @param _permissions permissions to set, if null is given default permissions will be used
+     *
+     * @return this
+     */
+    public TransportBuilder withUnixSocketFilePermissions(PosixFilePermission... _permissions) {
+        if (Util.isWindows()) {
+            return this;
+        }
+
+        if (_permissions == null || _permissions.length < 1) {
+            return this;
+        }
+        fileUnixPermissions = new LinkedHashSet<>(Arrays.asList(_permissions));
+        return this;
+    }
+
+    /**
+     * Setup the unix socket file permissions.
+     */
+    private void setFilePermissions(Path _path) {
+        UserPrincipalLookupService userPrincipalLookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+        try {
+            UserPrincipal userPrincipal = userPrincipalLookupService.lookupPrincipalByName(fileOwner);
+
+            if (!Util.isBlank(fileOwner)) {
+                try {
+                    if (userPrincipal != null) {
+                        Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setOwner(userPrincipal);
+                    }
+                } catch (IOException _ex) {
+                    LOGGER.error("Could not change owner of {} to {}", _path, fileOwner, _ex);
+                }
+            }
+
+            if (!Util.isBlank(fileGroup)) {
+                try {
+                    GroupPrincipal groupPrincipal = userPrincipalLookupService.lookupPrincipalByGroupName(fileGroup);
+                    if (groupPrincipal != null) {
+                        Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(groupPrincipal);
+                    }
+                } catch (IOException _ex) {
+                    LOGGER.error("Could not change group of {} to {}", _path, fileGroup, _ex);
+                }
+            }
+
+            if (!Util.isWindows() && fileUnixPermissions != null) {
+                try {
+                    Files.setPosixFilePermissions(_path, fileUnixPermissions);
+                } catch (Exception _ex) {
+                    LOGGER.error("Could not set file permissions of {} to {}", _path, fileUnixPermissions, _ex);
+                }
+            }
+
+        } catch (IOException _ex) {
+            LOGGER.error("Not setting any permission/user/group: Error getting default principal lookup service", _ex);
+        }
+
+    }
+
+    /**
      * Create the transport with the previously provided configuration.
      *
      * @return {@link AbstractTransport} instance
@@ -214,6 +336,10 @@ public class TransportBuilder {
 
         if (transport == null) {
             throw new DBusException("Unknown address type " + busAddress.getType() + " or no transport provider found for bus type " + busAddress.getBusType());
+        }
+
+        if (busAddress.isListeningSocket()) {
+            setFilePermissions(new File(busAddress.getPath()).toPath());
         }
 
         if (autoConnect) {

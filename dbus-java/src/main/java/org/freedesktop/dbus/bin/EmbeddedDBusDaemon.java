@@ -3,6 +3,7 @@ package org.freedesktop.dbus.bin;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,6 +30,12 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private SaslAuthMode saslAuthMode;
+
+    private String unixSocketFileOwner;
+
+    private String unixSocketFileGroup;
+
+    private PosixFilePermission[] unixSocketFilePermissions;
 
     public EmbeddedDBusDaemon(BusAddress _address) {
         address = Objects.requireNonNull(_address, "Address required");
@@ -144,6 +151,45 @@ public class EmbeddedDBusDaemon implements Closeable {
     }
 
     /**
+     * The file owner for the created unix socket.<br>
+     * Ignored if TCP is used.<br>
+     * <br>
+     * Will only work if currently running JVM process user
+     * has suitable permissions to change the owner.
+     *
+     * @param _owner owner to set
+     */
+    public void setUnixSocketOwner(String _owner) {
+        unixSocketFileOwner = _owner;
+    }
+
+    /**
+     * The file group for the created unix socket.<br>
+     * Ignored if TCP is used.<br>
+     * <br>
+     * Will only work if currently running JVM process user
+     * has suitable permissions to change the group.
+     *
+     * @param _group group to set
+     */
+    public void setUnixSocketGroup(String _group) {
+        unixSocketFileGroup = _group;
+    }
+
+    /**
+     * The file permissions for the created unix socket.<br>
+     * Ignored if TCP is used or if the OS is Windows.<br>
+     * <br>
+     * Will only work if currently running JVM process user
+     * has suitable permissions to change the permissions.
+     *
+     * @param _permissions permissions to set
+     */
+    public void setUnixSocketPermissions(PosixFilePermission... _permissions) {
+        unixSocketFilePermissions = _permissions;
+    }
+
+    /**
      * Start listening for incoming connections.
      * <p>
      * Will throw {@link IllegalArgumentException} if a unsupported transport is used.
@@ -156,7 +202,13 @@ public class EmbeddedDBusDaemon implements Closeable {
             throw new IllegalArgumentException("Unknown or unsupported address type: " + address.getType());
         }
 
-        try (AbstractTransport transport = TransportBuilder.create(address).withSaslAuthMode(getSaslAuthMode()).withAutoConnect(false).build()) {
+        try (AbstractTransport transport = TransportBuilder.create(address)
+                .withSaslAuthMode(getSaslAuthMode())
+                .withUnixSocketFileOwner(unixSocketFileOwner)
+                .withUnixSocketFileGroup(unixSocketFileGroup)
+                .withUnixSocketFilePermissions(unixSocketFilePermissions)
+                .withAutoConnect(false)
+                .build()) {
             while (daemonThread.isRunning()) {
                 try {
                     SocketChannel s = transport.connect();
