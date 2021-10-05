@@ -149,6 +149,7 @@ public class MethodCall extends Message {
             wait(timeout);
             return reply;
         } catch (InterruptedException exI) {
+            Thread.currentThread().interrupt(); // keep interrupted state
             return reply;
         }
     }
@@ -168,6 +169,7 @@ public class MethodCall extends Message {
             wait(REPLY_WAIT_TIMEOUT);
             return reply;
         } catch (InterruptedException exI) {
+            Thread.currentThread().interrupt(); // keep interrupted state
             return reply;
         }
     }
