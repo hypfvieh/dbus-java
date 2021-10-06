@@ -270,7 +270,7 @@ public class ExportedObject {
                 toCheck.add(superClass);
             }
 
-            List<Class<?>> interfaces = List.of(clazz.getInterfaces());
+            List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
             if (clazz.isInterface() && interfaces.contains(DBusInterface.class)) {
                 // clazz is interface and directly extends the DBusInterface
                 result.add(clazz);
