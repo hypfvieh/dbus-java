@@ -62,7 +62,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
                     <configuration>
-                        <additionalparam>-Xdoclint:none</additionalparam>
+                        <doclint>none</doclint>
                         <!--  required because multi-release artifact will fuck up javadoc generation -->
                         <failOnError>false</failOnError>
                         <failOnWarnings>false</failOnWarnings>

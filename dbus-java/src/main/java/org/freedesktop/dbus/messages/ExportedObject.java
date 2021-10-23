@@ -151,6 +151,8 @@ public class ExportedObject {
      *
      * @param c input interface
      * @return xml with method definitions
+     *
+     * @throws DBusException if marshalling fails
      */
     protected String generateMethodsXml(Class<?> c) throws DBusException {
         StringBuilder sb = new StringBuilder();
