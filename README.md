@@ -34,6 +34,7 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 #### Changes
 
 ##### Changes in 4.0.0 (not yet released):
+   - Requires at least **Java 11**
    - Splitted dbus-java to multiple modules:
       - dbus-java-core: Core dbus-java functions (always required)
       - dbus-java-transport-jnr-unixsocket: Unix socket support based on jnr-unixsocket
