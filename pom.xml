@@ -24,7 +24,6 @@
         <module>dbus-java-core</module>
         <module>dbus-java-osgi</module>
         <module>dbus-java-utils</module>
-        <module>dbus-java-transport-native-unixsocket</module>
         <module>dbus-java-transport-jnr-unixsocket</module>
         <module>dbus-java-transport-tcp</module>
         <module>dbus-java-tests</module>
@@ -417,6 +416,15 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>jdk-16-available</id>
+            <activation>
+                <jdk>16</jdk>
+            </activation>
+            <modules>
+                <module>dbus-java-transport-native-unixsocket</module>
+            </modules>
         </profile>
     </profiles>
 </project>

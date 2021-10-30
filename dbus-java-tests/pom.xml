@@ -58,7 +58,7 @@
                             <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
-                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>
+                                <classpathDependencyExclude>${project.groupId}:${dbus-java.transport.exclude}</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
                     </execution>
@@ -113,12 +113,6 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.github.hypfvieh</groupId>
-            <artifactId>dbus-java-transport-native-unixsocket</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
         
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -132,5 +126,25 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>jdk-16-available</id>
+            <activation>
+                <jdk>16</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.hypfvieh</groupId>
+                    <artifactId>dbus-java-transport-native-unixsocket</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <properties>
+                <dbus-java.transport.exclude>dbus-java-transport-jnr-unixsocket</dbus-java.transport.exclude>
+            </properties>
+        </profile>
+    </profiles>
     
 </project>
