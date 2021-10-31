@@ -195,8 +195,15 @@ public abstract class AbstractTransport implements Closeable {
 
     @Override
     public void close() throws IOException {
-        inputReader.close();
-        outputWriter.close();
+        if (inputReader != null) {
+            inputReader.close();
+            inputReader = null;
+        }
+
+        if (outputWriter != null) {
+            outputWriter.close();
+            outputWriter = null;
+        }
     }
 
 }

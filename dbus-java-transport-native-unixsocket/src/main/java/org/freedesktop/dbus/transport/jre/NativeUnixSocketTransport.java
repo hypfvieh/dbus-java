@@ -85,6 +85,8 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
     public void close() throws IOException {
         getLogger().debug("Disconnecting Transport");
 
+        super.close();
+
         if (socket != null && socket.isOpen()) {
             socket.close();
         }
@@ -92,8 +94,6 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
         }
-
-        super.close();
     }
 
     @Override

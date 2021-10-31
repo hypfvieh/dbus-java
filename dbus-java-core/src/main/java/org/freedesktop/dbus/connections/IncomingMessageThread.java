@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.connections;
 
 import java.util.Objects;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.FatalException;
@@ -44,9 +45,9 @@ public class IncomingMessageThread extends Thread {
 
                     msg = null;
                 }
-            } catch (DBusException _ex) {
+            } catch (DBusException | RejectedExecutionException _ex) {
                 if (_ex instanceof FatalException) {
-                    logger.error("FatalException in connection thread.", _ex);
+                    logger.error("FatalException in connection thread", _ex);
                     if (connection.isConnected()) {
                         terminate();
                         connection.disconnect();
@@ -55,7 +56,7 @@ public class IncomingMessageThread extends Thread {
                 }
 
                 if (!terminate) { // only log exceptions if the connection was not intended to be closed
-                    logger.error("Exception in connection thread.", _ex);
+                    logger.error("Exception in connection thread", _ex);
                 }
             }
         }

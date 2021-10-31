@@ -56,28 +56,28 @@ public class Message {
     /** Steps to increment the buffer array. */
     private static final int  BUFFERINCREMENT = 20;
 
-    private final Logger      logger          = LoggerFactory.getLogger(getClass());
+    protected static long globalserial = 0;
 
-    protected static long     globalserial    = 0;
+    private final Logger               logger          = LoggerFactory.getLogger(getClass());
+    private final List<FileDescriptor> filedescriptors = new ArrayList<>();
 
-    private byte[][]          wiredata;
-    private long              bytecounter;
-    private Map<Byte, Object> headers;
-    private List<FileDescriptor> filedescriptors;
+    private byte[][]                   wiredata        = new byte[BUFFERINCREMENT][];
+    private long                       bytecounter     = 0;
+    private Map<Byte, Object>          headers         = new HashMap<>();
 
-    private long              serial;
-    private byte              type;
-    private byte              flags;
-    private byte              protover;
+    private long serial;
+    private byte type;
+    private byte flags;
+    private byte protover;
 
-    private boolean           big;
-    private Object[]          args;
-    private byte[]            body;
-    private long              bodylen         = 0;
-    private int               preallocated    = 0;
-    private int               paofs           = 0;
-    private byte[]            pabuf;
-    private int               bufferuse       = 0;
+    private boolean  big;
+    private Object[] args;
+    private byte[]   body;
+    private long     bodylen      = 0;
+    private int      preallocated = 0;
+    private int      paofs        = 0;
+    private byte[]   pabuf;
+    private int      bufferuse    = 0;
 
     /**
      * Returns the name of the given header field.
@@ -119,11 +119,8 @@ public class Message {
      * @throws DBusException on error
      */
     protected Message(byte endian, byte _type, byte _flags) throws DBusException {
-        wiredata = new byte[BUFFERINCREMENT][];
-        headers = new HashMap<>();
-        filedescriptors = new ArrayList<>();
+        this();
         big = (Endian.BIG == endian);
-        bytecounter = 0;
         synchronized (Message.class) {
             serial = ++globalserial;
         }
@@ -140,10 +137,6 @@ public class Message {
      * Create a blank message. Only to be used when calling populate.
      */
     protected Message() {
-        wiredata = new byte[BUFFERINCREMENT][];
-        headers = new HashMap<>();
-        filedescriptors = new ArrayList<>();
-        bytecounter = 0;
     }
 
     /**
@@ -154,7 +147,7 @@ public class Message {
      * @param _body D-Bus serialized data of the signature defined in headers.
      */
     @SuppressWarnings("unchecked")
-    void populate(byte[] _msg, byte[] _headers, byte[] _body, List<FileDescriptor> descriptors) throws DBusException {
+    void populate(byte[] _msg, byte[] _headers, byte[] _body, List<FileDescriptor> _descriptors) throws DBusException {
         big = (_msg[0] == Endian.BIG);
         type = _msg[1];
         flags = _msg[2];
@@ -167,7 +160,10 @@ public class Message {
         bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 4)[0]).longValue();
         serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 8)[0]).longValue();
         bytecounter = _msg.length + _headers.length + _body.length;
-        filedescriptors = descriptors;
+        filedescriptors.clear();
+        if (_descriptors != null) {
+            filedescriptors.addAll(_descriptors);
+        }
 
         logger.trace("Message header: {}", Hexdump.toAscii(_headers));
         Object[] hs = extract("a(yv)", _headers, 0);

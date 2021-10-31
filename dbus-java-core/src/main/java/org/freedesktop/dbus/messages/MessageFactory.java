@@ -14,7 +14,7 @@ public class MessageFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageFactory.class);
 
-    public static Message createMessage(byte _type, byte[] _buf, byte[] _header, byte[] _body, List<FileDescriptor> filedescriptors) throws DBusException, MessageTypeException {
+    public static Message createMessage(byte _type, byte[] _buf, byte[] _header, byte[] _body, List<FileDescriptor> _filedescriptors) throws DBusException, MessageTypeException {
         Message m;
         switch (_type) {
             case Message.MessageType.METHOD_CALL:
@@ -39,7 +39,7 @@ public class MessageFactory {
             LOGGER.trace(Hexdump.format(_body));
         }
 
-        m.populate(_buf, _header, _body, filedescriptors);
+        m.populate(_buf, _header, _body, _filedescriptors);
         return m;
     }
 
