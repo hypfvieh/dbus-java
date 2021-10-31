@@ -7,17 +7,19 @@ Improved version of [Java-DBus library provided by freedesktop.org](https://dbus
 ### Important information when updating from dbus-java 3.x.x and earlier
 
 The new major is no drop-in replacement for 2.7.x or 3.x.x version!
-It requires code changes and at least *Java 11*.
+It requires code changes and at least **Java 11**.
 
 Main difference is the separation of dbus-java functions (now called dbus-java-core) and the transports.
 A transport provides the code to connect to DBus daemon on various ways (e.g. unix socket or TCP).
 
 When updating to 4.x you have to add at least one transport to your project.
 If you add a unix socket transport, you have to choose between jnr-unixsocket and native-unixsocket.
-The later will require *Java 16+*, while jnr-unixsockets will work with Java 11 but will pull-in jnr-posix and friends to your project.
+The later will require **Java 16+**, while jnr-unixsockets will work with Java 11 but will pull-in jnr-posix and friends to your project.
 
 The native-unixsockets will work almost like the jnr-unixsockets except it does not support abstract unixsockets.
 If you don't know what abstract unixsockets are, you'll probably don't need it and you can use native-unixsockets when using proper Java version.
+
+If you use ```TransportFactory``` directly, you have to replace it with ```TransportBuilder```.
 
 ### Note to SPI providers
 If you have used the SPI to extend the MessageReader/Writer of dbus-java, you have to update your code.
@@ -32,12 +34,13 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 #### Changes
 
 ##### Changes in 4.0.0 (not yet released):
+   - Requires at least **Java 11**
    - Splitted dbus-java to multiple modules:
-	- dbus-java-core: Core dbus-java functions (always required)
-	- dbus-java-transport-jnr-unixsocket: Unix socket support based on jnr-unixsocket
-	- dbus-java-transport-native-unixsocket: Unix socket support based on native unix sockets (Java 16+ required)
-	- dbus-java-transport-tcp: TCP based DBus messaging
-	- dbus-java-utils: utilities which may help during development
+      - dbus-java-core: Core dbus-java functions (always required)
+      - dbus-java-transport-jnr-unixsocket: Unix socket support based on jnr-unixsocket
+      - dbus-java-transport-native-unixsocket: Unix socket support based on native unix sockets (Java 16+ required)
+      - dbus-java-transport-tcp: TCP based DBus messaging
+      - dbus-java-utils: utilities which may help during development
 
 ##### Changes in 3.3.1 (Released: 2021-10-23):
    - Fixed some issues in InterfaceCodeGenerator related to signal constructors, thanks to [poeschel](https://github.com/poeschel) ([PR#146](https://github.com/hypfvieh/dbus-java/pull/146))
