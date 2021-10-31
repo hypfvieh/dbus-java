@@ -418,13 +418,13 @@
             </build>
         </profile>
         <profile>
-            <id>jdk-16-available</id>
+            <id>build-native-transport</id>
             <activation>
-                <jdk>16</jdk>
+                <jdk>[16,)</jdk>
             </activation>
             <modules>
                 <module>dbus-java-transport-native-unixsocket</module>
-            </modules>
+            </modules>            
         </profile>
     </profiles>
 </project>
