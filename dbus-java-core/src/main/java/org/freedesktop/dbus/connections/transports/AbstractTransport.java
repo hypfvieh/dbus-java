@@ -132,7 +132,7 @@ public abstract class AbstractTransport implements Closeable {
             _sock.close();
             throw new AuthenticationException("Failed to authenticate");
         }
-        fileDescriptorSupported = sasl.isFileDescriptorSupported();
+        fileDescriptorSupported = sasl.isFileDescriptorSupported(); // false if server does not support file descriptors
     }
 
     /**
@@ -165,6 +165,7 @@ public abstract class AbstractTransport implements Closeable {
             logger.debug("No alternative ISocketProvider found, using built-in implementation");
             inputReader = new InputStreamMessageReader(_socket);
             outputWriter = new OutputStreamMessageWriter(_socket);
+            fileDescriptorSupported = false; // internal implementation does not support file descriptors even if server allows it
         }
 
     }
