@@ -4,7 +4,7 @@ import java.lang.ref.WeakReference;
 
 /**
  * An alternative to a WeakReference when you don't want
- * that behaviour.
+ * that behavior.
  */
 public class StrongReference<T> extends WeakReference<T> {
     private T referant;
