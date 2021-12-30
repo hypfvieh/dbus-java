@@ -23,6 +23,7 @@
 <body>
     <links>
       <item name="GitHub Repository" href="https://www.github.com/hypfvieh/dbus-java" />
+      <item name="GitHub Wiki" href="https://www.github.com/hypfvieh/dbus-java/wiki" />
       <item name="Maven Central" href="https://search.maven.org/search?q=g:com.github.hypfvieh%20dbus-java" />
     </links>
     

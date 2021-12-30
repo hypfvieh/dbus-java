@@ -35,15 +35,19 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
 
 #### Changes
-
-##### Changes in 4.0.0 (not yet released):
+##### Changes in 4.0.1 (not yet released):
+   - Nothing yet
+   
+##### Changes in 4.0.0 (2021-12-30):
    - Requires at least **Java 11**
+   - Added transport which uses native unix sockets provided by Java 16+ (see: [#145](https://github.com/hypfvieh/dbus-java/issues/145))
    - Splitted dbus-java to multiple modules:
       - dbus-java-core: Core dbus-java functions (always required)
       - dbus-java-transport-jnr-unixsocket: Unix socket support based on jnr-unixsocket
       - dbus-java-transport-native-unixsocket: Unix socket support based on native unix sockets (Java 16+ required)
       - dbus-java-transport-tcp: TCP based DBus messaging
       - dbus-java-utils: utilities which may help during development
+   - Updated dependencies
 
 ##### Changes in 3.3.1 (Released: 2021-10-23):
    - Fixed some issues in InterfaceCodeGenerator related to signal constructors, thanks to [poeschel](https://github.com/poeschel) ([PR#146](https://github.com/hypfvieh/dbus-java/pull/146))
