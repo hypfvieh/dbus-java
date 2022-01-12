@@ -150,6 +150,10 @@ public class ExportedObjectTest {
 
     public static class NoInterface implements DBusInterface {
 
+        public void why() {
+
+        }
+
         @Override
         public String getObjectPath() {
             return "/test";
