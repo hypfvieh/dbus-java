@@ -1,0 +1,14 @@
+<project	xmlns="http://maven.apache.org/DECORATION/1.4.0"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 https://maven.apache.org/xsd/decoration-1.4.0.xsd"
+			name="dbus-java">
+
+<version position="right"/>
+
+<body>
+    <menu ref="reports"/>
+    <menu ref="parent"/>
+</body>
+
+</project>
+

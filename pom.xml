@@ -238,7 +238,7 @@
         </repository>
 	    <site>
 	      <id>local</id>
-	      <url>file://${project.build.directory}/site-prepared</url>
+	      <url>file://${java.io.tmpdir}/site-prepared</url>
 	    </site>
     </distributionManagement>
 
