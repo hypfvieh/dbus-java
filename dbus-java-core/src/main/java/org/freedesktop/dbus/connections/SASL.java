@@ -23,6 +23,7 @@ import java.util.Random;
 
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.Util;
@@ -243,7 +244,7 @@ public class SASL {
             return new Command(sb.toString());
         } catch (Exception e) {
             logger.error("Cannot create command.", e);
-            return new Command();
+            throw new AuthenticationException("Failed to authenticate.", e);
         }
     }
 
