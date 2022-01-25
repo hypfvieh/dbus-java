@@ -39,6 +39,7 @@ See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
 #### Changes
 ##### Changes in 4.0.1 (not yet released):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
+   - Throw AuthenticationException when SASL command was unreadable during logon handshake, thanks to [brett-smith](https://github.com/brett-smith) ([PR#158](https://github.com/hypfvieh/dbus-java/issues/158))
    
 ##### Changes in 4.0.0 (2021-12-30):
    - Requires at least **Java 11**
