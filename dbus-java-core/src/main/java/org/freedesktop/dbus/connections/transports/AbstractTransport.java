@@ -128,9 +128,13 @@ public abstract class AbstractTransport implements Closeable {
      */
     private void authenticate(SocketChannel _sock) throws IOException {
         SASL sasl = new SASL(hasFileDescriptorSupport());
-        if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock, this)) {
+        try {
+            if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock, this)) {
+                throw new AuthenticationException("Failed to authenticate");
+            }
+        } catch (IOException e) {
             _sock.close();
-            throw new AuthenticationException("Failed to authenticate");
+            throw e;
         }
         fileDescriptorSupported = sasl.isFileDescriptorSupported(); // false if server does not support file descriptors
     }
