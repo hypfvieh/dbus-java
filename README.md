@@ -36,7 +36,7 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 ### Who uses dbus-java?
 See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
 
-### Sponsoring
+### Sponsorship
 [![Logonbox](.github/logonbox-new-logo-black.png "LogonBox")](https://www.logonbox.com)  
 This project receives code contributions and donations from [LogonBox](https://www.logonbox.com).     
 However [LogonBox](https://www.logonbox.com) is not responsible for this project and does not take influence in the development.  
