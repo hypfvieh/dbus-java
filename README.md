@@ -33,10 +33,16 @@ uses the old java.io socket API.
 With dbus-java 4.x, java.nio is used for all transports and therefore required changes on the SPI.
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
 
-#### Who uses dbus-java?
+### Who uses dbus-java?
 See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
 
-#### Changes
+### Sponsoring
+[![Logonbox](.github/logonbox-new-logo-black.png "LogonBox")](https://www.logonbox.com)  
+This project receives code contributions and donations from [LogonBox](https://www.logonbox.com).     
+However [LogonBox](https://www.logonbox.com) is not responsible for this project and does not take influence in the development.  
+The library will remain open source and MIT licensed and can still be used, forked or modified for free.
+
+### Changes
 ##### Changes in 4.0.1 (not yet released):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
    - Throw AuthenticationException when SASL command was unreadable during logon handshake, thanks to [brett-smith](https://github.com/brett-smith) ([PR#158](https://github.com/hypfvieh/dbus-java/issues/158))
