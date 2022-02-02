@@ -238,6 +238,18 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
+     * Change the number of worker threads to receive method calls and handle signals. Default is 4 threads
+     *
+     * @param _newPoolSize
+     *            The new number of worker Threads to use.
+     * @deprecated does nothing as threading has been changed significantly
+     */
+    @Deprecated
+    public void changeThreadCount(byte _newPoolSize) {
+        
+    }
+    
+    /**
      * If set to true the bus will not hold a strong reference to exported objects. If they go out of scope they will
      * automatically be unexported from the bus. The default is to hold a strong reference, which means objects must be
      * explicitly unexported before they will be garbage collected.
