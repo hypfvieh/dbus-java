@@ -357,7 +357,6 @@ public final class DBusConnection extends AbstractConnection {
 
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();
-        addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.Local.Disconnected.class, h);
         addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
@@ -1117,21 +1116,7 @@ public final class DBusConnection extends AbstractConnection {
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
-            if (_signal instanceof org.freedesktop.dbus.interfaces.Local.Disconnected) {
-                logger.debug("Handling Disconnected signal from bus");
-                try {
-                    Error err = new Error("org.freedesktop.DBus.Local", "org.freedesktop.DBus.Local.Disconnected", 0,
-                            "s", new Object[] {
-                                    "Disconnected"
-                            });
-                    cleanupPendingCalls(err, false);
-
-                    synchronized (getPendingErrorQueue()) {
-                        getPendingErrorQueue().add(err);
-                    }
-                } catch (DBusException exDb) {
-                }
-            } else if (_signal instanceof org.freedesktop.dbus.interfaces.DBus.NameAcquired) {
+             if (_signal instanceof org.freedesktop.dbus.interfaces.DBus.NameAcquired) {
                 synchronized (busnames) {
                     busnames.add(((org.freedesktop.dbus.interfaces.DBus.NameAcquired) _signal).name);
                 }
