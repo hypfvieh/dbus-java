@@ -310,7 +310,6 @@ public final class Profile {
                 conn.exportObject("/Profiler", pi);
                 Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
                 Peer peer = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Peer.class);
-                conn.changeThreadCount((byte) 1);
 
                 long start = System.currentTimeMillis();
                 int count = 0;

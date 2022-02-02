@@ -15,10 +15,10 @@ public class IncomingMessageThread extends Thread {
     private volatile boolean         terminate;
     private final AbstractConnection connection;
 
-    public IncomingMessageThread(AbstractConnection _connection) {
+    public IncomingMessageThread(AbstractConnection _connection, BusAddress _busAddress) {
         Objects.requireNonNull(_connection);
         connection = _connection;
-        setName("DBusConnection");
+        setName("DBusConnection [listener=" + _busAddress.isListeningSocket() + "]");
         setDaemon(true);
     }
 
@@ -47,9 +47,12 @@ public class IncomingMessageThread extends Thread {
                 }
             } catch (DBusException | RejectedExecutionException _ex) {
                 if (_ex instanceof FatalException) {
+                    if (terminate) { // requested termination, ignore failures
+                        return;
+                    }
                     logger.error("FatalException in connection thread", _ex);
                     if (connection.isConnected()) {
-                        terminate();
+                        terminate = true;
                         connection.disconnect();
                     }
                     return;

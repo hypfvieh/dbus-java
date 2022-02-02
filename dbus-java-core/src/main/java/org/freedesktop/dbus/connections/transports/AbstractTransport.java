@@ -88,6 +88,15 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
+     * Returns true if inputReader and outputWriter are not yet closed.
+     * @return boolean
+     */
+    public synchronized boolean isConnected() {
+        return outputWriter != null && !outputWriter.isClosed() 
+                && inputReader != null && !inputReader.isClosed();
+    }
+    
+    /**
      * Method to indicate if passing of file descriptors is allowed.
      *
      * @return true to allow FD passing, false otherwise

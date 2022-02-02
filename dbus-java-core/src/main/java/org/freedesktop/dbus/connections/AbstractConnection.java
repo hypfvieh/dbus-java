@@ -23,10 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import org.freedesktop.dbus.DBusAsyncReply;
@@ -67,10 +64,6 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractConnection implements Closeable {
 
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
-    /**
-     * Default thread pool size.
-     */
-    private static final int THREADCOUNT            = 4;
     /**
      * Connect timeout, used for TCP only.
      */
@@ -114,15 +107,14 @@ public abstract class AbstractConnection implements Closeable {
     // private final SenderThread senderThread;
 
     private final ExecutorService                                               senderService;
+    private final ReceivingService                                              receivingService;
 
     private boolean                                                             weakreferences       = false;
-    private volatile boolean                                                    connected            = false;
 
     private AbstractTransport                                                   transport;
-    private volatile ThreadPoolExecutor                                         workerThreadPool;
-    private final ReadWriteLock                                                 workerThreadPoolLock =
-            new ReentrantReadWriteLock();
-
+    
+    private volatile boolean disconnecting = false;
+    
     private final TransportBuilder transportBuilder;
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
@@ -138,21 +130,19 @@ public abstract class AbstractConnection implements Closeable {
         callbackManager = new PendingCallbackManager();
 
         pendingErrorQueue = new ConcurrentLinkedQueue<>();
-        workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREADCOUNT,
-                        new NameableThreadFactory("DBus Worker Thread-", false));
 
+        receivingService = new ReceivingService();
         senderService =
                 Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
 
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
 
-        readerThread = new IncomingMessageThread(this);
-
+        transportBuilder = TransportBuilder.create(address);
+        readerThread = new IncomingMessageThread(this, transportBuilder.getAddress());
+        
         try {
-            transportBuilder = TransportBuilder.create(address);
             transport = transportBuilder.withTimeout(timeout).build();
-            connected = true;
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
             disconnect();
@@ -223,30 +213,6 @@ public abstract class AbstractConnection implements Closeable {
      */
     protected void listen() {
         readerThread.start();
-    }
-
-    /**
-     * Change the number of worker threads to receive method calls and handle signals. Default is 4 threads
-     *
-     * @param _newPoolSize
-     *            The new number of worker Threads to use.
-     */
-    public void changeThreadCount(byte _newPoolSize) {
-        if (workerThreadPool.getMaximumPoolSize() != _newPoolSize) {
-            workerThreadPoolLock.writeLock().lock();
-            try {
-                List<Runnable> remainingTasks = workerThreadPool.shutdownNow(); // kill previous threadpool
-                workerThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(_newPoolSize,
-                    new NameableThreadFactory("DbusWorkerThreads", false));
-                // re-schedule previously waiting tasks
-                for (Runnable runnable : remainingTasks) {
-                    workerThreadPool.execute(runnable);
-                }
-            } finally {
-                workerThreadPoolLock.writeLock().unlock();
-            }
-
-        }
     }
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
@@ -387,6 +353,10 @@ public abstract class AbstractConnection implements Closeable {
 			}
     	};
 
+    	if (!isConnected()) {
+    	    throw new NotConnected("Cannot send message: Not connected");
+    	}
+    	
     	senderService.execute(runnable);
     }
 
@@ -535,20 +505,11 @@ public abstract class AbstractConnection implements Closeable {
      */
     private synchronized void internalDisconnect() {
 
-        if (connected == false) { // already disconnected
+        if (!isConnected()) { // already disconnected
             logger.debug("Ignoring disconnect, already disconnected");
             return;
         }
-
-        // stop the main thread
-        connected = false;
-
-        logger.debug("Sending disconnected signal");
-        try {
-            handleMessage(new org.freedesktop.dbus.interfaces.Local.Disconnected("/"), false);
-        } catch (Exception ex) {
-            logger.debug("Exception while disconnecting", ex);
-        }
+        disconnecting = true;
 
         logger.debug("Disconnecting Abstract Connection");
 
@@ -556,17 +517,7 @@ public abstract class AbstractConnection implements Closeable {
         readerThread.terminate();
 
         // terminate the signal handling pool
-        workerThreadPoolLock.writeLock().lock();
-        try {
-            // try to wait for all pending tasks.
-            workerThreadPool.shutdown();
-            workerThreadPool.awaitTermination(10, TimeUnit.SECONDS); // 10 seconds should be enough, otherwise fail
-
-        } catch (InterruptedException _ex) {
-            logger.debug("Interrupted while waiting for worker threads to be terminated.", _ex);
-        } finally {
-            workerThreadPoolLock.writeLock().unlock();
-        }
+        receivingService.shutdown(10, TimeUnit.SECONDS);
 
         // shutdown sender executor service, send all remaining messages in main thread
         for (Runnable runnable : senderService.shutdownNow()) {
@@ -584,14 +535,8 @@ public abstract class AbstractConnection implements Closeable {
         }
 
         // stop all the workers
-        workerThreadPoolLock.writeLock().lock();
-        try {
-            if (!workerThreadPool.isTerminated()) { // try forceful shutdown
-                workerThreadPool.shutdownNow();
-            }
-        } finally {
-            workerThreadPoolLock.writeLock().unlock();
-        }
+        receivingService.shutdownNow();
+        disconnecting = false;
     }
 
     /**
@@ -854,7 +799,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             }
         };
-        executeInWorkerThreadPool(r);
+        receivingService.execMethodCallHandler(r);
     }
 
     /**
@@ -929,7 +874,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             };
             if (_useThreadPool) {
-                executeInWorkerThreadPool(command);
+                receivingService.execSignalHandler(command);
             } else {
                 command.run();
             }
@@ -945,19 +890,10 @@ public abstract class AbstractConnection implements Closeable {
                 }
             };
             if (_useThreadPool) {
-                executeInWorkerThreadPool(command);
+                receivingService.execSignalHandler(command);
             } else {
                 command.run();
             }
-        }
-    }
-
-    private void executeInWorkerThreadPool(Runnable _task) {
-        workerThreadPoolLock.readLock().lock();
-        try {
-            workerThreadPool.execute(_task);
-        } finally {
-            workerThreadPoolLock.readLock().unlock();
         }
     }
 
@@ -999,7 +935,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                     }
                 };
-                executeInWorkerThreadPool(command);
+                receivingService.execErrorHandler(command);
             }
 
         } else {
@@ -1058,7 +994,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                     }
                 };
-                executeInWorkerThreadPool(r);
+                receivingService.execMethodReturnHandler(r);
             }
 
         } else {
@@ -1080,7 +1016,7 @@ public abstract class AbstractConnection implements Closeable {
      */
     private void sendMessageInternally(Message _message) {
         try {
-            if (!connected) {
+            if (!isConnected()) {
                 throw new NotConnected("Disconnected");
             }
             if (_message instanceof DBusSignal) {
@@ -1139,18 +1075,20 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     Message readIncoming() throws DBusException {
-        if (!connected) {
-            //throw new NotConnected("No transport present");
+        if (!isConnected()) {
             return null;
         }
         Message m = null;
         try {
             m = transport.readMessage();
         } catch (IOException exIo) {
-            if (!connected && (exIo instanceof EOFException)) { // EOF is expected when connection is shutdown
-                return null;
+            if (exIo instanceof EOFException) {
+                if (disconnecting // when we are already disconnecting, ignore further errors
+                        || transportBuilder.getAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which is no error
+                    return null;
+                }
             }
-            if (connected) {
+            if (isConnected()) {
                 throw new FatalDBusException(exIo.getMessage());
             } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
         }
@@ -1197,7 +1135,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     public boolean isConnected() {
-        return connected;
+        return transport != null && transport.isConnected();    
     }
 
     protected Queue<Error> getPendingErrorQueue() {
@@ -1254,4 +1192,10 @@ public abstract class AbstractConnection implements Closeable {
                 Message.Endian.BIG
                 : Message.Endian.LITTLE;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[address=" + transportBuilder.getAddress() + "]";
+    }
+    
 }

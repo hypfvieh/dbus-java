@@ -39,6 +39,10 @@
                 </executions>
             </plugin>
             <plugin>
+				<!--
+					For debugging with maven:
+					mvn clean test-compile surefire:test@native-tests -Dtest=TestAll -Dmaven.surefire.debug 
+				-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <executions>

@@ -69,8 +69,6 @@ public class DirectConnection extends AbstractConnection {
         }
     }
 
-
-
     private String createMachineId() {
         String ascii;
 

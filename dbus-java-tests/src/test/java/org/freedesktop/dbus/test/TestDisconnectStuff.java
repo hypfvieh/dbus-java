@@ -28,15 +28,14 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
                 clientConnection.getRemoteObject("foo.bar.why.again.disconnect.Test", "/Test2001", SampleRemoteInterface.class);
 
 
-        /** Call a method when disconnected */
-        try {
+        assertThrows(NotConnected.class, () -> {
             clientConnection.disconnect();
             Thread.sleep(1000L);
             serverConnection.disconnect();
             Thread.sleep(1000L);
             System.out.println("getName() suceeded and returned: " + tri.getName());
             fail("Should not succeed when disconnected");
-        } catch (NotConnected exnc) {
-        }
+        });
+        
     }
 }

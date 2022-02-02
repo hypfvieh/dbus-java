@@ -21,7 +21,6 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.interfaces.Local;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -41,7 +40,6 @@ import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestRenamedSignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestSignal;
 import org.freedesktop.dbus.test.helper.signals.handler.ArraySignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.BadArraySignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.DisconnectHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.EmptySignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.GenericHandlerWithDecode;
 import org.freedesktop.dbus.test.helper.signals.handler.GenericSignalHandler;
@@ -131,8 +129,6 @@ public class TestAll extends AbstractDBusBaseTest {
         clientconn.addSigHandler(SampleSignals.TestEmptySignal.class, esh);
         clientconn.addSigHandler(SampleSignals.TestSignal.class, sigh);
         clientconn.addSigHandler(SampleSignals.TestRenamedSignal.class, rsh);
-
-        clientconn.addSigHandler(Local.Disconnected.class, new DisconnectHandler(clientconn, rsh));
 
         String source = dbus.GetNameOwner("foo.bar.Test");
 
@@ -425,10 +421,11 @@ public class TestAll extends AbstractDBusBaseTest {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         logger.debug("Doing stuff asynchronously with callback");
-        CallbackHandlerImpl cbWhichWorks = new CallbackHandlerImpl(1, 0);
+        CallbackHandlerImpl cbWhichWorks = new CallbackHandlerImpl();
         clientconn.callWithCallback(tri, "getName", cbWhichWorks);
+        
         logger.debug("Doing stuff asynchronously with callback, which throws an error");
-        CallbackHandlerImpl cbWhichThrows = new CallbackHandlerImpl(1, 0);
+        CallbackHandlerImpl cbWhichThrows = new CallbackHandlerImpl();
         clientconn.callWithCallback(tri, "getNameAndThrow", cbWhichThrows);
 
         /** call something that throws */
@@ -444,6 +441,10 @@ public class TestAll extends AbstractDBusBaseTest {
         }
 
         Thread.sleep(500L); // wait some time to let the callbacks do their work
+
+        // we do not expect any test failures
+        assertNull(cbWhichThrows.getLastError());
+        assertNull(cbWhichWorks.getLastError());
 
         assertEquals(1, cbWhichWorks.getTestHandleCalls());
         assertEquals(0, cbWhichThrows.getTestHandleCalls());
