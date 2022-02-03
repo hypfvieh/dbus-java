@@ -27,7 +27,6 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
         SampleRemoteInterface tri =
                 clientConnection.getRemoteObject("foo.bar.why.again.disconnect.Test", "/Test2001", SampleRemoteInterface.class);
 
-
         assertThrows(NotConnected.class, () -> {
             clientConnection.disconnect();
             Thread.sleep(1000L);

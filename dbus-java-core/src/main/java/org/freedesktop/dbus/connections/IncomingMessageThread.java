@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.connections;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -53,7 +54,11 @@ public class IncomingMessageThread extends Thread {
                     logger.error("FatalException in connection thread", _ex);
                     if (connection.isConnected()) {
                         terminate = true;
-                        connection.disconnect();
+                        if (_ex.getCause() instanceof IOException) {
+                            connection.internalDisconnect((IOException) _ex.getCause());    
+                        } else {
+                            connection.internalDisconnect(null);
+                        }
                     }
                     return;
                 }

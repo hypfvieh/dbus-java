@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * Service providing threads for every type of message expected to be received by DBus.
  * 
  * @author hypfvieh
- * @version 4.0.1 - 2022-02-02
+ * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
     private final Logger logger = LoggerFactory.getLogger(getClass());

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
@@ -987,7 +988,8 @@ public final class DBusConnection extends AbstractConnection {
 
 	                } else {
 	                    logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
-	                    connection.getConcurrentConnections().addAndGet(-1);
+                        Optional.ofNullable(getDisconnectCallback()).ifPresent(cb -> cb.requestedDisconnect(connection.getConcurrentConnections().get()));
+	                    connection.getConcurrentConnections().decrementAndGet();
 	                }
 	            }
 	        }

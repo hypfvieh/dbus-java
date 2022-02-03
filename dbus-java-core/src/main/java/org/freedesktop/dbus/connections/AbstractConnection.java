@@ -104,18 +104,16 @@ public abstract class AbstractConnection implements Closeable {
     private final Map<Long, MethodCall>                                         pendingCalls;
 
     private final IncomingMessageThread                                         readerThread;
-    // private final SenderThread senderThread;
-
     private final ExecutorService                                               senderService;
     private final ReceivingService                                              receivingService;
+    private final TransportBuilder                                              transportBuilder;
 
     private boolean                                                             weakreferences       = false;
+    private volatile boolean                                                    disconnecting        = false;
 
     private AbstractTransport                                                   transport;
-    
-    private volatile boolean disconnecting = false;
-    
-    private final TransportBuilder transportBuilder;
+
+    private Optional<IDisconnectCallback>                                       disconnectCallback = Optional.ofNullable(null);
 
     protected AbstractConnection(String address, int timeout) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
@@ -145,7 +143,9 @@ public abstract class AbstractConnection implements Closeable {
             transport = transportBuilder.withTimeout(timeout).build();
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
-            disconnect();
+            if (_ex instanceof IOException) {
+                internalDisconnect((IOException) _ex);
+            }
             throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }
     }
@@ -244,7 +244,7 @@ public abstract class AbstractConnection implements Closeable {
      *            The new number of worker Threads to use.
      * @deprecated does nothing as threading has been changed significantly
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "4.1.0")
     public void changeThreadCount(byte _newPoolSize) {
         
     }
@@ -503,7 +503,7 @@ public abstract class AbstractConnection implements Closeable {
         if (_before != null) {
             _before.perform();
         }
-        internalDisconnect();
+        internalDisconnect(null);
         if (_after != null) {
             _after.perform();
         }
@@ -514,8 +514,10 @@ public abstract class AbstractConnection implements Closeable {
      * This method is private as it should never be overwritten by subclasses,
      * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)}
      * which then will cause a StackOverflowError.
+     * 
+     * @param _connectionError exception caused the disconnection (null if intended disconnect)
      */
-    private synchronized void internalDisconnect() {
+    protected final synchronized void internalDisconnect(IOException _connectionError) {
 
         if (!isConnected()) { // already disconnected
             logger.debug("Ignoring disconnect, already disconnected");
@@ -525,6 +527,11 @@ public abstract class AbstractConnection implements Closeable {
 
         logger.debug("Disconnecting Abstract Connection");
 
+        disconnectCallback.ifPresent(cb -> {
+            Optional.ofNullable(_connectionError)
+                .ifPresentOrElse(ex -> cb.disconnectOnError(ex), () -> cb.requestedDisconnect(null));
+        });
+                
         // stop reading new messages
         readerThread.terminate();
 
@@ -555,7 +562,7 @@ public abstract class AbstractConnection implements Closeable {
      * Disconnect from the Bus.
      */
     public synchronized void disconnect() {
-        internalDisconnect();
+        internalDisconnect(null);
     }
 
     /**
@@ -1081,7 +1088,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             }
             if (e instanceof IOException) {
-                disconnect();
+                internalDisconnect((IOException) e);
             }
         }
     }
@@ -1097,11 +1104,13 @@ public abstract class AbstractConnection implements Closeable {
             if (exIo instanceof EOFException) {
                 if (disconnecting // when we are already disconnecting, ignore further errors
                         || transportBuilder.getAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which is no error
+                    
+                    disconnectCallback.ifPresent(cb -> cb.clientDisconnect());
                     return null;
                 }
             }
             if (isConnected()) {
-                throw new FatalDBusException(exIo.getMessage());
+                throw new FatalDBusException(exIo);
             } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
         }
         return m;
@@ -1203,6 +1212,25 @@ public abstract class AbstractConnection implements Closeable {
        return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
                 Message.Endian.BIG
                 : Message.Endian.LITTLE;
+    }
+
+    /**
+     * Returns the currently configured disconnect callback.
+     * 
+     * @return callback or null if no callback registered
+     */
+    public IDisconnectCallback getDisconnectCallback() {
+        return disconnectCallback.orElse(null);
+    }
+
+    /**
+     * Set the callback which will be notified when a disconnection happens.
+     * Use null to remove.
+     * 
+     * @param _disconnectCallback callback to execute or null to remove
+     */
+    public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
+        disconnectCallback = Optional.ofNullable(_disconnectCallback);
     }
 
     @Override
