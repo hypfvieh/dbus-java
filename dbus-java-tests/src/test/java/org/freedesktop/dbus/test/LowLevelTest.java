@@ -7,13 +7,13 @@ import java.util.Properties;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.AddressBuilder;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +71,7 @@ public class LowLevelTest extends AbstractDBusBaseTest {
                 display = display.substring(display.indexOf(':'));
             }
 
-            String uuid = DBusConnection.getDbusMachineId();
+            String uuid = AddressBuilder.getDbusMachineId(null);
             String homedir = System.getProperty("user.home");
             File addressfile = new File(homedir + "/.dbus/session-bus",
                     uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
