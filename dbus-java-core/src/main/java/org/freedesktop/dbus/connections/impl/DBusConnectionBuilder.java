@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.AddressBuilder;
@@ -59,6 +60,35 @@ public class DBusConnectionBuilder {
      */
     public static DBusConnectionBuilder forSessionBus() {
         return forSessionBus(null);
+    }
+    
+    /**
+     * Create a default connection to DBus using the given bus type.
+     * 
+     * @param _type bus type
+     * 
+     * @return this
+     */
+    public static DBusConnectionBuilder forType(DBusBusType _type) {
+        return forType(_type, null);
+    }
+
+    /**
+     * Create a default connection to DBus using the given bus type and machineIdFile.
+     * 
+     * @param _type bus type
+     * @param _machineIdFile machineId file
+     * 
+     * @return this
+     */
+    public static DBusConnectionBuilder forType(DBusBusType _type, String _machineIdFile) {
+        if (_type == DBusBusType.SESSION) {
+            return forSessionBus(_machineIdFile);
+        } else if (_type == DBusBusType.SYSTEM){
+            return forSystemBus();
+        }
+        
+        throw new IllegalArgumentException("Unknown bus type: " + _type);
     }
 
     /**
