@@ -9,6 +9,7 @@ the following code:
 package com.foo;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 
@@ -18,7 +19,7 @@ public class RemoteExample {
 
     RemoteExample() throws DBusException {
         /* Get a connection to the session bus so we can get data */
-        m_conn = DBusConnection.getConnection( DBusConnection.DBusBusType.SESSION );
+        m_conn = DBusConnectionBuilder.forSessionBus().build();
 
         /* Get the remote object */
         IntInterface i = m_conn.getRemoteObject( "test.dbusjava.export", "/", IntInterface.class );

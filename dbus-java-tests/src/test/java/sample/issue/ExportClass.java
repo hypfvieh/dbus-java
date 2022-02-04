@@ -2,6 +2,7 @@ package sample.issue;
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
@@ -18,7 +19,7 @@ public class ExportClass implements DBusInterface {
     }
 
     public static void main(String[] args) throws DBusException, InterruptedException, IOException{
-        try (DBusConnection conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION)) {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
             conn.requestBusName( "sample.issue" );
 
             ExportClass ex = new ExportClass();

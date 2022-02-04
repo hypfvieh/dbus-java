@@ -7,11 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.test.helper.SampleClass;
-import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
 
 public class TestDisconnectCallback extends AbstractDBusBaseTest {
@@ -20,9 +18,9 @@ public class TestDisconnectCallback extends AbstractDBusBaseTest {
     public void testDisconnectCallback() throws DBusException, InterruptedException {
         TestCallback callback = new TestCallback();
 
-        DBusConnection serverConnection = DBusConnection.getConnection(DBusBusType.SESSION);
+        DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus().build();
         serverConnection.setDisconnectCallback(callback);
-        DBusConnection clientConnection = DBusConnection.getConnection(DBusBusType.SESSION);
+        DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus().build();
         clientConnection.setDisconnectCallback(callback);
         serverConnection.setWeakReferences(true);
         clientConnection.setWeakReferences(true);

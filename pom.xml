@@ -221,7 +221,7 @@
                     </dependencies>
                     <configuration>
                         <rulesets>
-                            <ruleset>${project.site.root}/maven-root-pom/baag-maven-site-template/dev-config/pmd_rules_fixdevel.xml</ruleset>
+                            <ruleset>src/main/resources/pmd_rules.xml</ruleset>
                         </rulesets>
                     </configuration>
                 </plugin>

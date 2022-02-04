@@ -13,7 +13,7 @@ import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.errors.ServiceUnknown;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -78,8 +78,8 @@ public class TestAll extends AbstractDBusBaseTest {
 
     @BeforeEach
     public void setUp() throws DBusException {
-        serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
-        clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
+        serverconn = DBusConnectionBuilder.forSessionBus().build();
+        clientconn = DBusConnectionBuilder.forSessionBus().build();
         serverconn.setWeakReferences(true);
         clientconn.setWeakReferences(true);
         serverconn.requestBusName("foo.bar.Test");

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -125,7 +125,7 @@ public final class Profile {
                 System.out.println("Syntax: profile <pings|arrays|introspect|maps|bytes|lists|structs|signals|rate|strings>");
                 System.exit(1);
             }
-            DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION);
+            DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
             conn.requestBusName("org.freedesktop.DBus.java.profiler");
             if ("pings".equals(args[0])) {
                 int count = PING_INNER * PING_OUTER;

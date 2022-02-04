@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +15,9 @@ public class DBusConnectionTest extends AbstractDBusBaseTest {
 
         // prepare 2 independent connection
         String busName = "org.freedesktop.dbus.test.TestBus";
-        DBusConnection connection1 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TCP_CONNECT_TIMEOUT);
-        DBusConnection connection2 = DBusConnection.getConnection(DBusBusType.SESSION, false, DBusConnection.TCP_CONNECT_TIMEOUT);
+        
+        DBusConnection connection1 = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+        DBusConnection connection2 = DBusConnectionBuilder.forSessionBus().withShared(false).build();
         assertNotEquals(connection1.getUniqueName(), connection2.getUniqueName());
 
         // only one connection can have the bus

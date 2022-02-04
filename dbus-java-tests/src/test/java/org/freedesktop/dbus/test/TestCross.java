@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -45,7 +45,7 @@ public class TestCross extends AbstractDBusBaseTest {
             Thread.sleep(500L);
         }
 
-        try (DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION)){
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()){
             /* init */
             CrossTestClient client = new CrossTestClient(conn);
             conn.exportObject("/TestClient", client);
@@ -87,7 +87,7 @@ public class TestCross extends AbstractDBusBaseTest {
     private class ServerThread extends Thread {
         @Override
         public void run() {
-            try (DBusConnection conn = DBusConnection.getConnection(DBusBusType.SESSION)) {
+            try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
 
                 conn.requestBusName("org.freedesktop.DBus.Binding.TestServer");
                 cts = new CrossTestServer(conn);

@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
@@ -51,7 +52,8 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress.getRawAddress());
-            try (DBusConnection conn = DBusConnection.getConnection(busAddress.getRawAddress())) {
+            
+            try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress.getRawAddress()).build()) {
                 logger.debug("Connected to embedded DBus {}", busAddress.getRawAddress());
             } catch (Exception _ex) {
                 fail("Connection to EmbeddedDbusDaemon failed: " + _ex.getMessage());

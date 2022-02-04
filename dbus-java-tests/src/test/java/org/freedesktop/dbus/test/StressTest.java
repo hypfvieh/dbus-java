@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.junit.jupiter.api.AfterEach;
@@ -81,7 +81,7 @@ public class StressTest extends AbstractDBusBaseTest {
     private List<DBusConnection> createClientConnections(int numberOfClients) throws DBusException {
         List<DBusConnection> clientConnections = new ArrayList<>(numberOfClients);
         for (int i = 0; i < numberOfClients; i++) {
-            clientConnections.add(DBusConnection.newConnection(DBusBusType.SESSION));
+            clientConnections.add(DBusConnectionBuilder.forSessionBus().build());
         }
         return clientConnections;
     }
@@ -93,7 +93,7 @@ public class StressTest extends AbstractDBusBaseTest {
         List<DBusConnection> serviceConnections = new ArrayList<>();
         for (int i = 0; i < numberOfServices; i++) {
             RemoteObjectImpl service = new RemoteObjectImpl();
-            DBusConnection serviceConnection = DBusConnection.newConnection(DBusBusType.SESSION);
+            DBusConnection serviceConnection = DBusConnectionBuilder.forSessionBus().build();
             closeables.add(serviceConnection);
             serviceConnections.add(serviceConnection);
             serviceConnection.exportObject(OBJECT_PATH, service);

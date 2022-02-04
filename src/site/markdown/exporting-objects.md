@@ -25,6 +25,7 @@ full code that does that:
 package com.foo;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 public class ExportExample implements IntInterface {
@@ -33,7 +34,7 @@ public class ExportExample implements IntInterface {
 
     ExportExample() throws DBusException {
         /* Get a connection to the session bus so we can request a bus name */
-        m_conn = DBusConnection.getConnection( DBusConnection.DBusBusType.SESSION );
+        m_conn = DBusConnectionBuilder.forSessionBus().build();
         /* Request a unique bus name */
         m_conn.requestBusName( "test.dbusjava.export" );
         /* Export this object onto the bus using the path '/' */

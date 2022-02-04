@@ -10,19 +10,19 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>2.11.2</version>
+                <version>2.17.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.11.2</version>
+                <version>2.17.1</version>
             </dependency>
 
         </dependencies>
 
 3. Get a connection to the bus. This can be either the SESSION bus or the SYSTEM bus.
 
-        DBusConnection conn = DBusConnection.getConnection( DBusConnection.DBusType.SESSION );
+        DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
 
 4. Request bus name if you want a well-known bus name, or begin calling methods on the bus!
   You only need to request a bus name if you are expecting other people to talk

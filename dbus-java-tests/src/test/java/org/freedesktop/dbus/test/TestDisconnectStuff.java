@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.test.helper.SampleClass;
@@ -13,8 +13,8 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
     @Test
     public void testStuffAfterDisconnect() throws DBusException, InterruptedException {
 
-        DBusConnection serverConnection = DBusConnection.getConnection(DBusBusType.SESSION);
-        DBusConnection clientConnection = DBusConnection.getConnection(DBusBusType.SESSION);
+        DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus().build();
+        DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus().build();
         serverConnection.setWeakReferences(true);
         clientConnection.setWeakReferences(true);
 

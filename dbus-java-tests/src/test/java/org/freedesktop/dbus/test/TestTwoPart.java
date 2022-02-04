@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartInterface;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartObject;
@@ -25,7 +25,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
 
         try {
             System.out.println("get conn");
-            DBusConnection conn = DBusConnection.newConnection(DBusBusType.SESSION);
+            DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
 
             System.out.println("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
@@ -68,7 +68,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
         public void run() {
             DBusConnection conn;
             try {
-                conn = DBusConnection.newConnection(DBusBusType.SESSION);
+                conn = DBusConnectionBuilder.forSessionBus().build();
                 conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
                 TwoPartTestServer server = new TwoPartTestServer(conn);
                 conn.exportObject("/", server);

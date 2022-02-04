@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.test.AbstractDBusBaseTest;
@@ -65,8 +65,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@BeforeEach
 	public void setUp()  {
 		try {
-			serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
-			clientconn = DBusConnection.getConnection(DBusBusType.SESSION);
+			serverconn = DBusConnectionBuilder.forSessionBus().build();
+			clientconn = DBusConnectionBuilder.forSessionBus().build();
 			serverconn.setWeakReferences(true);
 			clientconn.setWeakReferences(true);
 
