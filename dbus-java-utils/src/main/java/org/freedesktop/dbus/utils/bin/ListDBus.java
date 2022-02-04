@@ -2,6 +2,7 @@ package org.freedesktop.dbus.utils.bin;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
 
@@ -58,7 +59,7 @@ public final class ListDBus {
             }
         }
 
-        DBusConnection conn = DBusConnection.getConnection(connection);
+        DBusConnection conn = DBusConnectionBuilder.forType(connection).build();
         DBus dbus = conn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
         String[] names = dbus.ListNames();
         for (String s : names) {

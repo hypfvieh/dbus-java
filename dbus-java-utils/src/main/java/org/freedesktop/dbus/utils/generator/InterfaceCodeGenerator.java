@@ -20,6 +20,7 @@ import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -548,7 +549,7 @@ public class InterfaceCodeGenerator {
             try {
                 logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
 
-                DBusConnection conn = DBusConnection.getConnection(busType);
+                DBusConnection conn = DBusConnectionBuilder.forType(busType).build();
 
                 Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
                 introspectionData = in.Introspect();

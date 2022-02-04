@@ -35,6 +35,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
@@ -118,7 +119,7 @@ public class DBusViewer {
                 boolean users = true, owners = true;
                 for (final String key : connectionTypes.keySet()) {
                     try {
-                        DBusConnection conn = DBusConnection.getConnection(connectionTypes.get(key));
+                        DBusConnection conn = DBusConnectionBuilder.forType(connectionTypes.get(key)).build();
                         connections.add(conn);
 
                         final TableModel tableModel = listDBusConnection(users, owners, conn);
