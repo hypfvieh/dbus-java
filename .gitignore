@@ -11,3 +11,5 @@ build
 
 dbus-java-osgi/META-INF
 dbus-java-osgi/target
+
+**/.eclipse-pmd

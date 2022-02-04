@@ -11,20 +11,20 @@ public class DBusCallInfo {
     */
     public static final int NO_REPLY = Message.Flags.NO_REPLY_EXPECTED;
     public static final int ASYNC    = 0x100;
-    private String          source;
-    private String          destination;
-    private String          objectpath;
-    private String          iface;
-    private String          method;
-    private int             flags;
+    private final String    source;
+    private final String    destination;
+    private final String    objectpath;
+    private final String    iface;
+    private final String    method;
+    private final int       flags;
 
-    public DBusCallInfo(Message m) {
-        this.source = m.getSource();
-        this.destination = m.getDestination();
-        this.objectpath = m.getPath();
-        this.iface = m.getInterface();
-        this.method = m.getName();
-        this.flags = m.getFlags();
+    public DBusCallInfo(Message _m) {
+        this.source = _m.getSource();
+        this.destination = _m.getDestination();
+        this.objectpath = _m.getPath();
+        this.iface = _m.getInterface();
+        this.method = _m.getName();
+        this.flags = _m.getFlags();
     }
 
     /** Returns the BusID which called the method.

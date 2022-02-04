@@ -3,10 +3,10 @@ package org.freedesktop.dbus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 
 public class RemoteObject {
-    private String                         busname;
-    private String                         objectpath;
-    private Class<? extends DBusInterface> iface;
-    private boolean                        autostart;
+    private final String                         busname;
+    private final String                         objectpath;
+    private final Class<? extends DBusInterface> iface;
+    private final boolean                        autostart;
 
     public RemoteObject(String _busname, String _objectpath, Class<? extends DBusInterface> _iface, boolean _autostart) {
         this.busname = _busname;
@@ -16,11 +16,11 @@ public class RemoteObject {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RemoteObject)) {
+    public boolean equals(Object _o) {
+        if (!(_o instanceof RemoteObject)) {
             return false;
         }
-        RemoteObject them = (RemoteObject) o;
+        RemoteObject them = (RemoteObject) _o;
 
         if (!them.objectpath.equals(this.objectpath)) {
             return false;

@@ -41,31 +41,31 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
     }
 
     /** Get the text file object associated with the supplied index
-     * @param index The tabbed pane index
+     * @param _index The tabbed pane index
      * @return The text file object for the referenced tab
      */
-    protected TextFile getTextFile(int index) {
-        JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(index);
+    protected TextFile getTextFile(int _index) {
+        JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(_index);
         JTextComponent textComponent = (JTextComponent) scrollPane.getViewport().getView();
         final String sourceCode = textComponent.getText();
 
-        final String fileName = getFileName(index);
+        final String fileName = getFileName(_index);
 
         TextFile textFile = new TextFile(fileName, sourceCode);
         return textFile;
     }
 
     /** Get the file name for the supplied index
-     * @param index The tabbed pane index
+     * @param _index The tabbed pane index
      * @return The file name for the referenced tab
      */
-    protected String getFileName(int index) {
-        return (index > -1) ? tabbedPane.getTitleAt(index) : "";
+    protected String getFileName(int _index) {
+        return _index > -1 ? tabbedPane.getTitleAt(_index) : "";
     }
 
     /** {@inheritDoc} */
     @Override
-    public final void actionPerformed(ActionEvent e) {
+    public final void actionPerformed(ActionEvent _event) {
 
         if (chooser == null) {
             /** Occurs on event dispatch thread, so no problems with lazy static init here */

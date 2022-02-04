@@ -406,7 +406,7 @@ public class TransportBuilder {
      * @author hypfvieh
      * @since v4.0.0 - 2021-09-17
      */
-    public static enum SaslAuthMode {
+    public enum SaslAuthMode {
         /** No authentication (allow everyone). */
         AUTH_ANONYMOUS(SASL.AUTH_ANON),
         /** Authentication using SHA Cookie. */
@@ -416,7 +416,7 @@ public class TransportBuilder {
 
         private final int authMode;
 
-        private SaslAuthMode(int _authMode) {
+        SaslAuthMode(int _authMode) {
             authMode = _authMode;
         }
 

@@ -123,7 +123,7 @@ public class ReceivingService {
      * @author hypfvieh
      * @version 4.0.1 - 2022-02-02
      */
-    static enum ExecutorNames {
+    enum ExecutorNames {
         SIGNAL("SignalExecutor"),
         ERROR("ErrorExecutor"),
         METHODCALL("MethodCallExecutor"),
@@ -131,7 +131,7 @@ public class ReceivingService {
         
         private final String description;
         
-        private ExecutorNames(String _name) {
+        ExecutorNames(String _name) {
             description = _name;
         }
 

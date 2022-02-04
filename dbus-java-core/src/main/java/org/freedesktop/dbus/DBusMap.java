@@ -17,22 +17,22 @@ public class DBusMap<K, V> implements Map<K, V> {
     }
 
     class Entry implements Map.Entry<K, V>, Comparable<Entry> {
-        private int entry;
+        private final int entry;
 
-        Entry(int i) {
-            this.entry = i;
+        Entry(int _i) {
+            this.entry = _i;
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public boolean equals(Object o) {
-            if (null == o) {
+        public boolean equals(Object _o) {
+            if (null == _o) {
                 return false;
             }
-            if (!(o instanceof DBusMap.Entry)) {
+            if (!(_o instanceof DBusMap.Entry)) {
                 return false;
             }
-            return this.entry == ((Entry) o).entry;
+            return this.entry == ((Entry) _o).entry;
         }
 
         @Override
@@ -53,13 +53,13 @@ public class DBusMap<K, V> implements Map<K, V> {
         }
 
         @Override
-        public V setValue(V value) {
+        public V setValue(V _value) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public int compareTo(Entry e) {
-            return entry - e.entry;
+        public int compareTo(Entry _e) {
+            return entry - _e.entry;
         }
     }
 
@@ -69,9 +69,9 @@ public class DBusMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(Object _key) {
         for (Object[] entrie : entries) {
-            if (key == entrie[0] || (key != null && key.equals(entrie[0]))) {
+            if (_key == entrie[0] || _key != null && _key.equals(entrie[0])) {
                 return true;
             }
         }
@@ -79,9 +79,9 @@ public class DBusMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsValue(Object value) {
+    public boolean containsValue(Object _value) {
         for (Object[] entrie : entries) {
-            if (value == entrie[1] || (value != null && value.equals(entrie[1]))) {
+            if (_value == entrie[1] || _value != null && _value.equals(entrie[1])) {
                 return true;
             }
         }
@@ -99,10 +99,10 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public V get(Object key) {
-        for (Object[] entrie : entries) {
-            if (key == entrie[0] || (key != null && key.equals(entrie[0]))) {
-                return (V) entrie[1];
+    public V get(Object _key) {
+        for (Object[] entry : entries) {
+            if (_key == entry[0] || _key != null && _key.equals(entry[0])) {
+                return (V) entry[1];
             }
         }
         return null;
@@ -124,17 +124,17 @@ public class DBusMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public V put(K key, V value) {
+    public V put(K _key, V _value) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> t) {
+    public void putAll(Map<? extends K, ? extends V> _t) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public V remove(Object key) {
+    public V remove(Object _key) {
         throw new UnsupportedOperationException();
     }
 
@@ -160,14 +160,14 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean equals(Object o) {
-        if (null == o) {
+    public boolean equals(Object _o) {
+        if (null == _o) {
             return false;
         }
-        if (!(o instanceof Map)) {
+        if (!(_o instanceof Map)) {
             return false;
         }
-        return ((Map<K, V>) o).entrySet().equals(entrySet());
+        return ((Map<K, V>) _o).entrySet().equals(entrySet());
     }
 
     @Override

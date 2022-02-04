@@ -9,7 +9,7 @@ public class MarshallingException extends DBusException implements NonFatalExcep
         super(_message, _cause);
     }
 
-    public MarshallingException(String message) {
-        super(message);
+    public MarshallingException(String _message) {
+        super(_message);
     }
 }

@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit5.version>5.8.2</junit5.version>
         <pmd.version>6.42.0</pmd.version>
+        <parentDir>${project.parent.basedir}</parentDir>
     </properties>
 
     <modules>
@@ -221,7 +222,7 @@
                     </dependencies>
                     <configuration>
                         <rulesets>
-                            <ruleset>src/main/resources/pmd_rules.xml</ruleset>
+                            <ruleset>${parentDir}/src/main/resources/pmd_rules.xml</ruleset>
                         </rulesets>
                     </configuration>
                 </plugin>

@@ -45,8 +45,8 @@ public final class ArrayFrob {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T[] wrap(Object o) throws IllegalArgumentException {
-        Class<? extends Object> ac = o.getClass();
+    public static <T> T[] wrap(Object _o) throws IllegalArgumentException {
+        Class<? extends Object> ac = _o.getClass();
         if (!ac.isArray()) {
             throw new IllegalArgumentException("Not an array");
         }
@@ -55,62 +55,62 @@ public final class ArrayFrob {
         if (null == ncc) {
             throw new IllegalArgumentException("Not a primitive type");
         }
-        T[] ns = (T[]) Array.newInstance(ncc, Array.getLength(o));
+        T[] ns = (T[]) Array.newInstance(ncc, Array.getLength(_o));
         for (int i = 0; i < ns.length; i++) {
-            ns[i] = (T) Array.get(o, i);
+            ns[i] = (T) Array.get(_o, i);
         }
         return ns;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Object unwrap(T[] ns) throws IllegalArgumentException {
-        Class<? extends T[]> ac = (Class<? extends T[]>) ns.getClass();
+    public static <T> Object unwrap(T[] _ns) throws IllegalArgumentException {
+        Class<? extends T[]> ac = (Class<? extends T[]>) _ns.getClass();
         Class<T> cc = (Class<T>) ac.getComponentType();
         Class<? extends Object> ncc = WRAPPER_TO_PRIMITIVE.get(cc);
         if (null == ncc) {
             throw new IllegalArgumentException("Not a wrapper type");
         }
-        Object o = Array.newInstance(ncc, ns.length);
-        for (int i = 0; i < ns.length; i++) {
-            Array.set(o, i, ns[i]);
+        Object o = Array.newInstance(ncc, _ns.length);
+        for (int i = 0; i < _ns.length; i++) {
+            Array.set(o, i, _ns[i]);
         }
         return o;
     }
 
-    public static <T> List<T> listify(T[] ns) throws IllegalArgumentException {
-        return Arrays.asList(ns);
+    public static <T> List<T> listify(T[] _ns) throws IllegalArgumentException {
+        return Arrays.asList(_ns);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<T> listify(Object o) throws IllegalArgumentException {
-        if (o instanceof Object[]) {
-            return listify((T[]) o);
+    public static <T> List<T> listify(Object _o) throws IllegalArgumentException {
+        if (_o instanceof Object[]) {
+            return listify((T[]) _o);
         }
-        if (!o.getClass().isArray()) {
+        if (!_o.getClass().isArray()) {
             throw new IllegalArgumentException("Not an array");
         }
-        List<T> l = new ArrayList<>(Array.getLength(o));
-        for (int i = 0; i < Array.getLength(o); i++) {
-            l.add((T) Array.get(o, i));
+        List<T> l = new ArrayList<>(Array.getLength(_o));
+        for (int i = 0; i < Array.getLength(_o); i++) {
+            l.add((T) Array.get(_o, i));
         }
         return l;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T[] delist(List<T> l, Class<T> c) throws IllegalArgumentException {
-        return l.toArray((T[]) Array.newInstance(c, 0));
+    public static <T> T[] delist(List<T> _l, Class<T> _c) throws IllegalArgumentException {
+        return _l.toArray((T[]) Array.newInstance(_c, 0));
     }
 
-    public static <T> Object delistprimitive(List<T> l, Class<T> c) throws IllegalArgumentException {
-        Object o = Array.newInstance(c, l.size());
-        for (int i = 0; i < l.size(); i++) {
-            Array.set(o, i, l.get(i));
+    public static <T> Object delistprimitive(List<T> _l, Class<T> _c) throws IllegalArgumentException {
+        Object o = Array.newInstance(_c, _l.size());
+        for (int i = 0; i < _l.size(); i++) {
+            Array.set(o, i, _l.get(i));
         }
         return o;
     }
 
     @SuppressWarnings("unchecked")
-    public static Object convert(Object o, Class<? extends Object> c) throws IllegalArgumentException {
+    public static Object convert(Object _o, Class<? extends Object> _c) throws IllegalArgumentException {
         /* Possible Conversions:
          *
          ** List<Integer> -> List<Integer>
@@ -125,44 +125,44 @@ public final class ArrayFrob {
          */
         try {
             // List<Integer> -> List<Integer>
-            if (List.class.equals(c) && o instanceof List) {
-                return o;
+            if (List.class.equals(_c) && _o instanceof List) {
+                return _o;
             }
 
             // int[] -> List<Integer>
             // Integer[] -> List<Integer>
-            if (List.class.equals(c) && o.getClass().isArray()) {
-                return listify(o);
+            if (List.class.equals(_c) && _o.getClass().isArray()) {
+                return listify(_o);
             }
 
             // int[] -> int[]
             // Integer[] -> Integer[]
-            if (o.getClass().isArray() && c.isArray() && o.getClass().getComponentType().equals(c.getComponentType())) {
-                return o;
+            if (_o.getClass().isArray() && _c.isArray() && _o.getClass().getComponentType().equals(_c.getComponentType())) {
+                return _o;
             }
 
             // int[] -> Integer[]
-            if (o.getClass().isArray() && c.isArray() && o.getClass().getComponentType().isPrimitive()) {
-                return wrap(o);
+            if (_o.getClass().isArray() && _c.isArray() && _o.getClass().getComponentType().isPrimitive()) {
+                return wrap(_o);
             }
 
             // Integer[] -> int[]
-            if (o.getClass().isArray() && c.isArray() && c.getComponentType().isPrimitive()) {
-                return unwrap((Object[]) o);
+            if (_o.getClass().isArray() && _c.isArray() && _c.getComponentType().isPrimitive()) {
+                return unwrap((Object[]) _o);
             }
 
             // List<Integer> -> int[]
-            if (o instanceof List && c.isArray() && c.getComponentType().isPrimitive()) {
-                return delistprimitive((List<Object>) o, (Class<Object>) c.getComponentType());
+            if (_o instanceof List && _c.isArray() && _c.getComponentType().isPrimitive()) {
+                return delistprimitive((List<Object>) _o, (Class<Object>) _c.getComponentType());
             }
 
             // List<Integer> -> Integer[]
-            if (o instanceof List && c.isArray()) {
-                return delist((List<Object>) o, (Class<Object>) c.getComponentType());
+            if (_o instanceof List && _c.isArray()) {
+                return delist((List<Object>) _o, (Class<Object>) _c.getComponentType());
             }
 
-            if (o.getClass().isArray() && c.isArray()) {
-                return type((Object[]) o, (Class<Object>) c.getComponentType());
+            if (_o.getClass().isArray() && _c.isArray()) {
+                return type((Object[]) _o, (Class<Object>) _c.getComponentType());
             }
 
         } catch (Exception e) {
@@ -170,13 +170,13 @@ public final class ArrayFrob {
             throw new IllegalArgumentException(e);
         }
 
-        throw new IllegalArgumentException(String.format("Not An Expected Convertion type from %s to %s", o.getClass(), c));
+        throw new IllegalArgumentException(String.format("Not An Expected Convertion type from %s to %s", _o.getClass(), _c));
     }
 
-    public static Object[] type(Object[] old, Class<Object> c) {
-        Object[] ns = (Object[]) Array.newInstance(c, old.length);
+    public static Object[] type(Object[] _old, Class<Object> _c) {
+        Object[] ns = (Object[]) Array.newInstance(_c, _old.length);
         for (int i = 0; i < ns.length; i++) {
-            ns[i] = old[i];
+            ns[i] = _old[i];
         }
         return ns;
     }

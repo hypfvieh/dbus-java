@@ -18,12 +18,15 @@ public class TestDisconnectCallback extends AbstractDBusBaseTest {
     public void testDisconnectCallback() throws DBusException, InterruptedException {
         TestCallback callback = new TestCallback();
 
-        DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus().build();
-        serverConnection.setDisconnectCallback(callback);
-        DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus().build();
-        clientConnection.setDisconnectCallback(callback);
-        serverConnection.setWeakReferences(true);
-        clientConnection.setWeakReferences(true);
+        DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus()
+                .withDisconnectCallback(callback)
+                .withWeakReferences(true)
+                .build();
+
+        DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus()
+                .withDisconnectCallback(callback)
+                .withWeakReferences(true)
+                .build();
 
         serverConnection.requestBusName("foo.bar.why.again.disconnect.Test");
 

@@ -23,14 +23,14 @@ public class NameableThreadFactory implements ThreadFactory {
      * @param _daemonizeThreads turn all created threads to daemon threads
      */
     public NameableThreadFactory(String _name, boolean _daemonizeThreads) {
-        group = Thread.currentThread().getThreadGroup();
+        group = Thread.currentThread().getThreadGroup(); //NOPMD
         namePrefix = Util.isBlank(_name) ? "UnnamedThreadPool-" + POOL_NUMBER.getAndIncrement() + "-thread-" : _name;
         daemonizeThreads = _daemonizeThreads;
     }
 
     @Override
-    public Thread newThread(Runnable r) {
-        Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+    public Thread newThread(Runnable _runnable) {
+        Thread t = new Thread(group, _runnable, namePrefix + threadNumber.getAndIncrement(), 0);
         t.setDaemon(daemonizeThreads);
 
         if (t.getPriority() != Thread.NORM_PRIORITY) {

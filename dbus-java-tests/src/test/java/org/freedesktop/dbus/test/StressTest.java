@@ -81,7 +81,7 @@ public class StressTest extends AbstractDBusBaseTest {
     private List<DBusConnection> createClientConnections(int numberOfClients) throws DBusException {
         List<DBusConnection> clientConnections = new ArrayList<>(numberOfClients);
         for (int i = 0; i < numberOfClients; i++) {
-            clientConnections.add(DBusConnectionBuilder.forSessionBus().build());
+            clientConnections.add(DBusConnectionBuilder.forSessionBus().withShared(false).build());
         }
         return clientConnections;
     }
@@ -93,7 +93,7 @@ public class StressTest extends AbstractDBusBaseTest {
         List<DBusConnection> serviceConnections = new ArrayList<>();
         for (int i = 0; i < numberOfServices; i++) {
             RemoteObjectImpl service = new RemoteObjectImpl();
-            DBusConnection serviceConnection = DBusConnectionBuilder.forSessionBus().build();
+            DBusConnection serviceConnection = DBusConnectionBuilder.forSessionBus().withShared(false).build();
             closeables.add(serviceConnection);
             serviceConnections.add(serviceConnection);
             serviceConnection.exportObject(OBJECT_PATH, service);

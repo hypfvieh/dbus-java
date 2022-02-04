@@ -9,7 +9,7 @@ import java.util.List;
  * Should be used whenever you need a Type variable for a list.
  */
 public class DBusListType implements ParameterizedType {
-    private Type v;
+    private final Type v;
 
     /**
     * Create a List type.

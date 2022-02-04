@@ -17,34 +17,34 @@ public interface Properties extends DBusInterface {
      * Get the value for the given property.
      *
      * @param <A> whatever
-     * @param interface_name The interface this property is associated with.
-     * @param property_name The name of the property.
+     * @param _interfaceName The interface this property is associated with.
+     * @param _propertyName The name of the property.
      * @return The value of the property (may be any valid DBus type).
      */
-    <A> A Get(String interface_name, String property_name);
+    <A> A Get(String _interfaceName, String _propertyName);
 
     /**
      * Set the value for the given property.
      *
      * @param <A> whatever
-     * @param interface_name The interface this property is associated with.
-     * @param property_name The name of the property.
-     * @param value The new value of the property (may be any valid DBus type).
+     * @param _interfaceName The interface this property is associated with.
+     * @param _propertyName The name of the property.
+     * @param _value The new value of the property (may be any valid DBus type).
      */
-    <A> void Set(String interface_name, String property_name, A value);
+    <A> void Set(String _interfaceName, String _propertyName, A _value);
 
     /**
      * Get all properties and values.
      *
-     * @param interface_name The interface the properties is associated with.
+     * @param _interfaceName The interface the properties is associated with.
      * @return The properties mapped to their values.
      */
-    Map<String, Variant<?>> GetAll(String interface_name);
+    Map<String, Variant<?>> GetAll(String _interfaceName);
 
     /**
      * Signal generated when a property changes.
      */
-    public static class PropertiesChanged extends DBusSignal {
+    class PropertiesChanged extends DBusSignal {
         private final Map<String, Variant<?>> propertiesChanged;
         private final List<String>            propertiesRemoved;
 

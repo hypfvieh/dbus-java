@@ -35,11 +35,11 @@ public class NativeTransportProvider implements ITransportProvider {
         do {
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < 10; i++) {
-                sb.append((char) ((Math.abs(r.nextInt()) % 26) + 65));
+                sb.append((char) (Math.abs(r.nextInt()) % 26) + 65);
             }
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(getClass()).trace("Trying path {}", path);
-        } while ((new File(path)).exists());
+        } while (new File(path).exists());
 
         address += "path=" + path + ",";
 

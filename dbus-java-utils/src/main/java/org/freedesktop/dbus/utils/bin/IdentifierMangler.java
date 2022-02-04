@@ -15,11 +15,11 @@ public final class IdentifierMangler {
         Arrays.sort(keywords);
     }
 
-    public static String mangle(String name) {
-        if (Arrays.binarySearch(keywords, name) >= 0) {
-            name = "_" + name;
+    public static String mangle(String _name) {
+        if (Arrays.binarySearch(keywords, _name) >= 0) {
+            _name = "_" + _name;
         }
-        return name;
+        return _name;
     }
 
     private IdentifierMangler() {

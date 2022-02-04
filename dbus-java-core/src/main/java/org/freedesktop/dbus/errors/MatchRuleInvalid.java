@@ -8,7 +8,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 public class MatchRuleInvalid extends DBusExecutionException {
     private static final long serialVersionUID = 6922529529288327323L;
 
-    public MatchRuleInvalid(String message) {
-        super(message);
+    public MatchRuleInvalid(String _message) {
+        super(_message);
     }
 }

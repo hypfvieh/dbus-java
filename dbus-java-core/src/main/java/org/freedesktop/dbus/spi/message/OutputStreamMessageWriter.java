@@ -20,17 +20,17 @@ public class OutputStreamMessageWriter implements IMessageWriter {
     }
 
     @Override
-    public void writeMessage(Message m) throws IOException {
-        logger.debug("<= {}", m);
-        if (null == m) {
+    public void writeMessage(Message _msg) throws IOException {
+        logger.debug("<= {}", _msg);
+        if (null == _msg) {
             return;
         }
-        if (null == m.getWireData()) {
-            logger.warn("Message {} wire-data was null!", m);
+        if (null == _msg.getWireData()) {
+            logger.warn("Message {} wire-data was null!", _msg);
             return;
         }
 
-        for (byte[] buf : m.getWireData()) {
+        for (byte[] buf : _msg.getWireData()) {
             if(logger.isTraceEnabled()) {
                 logger.trace("{}", null == buf ? "" : Hexdump.format(buf));
             }

@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -16,12 +17,14 @@ import org.freedesktop.dbus.utils.AddressBuilder;
  */
 public class DBusConnectionBuilder {
 
-    private final String       address;
+    private final String                                       address;
 
-    private String             machineId;
-    private boolean            registerSelf = true;
-    private boolean            shared = true;
-    private int                timeout = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private final String                                       machineId;
+    private boolean                                            registerSelf = true;
+    private boolean                                            shared       = true;
+    private boolean                                            weakReference = false;
+    private int                                                timeout      = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private IDisconnectCallback                                disconnectCallback;
 
     private DBusConnectionBuilder(String _address, String _machineId) {
         address = _address;
@@ -61,7 +64,7 @@ public class DBusConnectionBuilder {
     public static DBusConnectionBuilder forSessionBus() {
         return forSessionBus(null);
     }
-    
+
     /**
      * Create a default connection to DBus using the given bus type.
      * 
@@ -84,10 +87,10 @@ public class DBusConnectionBuilder {
     public static DBusConnectionBuilder forType(DBusBusType _type, String _machineIdFile) {
         if (_type == DBusBusType.SESSION) {
             return forSessionBus(_machineIdFile);
-        } else if (_type == DBusBusType.SYSTEM){
+        } else if (_type == DBusBusType.SYSTEM) {
             return forSystemBus();
         }
-        
+
         throw new IllegalArgumentException("Unknown bus type: " + _type);
     }
 
@@ -101,10 +104,9 @@ public class DBusConnectionBuilder {
         DBusConnectionBuilder instance = new DBusConnectionBuilder(_address, getDbusMachineId(null));
         return instance;
     }
- 
+
     /**
-     * Register the new connection on DBus using 'hello' message.
-     * Default is true.
+     * Register the new connection on DBus using 'hello' message. Default is true.
      * 
      * @param _register boolean
      * @return this
@@ -113,13 +115,11 @@ public class DBusConnectionBuilder {
         registerSelf = _register;
         return this;
     }
-    
+
     /**
-     * Use this connection as shared connection.
-     * Shared connection means that the same connection is used multiple times
-     * if the connection parameter did not change.
-     * Default is true.
-     *  
+     * Use this connection as shared connection. Shared connection means that the same connection is used multiple times
+     * if the connection parameter did not change. Default is true.
+     * 
      * @param _shared boolean
      * @return this
      */
@@ -127,10 +127,11 @@ public class DBusConnectionBuilder {
         shared = _shared;
         return this;
     }
-    
+
     /**
-     * Set the timeout for the connection (used for TCP connections only).
-     * Default is {@value AbstractConnection.TCP_CONNECT_TIMEOUT}.
+     * Set the timeout for the connection (used for TCP connections only). Default is
+     * {@value AbstractConnection.TCP_CONNECT_TIMEOUT}.
+     * 
      * @param _timeout timeout
      * @return this
      */
@@ -138,31 +139,74 @@ public class DBusConnectionBuilder {
         timeout = _timeout;
         return this;
     }
-   
+
+    /**
+     * Set the given disconnect callback to the created connection.
+     * 
+     * @param _disconnectCallback callback
+     * @return this
+     */
+    public DBusConnectionBuilder withDisconnectCallback(IDisconnectCallback _disconnectCallback) {
+        disconnectCallback = _disconnectCallback;
+        return this;
+    }
+
+    /**
+     * Enable/Disable weak references on connection.
+     * Default is false.
+     * 
+     * @param _weakRef true to enable
+     * @return this
+     */
+    public DBusConnectionBuilder withWeakReferences(boolean _weakRef) {
+        weakReference = _weakRef;
+        return this;
+    }
+
     /**
      * Create the new {@link DBusConnection}.
+     * 
      * @return {@link DBusConnection}
      * @throws DBusException when DBusConnection could not be opened
      */
     public DBusConnection build() throws DBusException {
-        return new DBusConnection(address, shared, registerSelf, machineId, timeout);
+        DBusConnection c;
+        if (shared) {
+            synchronized (DBusConnection.CONNECTIONS) {
+                c = DBusConnection.CONNECTIONS.get(address);
+                if (c != null) {
+                    c.concurrentConnections.incrementAndGet();
+                    return c; // this connection already exists, do not change anything
+                } else {
+                    c = new DBusConnection(address, shared, machineId, timeout);
+                    DBusConnection.CONNECTIONS.put(address, c);
+                }
+            }
+        } else {
+            c = new DBusConnection(address, shared, machineId, timeout);
+        }
+        
+        c.setDisconnectCallback(disconnectCallback);
+        c.setWeakReferences(weakReference);
+        c.connect(registerSelf);
+        return c;
     }
 
     /**
      * Helper to use TCP fallback address when no UNIX address is found or no UNIX transport found.
      * 
-     * @param address address which would be used if no fallback is used  
+     * @param _address address which would be used if no fallback is used
      * @return input address or fallback address
      */
-    private static String tcpFallback(String address) {
+    private static String tcpFallback(String _address) {
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
                 && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (address == null || address.startsWith("unix"))) { // no address or unix socket address
-    
+                && (_address == null || _address.startsWith("unix"))) { // no address or unix socket address
+
             // no UNIX transport available, or lookup did not return anything useful
-            address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
+            _address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
         }
-        return address;
+        return _address;
     }
-    
+
 }

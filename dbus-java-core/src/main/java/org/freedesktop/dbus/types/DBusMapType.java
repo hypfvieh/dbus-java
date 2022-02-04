@@ -9,8 +9,8 @@ import java.util.Map;
  * Should be used whenever you need a Type variable for a map.
  */
 public class DBusMapType implements ParameterizedType {
-    private Type k;
-    private Type v;
+    private final Type k;
+    private final Type v;
 
     /**
     * Create a map type.

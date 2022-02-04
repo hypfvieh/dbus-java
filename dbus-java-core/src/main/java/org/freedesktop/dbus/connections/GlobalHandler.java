@@ -7,8 +7,8 @@ public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.
     /**
      * 
      */
-    private AbstractConnection connection;
-    private String objectpath;
+    private final AbstractConnection connection;
+    private final String             objectpath;
 
     GlobalHandler(AbstractConnection _abstractConnection) {
         connection = _abstractConnection;
@@ -27,7 +27,7 @@ public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.
 
     @Override
     public void Ping() {
-        return;
+        // nothing to do
     }
 
     @Override

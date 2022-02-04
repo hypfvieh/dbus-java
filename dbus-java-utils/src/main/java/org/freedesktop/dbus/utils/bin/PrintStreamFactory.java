@@ -5,25 +5,25 @@ import java.io.PrintStream;
 
 public abstract class PrintStreamFactory {
 
-    public abstract void init(String file, String path);
+    public abstract void init(String _file, String _path);
 
     /**
-     * @param path path
-     * @param tname target name
+     * @param _path path
+     * @param _tname target name
      * @return PrintStream
      * @throws IOException may throw exception on failure
      */
-    public PrintStream createPrintStream(String path, String tname) throws IOException {
-        final String file = path + "/" + tname + ".java";
+    public PrintStream createPrintStream(String _path, String _tname) throws IOException {
+        final String file = _path + "/" + _tname + ".java";
 
         return createPrintStream(file);
     }
 
     /**
-     * @param file file to print to
+     * @param _file file to print to
      * @return PrintStream
      * @throws IOException may throw exception on failure
      */
-    public abstract PrintStream createPrintStream(final String file) throws IOException;
+    public abstract PrintStream createPrintStream(final String _file) throws IOException;
 
 }

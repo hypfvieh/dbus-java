@@ -70,13 +70,13 @@ public class TypeConverter {
             while (matcher.find()) {
                 String match = matcher.group();
                 if (_includes.contains(match)) {
-                    String plainClazzName = match.substring(match.lastIndexOf(".") + 1);
+                    String plainClazzName = match.substring(match.lastIndexOf('.') + 1);
                     clazzName = clazzName.replace(match, plainClazzName);
                 }
             }
 
         } else {
-            clazzName = _argType.substring(_argType.lastIndexOf(".") + 1);
+            clazzName = _argType.substring(_argType.lastIndexOf('.') + 1);
             // change some boxed types back to primitives
             return convertJavaType(clazzName, true);
         }
@@ -97,7 +97,7 @@ public class TypeConverter {
         String clazzName = _fqcn;
 
         if (_fqcn.contains(".")) {
-            clazzName = _fqcn.substring(_fqcn.lastIndexOf(".") + 1);
+            clazzName = _fqcn.substring(_fqcn.lastIndexOf('.') + 1);
         }
 
         if (CLASS_MAP.containsKey(_fqcn)) {
@@ -178,12 +178,11 @@ public class TypeConverter {
      * Resolve java type recursively.
      *
      * @param _type Type object
-     * @param _innerGenerics list which will be populated with classnames of the inner generic types (if any)
      * @return Map where key is parent classname (e.g. List) and value is a list of types used inside the generics
      *
      * @throws DBusException on error
      */
-    private static Map<String, List<String>> getTypeAdv(Type _type, List<String> _innerGenerics) throws DBusException {
+    private static Map<String, List<String>> getTypeAdv(Type _type) throws DBusException {
         Map<String, List<String>> result = new LinkedHashMap<>();
         if (_type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) _type;
@@ -193,7 +192,7 @@ public class TypeConverter {
 
             for (Type t : pType.getActualTypeArguments()) {
                 if (t instanceof ParameterizedType) {
-                    result.putAll(getTypeAdv(t, generics));
+                    result.putAll(getTypeAdv(t));
                 } else {
                     generics.add(t.getTypeName());
                 }
@@ -233,7 +232,7 @@ public class TypeConverter {
                 Map<String, List<String>> allAdvTypes = new LinkedHashMap<>();
 
                 for (Type type : actualTypeArguments) {
-                    Map<String, List<String>> typeAdv = getTypeAdv(type, null);
+                    Map<String, List<String>> typeAdv = getTypeAdv(type);
                     allAdvTypes.putAll(typeAdv);
                 }
 

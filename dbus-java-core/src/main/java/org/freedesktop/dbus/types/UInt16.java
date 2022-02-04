@@ -68,8 +68,8 @@ public class UInt16 extends Number implements Comparable<UInt16> {
 
     /** Test two UInt16s for equality. */
     @Override
-    public boolean equals(Object o) {
-        return o instanceof UInt16 && ((UInt16) o).value == this.value;
+    public boolean equals(Object _o) {
+        return _o instanceof UInt16 && ((UInt16) _o).value == this.value;
     }
 
     @Override
@@ -81,8 +81,8 @@ public class UInt16 extends Number implements Comparable<UInt16> {
     * @return 0 if equal, -ve or +ve if they are different.
     */
     @Override
-    public int compareTo(UInt16 other) {
-        return /*(int)*/ (this.value - other.value);
+    public int compareTo(UInt16 _other) {
+        return this.value - _other.value;
     }
 
     /** The value of this as a string. */

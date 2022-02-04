@@ -46,8 +46,8 @@ class SaveAllAction extends TabbedSaveAction {
 
     }
 
-    protected SaveAllAction(JTabbedPane tabbedPane) {
-        super(tabbedPane, "Save All...");
+    protected SaveAllAction(JTabbedPane _tabbedPane) {
+        super(_tabbedPane, "Save All...");
     }
 
     /** {@inheritDoc} */

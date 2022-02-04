@@ -15,53 +15,53 @@ public class MethodReturn extends Message {
     MethodReturn() {
     }
 
-    public MethodReturn(String dest, long replyserial, String sig, Object... args) throws DBusException {
-        this(null, dest, replyserial, sig, args);
+    public MethodReturn(String _dest, long _replyserial, String _sig, Object... _args) throws DBusException {
+        this(null, _dest, _replyserial, _sig, _args);
     }
 
-    public MethodReturn(String source, String dest, long replyserial, String sig, Object... args) throws DBusException {
+    public MethodReturn(String _source, String _dest, long _replyserial, String _sig, Object... _args) throws DBusException {
         super(DBusConnection.getEndianness(), Message.MessageType.METHOD_RETURN, (byte) 0);
 
-        getHeaders().put(Message.HeaderField.REPLY_SERIAL, replyserial);
+        getHeaders().put(Message.HeaderField.REPLY_SERIAL, _replyserial);
 
         List<Object> hargs = new ArrayList<>();
         hargs.add(new Object[] {
                 Message.HeaderField.REPLY_SERIAL, new Object[] {
-                        ArgumentType.UINT32_STRING, replyserial
+                        ArgumentType.UINT32_STRING, _replyserial
                 }
         });
 
-        if (null != source) {
-            getHeaders().put(Message.HeaderField.SENDER, source);
+        if (null != _source) {
+            getHeaders().put(Message.HeaderField.SENDER, _source);
             hargs.add(new Object[] {
                     Message.HeaderField.SENDER, new Object[] {
-                            ArgumentType.STRING_STRING, source
+                            ArgumentType.STRING_STRING, _source
                     }
             });
         }
 
-        if (null != dest) {
-            getHeaders().put(Message.HeaderField.DESTINATION, dest);
+        if (null != _dest) {
+            getHeaders().put(Message.HeaderField.DESTINATION, _dest);
             hargs.add(new Object[] {
                     Message.HeaderField.DESTINATION, new Object[] {
-                            ArgumentType.STRING_STRING, dest
+                            ArgumentType.STRING_STRING, _dest
                     }
             });
         }
 
-        if (null != sig) {
+        if (null != _sig) {
             hargs.add(new Object[] {
                     Message.HeaderField.SIGNATURE, new Object[] {
-                            ArgumentType.SIGNATURE_STRING, sig
+                            ArgumentType.SIGNATURE_STRING, _sig
                     }
             });
-            getHeaders().put(Message.HeaderField.SIGNATURE, sig);
-            setArgs(args);
+            getHeaders().put(Message.HeaderField.SIGNATURE, _sig);
+            setArgs(_args);
         }
 
         int totalFileDes = 0;
-        for( int x = 0; x < args.length; x++ ){
-            if( args[x] instanceof FileDescriptor ){
+        for( int x = 0; x < _args.length; x++ ){
+            if( _args[x] instanceof FileDescriptor ){
                 totalFileDes++;
             }
         }
@@ -81,19 +81,19 @@ public class MethodReturn extends Message {
         pad((byte) 8);
 
         long c = getByteCounter();
-        if (null != sig) {
-            append(sig, args);
+        if (null != _sig) {
+            append(_sig, _args);
         }
         marshallint(getByteCounter() - c, blen, 0, 4);
     }
 
-    public MethodReturn(MethodCall mc, String sig, Object... args) throws DBusException {
-        this(null, mc, sig, args);
+    public MethodReturn(MethodCall _mc, String _sig, Object... _args) throws DBusException {
+        this(null, _mc, _sig, _args);
     }
 
-    public MethodReturn(String source, MethodCall mc, String sig, Object... args) throws DBusException {
-        this(source, mc.getSource(), mc.getSerial(), sig, args);
-        this.call = mc;
+    public MethodReturn(String _source, MethodCall _mc, String _sig, Object... _args) throws DBusException {
+        this(_source, _mc.getSource(), _mc.getSerial(), _sig, _args);
+        this.call = _mc;
     }
 
 

@@ -9,8 +9,8 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.messages.MethodCall;
 
 public class PendingCallbackManager {
-    private Map<MethodCall, CallbackHandler<? extends Object>>             pendingCallbacks;
-    private Map<MethodCall, DBusAsyncReply<?>>                             pendingCallbackReplys;
+    private final Map<MethodCall, CallbackHandler<? extends Object>> pendingCallbacks;
+    private final Map<MethodCall, DBusAsyncReply<?>>                 pendingCallbackReplys;
 
     PendingCallbackManager() {
         pendingCallbacks = new ConcurrentHashMap<>();

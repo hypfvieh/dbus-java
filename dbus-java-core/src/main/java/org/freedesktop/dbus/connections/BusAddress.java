@@ -16,16 +16,16 @@ public class BusAddress {
 
     private final String rawAddress;
 
-    public BusAddress(String address) throws DBusException {
-        if (null == address || "".equals(address)) {
+    public BusAddress(String _address) throws DBusException {
+        if (null == _address || "".equals(_address)) {
             throw new DBusException("Bus address is blank");
         }
 
-        logger.trace("Parsing bus address: {}", address);
+        logger.trace("Parsing bus address: {}", _address);
 
-        String[] ss = address.split(":", 2);
+        String[] ss = _address.split(":", 2);
         if (ss.length < 2) {
-            throw new DBusException("Bus address is invalid: " + address);
+            throw new DBusException("Bus address is invalid: " + _address);
         }
 
         type = ss[0] != null ? ss[0].toLowerCase() : null;
@@ -35,7 +35,7 @@ public class BusAddress {
 
         logger.trace("Transport type: {}", type);
 
-        rawAddress = address;
+        rawAddress = _address;
 
         String[] ps = ss[1].split(",");
         for (String p : ps) {

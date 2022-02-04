@@ -3,7 +3,6 @@ package org.freedesktop.dbus;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.function.IntFunction;
 
 import org.freedesktop.dbus.types.DBusStructType;
 import org.freedesktop.dbus.types.Variant;
@@ -41,16 +40,9 @@ public class StructHelper {
             return null;
         }
 
-        if (_variant.getType() instanceof DBusStructType) {
-            if (_variant.getValue() instanceof Object[]) {
-                Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(a -> a.getClass()).toArray(new IntFunction<Class<?>[]>() {
-                    @Override
-                    public Class<?>[] apply(int size) {
-                        return new Class<?>[size];
-                    }
-                });
-                return createStruct(argTypes, _variant.getValue(), _structClass);
-            }
+        if (_variant.getType() instanceof DBusStructType && _variant.getValue() instanceof Object[]) {
+            Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(a -> a.getClass()).toArray(size -> new Class<?>[size]);
+            return createStruct(argTypes, _variant.getValue(), _structClass);
         }
 
         return null;

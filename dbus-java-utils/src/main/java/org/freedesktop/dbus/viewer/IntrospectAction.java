@@ -46,8 +46,8 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
 
     /** {@inheritDoc} */
     @Override
-    public void valueChanged(ListSelectionEvent e) {
-        if (!e.getValueIsAdjusting()) {
+    public void valueChanged(ListSelectionEvent _event) {
+        if (!_event.getValueIsAdjusting()) {
             DBusTableModel model = (DBusTableModel) table.getModel();
             int selection = table.getSelectedRow();
             if (selection > -1 && selection < model.getRowCount()) {
@@ -60,7 +60,7 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
 
     /** {@inheritDoc} */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent _event) {
 
         int row = table.getSelectedRow();
         DBusTableModel model = (DBusTableModel) table.getModel();
@@ -113,8 +113,8 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                     }
                 }
 
-                private JScrollPane createSourceTab(String file, final String source) {
-                    JTextArea area = new JTextArea(source);
+                private JScrollPane createSourceTab(String _file, final String _source) {
+                    JTextArea area = new JTextArea(_source);
                     area.setLineWrap(true);
                     area.setWrapStyleWord(true);
                     return new JScrollPane(area, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

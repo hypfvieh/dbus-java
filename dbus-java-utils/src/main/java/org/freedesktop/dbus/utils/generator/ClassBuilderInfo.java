@@ -397,7 +397,7 @@ public class ClassBuilderInfo {
 
         String clzzName = _fqcn;
         if (clzzName.contains(".")) {
-            clzzName = clzzName.substring(clzzName.lastIndexOf(".") + 1);
+            clzzName = clzzName.substring(clzzName.lastIndexOf('.') + 1);
         }
         return clzzName;
     }
@@ -645,7 +645,7 @@ public class ClassBuilderInfo {
      * @author hypfvieh
      * @since v3.0.1 - 2018-12-20
      */
-    public static enum ClassType {
+    public enum ClassType {
         INTERFACE,
         CLASS;
     }

@@ -55,21 +55,21 @@ import org.slf4j.LoggerFactory;
  */
 public final class DBusConnection extends AbstractConnection {
 
-	private final Logger                             logger                     = LoggerFactory.getLogger(getClass());
+    static final ConcurrentMap<String, DBusConnection> CONNECTIONS           = new ConcurrentHashMap<>();
 
-    private List<String>                             busnames;
+    private final Logger                               logger                = LoggerFactory.getLogger(getClass());
 
-    private static final ConcurrentMap<String, DBusConnection> CONNECTIONS                = new ConcurrentHashMap<>();
-    private DBus                                     dbus;
+    private final List<String>                         busnames;
 
-	private static String                            dbusMachineIdFile;
+    private static String                              dbusMachineIdFile;
 
-    private final String                             machineId;
+    private final String                               machineId;
+    private DBus                                       dbus;
 
     /** Count how many 'connections' we manage internally.
      * This is required because a {@link DBusConnection} to the same address will always return the same object and
      * the 'real' disconnection should only occur when there is no second/third/whatever connection is left. */
-    private final AtomicInteger                      concurrentConnections              = new AtomicInteger(1);
+    final AtomicInteger                                concurrentConnections = new AtomicInteger(1);
 
     /**
      * Whether this connection is used in shared mode.
@@ -125,23 +125,11 @@ public final class DBusConnection extends AbstractConnection {
     public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared, int _timeout)
             throws DBusException {
 
-        if (_shared) {
-            synchronized (CONNECTIONS) {
-                DBusConnection c = CONNECTIONS.get(_address);
-                if (c != null) {
-                    c.concurrentConnections.incrementAndGet();
-                    return c;
-                } else {
-                    c = new DBusConnection(_address, _shared, _registerSelf, AddressBuilder.getDbusMachineId(dbusMachineIdFile), _timeout);
-                    // do not increment connection counter here, it always starts at 1 on new objects!
-                    // c.getConcurrentConnections().incrementAndGet();
-                    CONNECTIONS.put(_address, c);
-                    return c;
-                }
-            }
-        } else {
-            return new DBusConnection(_address, _shared, _registerSelf, AddressBuilder.getDbusMachineId(dbusMachineIdFile), _timeout);
-        }
+        return DBusConnectionBuilder.forAddress(_address)
+            .withRegisterSelf(_registerSelf)
+            .withShared(_shared)
+            .withTimeout(_timeout)
+            .build();
     }
 
     /**
@@ -225,26 +213,30 @@ public final class DBusConnection extends AbstractConnection {
      * system variable DBUS_MACHINE_ID_LOCATION will take precedence
      * over this.
      *
-     * @param dbusMachineIdFile file containing DBus machine ID.
+     * @param _dbusMachineIdFile file containing DBus machine ID.
      * @deprecated no longer required when {@link DBusConnectionBuilder} is used
      */
     @Deprecated(since = "4.1.0", forRemoval = true)
-    public static void setDbusMachineIdFile(String dbusMachineIdFile) {
-        DBusConnection.dbusMachineIdFile = dbusMachineIdFile;
+    public static void setDbusMachineIdFile(String _dbusMachineIdFile) {
+        DBusConnection.dbusMachineIdFile = _dbusMachineIdFile;
     }
 
  
-    DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
-        super(_address, timeout);
+    DBusConnection(String _address, boolean _shared, String _machineId, int _timeout) throws DBusException {
+        super(_address, _timeout);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;
+        
+    }
+
+    void connect(boolean _registerSelf) throws DBusException {
         // start listening for calls
         listen();
 
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();
-        addSigHandlerWithoutMatch(org.freedesktop.dbus.interfaces.DBus.NameAcquired.class, h);
+        addSigHandlerWithoutMatch(DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
         if (_registerSelf) {
@@ -288,9 +280,9 @@ public final class DBusConnection extends AbstractConnection {
                             ifcs.add(ifclass);
                         }
                         break;
-                    } catch (Exception e) {
+                    } catch (Exception _ex) {
                     }
-                    j = iface.lastIndexOf(".");
+                    j = iface.lastIndexOf('.');
                     char[] cs = iface.toCharArray();
                     if (j >= 0) {
                         cs[j] = '$';
@@ -379,9 +371,9 @@ public final class DBusConnection extends AbstractConnection {
         try {
             rv = dbus.RequestName(_busname,
                     new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
-        } catch (DBusExecutionException dbee) {
-            logger.debug("", dbee);
-            throw new DBusException(dbee.getMessage());
+        } catch (DBusExecutionException _exDb) {
+            logger.debug("", _exDb);
+            throw new DBusException(_exDb);
         }
         switch (rv.intValue()) {
             case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
@@ -452,7 +444,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -492,7 +484,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: null");
         }
 
-        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -534,7 +526,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid bus name: null");
         }
 
-        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -609,7 +601,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new ClassCastException("Not A DBus Interface");
         }
 
-        if (_busname.length() > MAX_NAME_LENGTH || (!BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches())) {
+        if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
             throw new DBusException("Invalid bus name: " + _busname);
         }
 
@@ -866,7 +858,7 @@ public final class DBusConnection extends AbstractConnection {
 	                        synchronized (getPendingErrorQueue()) {
 	                            getPendingErrorQueue().add(err);
 	                        }
-	                    } catch (DBusException dbe) {
+	                    } catch (DBusException _exDb) {
 	                    }
 	                    CONNECTIONS.remove(getAddress().getRawAddress());
 
@@ -1004,9 +996,9 @@ public final class DBusConnection extends AbstractConnection {
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
-             if (_signal instanceof org.freedesktop.dbus.interfaces.DBus.NameAcquired) {
+             if (_signal instanceof DBus.NameAcquired) {
                 synchronized (busnames) {
-                    busnames.add(((org.freedesktop.dbus.interfaces.DBus.NameAcquired) _signal).name);
+                    busnames.add(((DBus.NameAcquired) _signal).name);
                 }
             }
         }
@@ -1017,7 +1009,7 @@ public final class DBusConnection extends AbstractConnection {
         return machineId;
     }
 
-    public static enum DBusBusType {
+    public enum DBusBusType {
         /**
          * System Bus
          */

@@ -160,7 +160,7 @@ public final class Marshalling {
                 throw new DBusException("Multi-valued array types not permitted");
             }
             _out[_level].append(s[0]);
-        } else if ((_dataType instanceof Class<?> && DBusSerializable.class.isAssignableFrom((Class<?>) _dataType)) || (_dataType instanceof ParameterizedType && DBusSerializable.class.isAssignableFrom((Class<?>) ((ParameterizedType) _dataType).getRawType()))) {
+        } else if (_dataType instanceof Class<?> && DBusSerializable.class.isAssignableFrom((Class<?>) _dataType) || _dataType instanceof ParameterizedType && DBusSerializable.class.isAssignableFrom((Class<?>) ((ParameterizedType) _dataType).getRawType())) {
             // it's a custom serializable type
             Type[] newtypes = null;
             if (_dataType instanceof Class) {
@@ -339,7 +339,7 @@ public final class Marshalling {
                         contained = new ArrayList<>();
                         javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
                         _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
-                        idx += (javaType + 2);
+                        idx += javaType + 2;
                     } else {
                         contained = new ArrayList<>();
                         javaType = getJavaType(_dbusType.substring(idx + 1), contained, 1);
@@ -519,7 +519,7 @@ public final class Marshalling {
                 try {
                     _parameter = con.newInstance((Object[]) _parameter);
                     break;
-                } catch (IllegalArgumentException exIa) {
+                } catch (IllegalArgumentException _exIa) {
                 }
             }
         }
@@ -547,10 +547,8 @@ public final class Marshalling {
         }
 
         // correct floats if appropriate
-        if (_type.equals(Float.class) || _type.equals(Float.TYPE)) {
-            if (!(_parameter instanceof Float)) {
-                _parameter = ((Number) _parameter).floatValue();
-            }
+        if ((_type.equals(Float.class) || _type.equals(Float.TYPE)) && !(_parameter instanceof Float)) {
+            _parameter = ((Number) _parameter).floatValue();
         }
 
         // make sure arrays are in the correct format
@@ -570,7 +568,7 @@ public final class Marshalling {
                 _parameter = ArrayFrob.convert(_parameter, o.getClass());
             } else if (_type instanceof Class && ((Class<?>) _type).isArray()) {
                 Class<?> cc = ((Class<?>) _type).getComponentType();
-                if ((cc.equals(Float.class) || cc.equals(Float.TYPE)) && (_parameter instanceof double[])) {
+                if ((cc.equals(Float.class) || cc.equals(Float.TYPE)) && _parameter instanceof double[]) {
                     double[] tmp1 = (double[]) _parameter;
                     float[] tmp2 = new float[tmp1.length];
                     for (int i = 0; i < tmp1.length; i++) {
@@ -658,7 +656,7 @@ public final class Marshalling {
                 continue;
             }
 
-            if ((_types[i] instanceof Class && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) _types[i])) || (_types[i] instanceof ParameterizedType && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) ((ParameterizedType) _types[i]).getRawType()))) {
+            if (_types[i] instanceof Class && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) _types[i]) || _types[i] instanceof ParameterizedType && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) ((ParameterizedType) _types[i]).getRawType())) {
                 Class<? extends DBusSerializable> dsc;
                 if (_types[i] instanceof Class) {
                     dsc = (Class<? extends DBusSerializable>) _types[i];

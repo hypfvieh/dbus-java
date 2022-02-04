@@ -17,8 +17,8 @@ public class DBusPath implements Comparable<DBusPath> {
     }
 
     @Override
-    public boolean equals(Object other) {
-        return (other instanceof DBusPath) && getPath().equals(((DBusPath) other).getPath());
+    public boolean equals(Object _other) {
+        return _other instanceof DBusPath && getPath().equals(((DBusPath) _other).getPath());
     }
 
     @Override
@@ -27,8 +27,8 @@ public class DBusPath implements Comparable<DBusPath> {
     }
 
     @Override
-    public int compareTo(DBusPath that) {
-        return getPath().compareTo(that.getPath());
+    public int compareTo(DBusPath _that) {
+        return getPath().compareTo(_that.getPath());
     }
 
     public void setPath(String _path) {

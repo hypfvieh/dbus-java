@@ -5,22 +5,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 class StructStruct {
-    public static Map<StructStruct, Type[]> fillPackages(Map<StructStruct, Type[]> structs, String pack) {
+    // CHECKSTYLE:OFF
+    public String name;
+    public String pack;
+    // CHECKSTYLE:ON
+
+    public static Map<StructStruct, Type[]> fillPackages(Map<StructStruct, Type[]> _structs, String _pack) {
         Map<StructStruct, Type[]> newmap = new HashMap<>();
-        for (StructStruct ss : structs.keySet()) {
-            Type[] type = structs.get(ss);
+        for (StructStruct ss : _structs.keySet()) {
+            Type[] type = _structs.get(ss);
             if (null == ss.pack) {
-                ss.pack = pack;
+                ss.pack = _pack;
             }
             newmap.put(ss, type);
         }
         return newmap;
     }
 
-    // CHECKSTYLE:OFF
-    public String name;
-    public String pack;
-    // CHECKSTYLE:ON
     StructStruct(String _name) {
         this.name = _name;
     }
@@ -36,11 +37,11 @@ class StructStruct {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof StructStruct)) {
+    public boolean equals(Object _o) {
+        if (!(_o instanceof StructStruct)) {
             return false;
         }
-        if (!name.equals(((StructStruct) o).name)) {
+        if (!name.equals(((StructStruct) _o).name)) {
             return false;
         }
         return true;

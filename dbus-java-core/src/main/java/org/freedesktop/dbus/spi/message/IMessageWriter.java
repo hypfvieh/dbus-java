@@ -16,7 +16,7 @@ public interface IMessageWriter extends Closeable {
      * @param _msg The message to write
      * @throws IOException If an IO error occurs.
      */
-    public void writeMessage(Message _msg) throws IOException;
+    void writeMessage(Message _msg) throws IOException;
 
-    public boolean isClosed();
+    boolean isClosed();
 }

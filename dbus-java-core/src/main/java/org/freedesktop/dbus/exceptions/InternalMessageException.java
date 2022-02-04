@@ -5,8 +5,8 @@ import org.freedesktop.dbus.interfaces.NonFatalException;
 @SuppressWarnings("serial")
 public class InternalMessageException extends DBusExecutionException implements NonFatalException
 {
-   public InternalMessageException(String message)
+   public InternalMessageException(String _message)
    {
-      super (message);
+      super (_message);
    }
 }

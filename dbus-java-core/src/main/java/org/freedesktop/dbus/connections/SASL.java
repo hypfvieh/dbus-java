@@ -1,6 +1,13 @@
 package org.freedesktop.dbus.connections;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AGREE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AUTH;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.BEGIN;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.CANCEL;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.DATA;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.ERROR;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.NEGOTIATE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.REJECTED;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +41,10 @@ import com.sun.security.auth.module.UnixSystem;
 
 
 public class SASL {
+    public static final int    AUTH_NONE                   = 0;
+    public static final int    AUTH_EXTERNAL               = 1;
+    public static final int    AUTH_SHA                    = 2;
+    public static final int    AUTH_ANON                   = 4;
 
     public static final int    LOCK_TIMEOUT                = 1000;
     public static final int    NEW_KEY_TIMEOUT_SECONDS     = 60 * 5;
@@ -75,9 +86,9 @@ public class SASL {
 
     }
 
-    private String findCookie(String context, String ID) throws IOException {
+    private String findCookie(String _context, String _id) throws IOException {
         String homedir = System.getProperty("user.home");
-        File f = new File(homedir + "/.dbus-keyrings/" + context);
+        File f = new File(homedir + "/.dbus-keyrings/" + _context);
         BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
         String s = null;
         String lCookie = null;
@@ -85,7 +96,7 @@ public class SASL {
         while (null != (s = r.readLine())) {
             String[] line = s.split(" ");
             long timestamp = Long.parseLong(line[1]);
-            if (line[0].equals(ID) && (!(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || (now - EXPIRE_KEYS_TIMEOUT_SECONDS) > timestamp))) {
+            if (line[0].equals(_id) && !(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || now - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
                 lCookie = line[2];
                 break;
             }
@@ -152,16 +163,16 @@ public class SASL {
      * Takes the string, encodes it as hex and then turns it into a string again.
      * No, I don't know why either.
      */
-    private String stupidlyEncode(String data) {
-        return Hexdump.toHex(data.getBytes()).replaceAll(" ", "");
+    private String stupidlyEncode(String _data) {
+        return Hexdump.toHex(_data.getBytes()).replaceAll(" ", "");
     }
 
-    private String stupidlyEncode(byte[] data) {
-        return Hexdump.toHex(data).replaceAll(" ", "");
+    private String stupidlyEncode(byte[] _data) {
+        return Hexdump.toHex(_data).replaceAll(" ", "");
     }
 
-    private byte getNibble(char c) {
-        switch (c) {
+    private byte getNibble(char _c) {
+        switch (_c) {
         case '0':
         case '1':
         case '2':
@@ -172,30 +183,30 @@ public class SASL {
         case '7':
         case '8':
         case '9':
-            return (byte) (c - '0');
+            return (byte) (_c - '0');
         case 'A':
         case 'B':
         case 'C':
         case 'D':
         case 'E':
         case 'F':
-            return (byte) (c - 'A' + 10);
+            return (byte) (_c - 'A' + 10);
         case 'a':
         case 'b':
         case 'c':
         case 'd':
         case 'e':
         case 'f':
-            return (byte) (c - 'a' + 10);
+            return (byte) (_c - 'a' + 10);
         default:
             return 0;
         }
     }
 
-    private String stupidlyDecode(String data) {
-        char[] cs = new char[data.length()];
+    private String stupidlyDecode(String _data) {
+        char[] cs = new char[_data.length()];
         char[] res = new char[cs.length / 2];
-        data.getChars(0, data.length(), cs, 0);
+        _data.getChars(0, _data.length(), cs, 0);
         for (int i = 0, j = 0; j < res.length; i += 2, j++) {
             int b = 0;
             b |= getNibble(cs[i]) << 4;
@@ -205,10 +216,7 @@ public class SASL {
         return new String(res);
     }
 
-    public static final int AUTH_NONE        = 0;
-    public static final int AUTH_EXTERNAL    = 1;
-    public static final int AUTH_SHA         = 2;
-    public static final int AUTH_ANON        = 4;
+   
 
     public SASL.Command receive(SocketChannel _sock) throws IOException {
         StringBuffer sb = new StringBuffer();
@@ -262,10 +270,10 @@ public class SASL {
         _sock.write(ByteBuffer.wrap(sb.toString().getBytes()));
     }
 
-    SaslResult doChallenge(int _auth, SASL.Command c) throws IOException {
+    SaslResult doChallenge(int _auth, SASL.Command _c) throws IOException {
         switch (_auth) {
         case AUTH_SHA:
-            String[] reply = stupidlyDecode(c.getData()).split(" ");
+            String[] reply = stupidlyDecode(_c.getData()).split(" ");
             logger.trace(Arrays.toString(reply));
             if (3 != reply.length) {
                 logger.debug("Reply is not length 3");
@@ -300,7 +308,7 @@ public class SASL {
             logger.trace("Response: {} hash: {}", response, Hexdump.format(buf));
 
             response = stupidlyEncode(buf);
-            c.setResponse(stupidlyEncode(clientchallenge + " " + response));
+            _c.setResponse(stupidlyEncode(clientchallenge + " " + response));
             return SaslResult.OK;
         default:
             logger.debug("Not DBUS_COOKIE_SHA1 authtype.");
@@ -370,8 +378,8 @@ public class SASL {
             }
     }
 
-    public String[] getTypes(int types) {
-        switch (types) {
+    public String[] getTypes(int _types) {
+        switch (_types) {
             case AUTH_EXTERNAL:
                 return new String[] {
                         "EXTERNAL"
@@ -502,7 +510,7 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
-                                send(_sock, SaslCommand.NEGOTIATE_UNIX_FD);
+                                send(_sock, NEGOTIATE_UNIX_FD);
                             }else{
                                 state = SaslAuthState.FINISHED;
                                 send(_sock, BEGIN);
@@ -730,11 +738,11 @@ public class SASL {
         return 0;
     }
 
-    public static enum SaslMode {
+    public enum SaslMode {
         SERVER, CLIENT;
     }
 
-    public static enum SaslCommand {
+    public enum SaslCommand {
         AUTH,
         DATA,
         REJECTED,
@@ -746,7 +754,7 @@ public class SASL {
         AGREE_UNIX_FD;
     }
 
-    static enum SaslAuthState {
+    enum SaslAuthState {
         INITIAL_STATE,
         WAIT_DATA,
         WAIT_OK,
@@ -759,7 +767,7 @@ public class SASL {
         FAILED;
     }
 
-    public static enum SaslResult {
+    public enum SaslResult {
         OK,
         CONTINUE,
         ERROR,
@@ -776,8 +784,8 @@ public class SASL {
         public Command() {
         }
 
-        public Command(String s) throws IOException {
-            String[] ss = s.split(" ");
+        public Command(String _s) throws IOException {
+            String[] ss = _s.split(" ");
             logger.trace("Creating command from: {}", Arrays.toString(ss));
             if (0 == col.compare(ss[0], "OK")) {
                 command = SaslCommand.OK;
@@ -843,8 +851,8 @@ public class SASL {
             return response;
         }
 
-        public void setResponse(String s) {
-            response = s;
+        public void setResponse(String _s) {
+            response = _s;
         }
 
         @Override

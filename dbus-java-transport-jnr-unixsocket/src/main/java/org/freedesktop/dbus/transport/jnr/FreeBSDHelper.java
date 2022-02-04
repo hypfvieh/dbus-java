@@ -33,7 +33,7 @@ public final class FreeBSDHelper {
         return Platform.IS_FREEBSD;
     }
     
-    public static void send_cred(Socket _us) throws java.io.IOException {
+    public static void send_cred(Socket _us) throws IOException {
         POSIX posix = POSIXFactory.getNativePOSIX();
         String data = "\0";
         byte[] dataBytes = data.getBytes();
@@ -111,9 +111,6 @@ public final class FreeBSDHelper {
     }
     
     static class CmsgCredLayout extends StructLayout {
-        CmsgCredLayout(jnr.ffi.Runtime _runtime) {
-            super(_runtime);
-        }
 
         final pid_t    cmcred_pid     = new pid_t();
         final uid_t    cmcred_uid     = new uid_t();
@@ -121,5 +118,10 @@ public final class FreeBSDHelper {
         final gid_t    cmcred_gid     = new gid_t();
         final Signed16 cmcred_ngroups = new Signed16();
         final gid_t[]  cmcred_groups  = array(new gid_t[16]);
+
+        CmsgCredLayout(jnr.ffi.Runtime _runtime) {
+            super(_runtime);
+        }
+
     }
 }

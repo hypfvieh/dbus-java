@@ -63,8 +63,8 @@ public @interface DBusProperty {
 
         private final String accessName;
 
-        Access(String accessName) {
-            this.accessName = accessName;
+        Access(String _accessName) {
+            this.accessName = _accessName;
         }
 
         public String getAccessName() {

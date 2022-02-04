@@ -38,16 +38,13 @@ import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 
 public class ExportedObject {
-    private Map<MethodTuple, Method> methods = new HashMap<>();
-    private Reference<DBusInterface> object;
-    private String                   introspectionData;
+    private final Map<MethodTuple, Method> methods = new HashMap<>();
+    private final String                   introspectionData;
+    private final Reference<DBusInterface> object;
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
-        if (_weakreferences) {
-            this.object = new WeakReference<>(_object);
-        } else {
-            this.object = new StrongReference<>(_object);
-        }
+        object = _weakreferences ? new WeakReference<>(_object) : new StrongReference<>(_object);
+        
         Set<Class<?>> implementedInterfaces = getDBusInterfaces(_object.getClass());
         implementedInterfaces.add(Introspectable.class);
         implementedInterfaces.add(Peer.class);
@@ -58,12 +55,12 @@ public class ExportedObject {
     /**
      * Generates the introspection data xml for annotations
      *
-     * @param c input interface/method/signal
+     * @param _c input interface/method/signal
      * @return xml with annotation definition
      */
-    protected String generateAnnotationsXml(AnnotatedElement c) {
+    protected String generateAnnotationsXml(AnnotatedElement _c) {
         StringBuilder ans = new StringBuilder();
-        for (Annotation a : c.getDeclaredAnnotations()) {
+        for (Annotation a : _c.getDeclaredAnnotations()) {
 
             if (!a.annotationType().isAnnotationPresent(DBusInterfaceName.class)) {
                 // skip all interfaces not compatible with
@@ -92,12 +89,12 @@ public class ExportedObject {
     /**
      * Generates the introspection data for the single property.
      *
-     * @param property input property annotation
+     * @param _property input property annotation
      * @return xml with property definition
      * @throws DBusException in case of unknown data types
      */
-    protected String generatePropertyXml(DBusProperty property) throws DBusException {
-        Class<?> propertyTypeClass = property.type();
+    protected String generatePropertyXml(DBusProperty _property) throws DBusException {
+        Class<?> propertyTypeClass = _property.type();
         String propertyTypeString;
         if (TypeRef.class.isAssignableFrom(propertyTypeClass)) {
             Type actualType = Arrays.stream(propertyTypeClass.getGenericInterfaces())
@@ -107,7 +104,7 @@ public class ExportedObject {
                     .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
                     .findFirst()
                     .orElseThrow(() ->
-                            new DBusException("Could not read TypeRef type for property '" + property.name() + "'")
+                            new DBusException("Could not read TypeRef type for property '" + _property.name() + "'")
                     );
             propertyTypeString = Marshalling.getDBusType(new Type[]{actualType});
         } else if (List.class.equals(propertyTypeClass)) {
@@ -120,26 +117,26 @@ public class ExportedObject {
             propertyTypeString = Marshalling.getDBusType(new Type[]{propertyTypeClass});
         }
 
-        String access = property.access().getAccessName();
-        return "<property name=\"" + property.name() + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
+        String access = _property.access().getAccessName();
+        return "<property name=\"" + _property.name() + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
     }
 
     /**
      * Generates the introspection data for the input interface properties.
      *
-     * @param c input interface
+     * @param _clz input interface
      * @return xml with property definitions
      * @throws DBusException in case of unknown data types
      */
-    protected String generatePropertiesXml(Class<?> c) throws DBusException {
+    protected String generatePropertiesXml(Class<?> _clz) throws DBusException {
         StringBuilder xml = new StringBuilder();
-        DBusProperties properties = c.getAnnotation(DBusProperties.class);
+        DBusProperties properties = _clz.getAnnotation(DBusProperties.class);
         if (properties != null) {
             for (DBusProperty property : properties.value()) {
                 xml.append("  ").append(generatePropertyXml(property)).append("\n");
             }
         }
-        DBusProperty property = c.getAnnotation(DBusProperty.class);
+        DBusProperty property = _clz.getAnnotation(DBusProperty.class);
         if (property != null) {
             xml.append("  ").append(generatePropertyXml(property)).append("\n");
         }
@@ -149,14 +146,14 @@ public class ExportedObject {
     /**
      * Generates the introspection data for the input interface methods
      *
-     * @param c input interface
+     * @param _clz input interface
      * @return xml with method definitions
      *
      * @throws DBusException if marshalling fails
      */
-    protected String generateMethodsXml(Class<?> c) throws DBusException {
+    protected String generateMethodsXml(Class<?> _clz) throws DBusException {
         StringBuilder sb = new StringBuilder();
-        for (Method meth : c.getDeclaredMethods()) {
+        for (Method meth : _clz.getDeclaredMethods()) {
             if (!Modifier.isPublic(meth.getModifiers())) {
                 continue;
             }
@@ -212,13 +209,13 @@ public class ExportedObject {
     /**
      * Generates the introspection data for the input interface signals
      *
-     * @param c input interface
+     * @param _clz input interface
      * @return xml with signal definitions
      * @throws DBusException in case of invalid signal name / data types
      */
-    protected String generateSignalsXml(Class<?> c) throws DBusException {
+    protected String generateSignalsXml(Class<?> _clz) throws DBusException {
         StringBuilder sb = new StringBuilder();
-        for (Class<?> sig : c.getDeclaredClasses()) {
+        for (Class<?> sig : _clz.getDeclaredClasses()) {
             if (DBusSignal.class.isAssignableFrom(sig)) {
                 String signalName = DBusNamingUtil.getSignalName(sig);
                 if (sig.isAnnotationPresent(DBusMemberName.class)) {
@@ -249,18 +246,18 @@ public class ExportedObject {
      * The search is performed without recursion taking into account object inheritance.
      * A valid DBus interface must directly extend the {@link DBusInterface}.
      *
-     * @param inputClazz input object class
+     * @param _inputClazz input object class
      * @return set of DBus interfaces implements in the input class
      */
-    protected Set<Class<?>> getDBusInterfaces(Class<?> inputClazz) {
-        Objects.requireNonNull(inputClazz, "inputClazz must not be null");
+    protected Set<Class<?>> getDBusInterfaces(Class<?> _inputClazz) {
+        Objects.requireNonNull(_inputClazz, "inputClazz must not be null");
         Set<Class<?>> result = new LinkedHashSet<>();
 
         // set of already checked classes/interfaces - used to avoid loops/redundant reflection calls
         Set<Class<?>> checked = new LinkedHashSet<>();
         // queue with classes/interfaces to check
         Queue<Class<?>> toCheck = new LinkedList<>();
-        toCheck.add(inputClazz);
+        toCheck.add(_inputClazz);
 
         while (!toCheck.isEmpty()) {
             Class<?> clazz = toCheck.poll();
@@ -290,9 +287,9 @@ public class ExportedObject {
         return result;
     }
 
-    private String generateIntrospectionXml(Set<Class<?>> interfaces) throws DBusException {
+    private String generateIntrospectionXml(Set<Class<?>> _interfaces) throws DBusException {
         StringBuilder sb = new StringBuilder();
-        for (Class<?> iface : interfaces) {
+        for (Class<?> iface : _interfaces) {
             String ifaceName = DBusNamingUtil.getInterfaceName(iface);
             // don't let people export things which don't have a
             // valid D-Bus interface name

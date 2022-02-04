@@ -13,7 +13,7 @@ public class FatalDBusException extends DBusException implements FatalException 
         super(_cause);
     }
     
-    public FatalDBusException(String message) {
-        super(message);
+    public FatalDBusException(String _message) {
+        super(_message);
     }
 }

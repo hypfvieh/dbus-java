@@ -48,21 +48,22 @@ import org.slf4j.LoggerFactory;
  * A replacement DBusDaemon
  */
 public class DBusDaemon extends Thread implements Closeable {
-    public static final int     QUEUE_POLL_WAIT = 500;
+    public static final int                                          QUEUE_POLL_WAIT = 500;
 
-    private static final Logger LOGGER          = LoggerFactory.getLogger(DBusDaemon.class);
+    private static final Logger                                      LOGGER          =
+            LoggerFactory.getLogger(DBusDaemon.class);
 
-    private Map<ConnectionStruct, DBusDaemonReaderThread>      conns      = new ConcurrentHashMap<>();
-    private Map<String, ConnectionStruct>                      names      = Collections.synchronizedMap(new HashMap<>());
-    private MagicMap<Message, WeakReference<ConnectionStruct>> outqueue   = new MagicMap<>("out");
-    private MagicMap<Message, WeakReference<ConnectionStruct>> inqueue    = new MagicMap<>("in");
-    private MagicMap<Message, WeakReference<ConnectionStruct>> localqueue = new MagicMap<>("local");
-    private List<ConnectionStruct>                             sigrecips  = new ArrayList<>();
-    private final AtomicBoolean                                run        = new AtomicBoolean(false);
-    private int                                                nextUnique = 0;
-    private Object                                             uniqueLock = new Object();
-    private DBusServer                                         dbusServer = new DBusServer();
-    private DBusDaemonSenderThread                             sender     = new DBusDaemonSenderThread();
+    private final Map<ConnectionStruct, DBusDaemonReaderThread>      conns           = new ConcurrentHashMap<>();
+    private final Map<String, ConnectionStruct>                      names           = Collections.synchronizedMap(new HashMap<>());
+    private final MagicMap<Message, WeakReference<ConnectionStruct>> outqueue        = new MagicMap<>("out");
+    private final MagicMap<Message, WeakReference<ConnectionStruct>> inqueue         = new MagicMap<>("in");
+    private final MagicMap<Message, WeakReference<ConnectionStruct>> localqueue      = new MagicMap<>("local");
+    private final List<ConnectionStruct>                             sigrecips       = new ArrayList<>();
+    private final Object                                             uniqueLock      = new Object();
+    private final DBusServer                                         dbusServer      = new DBusServer();
+    private final DBusDaemonSenderThread                             sender          = new DBusDaemonSenderThread();
+    private final AtomicBoolean                                      run             = new AtomicBoolean(false);
+    private int                                                      nextUnique      = 0;
 
     public DBusDaemon() {
         setName(getClass().getSimpleName() + "-Thread");
@@ -108,6 +109,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
+    // TODO: Why the hell is is signal given when it is never used?
     private List<ConnectionStruct> findSignalMatches(DBusSignal _sig) {
         List<ConnectionStruct> l;
         synchronized (sigrecips) {
@@ -206,32 +208,32 @@ public class DBusDaemon extends Thread implements Closeable {
         interrupt();
     }
 
-    private void removeConnection(ConnectionStruct c) {
+    private void removeConnection(ConnectionStruct _c) {
 
         boolean exists = false;
         synchronized (conns) {
-            if (conns.containsKey(c)) {
-                DBusDaemonReaderThread r = conns.get(c);
+            if (conns.containsKey(_c)) {
+                DBusDaemonReaderThread r = conns.get(_c);
                 exists = true;
                 r.stopRunning();
-                conns.remove(c);
+                conns.remove(_c);
             }
         }
         if (exists) {
             try {
-                if (null != c.socketChannel) {
-                    c.socketChannel.close();
+                if (null != _c.socketChannel) {
+                    _c.socketChannel.close();
                 }
-            } catch (IOException exIo) {
+            } catch (IOException _exIo) {
             }
 
             synchronized (names) {
                 List<String> toRemove = new ArrayList<>();
                 for (String name : names.keySet()) {
-                    if (names.get(name) == c) {
+                    if (names.get(name) == _c) {
                         toRemove.add(name);
                         try {
-                            send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, c.unique, ""));
+                            send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, _c.unique, ""));
                         } catch (DBusException dbe) {
                             LOGGER.debug("", dbe);
                         }
@@ -265,13 +267,13 @@ public class DBusDaemon extends Thread implements Closeable {
         System.exit(1);
     }
 
-    public static void saveFile(String data, String file) throws IOException {
-        try (PrintWriter w = new PrintWriter(new FileOutputStream(file))) {
-            w.println(data);
+    public static void saveFile(String _data, String _file) throws IOException {
+        try (PrintWriter w = new PrintWriter(new FileOutputStream(_file))) {
+            w.println(_data);
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] _args) throws Exception {
 
         String addr = null;
         String pidfile = null;
@@ -282,23 +284,23 @@ public class DBusDaemon extends Thread implements Closeable {
 
         // parse options
         try {
-            for (int i = 0; i < args.length; i++) {
-                if ("--help".equals(args[i]) || "-h".equals(args[i])) {
+            for (int i = 0; i < _args.length; i++) {
+                if ("--help".equals(_args[i]) || "-h".equals(_args[i])) {
                     syntax();
-                } else if ("--version".equals(args[i]) || "-v".equals(args[i])) {
+                } else if ("--version".equals(_args[i]) || "-v".equals(_args[i])) {
                     version();
-                } else if ("--listen".equals(args[i]) || "-l".equals(args[i])) {
-                    addr = args[++i];
-                } else if ("--pidfile".equals(args[i]) || "-p".equals(args[i])) {
-                    pidfile = args[++i];
-                } else if ("--addressfile".equals(args[i]) || "-a".equals(args[i])) {
-                    addrfile = args[++i];
-                } else if ("--print-address".equals(args[i]) || "-r".equals(args[i])) {
+                } else if ("--listen".equals(_args[i]) || "-l".equals(_args[i])) {
+                    addr = _args[++i];
+                } else if ("--pidfile".equals(_args[i]) || "-p".equals(_args[i])) {
+                    pidfile = _args[++i];
+                } else if ("--addressfile".equals(_args[i]) || "-a".equals(_args[i])) {
+                    addrfile = _args[++i];
+                } else if ("--print-address".equals(_args[i]) || "-r".equals(_args[i])) {
                     printaddress = true;
-                } else if ("--unix".equals(args[i]) || "-u".equals(args[i])) {
+                } else if ("--unix".equals(_args[i]) || "-u".equals(_args[i])) {
                     unix = true;
                     tcp = false;
-                } else if ("--tcp".equals(args[i]) || "-t".equals(args[i])) {
+                } else if ("--tcp".equals(_args[i]) || "-t".equals(_args[i])) {
                     tcp = true;
                     unix = false;
                 } else {
@@ -342,10 +344,10 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public static class ConnectionStruct {
-        private InputStreamMessageReader  inputReader;
-        private OutputStreamMessageWriter outputWriter;
-        private String                    unique;
-        private SocketChannel             socketChannel;
+        private final InputStreamMessageReader  inputReader;
+        private final OutputStreamMessageWriter outputWriter;
+        private final SocketChannel             socketChannel;
+        private String                          unique;
 
         ConnectionStruct(SocketChannel _sock) throws IOException {
             socketChannel = _sock;
@@ -508,14 +510,11 @@ public class DBusDaemon extends Thread implements Closeable {
                     sigrecips.add(connStruct);
                 }
             }
-
-            return;
         }
 
         @Override
         public void RemoveMatch(String _matchrule) throws MatchRuleInvalid {
             LOGGER.trace("Removing match rule: {}", _matchrule);
-            return;
         }
 
         @Override
@@ -565,16 +564,16 @@ public class DBusDaemon extends Thread implements Closeable {
                     }
                 } catch (InvocationTargetException ite) {
                     LOGGER.debug("", ite);
-                    send(_connStruct, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _msg, ite.getCause()));
+                    send(_connStruct, new Error("org.freedesktop.DBus", _msg, ite.getCause()));
                 } catch (DBusExecutionException dbee) {
                    LOGGER.debug("", dbee);
-                   send(_connStruct, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _msg, dbee));
+                   send(_connStruct, new Error("org.freedesktop.DBus", _msg, dbee));
                 } catch (Exception e) {
                     LOGGER.debug("", e);
-                    send(_connStruct, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
+                    send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
                 }
             } catch (NoSuchMethodException exNsm) {
-                send(_connStruct, new org.freedesktop.dbus.errors.Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
+                send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
             }
 
         }
@@ -738,9 +737,9 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public class DBusDaemonReaderThread extends Thread {
-        private ConnectionStruct                conn;
-        private WeakReference<ConnectionStruct> weakconn;
-        private volatile boolean                lrun = true;
+        private ConnectionStruct                      conn;
+        private final WeakReference<ConnectionStruct> weakconn;
+        private volatile boolean                      lrun = true;
 
         public DBusDaemonReaderThread(ConnectionStruct _conn) {
             this.conn = _conn;
@@ -787,11 +786,11 @@ public class DBusDaemon extends Thread implements Closeable {
 
 
     static class MagicMap<A, B> {
-        private final Logger          logger = LoggerFactory.getLogger(getClass());
+        private final Logger                logger = LoggerFactory.getLogger(getClass());
 
-        private Map<A, LinkedList<B>> m;
-        private LinkedList<A>         q;
-        private String                name;
+        private final Map<A, LinkedList<B>> m;
+        private final LinkedList<A>         q;
+        private final String                name;
 
         MagicMap(String _name) {
             m = new HashMap<>();

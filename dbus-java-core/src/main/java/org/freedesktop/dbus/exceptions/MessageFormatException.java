@@ -8,8 +8,8 @@ import org.freedesktop.dbus.interfaces.NonFatalException;
 @SuppressWarnings("serial")
 public class MessageFormatException extends DBusException implements NonFatalException
 {
-   public MessageFormatException(String message)
+   public MessageFormatException(String _message)
    {
-      super (message);
+      super (_message);
    }
 }

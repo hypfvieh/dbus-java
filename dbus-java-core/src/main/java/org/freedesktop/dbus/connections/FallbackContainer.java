@@ -10,30 +10,27 @@ import org.slf4j.LoggerFactory;
 
 public class FallbackContainer {
 
-    /**
-     * @param _abstractConnection
-     */
+    private final Logger                        logger    = LoggerFactory.getLogger(getClass());
+    private final Map<String[], ExportedObject> fallbacks = new HashMap<>();
+
     FallbackContainer() {
     }
-
-    private final Logger                  logger    = LoggerFactory.getLogger(getClass());
-    private Map<String[], ExportedObject> fallbacks = new HashMap<>();
-
-    public synchronized void add(String path, ExportedObject eo) {
-        logger.debug("Adding fallback on {} of {}", path, eo);
-        fallbacks.put(path.split("/"), eo);
+    
+    public synchronized void add(String _path, ExportedObject _eo) {
+        logger.debug("Adding fallback on {} of {}", _path, _eo);
+        fallbacks.put(_path.split("/"), _eo);
     }
 
-    public synchronized void remove(String path) {
-        logger.debug("Removing fallback on {}", path);
-        fallbacks.remove(path.split("/"));
+    public synchronized void remove(String _path) {
+        logger.debug("Removing fallback on {}", _path);
+        fallbacks.remove(_path.split("/"));
     }
 
-    public synchronized ExportedObject get(String path) {
+    public synchronized ExportedObject get(String _path) {
         int best = 0;
         int i = 0;
         ExportedObject bestobject = null;
-        String[] pathel = path.split("/");
+        String[] pathel = _path.split("/");
         for (String[] fbpath : fallbacks.keySet()) {
             logger.trace("Trying fallback path {} to match {}",
                     LoggingHelper.arraysDeepString(logger.isTraceEnabled(), fbpath),
@@ -49,7 +46,7 @@ public class FallbackContainer {
             logger.trace("Matches {} bestobject now {}", i, bestobject);
         }
 
-        logger.debug("Found fallback for {} of {}", path, bestobject);
+        logger.debug("Found fallback for {} of {}", _path, bestobject);
         return bestobject;
     }
 }

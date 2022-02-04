@@ -22,18 +22,18 @@ public interface ObjectManager extends DBusInterface {
     /**
      * Signal generated when a new interface is added
      */
-    public static class InterfacesAdded extends DBusSignal {
+    class InterfacesAdded extends DBusSignal {
         public final DBusPath                             signalSource;
         public final String                               objectPath;
 
         public final Map<String, Map<String, Variant<?>>> interfaces;
 
-        public InterfacesAdded(String _objectPath, DBusPath _source, Map<String, Map<String, Variant<?>>> interfaces)
+        public InterfacesAdded(String _objectPath, DBusPath _source, Map<String, Map<String, Variant<?>>> _interfaces)
                 throws DBusException {
-            super(_objectPath, _source, interfaces);
-            this.objectPath = _objectPath;
-            this.signalSource = _source;
-            this.interfaces = interfaces;
+            super(_objectPath, _source, _interfaces);
+            objectPath = _objectPath;
+            signalSource = _source;
+            interfaces = _interfaces;
         }
 
         /**
@@ -73,18 +73,18 @@ public interface ObjectManager extends DBusInterface {
     /**
      * Signal generated when an interface is removed
      */
-    public static class InterfacesRemoved extends DBusSignal {
+    class InterfacesRemoved extends DBusSignal {
         public final DBusPath     signalSource;
         public final String       objectPath;
 
         public final List<String> interfaces;
 
-        public InterfacesRemoved(String _objectPath, DBusPath _source, List<String> interfaces)
+        public InterfacesRemoved(String _objectPath, DBusPath _source, List<String> _interfaces)
                 throws DBusException {
-            super(_objectPath, _source, interfaces);
-            this.objectPath = _objectPath;
-            this.signalSource = _source;
-            this.interfaces = interfaces;
+            super(_objectPath, _source, _interfaces);
+            objectPath = _objectPath;
+            signalSource = _source;
+            interfaces = _interfaces;
         }
 
         /**

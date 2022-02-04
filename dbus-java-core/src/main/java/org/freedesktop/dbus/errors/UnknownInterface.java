@@ -8,7 +8,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 public class UnknownInterface extends DBusExecutionException {
     private static final long serialVersionUID = -6296696668185701195L;
 
-    public UnknownInterface(String message) {
-        super(message);
+    public UnknownInterface(String _message) {
+        super(_message);
     }
 }

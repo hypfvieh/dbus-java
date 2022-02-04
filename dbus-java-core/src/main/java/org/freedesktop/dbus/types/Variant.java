@@ -3,6 +3,7 @@ package org.freedesktop.dbus.types;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -120,13 +121,27 @@ public class Variant<T> {
         return "[" + value + "]";
     }
 
-    /** Compare this Variant with another by comparing contents.
-     * @param other other object
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
+    }
+
+    /** 
+     * Compare this Variant with another by comparing contents.
+     * @param _other other object
      * @return boolean
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public boolean equals(Object other) {
-        return null != other && other instanceof Variant && this.value.equals(((Variant<? extends Object>) other).value);
+    public boolean equals(Object _obj) {
+        if (this == _obj) {
+            return true;
+        }
+        if (!(_obj instanceof Variant)) {
+            return false;
+        }
+        Variant<?> other = (Variant<?>) _obj;
+        return  Objects.equals(value, other.value);
     }
+    
+    
 }

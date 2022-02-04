@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory;
  * disappear and automatically remove them from the set.
  */
 public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChanged> {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private Set<String> addresses;
+    private final Logger      logger = LoggerFactory.getLogger(getClass());
+    private final Set<String> addresses;
 
     public PeerSet(DBusConnection _connection) {
-        addresses = new TreeSet<String>();
+        addresses = new TreeSet<>();
         try {
             _connection.addSigHandler(new DBusMatchRule(DBus.NameOwnerChanged.class, null, null), this);
         } catch (DBusException dbe) {
@@ -31,18 +31,18 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
     }
 
     @Override
-    public void handle(DBus.NameOwnerChanged noc) {
-        logger.debug("Received NameOwnerChanged({}, {}, {})", noc.name, noc.oldOwner, noc.newOwner);
-        if ("".equals(noc.newOwner) && addresses.contains(noc.name)) {
-            remove(noc.name);
+    public void handle(DBus.NameOwnerChanged _noc) {
+        logger.debug("Received NameOwnerChanged({}, {}, {})", _noc.name, _noc.oldOwner, _noc.newOwner);
+        if ("".equals(_noc.newOwner) && addresses.contains(_noc.name)) {
+            remove(_noc.name);
         }
     }
 
     @Override
-    public boolean add(String address) {
-        logger.debug("Adding {}", address);
+    public boolean add(String _address) {
+        logger.debug("Adding {}", _address);
         synchronized (addresses) {
-            return addresses.add(address);
+            return addresses.add(_address);
         }
     }
 
@@ -61,19 +61,19 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
     }
 
     @Override
-    public boolean contains(Object o) {
-        return addresses.contains(o);
+    public boolean contains(Object _o) {
+        return addresses.contains(_o);
     }
 
     @Override
-    public boolean containsAll(Collection<?> os) {
-        return addresses.containsAll(os);
+    public boolean containsAll(Collection<?> _os) {
+        return addresses.containsAll(_os);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o instanceof PeerSet) {
-            return ((PeerSet) o).addresses.equals(addresses);
+    public boolean equals(Object _o) {
+        if (_o instanceof PeerSet) {
+            return ((PeerSet) _o).addresses.equals(addresses);
         } else {
             return false;
         }
@@ -95,24 +95,24 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
     }
 
     @Override
-    public boolean remove(Object o) {
-        logger.debug("Removing {}", o);
+    public boolean remove(Object _o) {
+        logger.debug("Removing {}", _o);
         synchronized (addresses) {
-            return addresses.remove(o);
+            return addresses.remove(_o);
         }
     }
 
     @Override
-    public boolean removeAll(Collection<?> os) {
+    public boolean removeAll(Collection<?> _os) {
         synchronized (addresses) {
-            return addresses.removeAll(os);
+            return addresses.removeAll(_os);
         }
     }
 
     @Override
-    public boolean retainAll(Collection<?> os) {
+    public boolean retainAll(Collection<?> _os) {
         synchronized (addresses) {
-            return addresses.retainAll(os);
+            return addresses.retainAll(_os);
         }
     }
 
@@ -129,9 +129,9 @@ public class PeerSet implements Set<String>, DBusSigHandler<DBus.NameOwnerChange
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <T> T[] toArray(T[] _a) {
         synchronized (addresses) {
-            return addresses.toArray(a);
+            return addresses.toArray(_a);
         }
     }
 }

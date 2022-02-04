@@ -8,8 +8,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Keeps track of the exported objects for introspection data */
 public class ObjectTree {
+    public static final Pattern SLASH_PATTERN = Pattern.compile("/");
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private TreeNode     root;
 
     class TreeNode {
         // CHECKSTYLE:OFF
@@ -31,13 +33,10 @@ public class ObjectTree {
         }
     }
 
-    private TreeNode root;
-
     public ObjectTree() {
         root = new TreeNode("");
     }
 
-    public static final Pattern SLASH_PATTERN = Pattern.compile("/");
 
     private TreeNode recursiveFind(TreeNode _current, String _path) {
         if ("/".equals(_path)) {

@@ -44,8 +44,6 @@ public class InputStreamMessageReader implements IMessageReader {
                 rv = inputChannel.read(wrapBuf);
             } catch (SocketTimeoutException exSt) {
                 return null;
-            } catch (EOFException _ex) {
-                return null;
             } catch (IOException _ex) {
                 throw _ex;
             }

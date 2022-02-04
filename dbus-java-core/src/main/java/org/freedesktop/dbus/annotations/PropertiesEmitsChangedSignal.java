@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 public @interface PropertiesEmitsChangedSignal {
     EmitChangeSignal value();
     
-    public static enum EmitChangeSignal {
+    enum EmitChangeSignal {
         TRUE, INVALIDATES, CONST, FALSE;
         
         public String toString() {

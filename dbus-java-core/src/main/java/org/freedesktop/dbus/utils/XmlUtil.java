@@ -128,10 +128,10 @@ public final class XmlUtil {
      * @param _nodeList collection of nodes
      * @return list of elements
      */
-    public static List<Element> convertToElementList(org.w3c.dom.NodeList _nodeList) {
-        List<org.w3c.dom.Element> elemList = new ArrayList<>();
+    public static List<Element> convertToElementList(NodeList _nodeList) {
+        List<Element> elemList = new ArrayList<>();
         for (int i = 0; i < _nodeList.getLength(); i++) {
-            Element elem = (org.w3c.dom.Element) _nodeList.item(i);
+            Element elem = (Element) _nodeList.item(i);
             elemList.add(elem);
         }
         return elemList;

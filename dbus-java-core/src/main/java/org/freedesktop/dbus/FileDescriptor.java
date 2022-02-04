@@ -17,24 +17,24 @@ public class FileDescriptor {
     
     private final Logger      logger          = LoggerFactory.getLogger(getClass());
     
-    private int m_fd;
+    private final int fd;
     
     public FileDescriptor(int _fd){
-        m_fd = _fd;
+        fd = _fd;
     }
     
     // TODO this should have a better exception?
     public FileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
-        m_fd = getFileDescriptor(_data);
+        fd = getFileDescriptor(_data);
     }
     
     // TODO this should have a better exception?
     public java.io.FileDescriptor toJavaFileDescriptor() throws MarshallingException {
-        return createFileDescriptorByReflection(m_fd);
+        return createFileDescriptorByReflection(fd);
     }
     
     public int getIntFileDescriptor(){
-        return m_fd;
+        return fd;
     }
     
     private int getFileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {

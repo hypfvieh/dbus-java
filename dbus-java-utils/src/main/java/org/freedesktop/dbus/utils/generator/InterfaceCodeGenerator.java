@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
@@ -53,10 +54,10 @@ public class InterfaceCodeGenerator {
     private final DocumentBuilderFactory docFac = DocumentBuilderFactory.newInstance();
     private final Logger                 logger = LoggerFactory.getLogger(getClass());
 
-    private String                       nodeName;
-    private String                       busName;
+    private final String                 nodeName;
+    private final String                 busName;
 
-    private String                       introspectionData;
+    private final String                 introspectionData;
 
     public InterfaceCodeGenerator(String _introspectionData, String _objectPath, String _busName) {
         introspectionData = _introspectionData;
@@ -87,11 +88,9 @@ public class InterfaceCodeGenerator {
 
         Element root = document.getDocumentElement();
 
-        if (!Util.isBlank(nodeName) && !Util.isBlank(root.getAttribute("name"))) {
-            if (!nodeName.equals(root.getAttribute("name"))) {
-                logger.error("Retrieved node '{}' does not match requested node name '{}'!", root.getAttribute("name"), nodeName);
-                return null;
-            }
+        if (!Util.isBlank(nodeName) && !Util.isBlank(root.getAttribute("name")) && !nodeName.equals(root.getAttribute("name"))) {
+            logger.error("Retrieved node '{}' does not match requested node name '{}'!", root.getAttribute("name"), nodeName);
+            return null;
         }
 
         List<Element> interfaceElements = convertToElementList(root.getChildNodes());
@@ -124,11 +123,11 @@ public class InterfaceCodeGenerator {
      * @param _nodeList NodeList to convert
      * @return List of Element, maybe empty
      */
-    static List<Element> convertToElementList(org.w3c.dom.NodeList _nodeList) {
-        List<org.w3c.dom.Element> elemList = new ArrayList<>();
+    static List<Element> convertToElementList(NodeList _nodeList) {
+        List<Element> elemList = new ArrayList<>();
         for (int i = 0; i < _nodeList.getLength(); i++) {
-            if (_nodeList.item(i) instanceof org.w3c.dom.Element) {
-                Element elem = (org.w3c.dom.Element) _nodeList.item(i);
+            if (_nodeList.item(i) instanceof Element) {
+                Element elem = (Element) _nodeList.item(i);
                 elemList.add(elem);
             }
         }
@@ -206,7 +205,7 @@ public class InterfaceCodeGenerator {
 
         String className = _signalElement.getAttribute("name");
         if (className.contains(".")) {
-            className = className.substring(className.lastIndexOf("."));
+            className = className.substring(className.lastIndexOf('.'));
         }
 
         ClassBuilderInfo innerClass = new ClassBuilderInfo();
@@ -477,7 +476,7 @@ public class InterfaceCodeGenerator {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] _args) {
 
         String busName = null;
         String outputDir = null;
@@ -486,8 +485,8 @@ public class InterfaceCodeGenerator {
         String objectPath = null;
         String inputFile = null;
 
-        for (int i = 0; i < args.length; i++) {
-            String p = args[i];
+        for (int i = 0; i < _args.length; i++) {
+            String p = _args[i];
             if ("--system".equals(p) || "-y".equals(p)) {
                 busType = DBusBusType.SYSTEM;
             } else if ("--session".equals(p) || "-s".equals(p)) {
@@ -501,15 +500,15 @@ public class InterfaceCodeGenerator {
                 version();
                 System.exit(0);
             } else if ("--outputDir".equals(p) || "-o".equals(p)) {
-                if (args.length > i) {
-                    outputDir = args[++i];
+                if (_args.length > i) {
+                    outputDir = _args[++i];
                 } else {
                     printHelp();
                     System.exit(0);
                 }
             } else if ("--inputFile".equals(p) || "-i".equals(p)) {
-                if (args.length > i) {
-                    inputFile = args[++i];
+                if (_args.length > i) {
+                    inputFile = _args[++i];
                 } else {
                     printHelp();
                     System.exit(0);
@@ -604,7 +603,7 @@ public class InterfaceCodeGenerator {
         System.out.println("If busname (not empty, blank and not '*') is given, then only interfaces starting with the given busname will be extracted.");
     }
 
-    static enum DbusInterfaceToFqcn {
+    enum DbusInterfaceToFqcn {
         PACKAGENAME,
         ORIG_PKGNAME,
         CLASSNAME,
@@ -613,11 +612,11 @@ public class InterfaceCodeGenerator {
         public static Map<DbusInterfaceToFqcn, String> toFqcn(String _interfaceName) {
             String packageName;
             if (_interfaceName.contains(".")) {
-                packageName = _interfaceName.substring(0, _interfaceName.lastIndexOf("."));
+                packageName = _interfaceName.substring(0, _interfaceName.lastIndexOf('.'));
             } else {
                 packageName = _interfaceName;
             }
-            String className = _interfaceName.substring(_interfaceName.lastIndexOf(".") + 1);
+            String className = _interfaceName.substring(_interfaceName.lastIndexOf('.') + 1);
 
             Map<DbusInterfaceToFqcn, String> map = new LinkedHashMap<>();
 

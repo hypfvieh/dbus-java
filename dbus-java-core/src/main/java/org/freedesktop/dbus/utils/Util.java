@@ -36,12 +36,15 @@ public final class Util {
 
     static {
         StringBuilder tmp = new StringBuilder();
-        for (char ch = '0'; ch <= '9'; ++ch)
+        for (char ch = '0'; ch <= '9'; ++ch) {
           tmp.append(ch);
-        for (char ch = 'a'; ch <= 'z'; ++ch)
+        }
+        for (char ch = 'a'; ch <= 'z'; ++ch) {
           tmp.append(ch);
-        for (char ch = 'A'; ch <= 'Z'; ++ch)
+        }
+        for (char ch = 'A'; ch <= 'Z'; ++ch) {
             tmp.append(ch);
+        }
         SYMBOLS = tmp.toString().toCharArray();
     }
 
@@ -102,7 +105,7 @@ public final class Util {
             return true;
         }
 
-        return _str.trim().isEmpty();
+        return _str.isBlank();
     }
 
     /**
@@ -136,8 +139,9 @@ public final class Util {
         }
         Random random = new Random();
         char[] buf = new char[_length];
-        for (int idx = 0; idx < buf.length; ++idx)
+        for (int idx = 0; idx < buf.length; ++idx) {
             buf[idx] = SYMBOLS[random.nextInt(SYMBOLS.length)];
+        }
         return new String(buf);
     }
 
@@ -338,7 +342,7 @@ public final class Util {
                 }
             }
 
-            return fileContent.size() > 0 ? fileContent : null;
+            return !fileContent.isEmpty() ? fileContent : null;
         } catch (IOException _ex) {
             if (!_silent) {
                 LOGGER.warn("Error while reading file:", _ex);
@@ -372,22 +376,11 @@ public final class Util {
         }
         allText += _fileContent;
 
-        OutputStreamWriter writer = null;
-        try {
-            writer = new OutputStreamWriter(new FileOutputStream(_fileName), _charset);
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(_fileName), _charset)) {
             writer.write(allText);
         } catch (IOException _ex) {
             LOGGER.error("Could not write file to '" + _fileName + "'", _ex);
             return false;
-        } finally {
-            try {
-                if (writer != null) {
-                    writer.close();
-                }
-            } catch (IOException _ex) {
-                LOGGER.error("Error while closing file '" + _fileName + "'", _ex);
-                return false;
-            }
         }
 
         return true;
@@ -426,12 +419,12 @@ public final class Util {
      */
     public static boolean isMacOs() {
         String osName = System.getProperty("os.name");
-        return osName == null ? false : osName.toLowerCase().startsWith("mac");
+        return osName != null && osName.toLowerCase().startsWith("mac");
     }
 
     public static boolean isFreeBsd() {
         String osName = System.getProperty("os.name");
-        return osName == null ? false : osName.toLowerCase().startsWith("freebsd");
+        return osName != null && osName.toLowerCase().startsWith("freebsd");
     }
 
     /**
@@ -440,7 +433,7 @@ public final class Util {
      */
     public static boolean isWindows() {
         String osName = System.getProperty("os.name");
-        return osName == null ? false : osName.toLowerCase().startsWith("windows");
+        return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
     /**
@@ -453,7 +446,7 @@ public final class Util {
         if (version.startsWith("1.")) {
             version = version.substring(2, 3);
         } else {
-            int dot = version.indexOf(".");
+            int dot = version.indexOf('.');
             if (dot != -1) {
                 version = version.substring(0, dot);
             }

@@ -49,17 +49,17 @@ class SaveFileAction extends TabbedSaveAction implements ChangeListener {
 
     }
 
-    SaveFileAction(JTabbedPane tabbedPane) {
-        super(tabbedPane);
+    SaveFileAction(JTabbedPane _tabbedPane) {
+        super(_tabbedPane);
 
         enableAndSetName();
 
-        tabbedPane.addChangeListener(this);
+        _tabbedPane.addChangeListener(this);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stateChanged(ChangeEvent e) {
+    public void stateChanged(ChangeEvent _event) {
         enableAndSetName();
     }
 

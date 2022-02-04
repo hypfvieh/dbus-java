@@ -11,10 +11,7 @@ import java.util.TimeZone;
  */
 public class TimeMeasure {
 
-    public static interface ITimeMeasureFormat {
-        public String format(long _durationInMillis);
-    }
-
+   
     /** Start time in milliseconds. */
     private volatile long startTm;
 
@@ -122,6 +119,10 @@ public class TimeMeasure {
             return String.valueOf(getElapsed());
         }
         return tmf.format(getElapsed());
+    }
+
+    public interface ITimeMeasureFormat {
+        String format(long _durationInMillis);
     }
 
 }

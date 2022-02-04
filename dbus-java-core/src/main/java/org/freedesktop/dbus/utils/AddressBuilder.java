@@ -89,10 +89,11 @@ public class AddressBuilder {
         File uuidfile = determineMachineIdFile(_dbusMachineIdFile);
         if(uuidfile != null) {
             String uuid = Util.readFileToString(uuidfile);
-            if(uuid.length() > 0)
+            if (uuid.length() > 0) {
                 return uuid;
-            else
+            } else {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address: MachineId file is empty.");
+            }
         }
         if (Util.isWindows() || Util.isMacOs()) {
             /* Linux *should* have a machine-id */

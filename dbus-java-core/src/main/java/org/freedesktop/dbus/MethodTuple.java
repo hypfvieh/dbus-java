@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 public class MethodTuple {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private String name;
-    private String sig;
+    private final String name;
+    private String       sig;
 
     public MethodTuple(String _name, String _sig) {
         this.name = _name;
@@ -20,8 +20,8 @@ public class MethodTuple {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return o.getClass().equals(MethodTuple.class) && ((MethodTuple) o).name.equals(this.name) && ((MethodTuple) o).sig.equals(this.sig);
+    public boolean equals(Object _o) {
+        return _o.getClass().equals(MethodTuple.class) && ((MethodTuple) _o).name.equals(this.name) && ((MethodTuple) _o).sig.equals(this.sig);
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.freedesktop.dbus.Struct;
  * Should be used whenever you need a Type variable for a struct.
  */
 public class DBusStructType implements ParameterizedType {
-    private Type[] contents;
+    private final Type[] contents;
 
     /**
     * Create a struct type.

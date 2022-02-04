@@ -58,31 +58,34 @@ import org.xml.sax.SAXException;
  */
 public class DBusViewer {
     private static final Map<String, DBusBusType> CONNECTION_TYPES = new HashMap<>();
+    private static final String DOC_TYPE = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
 
     static {
         CONNECTION_TYPES.put("System", DBusBusType.SYSTEM);
         CONNECTION_TYPES.put("Session", DBusBusType.SESSION);
     }
 
+    private final List<DBusConnection> connections;
+
     /** Create the DBusViewer
      *
-     * @param connectionTypes The map of connection types
+     * @param _connectionTypes The map of connection types
      */
-    public DBusViewer(final Map<String, DBusBusType> connectionTypes) {
-        connections = new ArrayList<DBusConnection>(connectionTypes.size());
+    public DBusViewer(final Map<String, DBusBusType> _connectionTypes) {
+        connections = new ArrayList<>(_connectionTypes.size());
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
 
                 final JTabbedPane tabbedPane = new JTabbedPane();
-                addTabs(tabbedPane, connectionTypes);
+                addTabs(tabbedPane, _connectionTypes);
                 final JFrame frame = new JFrame("Dbus Viewer");
                 frame.setContentPane(tabbedPane);
                 frame.setSize(600, 400);
                 frame.addWindowListener(new WindowAdapter() {
                     @Override
-                    public void windowClosing(WindowEvent e) {
+                    public void windowClosing(WindowEvent _event) {
                         frame.dispose();
                         for (DBusConnection connection : connections) {
                             connection.disconnect();
@@ -95,31 +98,31 @@ public class DBusViewer {
         });
     }
 
-    private List<DBusConnection> connections;
 
     /**
      * @param args args
      */
-    public static void main(String[] args) {
+    public static void main(String[] _args) {
         new DBusViewer(CONNECTION_TYPES);
     }
 
     /** Add tabs for each supplied connection type
-     * @param tabbedPane The tabbed pane
-     * @param connectionTypes The connection
+     * @param _tabbedPane The tabbed pane
+     * @param _connectionTypes The connection
      */
-    private void addTabs(final JTabbedPane tabbedPane, final Map<String, DBusBusType> connectionTypes) {
-        for (final String key : connectionTypes.keySet()) {
+    private void addTabs(final JTabbedPane _tabbedPane, final Map<String, DBusBusType> _connectionTypes) {
+        for (final String key : _connectionTypes.keySet()) {
             final JLabel label = new JLabel("Processing DBus for " + key);
-            tabbedPane.addTab(key, label);
+            _tabbedPane.addTab(key, label);
         }
         Runnable loader = new Runnable() {
             @Override
             public void run() {
-                boolean users = true, owners = true;
-                for (final String key : connectionTypes.keySet()) {
+                boolean users = true; 
+                boolean owners = true;
+                for (final String key : _connectionTypes.keySet()) {
                     try {
-                        DBusConnection conn = DBusConnectionBuilder.forType(connectionTypes.get(key)).build();
+                        DBusConnection conn = DBusConnectionBuilder.forType(_connectionTypes.get(key)).build();
                         connections.add(conn);
 
                         final TableModel tableModel = listDBusConnection(users, owners, conn);
@@ -127,7 +130,7 @@ public class DBusViewer {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                int index = tabbedPane.indexOfTab(key);
+                                int index = _tabbedPane.indexOfTab(key);
                                 final JTable table = new JTable(tableModel);
 
                                 JScrollPane scrollPane = new JScrollPane(table);
@@ -141,28 +144,18 @@ public class DBusViewer {
 
                                 tab.add(southPanel, BorderLayout.SOUTH);
 
-                                tabbedPane.setComponentAt(index, tab);
+                                _tabbedPane.setComponentAt(index, tab);
 
                             }
                         });
-                    } catch (final DBusException e) {
-                        e.printStackTrace();
+                    } catch (DBusExecutionException | DBusException _ex) {
+                        _ex.printStackTrace();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                int index = tabbedPane.indexOfTab(key);
-                                JLabel label = (JLabel) tabbedPane.getComponentAt(index);
-                                label.setText("Could not load Dbus information for " + key + ":" + e.getMessage());
-                            }
-                        });
-                    } catch (final DBusExecutionException e) {
-                        e.printStackTrace();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                int index = tabbedPane.indexOfTab(key);
-                                JLabel label = (JLabel) tabbedPane.getComponentAt(index);
-                                label.setText("Could not load Dbus information for " + key + ":" + e.getMessage());
+                                int index = _tabbedPane.indexOfTab(key);
+                                JLabel label = (JLabel) _tabbedPane.getComponentAt(index);
+                                label.setText("Could not load Dbus information for " + key + ":" + _ex.getMessage());
                             }
                         });
                     }
@@ -175,49 +168,43 @@ public class DBusViewer {
     }
 
     /* based on code from org.freedesktop.dbus.ListDBus */
-    private DBusTableModel listDBusConnection(boolean users, boolean owners, DBusConnection conn) throws DBusException {
+    private DBusTableModel listDBusConnection(boolean _users, boolean _owners, DBusConnection _conn) throws DBusException {
         DBusTableModel model = new DBusTableModel();
 
-        DBus dbus = conn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
+        DBus dbus = _conn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
         String[] names = dbus.ListNames();
 
-        ParsingContext p = new ParsingContext(conn);
+        ParsingContext p = new ParsingContext(_conn);
 
         for (String name : names) {
-            List<DBusEntry> results = new ArrayList<DBusEntry>();
+            List<DBusEntry> results = new ArrayList<>();
             try {
                 // String objectpath = '/' + name.replace('.', '/');
 
                 p.visitNode(name, "/");
-            } catch (DBusException e) {
-                e.printStackTrace();
-            } catch (DBusExecutionException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException | SAXException | DBusException | DBusExecutionException _ex) {
+                _ex.printStackTrace();
             }
             results = p.getResult();
             p.reset();
 
-            if (results.size() > 0) {
-                if (users) {
+            if (!results.isEmpty()) {
+                if (_users) {
                     try {
                         final UInt32 user = dbus.GetConnectionUnixUser(name);
                         for (DBusEntry entry : results) {
                             entry.setUser(user);
                         }
-                    } catch (DBusExecutionException exDbe) {
+                    } catch (DBusExecutionException _exDbe) {
                     }
                 }
-                if (!name.startsWith(":") && owners) {
+                if (!name.startsWith(":") && _owners) {
                     try {
                         final String owner = dbus.GetNameOwner(name);
                         for (DBusEntry entry : results) {
                             entry.setOwner(owner);
                         }
-                    } catch (DBusExecutionException exDbe) {
+                    } catch (DBusExecutionException _exDbe) {
                     }
                 }
                 for (DBusEntry entry : results) {
@@ -228,31 +215,29 @@ public class DBusViewer {
         return model;
     }
 
-    private static final String DOC_TYPE = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
 
     class ParsingContext {
-        private DBusConnection  conn;
-        private DocumentBuilder builder;
-        private List<DBusEntry> result;
+        private final DBusConnection conn;
+        private DocumentBuilder      builder;
+        private List<DBusEntry>      result;
 
         ParsingContext(DBusConnection _conn) {
             this.conn = _conn;
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             try {
                 builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException exPc) {
-                // TODO Auto-generated catch block
-                throw new RuntimeException("Error during parser init: " + exPc.getMessage(), exPc);
+            } catch (ParserConfigurationException _exPc) {
+                throw new RuntimeException("Error during parser init: " + _exPc.getMessage(), _exPc);
             }
             reset();
 
         }
 
-        DBusEntry addEntry(String name, String path) throws DBusException {
+        DBusEntry addEntry(String _name, String _path) throws DBusException {
             DBusEntry entry = new DBusEntry();
-            entry.setName(name);
-            entry.setPath(path);
-            Introspectable introspectable = conn.getRemoteObject(name, path, Introspectable.class);
+            entry.setName(_name);
+            entry.setPath(_path);
+            Introspectable introspectable = conn.getRemoteObject(_name, _path, Introspectable.class);
             entry.setIntrospectable(introspectable);
 
             result.add(entry);
@@ -260,13 +245,13 @@ public class DBusViewer {
             return entry;
         }
 
-        public void visitNode(String name, String path) throws DBusException, SAXException, IOException {
-            System.out.println("visit " + name + ":" + path);
-            if ("/org/freedesktop/DBus/Local".equals(path)) {
+        public void visitNode(String _name, String _path) throws DBusException, SAXException, IOException {
+            System.out.println("visit " + _name + ":" + _path);
+            if ("/org/freedesktop/DBus/Local".equals(_path)) {
                 // this will disconnects us.
                 return;
             }
-            DBusEntry e = addEntry(name, path);
+            DBusEntry e = addEntry(_name, _path);
             String introspectData = e.getIntrospectable().Introspect();
 
             Document document = builder.parse(new InputSource(new StringReader(introspectData.replace(DOC_TYPE, ""))));
@@ -282,10 +267,10 @@ public class DBusViewer {
                     Node nameNode = node.getAttributes().getNamedItem("name");
                     if (nameNode != null) {
                         try {
-                            if (path.endsWith("/")) {
-                                visitNode(name, path + nameNode.getNodeValue());
+                            if (_path.endsWith("/")) {
+                                visitNode(_name, _path + nameNode.getNodeValue());
                             } else {
-                                visitNode(name, path + '/' + nameNode.getNodeValue());
+                                visitNode(_name, _path + '/' + nameNode.getNodeValue());
                             }
                         } catch (DBusException ex) {
                             ex.printStackTrace();
@@ -302,7 +287,7 @@ public class DBusViewer {
         }
 
         void reset() {
-            result = new ArrayList<DBusEntry>();
+            result = new ArrayList<>();
         }
 
     }

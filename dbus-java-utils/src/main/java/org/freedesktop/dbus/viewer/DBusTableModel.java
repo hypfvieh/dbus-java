@@ -31,7 +31,7 @@ class DBusTableModel extends AbstractTableModel {
             NAME, PATH, USER, OWNER, INTROSPECTABLE
     };
 
-    private List<DBusEntry>     entries        = new ArrayList<DBusEntry>();
+    private final List<DBusEntry> entries        = new ArrayList<>();
 
     /** {@inheritDoc} */
     @Override
@@ -41,10 +41,10 @@ class DBusTableModel extends AbstractTableModel {
 
     /** Add a row to the table model
      *
-     * @param entry The dbus entry to add
+     * @param _entry The dbus entry to add
      */
-    public void add(DBusEntry entry) {
-        entries.add(entry);
+    public void add(DBusEntry _entry) {
+        entries.add(_entry);
     }
 
     /** {@inheritDoc} */
@@ -55,22 +55,22 @@ class DBusTableModel extends AbstractTableModel {
 
     /** {@inheritDoc} */
     @Override
-    public String getColumnName(int column) {
-        return columns[column];
+    public String getColumnName(int _column) {
+        return columns[_column];
     }
 
     /** Get a row of the table
-     * @param row The row index
+     * @param _row The row index
      * @return The table row
      */
-    public DBusEntry getEntry(int row) {
-        return entries.get(row);
+    public DBusEntry getEntry(int _row) {
+        return entries.get(_row);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Class<?> getColumnClass(int columnIndex) {
-        String columnName = getColumnName(columnIndex);
+    public Class<?> getColumnClass(int _columnIndex) {
+        String columnName = getColumnName(_columnIndex);
         if (columnName.equals(NAME)) {
             return String.class;
         }
@@ -83,14 +83,14 @@ class DBusTableModel extends AbstractTableModel {
         } else if (columnName.equals(INTROSPECTABLE)) {
             return Boolean.class;
         }
-        return super.getColumnClass(columnIndex);
+        return super.getColumnClass(_columnIndex);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        DBusEntry entry = getEntry(rowIndex);
-        String columnName = getColumnName(columnIndex);
+    public Object getValueAt(int _rowIndex, int _columnIndex) {
+        DBusEntry entry = getEntry(_rowIndex);
+        String columnName = getColumnName(_columnIndex);
         if (columnName.equals(NAME)) {
             return entry.getName();
         }

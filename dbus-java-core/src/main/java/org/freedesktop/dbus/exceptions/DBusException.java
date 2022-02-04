@@ -8,10 +8,10 @@ public class DBusException extends Exception {
 
     /**
     * Create an exception with the specified message
-    * @param message message
+    * @param _message message
     */
-    public DBusException(String message) {
-        super(message);
+    public DBusException(String _message) {
+        super(_message);
     }
 
     public DBusException() {

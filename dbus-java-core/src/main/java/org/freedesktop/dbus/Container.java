@@ -13,17 +13,16 @@ import org.freedesktop.dbus.annotations.Position;
  * and holds common methods.
  */
 public abstract class Container {
-    private static Map<Type, Type[]> typecache = new HashMap<>();
+    private static Map<Type, Type[]> typecache  = new HashMap<>();
+    private Object[]                 parameters = null;
 
-    static void putTypeCache(Type k, Type[] v) {
-        typecache.put(k, v);
+    static void putTypeCache(Type _k, Type[] _v) {
+        typecache.put(_k, _v);
     }
 
-    static Type[] getTypeCache(Type k) {
-        return typecache.get(k);
+    static Type[] getTypeCache(Type _k) {
+        return typecache.get(_k);
     }
-
-    private Object[] parameters = null;
 
     Container() {
     }
@@ -43,7 +42,7 @@ public abstract class Container {
             }
             try {
                 args[p.value()] = f.get(this);
-            } catch (IllegalAccessException exIa) {
+            } catch (IllegalAccessException _exIa) {
             }
         }
 
@@ -80,9 +79,16 @@ public abstract class Container {
     }
 
     @Override
-    public final boolean equals(Object other) {
-        if (other instanceof Container) {
-            Container that = (Container) other;
+    public final boolean equals(Object _other) {
+        if (this == _other) {
+            return true;
+        }
+        if (_other == null) {
+            return false;
+        }
+    
+        if (_other instanceof Container) {
+            Container that = (Container) _other;
             if (this.getClass().equals(that.getClass())) {
                 return Arrays.equals(this.getParameters(), that.getParameters());
             } else {
@@ -92,4 +98,13 @@ public abstract class Container {
             return false;
         }
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.deepHashCode(parameters);
+        return result;
+    }
+    
 }

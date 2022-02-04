@@ -127,7 +127,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      * @return true if running, false otherwise
      */
     public boolean isRunning() {
-        return daemonThread == null ? false : daemonThread.isRunning();
+        return daemonThread != null && daemonThread.isRunning();
     }
 
     /**

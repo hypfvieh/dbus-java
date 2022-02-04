@@ -10,10 +10,10 @@ public class DBusExecutionException extends RuntimeException {
 
     /**
     * Create an exception with the specified message
-    * @param message message
+    * @param _message message
     */
-    public DBusExecutionException(String message) {
-        super(message);
+    public DBusExecutionException(String _message) {
+        super(_message);
     }
 
     public void setType(String _type) {
@@ -27,9 +27,10 @@ public class DBusExecutionException extends RuntimeException {
     * @return string
     */
     public String getType() {
-        if (null == type)
+        if (null == type) {
             return getClass().getName();
-        else
+        } else {
             return type;
+        }
     }
 }

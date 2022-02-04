@@ -24,12 +24,12 @@ public final class ListDBus {
         System.exit(1);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] _args) throws Exception {
         boolean owners = false;
         boolean users = false;
         DBusBusType connection = DBusBusType.SESSION;
 
-        for (String a : args) {
+        for (String a : _args) {
             if ("--help".equals(a)) {
                 syntax();
             } else if ("-h".equals(a)) {
@@ -66,7 +66,7 @@ public final class ListDBus {
             if (users) {
                 try {
                     System.out.print(dbus.GetConnectionUnixUser(s) + "\t");
-                } catch (DBusExecutionException exDe) {
+                } catch (DBusExecutionException _exDe) {
                     System.out.print("\t");
                 }
             }
@@ -74,7 +74,7 @@ public final class ListDBus {
             if (!s.startsWith(":") && owners) {
                 try {
                     System.out.print("\t" + dbus.GetNameOwner(s));
-                } catch (DBusExecutionException exDe) {
+                } catch (DBusExecutionException _exDe) {
                 }
             }
             System.out.println();

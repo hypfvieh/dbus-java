@@ -68,8 +68,8 @@ public class UInt32 extends Number implements Comparable<UInt32> {
 
     /** Test two UInt32s for equality. */
     @Override
-    public boolean equals(Object o) {
-        return o instanceof UInt32 && ((UInt32) o).value == this.value;
+    public boolean equals(Object _o) {
+        return _o instanceof UInt32 && ((UInt32) _o).value == this.value;
     }
 
     @Override
@@ -81,8 +81,8 @@ public class UInt32 extends Number implements Comparable<UInt32> {
     * @return 0 if equal, -ve or +ve if they are different.
     */
     @Override
-    public int compareTo(UInt32 other) {
-        return (int) (this.value - other.value);
+    public int compareTo(UInt32 _other) {
+        return (int) (this.value - _other.value);
     }
 
     /** The value of this as a string */

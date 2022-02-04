@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class SignalTuple {
-    private String type;
-    private String name;
-    private String object;
-    private String source;
+    private final String type;
+    private final String name;
+    private final String object;
+    private final String source;
 
     public SignalTuple(String _type, String _name, String _object, String _source) {
         this.type = _type;
@@ -17,11 +17,11 @@ public class SignalTuple {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof SignalTuple)) {
+    public boolean equals(Object _o) {
+        if (!(_o instanceof SignalTuple)) {
             return false;
         }
-        SignalTuple other = (SignalTuple) o;
+        SignalTuple other = (SignalTuple) _o;
         if (null == this.type && null != other.type) {
             return false;
         }

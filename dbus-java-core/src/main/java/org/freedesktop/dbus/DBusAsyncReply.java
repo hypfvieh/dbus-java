@@ -23,27 +23,11 @@ public class DBusAsyncReply<T> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /**
-    * Check if any of a set of asynchronous calls have had a reply.
-    * @param replies A Collection of handles to replies to check.
-    * @return A Collection only containing those calls which have had replies.
-    */
-    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> replies) {
-        Collection<DBusAsyncReply<?>> c = new ArrayList<>(replies);
-        Iterator<DBusAsyncReply<?>> i = c.iterator();
-        while (i.hasNext()) {
-            if (!i.next().hasReply()) {
-                i.remove();
-            }
-        }
-        return c;
-    }
-
-    private T                      rval  = null;
-    private DBusExecutionException error = null;
-    private MethodCall             mc;
-    private Method                 me;
-    private AbstractConnection     conn;
+    private T                        rval   = null;
+    private DBusExecutionException   error  = null;
+    private final MethodCall         mc;
+    private final Method             me;
+    private final AbstractConnection conn;
 
     public DBusAsyncReply(MethodCall _mc, Method _me, AbstractConnection _conn) {
         this.mc = _mc;
@@ -121,5 +105,21 @@ public class DBusAsyncReply<T> {
 
     public MethodCall getCall() {
         return mc;
+    }
+
+    /**
+    * Check if any of a set of asynchronous calls have had a reply.
+    * @param _replies A Collection of handles to replies to check.
+    * @return A Collection only containing those calls which have had replies.
+    */
+    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> _replies) {
+        Collection<DBusAsyncReply<?>> c = new ArrayList<>(_replies);
+        Iterator<DBusAsyncReply<?>> i = c.iterator();
+        while (i.hasNext()) {
+            if (!i.next().hasReply()) {
+                i.remove();
+            }
+        }
+        return c;
     }
 }

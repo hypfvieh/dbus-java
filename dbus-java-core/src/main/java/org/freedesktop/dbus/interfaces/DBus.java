@@ -34,25 +34,25 @@ public interface DBus extends DBusInterface {
 
     /**
     * Request a name on the bus.
-    * @param name The name to request.
-    * @param flags DBUS_NAME flags.
+    * @param _name The name to request.
+    * @param _flags DBUS_NAME flags.
     * @return DBUS_REQUEST_NAME_REPLY constants.
     */
-    UInt32 RequestName(String name, UInt32 flags);
+    UInt32 RequestName(String _name, UInt32 _flags);
 
     /**
     * Release a name on the bus.
-    * @param name The name to release.
+    * @param _name The name to release.
     * @return DBUS_RELEASE_NAME_REPLY constants.
     */
-    UInt32 ReleaseName(String name);
+    UInt32 ReleaseName(String _name);
 
     /**
     * List the connections currently queued for a name.
-    * @param name The name to query
+    * @param _name The name to query
     * @return A list of unique connection IDs.
     */
-    String[] ListQueuedOwners(String name);
+    String[] ListQueuedOwners(String _name);
 
     /**
     * Lists all connected names on the Bus.
@@ -68,10 +68,10 @@ public interface DBus extends DBusInterface {
 
     /**
     * Determine if a name has an owner.
-    * @param name The name to query.
+    * @param _name The name to query.
     * @return true if the name has an owner.
     */
-    boolean NameHasOwner(String name);
+    boolean NameHasOwner(String _name);
 
     /**
     * Signal sent when the owner of a name changes
@@ -81,13 +81,13 @@ public interface DBus extends DBusInterface {
         public final String oldOwner;
         public final String newOwner;
 
-        public NameOwnerChanged(String path, String _name, String _oldOwner, String _newOwner) throws DBusException {
-            super(path, new Object[] {
+        public NameOwnerChanged(String _path, String _name, String _oldOwner, String _newOwner) throws DBusException {
+            super(_path, new Object[] {
                     _name, _oldOwner, _newOwner
             });
-            this.name = _name;
-            this.oldOwner = _oldOwner;
-            this.newOwner = _newOwner;
+            name = _name;
+            oldOwner = _oldOwner;
+            newOwner = _newOwner;
         }
     }
 
@@ -97,9 +97,9 @@ public interface DBus extends DBusInterface {
     class NameLost extends DBusSignal {
         public final String name;
 
-        public NameLost(String path, String _name) throws DBusException {
-            super(path, _name);
-            this.name = _name;
+        public NameLost(String _path, String _name) throws DBusException {
+            super(_path, _name);
+            name = _name;
         }
     }
 
@@ -119,11 +119,11 @@ public interface DBus extends DBusInterface {
     * Start a service. If the given service is not provided
     * by any application, it will be started according to the .service file
     * for that service.
-    * @param name The service name to start.
-    * @param flags Unused.
+    * @param _name The service name to start.
+    * @param _flags Unused.
     * @return DBUS_START_REPLY constants.
     */
-    UInt32 StartServiceByName(String name, UInt32 flags);
+    UInt32 StartServiceByName(String _name, UInt32 _flags);
 
     /**
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
@@ -131,30 +131,30 @@ public interface DBus extends DBusInterface {
      * Some bus instances, such as the standard system bus, may disable access to this method for some or all callers.
      * Note, both the environment variable names and values must be valid UTF-8. There's no way to update the activation environment with data that is invalid UTF-8.
      *
-     * @param environment Environment to add or update
+     * @param _environment Environment to add or update
      */
-    void UpdateActivationEnvironment(Map<String,String>[] environment);
+    void UpdateActivationEnvironment(Map<String,String>[] _environment);
 
     /**
     * Get the connection unique name that owns the given name.
-    * @param name The name to query.
+    * @param _name The name to query.
     * @return The connection which owns the name.
     */
-    String GetNameOwner(String name);
+    String GetNameOwner(String _name);
 
     /**
     * Get the Unix UID that owns a connection name.
-    * @param connection_name The connection name.
-    * @return The Unix UID that owns it.
+    * @param _connectionName The connection name.
+    * @return The Unix UID that  it.
     */
-    UInt32 GetConnectionUnixUser(String connection_name);
+    UInt32 GetConnectionUnixUser(String _connectionName);
 
     /**
     * Returns the proccess ID associated with a connection.
-    * @param connection_name The name of the connection
+    * @param _connectionName The name of the connection
     * @return The PID of the connection.
     */
-    UInt32 GetConnectionUnixProcessID(String connection_name);
+    UInt32 GetConnectionUnixProcessID(String _connectionName);
 
     /**
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
@@ -173,10 +173,10 @@ public interface DBus extends DBusInterface {
      * "." and starting with a reversed domain name.
      * </p>
      *
-     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+     * @param _busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
      * @return Credentials
      */
-    Map<String, Variant<?>> GetConnectionCredentials(String busName);
+    Map<String, Variant<?>> GetConnectionCredentials(String _busName);
 
 
     /**
@@ -190,10 +190,10 @@ public interface DBus extends DBusInterface {
      * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
      * in future.<br>
      *
-     * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+     * @param _busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
      * @return auditing data as returned by adt_export_session_data()
      */
-    Byte[] GetAdtAuditSessionData(String busName);
+    Byte[] GetAdtAuditSessionData(String _busName);
 
     /**
     * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
@@ -205,27 +205,27 @@ public interface DBus extends DBusInterface {
     * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
     * in future.
     *
-    * @param busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
+    * @param _busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
     *
     * @return some sort of string of bytes, not necessarily UTF-8, not including '\0'
     */
-    Byte[] GetConnectionSELinuxSecurityContext(String busName);
+    Byte[] GetConnectionSELinuxSecurityContext(String _busName);
 
     /**
     * Add a match rule.
     * Will cause you to receive messages that aren't directed to you which
     * match this rule.
-    * @param matchrule The Match rule as a string. Format Undocumented.
+    * @param _matchrule The Match rule as a string. Format Undocumented.
     */
-    void AddMatch(String matchrule) throws MatchRuleInvalid;
+    void AddMatch(String _matchrule) throws MatchRuleInvalid;
 
     /**
     * Remove a match rule.
     * Will cause you to stop receiving messages that aren't directed to you which
     * match this rule.
-    * @param matchrule The Match rule as a string. Format Undocumented.
+    * @param _matchrule The Match rule as a string. Format Undocumented.
     */
-    void RemoveMatch(String matchrule) throws MatchRuleInvalid;
+    void RemoveMatch(String _matchrule) throws MatchRuleInvalid;
 
     /**
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>

@@ -39,8 +39,8 @@ public interface Monitoring {
      * otherwise have succeeded.
      * </p>
      *
-     * @param rule Match rules to add to the connection
-     * @param flags Not used, must be 0
+     * @param _rule Match rules to add to the connection
+     * @param _flags Not used, must be 0
      */
-    void BecomeMonitor(String[] rule, UInt32 flags);
+    void BecomeMonitor(String[] _rule, UInt32 _flags);
 }

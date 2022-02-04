@@ -17,9 +17,9 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     public static final BigInteger MAX_BIG_VALUE  = new BigInteger("18446744073709551615");
     /** Minimum allowed value */
     public static final long       MIN_VALUE      = 0;
-    private BigInteger             value;
-    private long                   top;
-    private long                   bottom;
+    private final BigInteger       value;
+    private final long             top;
+    private final long             bottom;
 
     /** Create a UInt64 from a long.
     * @param _value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
@@ -129,8 +129,8 @@ public class UInt64 extends Number implements Comparable<UInt64> {
 
     /** Test two UInt64s for equality. */
     @Override
-    public boolean equals(Object o) {
-        return o instanceof UInt64 && this.value.equals(((UInt64) o).value);
+    public boolean equals(Object _o) {
+        return _o instanceof UInt64 && this.value.equals(((UInt64) _o).value);
     }
 
     @Override
@@ -139,12 +139,12 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     }
 
     /** Compare two UInt32s.
-     * @param other other uint64
+     * @param _other other uint64
      * @return 0 if equal, -ve or +ve if they are different.
      */
     @Override
-    public int compareTo(UInt64 other) {
-        return this.value.compareTo(other.value);
+    public int compareTo(UInt64 _other) {
+        return this.value.compareTo(_other.value);
     }
 
     /** The value of this as a string.

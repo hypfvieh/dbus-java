@@ -11,17 +11,17 @@ public final class Hexdump {
 
     }
 
-    public static String toHex(byte[] buf) {
-        return toHex(buf, 0, buf.length);
+    public static String toHex(byte[] _buf) {
+        return toHex(_buf, 0, _buf.length);
     }
 
-    public static String toHex(byte[] buf, int ofs, int len) {
+    public static String toHex(byte[] _buf, int _ofs, int _len) {
         StringBuilder sb = new StringBuilder();
-        int j = ofs + len;
-        for (int i = ofs; i < j; i++) {
-            if (i < buf.length) {
-                sb.append(HEX_CHARS[(buf[i] & 0xF0) >> 4]);
-                sb.append(HEX_CHARS[buf[i] & 0x0F]);
+        int j = _ofs + _len;
+        for (int i = _ofs; i < j; i++) {
+            if (i < _buf.length) {
+                sb.append(HEX_CHARS[(_buf[i] & 0xF0) >> 4]);
+                sb.append(HEX_CHARS[_buf[i] & 0x0F]);
                 sb.append(' ');
             } else {
                 sb.append(' ');
@@ -32,17 +32,17 @@ public final class Hexdump {
         return sb.toString();
     }
 
-    public static String toAscii(byte[] buf) {
-        return toAscii(buf, 0, buf.length);
+    public static String toAscii(byte[] _buf) {
+        return toAscii(_buf, 0, _buf.length);
     }
 
-    public static String toAscii(byte[] buf, int ofs, int len) {
+    public static String toAscii(byte[] _buf, int _ofs, int _len) {
         StringBuilder sb = new StringBuilder();
-        int j = ofs + len;
-        for (int i = ofs; i < j; i++) {
-            if (i < buf.length) {
-                if (20 <= buf[i] && 126 >= buf[i]) {
-                    sb.append((char) buf[i]);
+        int j = _ofs + _len;
+        for (int i = _ofs; i < j; i++) {
+            if (i < _buf.length) {
+                if (20 <= _buf[i] && 126 >= _buf[i]) {
+                    sb.append((char) _buf[i]);
                 } else {
                     sb.append('.');
                 }
@@ -53,12 +53,12 @@ public final class Hexdump {
         return sb.toString();
     }
 
-    public static String format(byte[] buf) {
-        return format(buf, 80);
+    public static String format(byte[] _buf) {
+        return format(_buf, 80);
     }
 
-    public static String format(byte[] buf, int width) {
-        int bs = (width - 8) / 4;
+    public static String format(byte[] _buf, int _width) {
+        int bs = (_width - 8) / 4;
         int i = 0;
         StringBuilder sb = new StringBuilder();
         do {
@@ -66,30 +66,30 @@ public final class Hexdump {
                 sb.append(HEX_CHARS[(i << (j * 4) & 0xF00000) >> 20]);
             }
             sb.append('\t');
-            sb.append(toHex(buf, i, bs));
+            sb.append(toHex(_buf, i, bs));
             sb.append(' ');
-            sb.append(toAscii(buf, i, bs));
+            sb.append(toAscii(_buf, i, bs));
             sb.append('\n');
             i += bs;
-        } while (i < buf.length);
+        } while (i < _buf.length);
         sb.deleteCharAt(sb.length() - 1); // remove the last \n
         return sb.toString();
     }
 
-    public static void print(byte[] buf) {
-        print(buf, System.err);
+    public static void print(byte[] _buf) {
+        print(_buf, System.err);
     }
 
-    public static void print(byte[] buf, int width) {
-        print(buf, width, System.err);
+    public static void print(byte[] _buf, int _width) {
+        print(_buf, _width, System.err);
     }
 
-    public static void print(byte[] buf, int width, PrintStream out) {
-        out.print(format(buf, width));
+    public static void print(byte[] _buf, int _width, PrintStream _out) {
+        _out.print(format(_buf, _width));
     }
 
-    public static void print(byte[] buf, PrintStream out) {
-        out.print(format(buf));
+    public static void print(byte[] _buf, PrintStream _out) {
+        _out.print(format(_buf));
     }
 
     /**
@@ -100,11 +100,11 @@ public final class Hexdump {
      * javafile.print("byte[] data = {")
      * javafile.print(Hexdump.toByteArray(data));
      * javafile.println("};");     * @param buf
-     * @param buf buffer
+     * @param _buf buffer
      * @return string
      */
-    public static String toByteArray(byte[] buf) {
-        return toByteArray(buf, 0, buf.length);
+    public static String toByteArray(byte[] _buf) {
+        return toByteArray(_buf, 0, _buf.length);
     }
 
     /**
@@ -116,19 +116,19 @@ public final class Hexdump {
      * javafile.print(Hexdump.toByteArray(data));
      * javafile.println("};");
      *
-     * @param buf buffer
-     * @param ofs offset
-     * @param len length
+     * @param _buf buffer
+     * @param _ofs offset
+     * @param _len length
      * @return string
      */
-    public static String toByteArray(byte[] buf, int ofs, int len) {
+    public static String toByteArray(byte[] _buf, int _ofs, int _len) {
         StringBuilder sb = new StringBuilder();
-        for (int i = ofs; i < len && i < buf.length; i++) {
+        for (int i = _ofs; i < _len && i < _buf.length; i++) {
             sb.append('0');
             sb.append('x');
-            sb.append(HEX_CHARS[(buf[i] & 0xF0) >> 4]);
-            sb.append(HEX_CHARS[buf[i] & 0x0F]);
-            if ((i + 1) < len && (i + 1) < buf.length) {
+            sb.append(HEX_CHARS[(_buf[i] & 0xF0) >> 4]);
+            sb.append(HEX_CHARS[_buf[i] & 0x0F]);
+            if ((i + 1) < _len && (i + 1) < _buf.length) {
                 sb.append(',');
             }
         }

@@ -115,22 +115,14 @@ final class FileSaver implements Runnable {
     }
 
     /**
-     * @param fileToSave
-     * @param contents
+     * @param _fileToSave
+     * @param _contents
      * @throws IOException
      */
-    private void writeFile(File fileToSave, String contents) throws IOException {
-        FileWriter fileWriter = null;
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
-            writer.append(contents);
+    private void writeFile(File _fileToSave, String _contents) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(_fileToSave))) {
+            writer.append(_contents);
             writer.flush();
-        } finally {
-            if (fileWriter != null) {
-                try {
-                    fileWriter.close();
-                } catch (IOException ex) {
-                }
-            }
         }
     }
 }
