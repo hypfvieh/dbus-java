@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.connections.impl;
 
-import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
-
 import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -13,60 +11,45 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
 /**
- * Builder to create a new DBusConnection.
+ * Builder to create a new DirectConnection.
  *
  * @author hypfvieh
  * @version 4.1.0 - 2022-02-04
  */
-public class DBusConnectionBuilder {
+public class DirectConnectionBuilder {
 
     private final String        address;
 
-    private final String        machineId;
-    private boolean             registerSelf  = true;
-    private boolean             shared        = true;
     private boolean             weakReference = false;
     private byte                endianess     = getSystemEndianness();
     private int                 timeout       = AbstractConnection.TCP_CONNECT_TIMEOUT;
     private IDisconnectCallback disconnectCallback;
 
-    private DBusConnectionBuilder(String _address, String _machineId) {
+    private DirectConnectionBuilder(String _address) {
         address = _address;
-        machineId = _machineId;
-    }
-
-    /**
-     * Create a new default connection connecting to DBus session bus but use an alternative input for the machineID.
-     * 
-     * @param _machineIdFileLocation file with machine ID
-     * 
-     * @return {@link DBusConnectionBuilder}
-     */
-    public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        String address = AddressBuilder.getSessionConnection(_machineIdFileLocation);
-        address = tcpFallback(address);
-        DBusConnectionBuilder instance = new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
-        return instance;
     }
 
     /**
      * Create new default connection to the DBus system bus.
      * 
-     * @return {@link DBusConnectionBuilder}
+     * @return {@link DirectConnectionBuilder}
      */
-    public static DBusConnectionBuilder forSystemBus() {
+    public static DirectConnectionBuilder forSystemBus() {
         String address = AddressBuilder.getSystemConnection();
         address = tcpFallback(address);
-        return new DBusConnectionBuilder(address, getDbusMachineId(null));
+        return new DirectConnectionBuilder(address);
     }
 
     /**
      * Create a new default connection connecting to the DBus session bus.
      * 
-     * @return {@link DBusConnectionBuilder}
+     * @return {@link DirectConnectionBuilder}
      */
-    public static DBusConnectionBuilder forSessionBus() {
-        return forSessionBus(null);
+    public static DirectConnectionBuilder forSessionBus() {
+        String address = AddressBuilder.getSessionConnection(null);
+        address = tcpFallback(address);
+        DirectConnectionBuilder instance = new DirectConnectionBuilder(address);
+        return instance;
     }
 
     /**
@@ -76,21 +59,9 @@ public class DBusConnectionBuilder {
      * 
      * @return this
      */
-    public static DBusConnectionBuilder forType(DBusBusType _type) {
-        return forType(_type, null);
-    }
-
-    /**
-     * Create a default connection to DBus using the given bus type and machineIdFile.
-     * 
-     * @param _type bus type
-     * @param _machineIdFile machineId file
-     * 
-     * @return this
-     */
-    public static DBusConnectionBuilder forType(DBusBusType _type, String _machineIdFile) {
+    public static DirectConnectionBuilder forType(DBusBusType _type) {
         if (_type == DBusBusType.SESSION) {
-            return forSessionBus(_machineIdFile);
+            return forSessionBus();
         } else if (_type == DBusBusType.SYSTEM) {
             return forSystemBus();
         }
@@ -104,32 +75,9 @@ public class DBusConnectionBuilder {
      * @param _address address to use
      * @return this
      */
-    public static DBusConnectionBuilder forAddress(String _address) {
-        DBusConnectionBuilder instance = new DBusConnectionBuilder(_address, getDbusMachineId(null));
+    public static DirectConnectionBuilder forAddress(String _address) {
+        DirectConnectionBuilder instance = new DirectConnectionBuilder(_address);
         return instance;
-    }
-
-    /**
-     * Register the new connection on DBus using 'hello' message. Default is true.
-     * 
-     * @param _register boolean
-     * @return this
-     */
-    public DBusConnectionBuilder withRegisterSelf(boolean _register) {
-        registerSelf = _register;
-        return this;
-    }
-
-    /**
-     * Use this connection as shared connection. Shared connection means that the same connection is used multiple times
-     * if the connection parameter did not change. Default is true.
-     * 
-     * @param _shared boolean
-     * @return this
-     */
-    public DBusConnectionBuilder withShared(boolean _shared) {
-        shared = _shared;
-        return this;
     }
 
     /**
@@ -139,7 +87,7 @@ public class DBusConnectionBuilder {
      * @param _timeout timeout
      * @return this
      */
-    public DBusConnectionBuilder withTimeout(int _timeout) {
+    public DirectConnectionBuilder withTimeout(int _timeout) {
         timeout = _timeout;
         return this;
     }
@@ -151,7 +99,7 @@ public class DBusConnectionBuilder {
      * @param _endianess {@value Message.Endian.BIG} or {@value Message.Endian.LITTLE}
      * @return this
      */
-    public DBusConnectionBuilder withEndianess(byte _endianess) {
+    public DirectConnectionBuilder withEndianess(byte _endianess) {
         if (_endianess == Message.Endian.BIG || _endianess == Message.Endian.LITTLE) {
             endianess = _endianess;
         }
@@ -164,7 +112,7 @@ public class DBusConnectionBuilder {
      * @param _disconnectCallback callback
      * @return this
      */
-    public DBusConnectionBuilder withDisconnectCallback(IDisconnectCallback _disconnectCallback) {
+    public DirectConnectionBuilder withDisconnectCallback(IDisconnectCallback _disconnectCallback) {
         disconnectCallback = _disconnectCallback;
         return this;
     }
@@ -176,7 +124,7 @@ public class DBusConnectionBuilder {
      * @param _weakRef true to enable
      * @return this
      */
-    public DBusConnectionBuilder withWeakReferences(boolean _weakRef) {
+    public DirectConnectionBuilder withWeakReferences(boolean _weakRef) {
         weakReference = _weakRef;
         return this;
     }
@@ -187,27 +135,11 @@ public class DBusConnectionBuilder {
      * @return {@link DBusConnection}
      * @throws DBusException when DBusConnection could not be opened
      */
-    public DBusConnection build() throws DBusException {
-        DBusConnection c;
-        if (shared) {
-            synchronized (DBusConnection.CONNECTIONS) {
-                c = DBusConnection.CONNECTIONS.get(address);
-                if (c != null) {
-                    c.concurrentConnections.incrementAndGet();
-                    return c; // this connection already exists, do not change anything
-                } else {
-                    c = new DBusConnection(address, shared, machineId, timeout);
-                    DBusConnection.CONNECTIONS.put(address, c);
-                }
-            }
-        } else {
-            c = new DBusConnection(address, shared, machineId, timeout);
-        }
-        
+    public DirectConnection build() throws DBusException {
+        DirectConnection c = new DirectConnection(address, timeout);
         c.setDisconnectCallback(disconnectCallback);
         c.setWeakReferences(weakReference);
-        DBusConnection.setEndianness(endianess);
-        c.connect(registerSelf);
+        DirectConnection.setEndianness(endianess);
         return c;
     }
 

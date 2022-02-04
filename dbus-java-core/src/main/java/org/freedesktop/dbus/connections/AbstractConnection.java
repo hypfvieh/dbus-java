@@ -259,7 +259,7 @@ public abstract class AbstractConnection implements Closeable {
      *            reference
      */
     public void setWeakReferences(boolean _weakreferences) {
-        this.weakreferences = _weakreferences; // TODO: put in builder
+        this.weakreferences = _weakreferences; 
     }
 
     /**
