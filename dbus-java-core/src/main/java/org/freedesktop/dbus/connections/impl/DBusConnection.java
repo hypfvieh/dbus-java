@@ -1,17 +1,14 @@
 package org.freedesktop.dbus.connections.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,7 +27,6 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
-import org.freedesktop.dbus.exceptions.DBusConnectionException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
@@ -42,7 +38,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.AddressBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +56,6 @@ import org.slf4j.LoggerFactory;
 public final class DBusConnection extends AbstractConnection {
 
 	private final Logger                             logger                     = LoggerFactory.getLogger(getClass());
-
-    public static final String                       DEFAULT_SYSTEM_BUS_ADDRESS =
-            "unix:path=/var/run/dbus/system_bus_socket";
-    private static final String DBUS_MACHINE_ID_SYS_VAR = "DBUS_MACHINE_ID_LOCATION";
 
     private List<String>                             busnames;
 
@@ -91,7 +83,9 @@ public final class DBusConnection extends AbstractConnection {
      * @param _address The address of the bus to connect to
      * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(String _address) throws DBusException {
         return getConnection(_address, true, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
@@ -106,7 +100,9 @@ public final class DBusConnection extends AbstractConnection {
      * @param _shared use a shared connections
      * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
             throws DBusException {
         return getConnection(_address, _registerSelf, _shared, AbstractConnection.TCP_CONNECT_TIMEOUT);
@@ -123,7 +119,9 @@ public final class DBusConnection extends AbstractConnection {
      * @param _timeout connect timeout if this is a TCP socket, 0 will block forever, if this is not a TCP socket this value is ignored
      * @throws DBusException If there is a problem connecting to the Bus.
      * @return {@link DBusConnection}
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared, int _timeout)
             throws DBusException {
 
@@ -134,7 +132,7 @@ public final class DBusConnection extends AbstractConnection {
                     c.concurrentConnections.incrementAndGet();
                     return c;
                 } else {
-                    c = new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId(), _timeout);
+                    c = new DBusConnection(_address, _shared, _registerSelf, AddressBuilder.getDbusMachineId(dbusMachineIdFile), _timeout);
                     // do not increment connection counter here, it always starts at 1 on new objects!
                     // c.getConcurrentConnections().incrementAndGet();
                     CONNECTIONS.put(_address, c);
@@ -142,7 +140,7 @@ public final class DBusConnection extends AbstractConnection {
                 }
             }
         } else {
-            return new DBusConnection(_address, _shared, _registerSelf, getDbusMachineId(), _timeout);
+            return new DBusConnection(_address, _shared, _registerSelf, AddressBuilder.getDbusMachineId(dbusMachineIdFile), _timeout);
         }
     }
 
@@ -155,8 +153,9 @@ public final class DBusConnection extends AbstractConnection {
      * @return {@link DBusConnection}
      *
      * @throws DBusException If there is a problem connecting to the Bus.
-     *
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(DBusBusType _bustype) throws DBusException {
         return getConnection(_bustype, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
@@ -169,8 +168,9 @@ public final class DBusConnection extends AbstractConnection {
      * @return {@link DBusConnection}
      *
      * @throws DBusException If there is a problem connecting to the Bus.
-     *
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection newConnection(DBusBusType _bustype) throws DBusException {
         return getConnection(_bustype, false, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
@@ -188,17 +188,18 @@ public final class DBusConnection extends AbstractConnection {
      * @return {@link DBusConnection}
      *
      * @throws DBusException If there is a problem connecting to the Bus.
-     *
+     * @deprecated use {@link DBusConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
         String address = null;
 
         switch (_bustype) {
             case SYSTEM:
-                address = getSystemConnection();
+                address = AddressBuilder.getSystemConnection();
                 break;
             case SESSION:
-                address = getSessionConnection();
+                address = AddressBuilder.getSessionConnection(dbusMachineIdFile);
                 break;
             default:
                 throw new DBusException("Invalid Bus Type: " + _bustype);
@@ -215,75 +216,6 @@ public final class DBusConnection extends AbstractConnection {
         return getConnection(address, true, _shared, _timeout);
     }
 
-    /**
-     * Determine the address of the DBus system connection.
-     *
-     * @return String
-     */
-    private static String getSystemConnection() {
-        String bus = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
-        if (bus == null) {
-            bus = DEFAULT_SYSTEM_BUS_ADDRESS;
-        }
-        return bus;
-    }
-
-    /**
-     * Connect to the BUS.
-     * If a connection to the specified Bus already exists and shared-flag is true, a reference to it is returned.
-     * Otherwise a new connection will be created.
-     *
-     * @return {@link DBusConnection}
-     *
-     * @throws DBusConnectionException if session connection could not be found
-     */
-    private static String getSessionConnection() throws DBusConnectionException {
-        String s = null;
-
-        // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
-        if (Util.isMacOs()) {
-            s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
-        } else { // all others (linux)
-            s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
-        }
-
-        if (s == null) {
-            // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
-            // $DISPLAY`
-            String display = System.getenv("DISPLAY");
-            if (null == display) {
-                throw new DBusConnectionException("Cannot Resolve Session Bus Address");
-            }
-            if (!display.startsWith(":") && display.contains(":")) { // display seems to be a remote display
-                                                                     // (e.g. X forward through SSH)
-                display = display.substring(display.indexOf(':'));
-            }
-
-            String uuid = getDbusMachineId();
-            String homedir = System.getProperty("user.home");
-            File addressfile = new File(homedir + "/.dbus/session-bus",
-                    uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
-            if (!addressfile.exists()) {
-                throw new DBusConnectionException("Cannot Resolve Session Bus Address");
-            }
-            Properties readProperties = Util.readProperties(addressfile);
-            String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
-
-            if (Util.isEmpty(sessionAddress)) {
-                throw new DBusConnectionException("Cannot Resolve Session Bus Address");
-            }
-
-            // sometimes (e.g. Ubuntu 18.04) the returned address is wrapped in single quotes ('), we have to remove them
-            if (sessionAddress.matches("^'[^']+'$")) {
-                sessionAddress = sessionAddress.replaceFirst("^'([^']+)'$", "$1");
-            }
-
-            return sessionAddress;
-        }
-
-        return s;
-    }
-
     private AtomicInteger getConcurrentConnections() {
         return concurrentConnections;
     }
@@ -294,61 +226,15 @@ public final class DBusConnection extends AbstractConnection {
      * over this.
      *
      * @param dbusMachineIdFile file containing DBus machine ID.
+     * @deprecated no longer required when {@link DBusConnectionBuilder} is used
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public static void setDbusMachineIdFile(String dbusMachineIdFile) {
         DBusConnection.dbusMachineIdFile = dbusMachineIdFile;
     }
 
-    /**
-     * Extracts the machine-id usually found on Linux in various system directories, or
-     * generate a fake id for non-Linux platforms. Use system variable
-     * DBUS_MACHINE_ID_LOCATION to use another location or {@link #setDbusMachineIdFile(String)}.
-     *
-     * @return machine-id string, never null
-     * @throws DBusConnectionException if machine-id could not be found or is empty
-     */
-    public static String getDbusMachineId() throws DBusConnectionException {
-        File uuidfile = determineMachineIdFile();
-        if(uuidfile != null) {
-            String uuid = Util.readFileToString(uuidfile);
-            if(uuid.length() > 0)
-                return uuid;
-            else
-                throw new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file is empty.");
-        }
-        if (Util.isWindows() || Util.isMacOs()) {
-            /* Linux *should* have a machine-id */
-            return getFakeDbusMachineId();
-        }
-        throw new DBusConnectionException("Cannot Resolve Session Bus Address: MachineId file can not be found");
-    }
-
-    /**
-     * Tries to find the DBus machine-id file in different locations.
-     *
-     * @return File with machine-id
-     */
-	private static File determineMachineIdFile() {
-		List<String> locationPriorityList = Arrays.asList(System.getenv(DBUS_MACHINE_ID_SYS_VAR), dbusMachineIdFile,
-				"/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
-		return locationPriorityList.stream()
-				.filter(s -> s != null)
-				.map(s -> new File(s))
-				.filter(f -> f.exists() && f.length() > 0)
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Generates a fake machine-id when DBus is running on Windows.
-	 * @return String
-	 */
-	private static String getFakeDbusMachineId() {
-	    // we create a fake id on windows
-	    return String.format("%s@%s", Util.getCurrentUser(), Util.getHostName());
-	}
-
-    private DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
+ 
+    DBusConnection(String _address, boolean _shared, boolean _registerSelf, String _machineId, int timeout) throws DBusException {
         super(_address, timeout);
         busnames = new ArrayList<>();
         machineId = _machineId;

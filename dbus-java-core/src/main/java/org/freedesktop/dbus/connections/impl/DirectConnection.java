@@ -26,7 +26,8 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Handles a peer to peer connection between two applications withou a bus daemon.
+/** 
+ * Handles a peer to peer connection between two applications without a bus daemon.
  * <p>
  * Signal Handlers and method calls from remote objects are run in their own threads, you MUST handle the concurrency issues.
  * </p>
