@@ -13,7 +13,6 @@ import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.errors.ServiceUnknown;
 import org.freedesktop.dbus.errors.UnknownObject;

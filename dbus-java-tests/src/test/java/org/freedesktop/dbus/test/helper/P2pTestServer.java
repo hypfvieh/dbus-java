@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.impl.DirectConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
@@ -124,7 +125,7 @@ public class P2pTestServer implements SampleRemoteInterface {
         w.println(address);
         w.flush();
         w.close();
-        try (DirectConnection dc = new DirectConnection(address + ",listen=true")) {
+        try (DirectConnection dc = DirectConnectionBuilder.forAddress(address + ",listen=true").build()) {
             System.out.println("Connected");
             dc.exportObject("/Test", new P2pTestServer());
         }

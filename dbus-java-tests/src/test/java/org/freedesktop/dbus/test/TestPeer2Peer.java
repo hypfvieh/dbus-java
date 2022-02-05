@@ -3,6 +3,7 @@ package org.freedesktop.dbus.test;
 import java.io.IOException;
 
 import org.freedesktop.dbus.connections.impl.DirectConnection;
+import org.freedesktop.dbus.connections.impl.DirectConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Introspectable;
@@ -25,7 +26,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
         p2pServer.start();
         Thread.sleep(1000L);
 
-        try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS)) {
+        try (DirectConnection dc = DirectConnectionBuilder.forAddress(CONNECTION_ADDRESS).build()) {
             Thread.sleep(500L);
             LoggerFactory.getLogger(getClass()).info("Client: Connected");
             SampleRemoteInterface tri = (SampleRemoteInterface) dc.getRemoteObject("/Test");
@@ -61,7 +62,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
 
         @Override
         public void run() {
-            try (DirectConnection dc = new DirectConnection(CONNECTION_ADDRESS + ",listen=true")) {
+            try (DirectConnection dc = DirectConnectionBuilder.forAddress(CONNECTION_ADDRESS + ",listen=true").build()) {
                 dc.exportObject("/Test", new P2pTestServer());
                 LoggerFactory.getLogger(getClass()).info("Server: Export created");
 

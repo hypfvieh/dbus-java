@@ -40,7 +40,9 @@ public class DirectConnection extends AbstractConnection {
      * Create a direct connection to another application.
      * @param _address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
      * @throws DBusException on error
+     * @deprecated use {@link DirectConnectionBuilder}
      */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public DirectConnection(String _address) throws DBusException {
         this(_address, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
@@ -50,15 +52,21 @@ public class DirectConnection extends AbstractConnection {
     * @param _address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
     * @param _timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket.
     * @throws DBusException on error
+    * @deprecated use {@link DirectConnectionBuilder}
     */
+    @Deprecated(since = "4.1.0", forRemoval = true)
     public DirectConnection(String _address, int _timeout) throws DBusException {
+        this(_timeout, _address);
+    }
+
+    DirectConnection(int _timeout, String _address) throws DBusException {
         super(_address, _timeout);
         machineId = createMachineId();
         if (!getAddress().isServer()) {
             super.listen();
         }
     }
-
+    
     /**
      * Use this method when running on server side.
      * Call will block.

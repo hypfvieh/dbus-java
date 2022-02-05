@@ -4,11 +4,8 @@ import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.AddressBuilder;
 
 /**
  * Builder to create a new DirectConnection.
@@ -28,47 +25,7 @@ public class DirectConnectionBuilder {
     private DirectConnectionBuilder(String _address) {
         address = _address;
     }
-
-    /**
-     * Create new default connection to the DBus system bus.
-     * 
-     * @return {@link DirectConnectionBuilder}
-     */
-    public static DirectConnectionBuilder forSystemBus() {
-        String address = AddressBuilder.getSystemConnection();
-        address = tcpFallback(address);
-        return new DirectConnectionBuilder(address);
-    }
-
-    /**
-     * Create a new default connection connecting to the DBus session bus.
-     * 
-     * @return {@link DirectConnectionBuilder}
-     */
-    public static DirectConnectionBuilder forSessionBus() {
-        String address = AddressBuilder.getSessionConnection(null);
-        address = tcpFallback(address);
-        DirectConnectionBuilder instance = new DirectConnectionBuilder(address);
-        return instance;
-    }
-
-    /**
-     * Create a default connection to DBus using the given bus type.
-     * 
-     * @param _type bus type
-     * 
-     * @return this
-     */
-    public static DirectConnectionBuilder forType(DBusBusType _type) {
-        if (_type == DBusBusType.SESSION) {
-            return forSessionBus();
-        } else if (_type == DBusBusType.SYSTEM) {
-            return forSystemBus();
-        }
-
-        throw new IllegalArgumentException("Unknown bus type: " + _type);
-    }
-
+   
     /**
      * Use the given address to create the connection (e.g. used for remote TCP connected DBus daemons).
      * 
@@ -136,28 +93,11 @@ public class DirectConnectionBuilder {
      * @throws DBusException when DBusConnection could not be opened
      */
     public DirectConnection build() throws DBusException {
-        DirectConnection c = new DirectConnection(address, timeout);
+        DirectConnection c = new DirectConnection(timeout, address);
         c.setDisconnectCallback(disconnectCallback);
         c.setWeakReferences(weakReference);
         DirectConnection.setEndianness(endianess);
         return c;
-    }
-
-    /**
-     * Helper to use TCP fallback address when no UNIX address is found or no UNIX transport found.
-     * 
-     * @param _address address which would be used if no fallback is used
-     * @return input address or fallback address
-     */
-    private static String tcpFallback(String _address) {
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
-                && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (_address == null || _address.startsWith("unix"))) { // no address or unix socket address
-
-            // no UNIX transport available, or lookup did not return anything useful
-            _address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
-        }
-        return _address;
     }
 
     /**
