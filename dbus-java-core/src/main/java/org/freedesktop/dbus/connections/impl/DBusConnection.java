@@ -645,16 +645,7 @@ public final class DBusConnection extends AbstractConnection {
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-        if (BUSNAME_REGEX.matcher(_source).matches()) {
-            throw new DBusException(
-                    "Cannot watch for signals based on well known bus name as source, only unique names.");
-        }
-        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
-            throw new DBusException("Invalid bus name: " + _source);
-        }
+        validateSignal(_type, _source);
         removeSigHandler(new DBusMatchRule(_type, _source, null), _handler);
     }
 
@@ -678,16 +669,8 @@ public final class DBusConnection extends AbstractConnection {
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-        if (BUSNAME_REGEX.matcher(_source).matches()) {
-            throw new DBusException(
-                    "Cannot watch for signals based on well known bus name as source, only unique names.");
-        }
-        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
-            throw new DBusException("Invalid bus name: " + _source);
-        }
+        validateSignal(_type, _source);
+        
         String objectpath = getImportedObjects().get(_object).getObjectPath();
         if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
@@ -741,16 +724,7 @@ public final class DBusConnection extends AbstractConnection {
      */
     public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-        if (BUSNAME_REGEX.matcher(_source).matches()) {
-            throw new DBusException(
-                    "Cannot watch for signals based on well known bus name as source, only unique names.");
-        }
-        if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
-            throw new DBusException("Invalid bus name: " + _source);
-        }
+        validateSignal(_type, _source);
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
     }
 
@@ -776,6 +750,24 @@ public final class DBusConnection extends AbstractConnection {
      */
     public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
+        validateSignal(_type, _source);
+        
+        String objectpath = getImportedObjects().get(_object).getObjectPath();
+        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
+            throw new DBusException("Invalid object path: " + objectpath);
+        }
+        addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
+    }
+
+    /**
+     * Checks if given type is a DBusSignal and matches the required rules.
+     * 
+     * @param <T> type of class
+     * @param _type class
+     * @param _source 
+     * @throws DBusException when validation fails
+     */
+    private <T extends DBusSignal> void validateSignal(Class<T> _type, String _source) throws DBusException {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
@@ -786,11 +778,6 @@ public final class DBusConnection extends AbstractConnection {
         if (_source.length() > MAX_NAME_LENGTH || !CONNID_REGEX.matcher(_source).matches()) {
             throw new DBusException("Invalid bus name: " + _source);
         }
-        String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + objectpath);
-        }
-        addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
     }
 
     /**

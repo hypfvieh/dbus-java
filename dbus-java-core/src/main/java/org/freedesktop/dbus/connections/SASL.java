@@ -477,18 +477,12 @@ public class SASL {
                         case REJECTED:
                             failed |= current;
                             int available = c.getMechs() & (~failed);
-                            if (0 != (available & AUTH_EXTERNAL)) {
-                                send(_sock, AUTH, "EXTERNAL", luid);
-                                current = AUTH_EXTERNAL;
-                            } else if (0 != (available & AUTH_SHA)) {
-                                send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
-                                current = AUTH_SHA;
-                            } else if (0 != (available & AUTH_ANON)) {
-                                send(_sock, AUTH, "ANONYMOUS");
-                                current = AUTH_ANON;
-                            } else {
+                            int retVal = handleReject(available, luid, _sock);
+                            if (retVal == -1) {
                                 state = SaslAuthState.FAILED;
-                            }
+                            } else {
+                                current = retVal;
+                            }                            
                             break;
                         case ERROR:
                             // when asking for file descriptor support, ERROR means FD support is not supported
@@ -569,17 +563,11 @@ public class SASL {
                         case REJECTED:
                             failed |= current;
                             int available = c.getMechs() & (~failed);
-                            if (0 != (available & AUTH_EXTERNAL)) {
-                                send(_sock, AUTH, "EXTERNAL", luid);
-                                current = AUTH_EXTERNAL;
-                            } else if (0 != (available & AUTH_SHA)) {
-                                send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
-                                current = AUTH_SHA;
-                            } else if (0 != (available & AUTH_ANON)) {
-                                send(_sock, AUTH, "ANONYMOUS");
-                                current = AUTH_ANON;
-                            } else {
+                            int retVal = handleReject(available, luid, _sock);
+                            if (retVal == -1) {
                                 state = SaslAuthState.FAILED;
+                            } else {
+                                current = retVal;
                             }
                         break;
                         default:
@@ -725,6 +713,30 @@ public class SASL {
         return state == SaslAuthState.FINISHED;
     }
 
+    /**
+     * Handle reject of authentication.
+     * 
+     * @param _available
+     * @param _luid
+     * @param _sock socketchannel
+     * @return current state or -1 if failed
+     * @throws IOException when sending fails
+     */
+    private int handleReject(int _available, String _luid, SocketChannel _sock) throws IOException {
+        int current = -1;
+        if (0 != (_available & AUTH_EXTERNAL)) {
+            send(_sock, AUTH, "EXTERNAL", _luid);
+            current = AUTH_EXTERNAL;
+        } else if (0 != (_available & AUTH_SHA)) {
+            send(_sock, AUTH, "DBUS_COOKIE_SHA1", _luid);
+            current = AUTH_SHA;
+        } else if (0 != (_available & AUTH_ANON)) {
+            send(_sock, AUTH, "ANONYMOUS");
+            current = AUTH_ANON;
+        }
+        return current;
+    }
+    
     /**
      * Tries to get the UID (user ID) of the current JVM process.
      * Will always return 0 on windows.

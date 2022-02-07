@@ -1058,18 +1058,7 @@ public class Message {
             }
             break;
         case ArgumentType.DICT_ENTRY1:
-            if (0 == _size) {
-                // advance the type parser even on 0-size arrays.
-                List<Type> temp = new ArrayList<>();
-                byte[] temp2 = new byte[_signatureBuf.length - _offsets[OFFSET_SIG]];
-                System.arraycopy(_signatureBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
-                String temp3 = new String(temp2);
-                // ofs[OFFSET_SIG] gets incremented anyway. Leave one character on the stack
-                int temp4 = Marshalling.getJavaType(temp3, temp, 1) - 1;
-                _offsets[OFFSET_SIG] += temp4;
-                logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
-            }
-            int ofssave = _offsets[OFFSET_SIG];
+            int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
             long end = _offsets[OFFSET_DATA] + _size;
             List<Object[]> entries = new ArrayList<>();
             while (_offsets[OFFSET_DATA] < end) {
@@ -1079,18 +1068,7 @@ public class Message {
             rv = new DBusMap<>(entries.toArray(new Object[0][]));
             break;
         default:
-            if (0 == _size) {
-                // advance the type parser even on 0-size arrays.
-                List<Type> temp = new ArrayList<>();
-                byte[] temp2 = new byte[_signatureBuf.length - _offsets[OFFSET_SIG]];
-                System.arraycopy(_signatureBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
-                String temp3 = new String(temp2);
-                // ofs[OFFSET_SIG] gets incremented anyway. Leave one character on the stack
-                int temp4 = Marshalling.getJavaType(temp3, temp, 1) - 1;
-                _offsets[OFFSET_SIG] += temp4;
-                logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
-            }
-            ofssave = _offsets[OFFSET_SIG];
+            ofssave = prepareCollection(_signatureBuf, _offsets, _size);
             end = _offsets[OFFSET_DATA] + _size;
             List<Object> contents = new ArrayList<>();
             while (_offsets[OFFSET_DATA] < end) {
@@ -1100,6 +1078,22 @@ public class Message {
             rv = contents;
         }
         return rv;
+    }
+
+    private int prepareCollection(byte[] _signatureBuf, int[] _offsets, long _size) throws DBusException {
+        if (0 == _size) {
+            // advance the type parser even on 0-size arrays.
+            List<Type> temp = new ArrayList<>();
+            byte[] temp2 = new byte[_signatureBuf.length - _offsets[OFFSET_SIG]];
+            System.arraycopy(_signatureBuf, _offsets[OFFSET_SIG], temp2, 0, temp2.length);
+            String temp3 = new String(temp2);
+            // ofs[OFFSET_SIG] gets incremented anyway. Leave one character on the stack
+            int temp4 = Marshalling.getJavaType(temp3, temp, 1) - 1;
+            _offsets[OFFSET_SIG] += temp4;
+            logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
+        }
+        int ofssave = _offsets[OFFSET_SIG];
+        return ofssave;
     }
 
     /**

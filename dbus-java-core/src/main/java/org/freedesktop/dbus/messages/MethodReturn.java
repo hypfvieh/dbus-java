@@ -3,12 +3,10 @@ package org.freedesktop.dbus.messages;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.types.UInt32;
 
-public class MethodReturn extends Message {
+public class MethodReturn extends MethodBase {
 
     private MethodCall call;
 
@@ -22,69 +20,23 @@ public class MethodReturn extends Message {
     public MethodReturn(String _source, String _dest, long _replyserial, String _sig, Object... _args) throws DBusException {
         super(DBusConnection.getEndianness(), Message.MessageType.METHOD_RETURN, (byte) 0);
 
-        getHeaders().put(Message.HeaderField.REPLY_SERIAL, _replyserial);
-
         List<Object> hargs = new ArrayList<>();
-        hargs.add(new Object[] {
-                Message.HeaderField.REPLY_SERIAL, new Object[] {
-                        ArgumentType.UINT32_STRING, _replyserial
-                }
-        });
+        hargs.add(createHeaderArgs(HeaderField.REPLY_SERIAL, ArgumentType.UINT32_STRING, _replyserial));
 
         if (null != _source) {
-            getHeaders().put(Message.HeaderField.SENDER, _source);
-            hargs.add(new Object[] {
-                    Message.HeaderField.SENDER, new Object[] {
-                            ArgumentType.STRING_STRING, _source
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.SENDER, ArgumentType.STRING_STRING, _source));
         }
 
         if (null != _dest) {
-            getHeaders().put(Message.HeaderField.DESTINATION, _dest);
-            hargs.add(new Object[] {
-                    Message.HeaderField.DESTINATION, new Object[] {
-                            ArgumentType.STRING_STRING, _dest
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.DESTINATION, ArgumentType.STRING_STRING, _dest));
         }
 
         if (null != _sig) {
-            hargs.add(new Object[] {
-                    Message.HeaderField.SIGNATURE, new Object[] {
-                            ArgumentType.SIGNATURE_STRING, _sig
-                    }
-            });
-            getHeaders().put(Message.HeaderField.SIGNATURE, _sig);
+            hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, _sig));
             setArgs(_args);
         }
 
-        int totalFileDes = 0;
-        for( int x = 0; x < _args.length; x++ ){
-            if( _args[x] instanceof FileDescriptor ){
-                totalFileDes++;
-            }
-        }
-
-        if( totalFileDes > 0 ){
-            getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
-            hargs.add(new Object[]{
-                    Message.HeaderField.UNIX_FDS, new Object[]{
-                    ArgumentType.UINT32_STRING, new UInt32( totalFileDes )
-                }
-            });
-        }
-
-        byte[] blen = new byte[4];
-        appendBytes(blen);
-        append("ua(yv)", getSerial(), hargs.toArray());
-        pad((byte) 8);
-
-        long c = getByteCounter();
-        if (null != _sig) {
-            append(_sig, _args);
-        }
-        marshallint(getByteCounter() - c, blen, 0, 4);
+        createCommon(hargs, _sig, _args);
     }
 
     public MethodReturn(MethodCall _mc, String _sig, Object... _args) throws DBusException {

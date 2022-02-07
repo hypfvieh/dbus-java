@@ -3,19 +3,14 @@ package org.freedesktop.dbus.messages;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
-import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.utils.Hexdump;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class MethodCall extends Message {
+public class MethodCall extends MethodBase {
     private static long  REPLY_WAIT_TIMEOUT = 200000;
 
-    private final Logger logger             = LoggerFactory.getLogger(getClass());
+    
 
     // CHECKSTYLE:OFF
     Message              reply              = null;
@@ -39,88 +34,31 @@ public class MethodCall extends Message {
 
         List<Object> hargs = new ArrayList<>();
 
-        hargs.add(new Object[] {
-                Message.HeaderField.PATH, new Object[] {
-                        ArgumentType.OBJECT_PATH_STRING, _path
-                }
-        });
+        hargs.add(createHeaderArgs(HeaderField.PATH, ArgumentType.OBJECT_PATH_STRING, _path));
 
         if (null != _source) {
-            getHeaders().put(Message.HeaderField.SENDER, _source);
-            hargs.add(new Object[] {
-                    Message.HeaderField.SENDER, new Object[] {
-                            ArgumentType.STRING_STRING, _source
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.SENDER, ArgumentType.STRING_STRING, _source));
         }
 
         if (null != _dest) {
-            getHeaders().put(Message.HeaderField.DESTINATION, _dest);
-            hargs.add(new Object[] {
-                    Message.HeaderField.DESTINATION, new Object[] {
-                            ArgumentType.STRING_STRING, _dest
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.DESTINATION, ArgumentType.STRING_STRING, _dest));
         }
 
         if (null != _iface) {
-            hargs.add(new Object[] {
-                    Message.HeaderField.INTERFACE, new Object[] {
-                            ArgumentType.STRING_STRING, _iface
-                    }
-            });
-            getHeaders().put(Message.HeaderField.INTERFACE, _iface);
+            hargs.add(createHeaderArgs(HeaderField.INTERFACE, ArgumentType.STRING_STRING, _iface));
         }
 
-        hargs.add(new Object[] {
-                Message.HeaderField.MEMBER, new Object[] {
-                        ArgumentType.STRING_STRING, _member
-                }
-        });
+        hargs.add(createHeaderArgs(HeaderField.MEMBER, ArgumentType.STRING_STRING, _member));
 
         if (null != _sig) {
             logger.debug("Appending arguments with signature: {}", _sig);
-            hargs.add(new Object[] {
-                    Message.HeaderField.SIGNATURE, new Object[] {
-                            ArgumentType.SIGNATURE_STRING, _sig
-                    }
-            });
-            getHeaders().put(Message.HeaderField.SIGNATURE, _sig);
+            hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, _sig));
             setArgs(_args);
         }
 
-        int totalFileDes = 0;
-        if( _args != null ){
-            for( int x = 0; x < _args.length; x++ ){
-                if( _args[x] instanceof FileDescriptor ){
-                    totalFileDes++;
-                }
-            }
-        }
-
-        if( totalFileDes > 0 ){
-            getHeaders().put(Message.HeaderField.UNIX_FDS, totalFileDes);
-            hargs.add(new Object[]{
-                    Message.HeaderField.UNIX_FDS, new Object[]{
-                    ArgumentType.UINT32_STRING, new UInt32( totalFileDes )
-                }
-            });
-        }
-
-        byte[] blen = new byte[4];
-        appendBytes(blen);
-        append("ua(yv)", getSerial(), hargs.toArray());
-        pad((byte) 8);
-
-        long c = getByteCounter();
-        if (null != _sig) {
-            append(_sig, _args);
-        }
-        logger.debug("Appended body, type: {} start: {} end: {} size: {}",_sig, c, getByteCounter(), getByteCounter() - c);
-        marshallint(getByteCounter() - c, blen, 0, 4);
-        logger.debug("marshalled size ({}): {}",blen, Hexdump.format(blen));
+        createCommon(hargs, _sig, _args);
     }
-
+   
     /**
     * Set the default timeout for method calls.
     * Default is 20s.

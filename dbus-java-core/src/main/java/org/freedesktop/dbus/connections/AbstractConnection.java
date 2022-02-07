@@ -1196,7 +1196,7 @@ public abstract class AbstractConnection implements Closeable {
      * @return Message.Endian.BIG or Message.Endian.LITTLE
      */
     public static byte getEndianness() {
-        return endianness;
+        return endianness; // TODO: would be nice to have this non-static!
     }
 
     /**
