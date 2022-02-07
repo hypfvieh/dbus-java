@@ -35,7 +35,6 @@ public class RemoteInvocationHandler implements InvocationHandler {
     // CHECKSTYLE:ON
 
 
-
     public static Object convertRV(String _sig, Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
         Class<? extends Object> c = _m.getReturnType();
 

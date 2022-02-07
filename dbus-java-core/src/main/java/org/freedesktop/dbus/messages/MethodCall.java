@@ -56,7 +56,8 @@ public class MethodCall extends MethodBase {
             setArgs(_args);
         }
 
-        createCommon(hargs, _sig, _args);
+        appendFileDescriptors(hargs, _sig, _args);
+        padAndMarshall(hargs, _sig, _args);
     }
    
     /**

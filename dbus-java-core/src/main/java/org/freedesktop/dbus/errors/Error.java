@@ -33,59 +33,25 @@ public class Error extends Message {
         if (null == _errorName) {
             throw new MessageFormatException("Must specify error name to Errors.");
         }
-        getHeaders().put(Message.HeaderField.REPLY_SERIAL, _replyserial);
-        getHeaders().put(Message.HeaderField.ERROR_NAME, _errorName);
 
         List<Object> hargs = new ArrayList<>();
-        hargs.add(new Object[] {
-                Message.HeaderField.ERROR_NAME, new Object[] {
-                        ArgumentType.STRING_STRING, _errorName
-                }
-        });
-        hargs.add(new Object[] {
-                Message.HeaderField.REPLY_SERIAL, new Object[] {
-                        ArgumentType.UINT32_STRING, _replyserial
-                }
-        });
-
+        hargs.add(createHeaderArgs(HeaderField.ERROR_NAME, ArgumentType.STRING_STRING, _errorName));
+        hargs.add(createHeaderArgs(HeaderField.REPLY_SERIAL, ArgumentType.UINT32_STRING, _replyserial));
+        
         if (null != _source) {
-            getHeaders().put(Message.HeaderField.SENDER, _source);
-            hargs.add(new Object[] {
-                    Message.HeaderField.SENDER, new Object[] {
-                            ArgumentType.STRING_STRING, _source
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.SENDER, ArgumentType.STRING_STRING, _source));
         }
 
         if (null != _dest) {
-            getHeaders().put(Message.HeaderField.DESTINATION, _dest);
-            hargs.add(new Object[] {
-                    Message.HeaderField.DESTINATION, new Object[] {
-                            ArgumentType.STRING_STRING, _dest
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.DESTINATION, ArgumentType.STRING_STRING, _dest));
         }
 
         if (null != _sig) {
-            hargs.add(new Object[] {
-                    Message.HeaderField.SIGNATURE, new Object[] {
-                            ArgumentType.SIGNATURE_STRING, _sig
-                    }
-            });
-            getHeaders().put(Message.HeaderField.SIGNATURE, _sig);
+            hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, _sig));
             setArgs(_args);
         }
 
-        byte[] blen = new byte[4];
-        appendBytes(blen);
-        append("ua(yv)", getSerial(), hargs.toArray());
-        pad((byte) 8);
-
-        long c = getByteCounter();
-        if (null != _sig) {
-            append(_sig, _args);
-        }
-        marshallint(getByteCounter() - c, blen, 0, 4);
+        padAndMarshall(hargs, _sig, _args);
     }
 
     public Error(String _source, Message _m, Throwable _ex) throws DBusException {
@@ -142,13 +108,13 @@ public class Error extends Message {
             }
             ex.setType(getName());
             return ex;
-        } catch (Exception ex1) {
-            logger.debug("", ex1);
+        } catch (Exception _ex1) {
+            logger.debug("", _ex1);
             DBusExecutionException ex;
             Object[] args = null;
             try {
                 args = getParameters();
-            } catch (Exception ex2) {
+            } catch (Exception _ex2) {
             }
             if (null == args || 0 == args.length) {
                 ex = new DBusExecutionException("");

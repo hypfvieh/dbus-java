@@ -56,9 +56,9 @@ public class Message {
     /** Steps to increment the buffer array. */
     private static final int           BUFFERINCREMENT = 20;
 
-    protected static long              globalserial    = 0;
+    private static long                globalserial    = 0;
 
-    private final Logger               logger          = LoggerFactory.getLogger(getClass());
+    protected final Logger             logger          = LoggerFactory.getLogger(getClass());
     private final List<FileDescriptor> filedescriptors = new ArrayList<>();
     private final Map<Byte, Object>    headers         = new HashMap<>();
 
@@ -1288,6 +1288,48 @@ public class Message {
 
     public byte getEndianess() {
         return big ? Endian.BIG : Endian.LITTLE;
+    }
+
+    /**
+     * Creates a message header.
+     * Will automatically add the values to the current instances header map.
+     * 
+     * @param _header header type (one of {@link HeaderField})
+     * @param _argType arguement type (one of {@link ArgumentType})
+     * @param _value value
+     * 
+     * @return Object array
+     */
+    protected Object[] createHeaderArgs(byte _header, String _argType, Object _value) {
+        getHeaders().put(_header, _value);
+        return new Object[] {
+                _header, new Object[] {
+                        _argType, _value
+                }
+        };
+    }
+
+    /**
+     * Adds message padding and marshalling.
+     * 
+     * @param _hargs
+     * @param _sig
+     * @param _args
+     * @throws DBusException
+     */
+    protected void padAndMarshall(List<Object> _hargs, String _sig, Object... _args) throws DBusException {
+        byte[] blen = new byte[4];
+        appendBytes(blen);
+        append("ua(yv)", getSerial(), _hargs.toArray());
+        pad((byte) 8);
+    
+        long c = getByteCounter();
+        if (null != _sig) {
+            append(_sig, _args);
+        }
+        logger.trace("Appended body, type: {} start: {} end: {} size: {}",_sig, c, getByteCounter(), getByteCounter() - c);
+        marshallint(getByteCounter() - c, blen, 0, 4);
+        logger.trace("marshalled size ({}): {}",blen, Hexdump.format(blen));
     }
 
     /** Defines constants representing the flags which can be set on a message. */

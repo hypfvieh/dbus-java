@@ -36,7 +36,8 @@ public class MethodReturn extends MethodBase {
             setArgs(_args);
         }
 
-        createCommon(hargs, _sig, _args);
+        appendFileDescriptors(hargs, _sig, _args);
+        padAndMarshall(hargs, _sig, _args);
     }
 
     public MethodReturn(MethodCall _mc, String _sig, Object... _args) throws DBusException {

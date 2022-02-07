@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
@@ -281,6 +282,7 @@ public class DBusDaemon extends Thread implements Closeable {
         boolean printaddress = false;
         boolean unix = true;
         boolean tcp = false;
+        byte endianess = AbstractConnection.getSystemEndianness();
 
         // parse options
         try {
@@ -295,6 +297,15 @@ public class DBusDaemon extends Thread implements Closeable {
                     pidfile = _args[++i];
                 } else if ("--addressfile".equals(_args[i]) || "-a".equals(_args[i])) {
                     addrfile = _args[++i];
+                } else if ("--endianess".equals(_args[i]) || "-e".equals(_args[i])) {
+                    String val = _args[++i];
+                    if ("L".equalsIgnoreCase(val) || "little".equalsIgnoreCase(val)) {
+                        endianess = Message.Endian.LITTLE;
+                    } else if ("B".equalsIgnoreCase(val) || "big".equalsIgnoreCase(val)) {
+                        endianess = Message.Endian.BIG;
+                    } else {
+                        System.err.println("Unknown endianess '" + val + "', only 'big' and 'little' supported. Using system default");
+                    }
                 } else if ("--print-address".equals(_args[i]) || "-r".equals(_args[i])) {
                     printaddress = true;
                 } else if ("--unix".equals(_args[i]) || "-u".equals(_args[i])) {
@@ -399,9 +410,8 @@ public class DBusDaemon extends Thread implements Closeable {
             LOGGER.info("Client {} registered", connStruct.unique);
 
             try {
-                send(connStruct, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", connStruct.unique));
-                DBusSignal s = new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", connStruct.unique, "", connStruct.unique);
-                send(null, s);
+                send(connStruct, new NameAcquired("/org/freedesktop/DBus", connStruct.unique));
+                send(null, new NameOwnerChanged("/org/freedesktop/DBus", connStruct.unique, "", connStruct.unique));
             } catch (DBusException dbe) {
                 LOGGER.debug("", dbe);
             }
@@ -464,8 +474,8 @@ public class DBusDaemon extends Thread implements Closeable {
 
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
                 try {
-                    send(connStruct, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", _name));
-                    send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, "", connStruct.unique));
+                    send(connStruct, new NameAcquired("/org/freedesktop/DBus", _name));
+                    send(null, new NameOwnerChanged("/org/freedesktop/DBus", _name, "", connStruct.unique));
                 } catch (DBusException dbe) {
                     LOGGER.debug("", dbe);
                 }
@@ -490,8 +500,8 @@ public class DBusDaemon extends Thread implements Closeable {
                 LOGGER.info("Client {} acquired name {}", connStruct.unique, _name);
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_RELEASED;
                 try {
-                    send(connStruct, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameLost", "s", _name));
-                    send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, connStruct.unique, ""));
+                    send(connStruct, new NameLost("/org/freedesktop/DBus", _name));
+                    send(null, new NameOwnerChanged("/org/freedesktop/DBus", _name, connStruct.unique, ""));
                 } catch (DBusException dbe) {
                     LOGGER.debug("", dbe);
                 }
@@ -557,22 +567,23 @@ public class DBusDaemon extends Thread implements Closeable {
                     this.connStruct = _connStruct;
                     rv = meth.invoke(dbusServer, args);
                     if (null == rv) {
+                        
                         send(_connStruct, new MethodReturn("org.freedesktop.DBus", (MethodCall) _msg, null), true);
                     } else {
                         String sig = Marshalling.getDBusType(meth.getGenericReturnType())[0];
                         send(_connStruct, new MethodReturn("org.freedesktop.DBus", (MethodCall) _msg, sig, rv), true);
                     }
-                } catch (InvocationTargetException ite) {
-                    LOGGER.debug("", ite);
-                    send(_connStruct, new Error("org.freedesktop.DBus", _msg, ite.getCause()));
-                } catch (DBusExecutionException dbee) {
-                   LOGGER.debug("", dbee);
-                   send(_connStruct, new Error("org.freedesktop.DBus", _msg, dbee));
-                } catch (Exception e) {
-                    LOGGER.debug("", e);
+                } catch (InvocationTargetException _exIte) {
+                    LOGGER.debug("", _exIte);
+                    send(_connStruct, new Error("org.freedesktop.DBus", _msg, _exIte.getCause()));
+                } catch (DBusExecutionException _exDnEe) {
+                   LOGGER.debug("", _exDnEe);
+                   send(_connStruct, new Error("org.freedesktop.DBus", _msg, _exDnEe));
+                } catch (Exception _ex) {
+                    LOGGER.debug("", _ex);
                     send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
                 }
-            } catch (NoSuchMethodException exNsm) {
+            } catch (NoSuchMethodException _exNsm) {
                 send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
             }
 

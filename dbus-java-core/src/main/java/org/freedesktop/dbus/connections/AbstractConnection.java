@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.InternalSignal;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.RemoteInvocationHandler;
@@ -664,12 +663,9 @@ public abstract class AbstractConnection implements Closeable {
                 .toArray(Class[]::new);
     }
 
-    protected void handleException(AbstractConnection _dbusConnection, Message _methodOrSignal, DBusExecutionException _exception) {
-        if (_dbusConnection == null) {
-            throw new NullPointerException("DBusConnection cannot be null");
-        }
+    protected void handleException(Message _methodOrSignal, DBusExecutionException _exception) {
         try {
-            _dbusConnection.sendMessage(new Error(_methodOrSignal, _exception));
+            sendMessage(new Error(_methodOrSignal, _exception));
         } catch (DBusException ex) {
             logger.warn("Exception caught while processing previous error.", ex);
         }
@@ -773,7 +769,7 @@ public abstract class AbstractConnection implements Closeable {
                     logger.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), _methodCall.getParameters()), LoggingHelper.arraysDeepString(logger.isTraceEnabled(),ts));
                 } catch (Exception e) {
                     logger.debug("", e);
-                    handleException(conn, _methodCall, new UnknownMethod("Failure in de-serializing message: " + e));
+                    handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + e));
                     return;
                 }
 
@@ -809,10 +805,10 @@ public abstract class AbstractConnection implements Closeable {
                     }
                 } catch (DBusExecutionException exDee) {
                     logger.debug("", exDee);
-                    handleException(conn, _methodCall, exDee);
+                    handleException(_methodCall, exDee);
                 } catch (Throwable e) {
                     logger.debug("", e);
-                    handleException(conn, _methodCall,
+                    handleException(_methodCall,
                             new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
                                     _methodCall.getInterface(), _methodCall.getName(), e.getMessage())));
                 }
@@ -876,7 +872,7 @@ public abstract class AbstractConnection implements Closeable {
                 public void run() {
                     try {
                         DBusSignal rs;
-                        if (_signal instanceof InternalSignal || _signal.getClass().equals(DBusSignal.class)) {
+                        if (_signal.getClass().equals(DBusSignal.class)) {
                             rs = _signal.createReal(conn);
                         } else {
                             rs = _signal;
@@ -887,7 +883,7 @@ public abstract class AbstractConnection implements Closeable {
                         ((DBusSigHandler<DBusSignal>) h).handle(rs);
                     } catch (DBusException _ex) {
                         logger.warn("Exception while running signal handler '{}' for signal '{}':", h, _signal, _ex);
-                        handleException(conn, _signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
+                        handleException(_signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
                                 + "." + _signal.getName() + ": " + _ex.getMessage()));
                     }
                 }
@@ -1042,14 +1038,9 @@ public abstract class AbstractConnection implements Closeable {
                 ((DBusSignal) _message).appendbody(this);
             }
 
-            if (_message instanceof MethodCall && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED)) {
-                if (null == getPendingCalls()) {
-                    ((MethodCall) _message).setReply(new Error("org.freedesktop.DBus.Local",
-                            "org.freedesktop.DBus.Local.Disconnected", 0, "s", "Disconnected"));
-                } else {
-                    synchronized (getPendingCalls()) {
-                        getPendingCalls().put(_message.getSerial(), (MethodCall) _message);
-                    }
+            if (_message instanceof MethodCall && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
+                synchronized (getPendingCalls()) {
+                    getPendingCalls().put(_message.getSerial(), (MethodCall) _message);
                 }
             }
 
@@ -1057,13 +1048,7 @@ public abstract class AbstractConnection implements Closeable {
 
         } catch (Exception _ex) {
             logger.debug("Exception while sending message.", _ex);
-            if (_message instanceof MethodCall && _ex instanceof NotConnected) {
-                try {
-                    ((MethodCall) _message).setReply(new Error("org.freedesktop.DBus.Local",
-                            "org.freedesktop.DBus.Local.Disconnected", 0, "s", "Disconnected"));
-                } catch (DBusException _exDe) {
-                }
-            }
+           
             if (_message instanceof MethodCall && _ex instanceof DBusExecutionException) {
                 try {
                     ((MethodCall) _message).setReply(new Error(_message, _ex));

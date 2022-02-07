@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.InternalSignal;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
@@ -62,59 +61,22 @@ public class DBusSignal extends Message {
         if (null == _path || null == _member || null == _iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
         }
-        getHeaders().put(Message.HeaderField.PATH, _path);
-        getHeaders().put(Message.HeaderField.MEMBER, _member);
-        getHeaders().put(Message.HeaderField.INTERFACE, _iface);
 
         List<Object> hargs = new ArrayList<>();
-        hargs.add(new Object[] {
-                Message.HeaderField.PATH, new Object[] {
-                        ArgumentType.OBJECT_PATH_STRING, _path
-                }
-        });
-        hargs.add(new Object[] {
-                Message.HeaderField.INTERFACE, new Object[] {
-                        ArgumentType.STRING_STRING, _iface
-                }
-        });
-        hargs.add(new Object[] {
-                Message.HeaderField.MEMBER, new Object[] {
-                        ArgumentType.STRING_STRING, _member
-                }
-        });
+        hargs.add(createHeaderArgs(HeaderField.PATH, ArgumentType.OBJECT_PATH_STRING, _path));
+        hargs.add(createHeaderArgs(HeaderField.INTERFACE, ArgumentType.STRING_STRING, _iface));
+        hargs.add(createHeaderArgs(HeaderField.MEMBER, ArgumentType.STRING_STRING, _member));
 
         if (null != _source) {
-            getHeaders().put(Message.HeaderField.SENDER, _source);
-            hargs.add(new Object[] {
-                    Message.HeaderField.SENDER, new Object[] {
-                            ArgumentType.STRING_STRING, _source
-                    }
-            });
+            hargs.add(createHeaderArgs(HeaderField.SENDER, ArgumentType.STRING_STRING, _source));
         }
 
         if (null != _sig) {
-            hargs.add(new Object[] {
-                    Message.HeaderField.SIGNATURE, new Object[] {
-                            ArgumentType.SIGNATURE_STRING, _sig
-                    }
-            });
-            getHeaders().put(Message.HeaderField.SIGNATURE, _sig);
+            hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, _sig));
             setArgs(_args);
         }
 
-        blen = new byte[4];
-        appendBytes(blen);
-        long newSerial = getSerial() + 1;
-        setSerial(newSerial);
-        append("ua(yv)", newSerial, hargs.toArray());
-        pad((byte) 8);
-
-        long counter = getByteCounter();
-        if (null != _sig) {
-            append(_sig, _args);
-        }
-        marshallint(getByteCounter() - counter, blen, 0, 4);
-        bodydone = true;
+        padAndMarshall(hargs, _sig, _args);
     }
 
     static void addInterfaceMap(String _java, String _dbus) {
@@ -123,25 +85,6 @@ public class DBusSignal extends Message {
 
     static void addSignalMap(String _java, String _dbus) {
         SIGNAL_NAMES.put(_dbus, _java);
-    }
-
-    static DBusSignal createSignal(Class<? extends DBusSignal> _c, String _source, String _objectPath, String _sig,
-            long _serial, Object... _parameters) throws DBusException {
-        String type = "";
-        if (null != _c.getEnclosingClass()) {
-            if (null != _c.getEnclosingClass().getAnnotation(DBusInterfaceName.class)) {
-                type = _c.getEnclosingClass().getAnnotation(DBusInterfaceName.class).value();
-            } else {
-                type = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getEnclosingClass().getName()).replaceAll(".");
-            }
-
-        } else {
-            throw new DBusException(
-                    "Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
-        }
-        DBusSignal s = new InternalSignal(_source, _objectPath, type, _c.getSimpleName(), _sig, _serial, _parameters);
-        s.clazz = _c;
-        return s;
     }
 
     @SuppressWarnings("unchecked")
