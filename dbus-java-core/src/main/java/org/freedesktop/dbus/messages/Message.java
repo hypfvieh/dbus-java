@@ -1313,14 +1313,15 @@ public class Message {
      * Adds message padding and marshalling.
      * 
      * @param _hargs
+     * @param _serial
      * @param _sig
      * @param _args
      * @throws DBusException
      */
-    protected void padAndMarshall(List<Object> _hargs, String _sig, Object... _args) throws DBusException {
+    protected void padAndMarshall(List<Object> _hargs, long _serial, String _sig, Object... _args) throws DBusException {
         byte[] blen = new byte[4];
         appendBytes(blen);
-        append("ua(yv)", getSerial(), _hargs.toArray());
+        append("ua(yv)", _serial, _hargs.toArray());
         pad((byte) 8);
     
         long c = getByteCounter();

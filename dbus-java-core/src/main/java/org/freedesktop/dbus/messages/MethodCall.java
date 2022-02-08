@@ -57,7 +57,7 @@ public class MethodCall extends MethodBase {
         }
 
         appendFileDescriptors(hargs, _sig, _args);
-        padAndMarshall(hargs, _sig, _args);
+        padAndMarshall(hargs, getSerial(), _sig, _args);
     }
    
     /**

@@ -37,7 +37,7 @@ public class MethodReturn extends MethodBase {
         }
 
         appendFileDescriptors(hargs, _sig, _args);
-        padAndMarshall(hargs, _sig, _args);
+        padAndMarshall(hargs, getSerial(), _sig, _args);
     }
 
     public MethodReturn(MethodCall _mc, String _sig, Object... _args) throws DBusException {

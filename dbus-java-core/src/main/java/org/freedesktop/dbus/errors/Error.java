@@ -51,7 +51,7 @@ public class Error extends Message {
             setArgs(_args);
         }
 
-        padAndMarshall(hargs, _sig, _args);
+        padAndMarshall(hargs, getSerial(), _sig, _args);
     }
 
     public Error(String _source, Message _m, Throwable _ex) throws DBusException {

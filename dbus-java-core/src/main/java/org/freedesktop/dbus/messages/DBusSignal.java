@@ -76,7 +76,9 @@ public class DBusSignal extends Message {
             setArgs(_args);
         }
 
-        padAndMarshall(hargs, _sig, _args);
+        setSerial(getSerial() +1);
+        padAndMarshall(hargs, getSerial(), _sig, _args);
+        bodydone = true;
     }
 
     static void addInterfaceMap(String _java, String _dbus) {
