@@ -175,9 +175,7 @@ public final class ArrayFrob {
 
     public static Object[] type(Object[] _old, Class<Object> _c) {
         Object[] ns = (Object[]) Array.newInstance(_c, _old.length);
-        for (int i = 0; i < ns.length; i++) {
-            ns[i] = _old[i];
-        }
+        System.arraycopy(_old, 0, ns, 0, ns.length);
         return ns;
     }
 }

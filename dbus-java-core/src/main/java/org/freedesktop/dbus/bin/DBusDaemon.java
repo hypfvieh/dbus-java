@@ -77,14 +77,9 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private void send(ConnectionStruct _connStruct, Message _msg, boolean _head) {
 
-        if (null == _connStruct) {
-            LOGGER.trace("Queing message {} for all connections", _msg);
-        } else {
-            LOGGER.trace("Queing message {} for {}", _msg, _connStruct.unique);
-        }
-
         // send to all connections
         if (null == _connStruct) {
+            LOGGER.trace("Queuing message {} for all connections", _msg);
             synchronized (conns) {
                 synchronized (outqueue) {
                     for (ConnectionStruct d : conns.keySet()) {
@@ -98,6 +93,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
         } else {
+            LOGGER.trace("Queuing message {} for {}", _msg, _connStruct.unique);
             synchronized (outqueue) {
                 if (_head) {
                     outqueue.putFirst(_msg, new WeakReference<>(_connStruct));
@@ -110,7 +106,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    // TODO: Why the hell is is signal given when it is never used?
+    // TODO: Why the hell is a signal given when it is never used?
     private List<ConnectionStruct> findSignalMatches(DBusSignal _sig) {
         List<ConnectionStruct> l;
         synchronized (sigrecips) {
@@ -795,7 +791,7 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
 
-
+    // TODO: Replace this by ConcurrentLinkedDeque
     static class MagicMap<A, B> {
         private final Logger                logger = LoggerFactory.getLogger(getClass());
 

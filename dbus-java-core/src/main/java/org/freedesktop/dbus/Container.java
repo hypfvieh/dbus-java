@@ -5,6 +5,8 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.annotations.Position;
 
@@ -13,15 +15,15 @@ import org.freedesktop.dbus.annotations.Position;
  * and holds common methods.
  */
 public abstract class Container {
-    private static Map<Type, Type[]> typecache  = new HashMap<>();
+    private static final Map<Type, Type[]> TYPE_CACHE  = new HashMap<>();
     private Object[]                 parameters = null;
 
     static void putTypeCache(Type _k, Type[] _v) {
-        typecache.put(_k, _v);
+        TYPE_CACHE.put(_k, _v);
     }
 
     static Type[] getTypeCache(Type _k) {
-        return typecache.get(_k);
+        return TYPE_CACHE.get(_k);
     }
 
     Container() {
@@ -65,17 +67,16 @@ public abstract class Container {
     /** Returns this struct as a string. */
     @Override
     public final String toString() {
-        String s = getClass().getName() + "<";
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getName()).append("<");
         if (null == parameters) {
             setup();
         }
         if (0 == parameters.length) {
-            return s + ">";
+            return sb.append(">").toString();
         }
-        for (Object o : parameters) {
-            s += o + ", ";
-        }
-        return s.replaceAll(", $", ">");
+        sb.append(Arrays.stream(parameters).map(o -> Objects.toString(o)).collect(Collectors.joining(", ")));
+        return sb.append(">").toString();
     }
 
     @Override

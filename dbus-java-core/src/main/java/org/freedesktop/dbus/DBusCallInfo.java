@@ -19,12 +19,12 @@ public class DBusCallInfo {
     private final int       flags;
 
     public DBusCallInfo(Message _m) {
-        this.source = _m.getSource();
-        this.destination = _m.getDestination();
-        this.objectpath = _m.getPath();
-        this.iface = _m.getInterface();
-        this.method = _m.getName();
-        this.flags = _m.getFlags();
+        source = _m.getSource();
+        destination = _m.getDestination();
+        objectpath = _m.getPath();
+        iface = _m.getInterface();
+        method = _m.getName();
+        flags = _m.getFlags();
     }
 
     /** Returns the BusID which called the method.

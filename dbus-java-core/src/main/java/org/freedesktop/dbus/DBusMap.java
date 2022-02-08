@@ -3,10 +3,12 @@ package org.freedesktop.dbus;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class DBusMap<K, V> implements Map<K, V> {
     // CHECKSTYLE:OFF
@@ -70,8 +72,8 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsKey(Object _key) {
-        for (Object[] entrie : entries) {
-            if (_key == entrie[0] || _key != null && _key.equals(entrie[0])) {
+        for (Object[] entry : entries) {
+            if (Objects.equals(_key, entry[0])) {
                 return true;
             }
         }
@@ -80,8 +82,8 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsValue(Object _value) {
-        for (Object[] entrie : entries) {
-            if (_value == entrie[1] || _value != null && _value.equals(entrie[1])) {
+        for (Object[] entry : entries) {
+            if (Objects.equals(_value, entry[1])) {
                 return true;
             }
         }
@@ -90,7 +92,7 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
-        Set<Map.Entry<K, V>> s = new TreeSet<>();
+        Set<Map.Entry<K, V>> s = new LinkedHashSet<>();
         for (int i = 0; i < entries.length; i++) {
             s.add(new Entry(i));
         }
@@ -116,7 +118,7 @@ public class DBusMap<K, V> implements Map<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public Set<K> keySet() {
-        Set<K> s = new TreeSet<>();
+        Set<K> s = new LinkedHashSet<>();
         for (Object[] entry : entries) {
             s.add((K) entry[0]);
         }
@@ -172,10 +174,11 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        String s = "{ ";
-        for (Object[] entrie : entries) {
-            s += entrie[0] + " => " + entrie[1] + ",";
-        }
-        return s.replaceAll(".$", " }");
+        String sb = "{" 
+                + Arrays.stream(entries).map(e -> e[0] + " => " + e[1])
+                    .collect(Collectors.joining(",")) 
+                + "}";
+
+        return sb;
     }
 }
