@@ -98,7 +98,7 @@ public class ReceivingService {
             try {
                 es.getValue().awaitTermination(_timeout, _unit);
             } catch (InterruptedException _ex) {
-                LoggerFactory.getLogger(getClass()).warn("Interrupted while waiting for termination of executor", _ex);
+                LoggerFactory.getLogger(getClass()).debug("Interrupted while waiting for termination of executor", _ex);
             }
         }
 
