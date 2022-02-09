@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,19 +19,26 @@ import org.slf4j.LoggerFactory;
  * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
+    private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig(1, 1, 4, 1);
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
     private boolean closed = false;
     
     private final Map<ExecutorNames, ExecutorService> executors = new EnumMap<>(ExecutorNames.class);
     
-    public ReceivingService() {
-        executors.put(ExecutorNames.SIGNAL, Executors.newSingleThreadExecutor(new NameableThreadFactory("DBus-Signal-Receiver-", true)));
-        executors.put(ExecutorNames.ERROR, Executors.newSingleThreadExecutor(new NameableThreadFactory("DBus-Error-Receiver-", true)));
+    /**
+     * Creates a new instance.
+     * 
+     * @param _rsCfg configuration
+     */
+    public ReceivingService(ReceivingServiceConfig _rsCfg) {
+        ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(DEFAULT_CFG);
+        executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true)));
+        executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true)));
 
         // we need multiple threads here so recursive method calls are possible
-        executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(4, new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
-        executors.put(ExecutorNames.METHODRETURN, Executors.newSingleThreadExecutor(new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
+        executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
+        executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
     }
     
     /**
@@ -143,5 +151,37 @@ public class ReceivingService {
         public String toString() {
             return description;
         }
+    }
+    
+    public static final class ReceivingServiceConfig {
+        private final int signalThreadPoolSize;
+        private final int errorThreadPoolSize;
+        private final int methodCallThreadPoolSize;
+        private final int methodReturnThreadPoolSize;
+
+        public ReceivingServiceConfig(int _signalThreadPoolSize, int _errorThreadPoolSize,
+                int _methodCallThreadPoolSize, int _methodReturnThreadPoolSize) {
+            signalThreadPoolSize = _signalThreadPoolSize;
+            errorThreadPoolSize = _errorThreadPoolSize;
+            methodCallThreadPoolSize = _methodCallThreadPoolSize;
+            methodReturnThreadPoolSize = _methodReturnThreadPoolSize;
+        }
+
+        public int getSignalThreadPoolSize() {
+            return signalThreadPoolSize;
+        }
+
+        public int getErrorThreadPoolSize() {
+            return errorThreadPoolSize;
+        }
+
+        public int getMethodCallThreadPoolSize() {
+            return methodCallThreadPoolSize;
+        }
+
+        public int getMethodReturnThreadPoolSize() {
+            return methodReturnThreadPoolSize;
+        }
+        
     }
 }

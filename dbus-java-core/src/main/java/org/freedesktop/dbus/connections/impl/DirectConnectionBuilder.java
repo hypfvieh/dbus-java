@@ -4,6 +4,8 @@ import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
+import org.freedesktop.dbus.connections.ReceivingService;
+import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 
@@ -17,9 +19,14 @@ public class DirectConnectionBuilder {
 
     private final String        address;
 
-    private boolean             weakReference = false;
-    private byte                endianess     = getSystemEndianness();
-    private int                 timeout       = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private boolean             weakReference           = false;
+    private byte                endianess               = getSystemEndianness();
+    private int                 timeout                 = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private int                 signalThreadCount       = 1;
+    private int                 errorThreadCount        = 1;
+    private int                 methodCallThreadCount   = 4;
+    private int                 methodReturnThreadCount = 1;
+
     private IDisconnectCallback disconnectCallback;
 
     private DirectConnectionBuilder(String _address) {
@@ -49,6 +56,60 @@ public class DirectConnectionBuilder {
         return this;
     }
     
+    /**
+     * Set the size of the thread-pool used to handle signals from the bus.
+     * Caution: Using thread-pool size &gt; 1 may cause signals to be handled out-of-order
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DirectConnectionBuilder withSignalThreadCount(int _threads) {
+        signalThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
+    /**
+     * Set the size of the thread-pool used to handle error messages received on the bus.
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DirectConnectionBuilder withErrorHandlerThreadCount(int _threads) {
+        errorThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
+    /**
+     * Set the size of the thread-pool used to handle methods calls previously sent to the bus.
+     * The thread pool size has to be &gt; 1 to handle recursive calls.
+     * <p>
+     * Default: 4
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DirectConnectionBuilder withMethodCallThreadCount(int _threads) {
+        methodCallThreadCount = Math.max(1, _threads);
+        return this;
+    }
+    
+    /**
+     * Set the size of the thread-pool used to handle method return values received on the bus.
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DirectConnectionBuilder withMethodReturnThreadCount(int _threads) {
+        methodReturnThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
     /**
      * Set the endianess for the connection 
      * Default is based on system endianess.
@@ -93,7 +154,8 @@ public class DirectConnectionBuilder {
      * @throws DBusException when DBusConnection could not be opened
      */
     public DirectConnection build() throws DBusException {
-        DirectConnection c = new DirectConnection(timeout, address);
+        ReceivingServiceConfig cfg = new ReceivingService.ReceivingServiceConfig(signalThreadCount, errorThreadCount, methodCallThreadCount, methodReturnThreadCount);
+        DirectConnection c = new DirectConnection(timeout, address, cfg);
         c.setDisconnectCallback(disconnectCallback);
         c.setWeakReferences(weakReference);
         DirectConnection.setEndianness(endianess);

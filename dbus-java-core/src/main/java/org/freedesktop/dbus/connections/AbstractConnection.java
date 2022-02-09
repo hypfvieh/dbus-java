@@ -35,6 +35,7 @@ import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
+import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
@@ -115,7 +116,7 @@ public abstract class AbstractConnection implements Closeable {
 
     private Optional<IDisconnectCallback>                                       disconnectCallback = Optional.ofNullable(null);
 
-    protected AbstractConnection(String _address, int _timeout) throws DBusException {
+    protected AbstractConnection(String _address, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
         exportedObjects = new HashMap<>();
         importedObjects = new ConcurrentHashMap<>();
@@ -129,7 +130,7 @@ public abstract class AbstractConnection implements Closeable {
 
         pendingErrorQueue = new ConcurrentLinkedQueue<>();
 
-        receivingService = new ReceivingService();
+        receivingService = new ReceivingService(_rsCfg);
         senderService =
                 Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
 

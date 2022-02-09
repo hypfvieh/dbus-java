@@ -28,6 +28,7 @@ import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
+import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -223,14 +224,21 @@ public final class DBusConnection extends AbstractConnection {
     }
 
  
-    DBusConnection(String _address, boolean _shared, String _machineId, int _timeout) throws DBusException {
-        super(_address, _timeout);
+    DBusConnection(String _address, boolean _shared, String _machineId, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_address, _timeout, _rsCfg);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;
         
     }
 
+    /**
+     * Connect to bus and register if asked.
+     * Should only be called by Builder.
+     * 
+     * @param _registerSelf true to register
+     * @throws DBusException if registering fails
+     */
     void connect(boolean _registerSelf) throws DBusException {
         // start listening for calls
         listen();

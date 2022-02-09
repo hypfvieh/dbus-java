@@ -6,6 +6,8 @@ import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
+import org.freedesktop.dbus.connections.ReceivingService;
+import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -23,11 +25,17 @@ public class DBusConnectionBuilder {
     private final String        address;
 
     private final String        machineId;
-    private boolean             registerSelf  = true;
-    private boolean             shared        = true;
-    private boolean             weakReference = false;
-    private byte                endianess     = getSystemEndianness();
-    private int                 timeout       = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private boolean             registerSelf            = true;
+    private boolean             shared                  = true;
+    private boolean             weakReference           = false;
+    private byte                endianess               = getSystemEndianness();
+    private int                 timeout                 = AbstractConnection.TCP_CONNECT_TIMEOUT;
+
+    private int                 signalThreadCount       = 1;
+    private int                 errorThreadCount        = 1;
+    private int                 methodCallThreadCount   = 4;
+    private int                 methodReturnThreadCount = 1;
+
     private IDisconnectCallback disconnectCallback;
 
     private DBusConnectionBuilder(String _address, String _machineId) {
@@ -143,7 +151,61 @@ public class DBusConnectionBuilder {
         timeout = _timeout;
         return this;
     }
+
+    /**
+     * Set the size of the thread-pool used to handle signals from the bus.
+     * Caution: Using thread-pool size &gt; 1 may cause signals to be handled out-of-order
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DBusConnectionBuilder withSignalThreadCount(int _threads) {
+        signalThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
+    /**
+     * Set the size of the thread-pool used to handle error messages received on the bus.
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DBusConnectionBuilder withErrorHandlerThreadCount(int _threads) {
+        errorThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
+    /**
+     * Set the size of the thread-pool used to handle methods calls previously sent to the bus.
+     * The thread pool size has to be &gt; 1 to handle recursive calls.
+     * <p>
+     * Default: 4
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DBusConnectionBuilder withMethodCallThreadCount(int _threads) {
+        methodCallThreadCount = Math.max(1, _threads);
+        return this;
+    }
     
+    /**
+     * Set the size of the thread-pool used to handle method return values received on the bus.
+     * <p>
+     * Default: 1
+     * 
+     * @param _threads int &gt;= 1
+     * @return this
+     */
+    public DBusConnectionBuilder withMethodReturnThreadCount(int _threads) {
+        methodReturnThreadCount = Math.max(1, _threads);
+        return this;
+    }
+
     /**
      * Set the endianess for the connection 
      * Default is based on system endianess.
@@ -188,6 +250,7 @@ public class DBusConnectionBuilder {
      * @throws DBusException when DBusConnection could not be opened
      */
     public DBusConnection build() throws DBusException {
+        ReceivingServiceConfig cfg = new ReceivingService.ReceivingServiceConfig(signalThreadCount, errorThreadCount, methodCallThreadCount, methodReturnThreadCount);
         DBusConnection c;
         if (shared) {
             synchronized (DBusConnection.CONNECTIONS) {
@@ -196,12 +259,12 @@ public class DBusConnectionBuilder {
                     c.concurrentConnections.incrementAndGet();
                     return c; // this connection already exists, do not change anything
                 } else {
-                    c = new DBusConnection(address, shared, machineId, timeout);
+                    c = new DBusConnection(address, shared, machineId, timeout, cfg);
                     DBusConnection.CONNECTIONS.put(address, c);
                 }
             }
         } else {
-            c = new DBusConnection(address, shared, machineId, timeout);
+            c = new DBusConnection(address, shared, machineId, timeout, cfg);
         }
         
         c.setDisconnectCallback(disconnectCallback);

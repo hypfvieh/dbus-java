@@ -21,6 +21,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
@@ -62,11 +63,11 @@ public class DirectConnection extends AbstractConnection {
     */
     @Deprecated(since = "4.1.0", forRemoval = true)
     public DirectConnection(String _address, int _timeout) throws DBusException {
-        this(_timeout, _address);
+        this(_timeout, _address, null);
     }
 
-    DirectConnection(int _timeout, String _address) throws DBusException {
-        super(_address, _timeout);
+    DirectConnection(int _timeout, String _address, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_address, _timeout, _rsCfg);
         machineId = createMachineId();
         if (!getAddress().isServer()) {
             super.listen();
