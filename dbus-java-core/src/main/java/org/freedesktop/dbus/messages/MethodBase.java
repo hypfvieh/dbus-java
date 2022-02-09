@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.messages;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.freedesktop.dbus.FileDescriptor;
@@ -30,14 +31,7 @@ public abstract class MethodBase extends Message {
             _hargs = new ArrayList<>();
         }
         
-        int totalFileDes = 0;
-        if (_args != null) {
-            for (int x = 0; x < _args.length; x++) {
-                if (_args[x] instanceof FileDescriptor) {
-                    totalFileDes++;
-                }
-            }
-        }
+        int totalFileDes = _args == null ? 0 : Arrays.stream(_args).filter(x -> x instanceof FileDescriptor).mapToInt(i -> 1).sum();
 
         if (totalFileDes > 0) {
             _hargs.add(createHeaderArgs(Message.HeaderField.UNIX_FDS, ArgumentType.UINT32_STRING, new UInt32(totalFileDes)));

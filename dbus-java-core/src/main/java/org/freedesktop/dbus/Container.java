@@ -15,8 +15,8 @@ import org.freedesktop.dbus.annotations.Position;
  * and holds common methods.
  */
 public abstract class Container {
-    private static final Map<Type, Type[]> TYPE_CACHE  = new HashMap<>();
-    private Object[]                 parameters = null;
+    private static final Map<Type, Type[]> TYPE_CACHE = new HashMap<>();
+    private Object[]                       parameters = null;
 
     static void putTypeCache(Type _k, Type[] _v) {
         TYPE_CACHE.put(_k, _v);

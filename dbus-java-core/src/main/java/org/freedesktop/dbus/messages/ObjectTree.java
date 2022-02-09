@@ -13,7 +13,7 @@ public class ObjectTree {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private TreeNode     root;
 
-    class TreeNode {
+    static class TreeNode {
         // CHECKSTYLE:OFF
         String         name;
         ExportedObject object;
@@ -23,13 +23,13 @@ public class ObjectTree {
         // CHECKSTYLE:ON
 
         TreeNode(String _name) {
-            this.name = _name;
+            name = _name;
         }
 
         TreeNode(String _name, ExportedObject _object, String _data) {
-            this.name = _name;
-            this.object = _object;
-            this.data = _data;
+            name = _name;
+            object = _object;
+            data = _data;
         }
     }
 

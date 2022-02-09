@@ -32,4 +32,16 @@ public final class LoggingHelper {
         
         return Arrays.deepToString(_array);
     }
+    
+    /**
+     * Executes the runnable if the boolean is true.
+     * 
+     * @param _enabled boolean, if true runnable is executed
+     * @param _loggerCall runnable containing logger call
+     */
+    public static void logIf(boolean _enabled, Runnable _loggerCall) {
+        if (_enabled) {
+            _loggerCall.run();
+        }
+    }
 }

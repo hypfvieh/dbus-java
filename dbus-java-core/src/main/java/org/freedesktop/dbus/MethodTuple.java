@@ -7,16 +7,16 @@ public class MethodTuple {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final String name;
-    private String       sig;
+    private final String sig;
 
     public MethodTuple(String _name, String _sig) {
-        this.name = _name;
+        name = _name;
         if (null != _sig) {
-            this.sig = _sig;
+            sig = _sig;
         } else {
-            this.sig = "";
+            sig = "";
         }
-        logger.trace("new MethodTuple({}, {})", this.name, this.sig);
+        logger.trace("new MethodTuple({}, {})", name, sig);
     }
 
     @Override

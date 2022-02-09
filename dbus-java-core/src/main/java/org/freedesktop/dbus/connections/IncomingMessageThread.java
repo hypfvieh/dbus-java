@@ -31,7 +31,7 @@ public class IncomingMessageThread extends Thread {
     @Override
     public void run() {
 
-        Message msg = null;
+        Message msg;
         while (!terminate) {
             msg = null;
 
@@ -43,8 +43,6 @@ public class IncomingMessageThread extends Thread {
                     logger.trace("Got Incoming Message: {}", msg);
 
                     connection.handleMessage(msg);
-
-                    msg = null;
                 }
             } catch (DBusException | RejectedExecutionException _ex) {
                 if (_ex instanceof FatalException) {

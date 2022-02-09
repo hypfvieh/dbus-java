@@ -12,21 +12,29 @@ public final class Hexdump {
     }
 
     public static String toHex(byte[] _buf) {
-        return toHex(_buf, 0, _buf.length);
+        return toHex(_buf, true);
+    }
+    
+    public static String toHex(byte[] _buf, boolean _spaces) {
+        return toHex(_buf, 0, _buf.length, _spaces);
     }
 
-    public static String toHex(byte[] _buf, int _ofs, int _len) {
+    public static String toHex(byte[] _buf, int _ofs, int _len, boolean _spaces) {
         StringBuilder sb = new StringBuilder();
         int j = _ofs + _len;
         for (int i = _ofs; i < j; i++) {
             if (i < _buf.length) {
                 sb.append(HEX_CHARS[(_buf[i] & 0xF0) >> 4]);
                 sb.append(HEX_CHARS[_buf[i] & 0x0F]);
-                sb.append(' ');
+                if (_spaces) {
+                    sb.append(' ');
+                }
             } else {
-                sb.append(' ');
-                sb.append(' ');
-                sb.append(' ');
+                if (_spaces) {
+                    sb.append(' ');
+                    sb.append(' ');
+                    sb.append(' ');
+                }
             }
         }
         return sb.toString();
@@ -66,7 +74,7 @@ public final class Hexdump {
                 sb.append(HEX_CHARS[(i << (j * 4) & 0xF00000) >> 20]);
             }
             sb.append('\t');
-            sb.append(toHex(_buf, i, bs));
+            sb.append(toHex(_buf, i, bs, true));
             sb.append(' ');
             sb.append(toAscii(_buf, i, bs));
             sb.append('\n');

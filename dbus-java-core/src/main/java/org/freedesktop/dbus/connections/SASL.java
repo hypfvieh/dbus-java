@@ -53,7 +53,7 @@ public class SASL {
     public static final int    COOKIE_TIMEOUT              = 240;
     public static final String COOKIE_CONTEXT              = "org_freedesktop_java";
 
-    private static Collator col = Collator.getInstance();
+    private static final Collator col = Collator.getInstance();
     static {
         col.setDecomposition(Collator.FULL_DECOMPOSITION);
         col.setStrength(Collator.PRIMARY);
@@ -64,9 +64,9 @@ public class SASL {
 
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private boolean fileDescriptorSupported;
     /** whether file descriptor passing is supported on the current connection. */
-    private boolean hasFileDescriptorSupport;
+    private final boolean hasFileDescriptorSupport;
+    private boolean fileDescriptorSupported;
 
     /**
      * Create a new SASL auth handler.
@@ -164,11 +164,11 @@ public class SASL {
      * No, I don't know why either.
      */
     private String stupidlyEncode(String _data) {
-        return Hexdump.toHex(_data.getBytes()).replaceAll(" ", "");
+        return Hexdump.toHex(_data.getBytes(), false);
     }
 
     private String stupidlyEncode(byte[] _data) {
-        return Hexdump.toHex(_data).replaceAll(" ", "");
+        return Hexdump.toHex(_data, false);
     }
 
     private byte getNibble(char _c) {

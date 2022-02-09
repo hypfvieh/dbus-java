@@ -16,12 +16,13 @@ import org.slf4j.LoggerFactory;
 public class InputStreamMessageReader implements IMessageReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final int[]   len;
+    
     private SocketChannel inputChannel;
     private byte[]        buf;
     private byte[]        tbuf;
     private byte[]        header;
     private byte[]        body;
-    private int[]         len;
 
     public InputStreamMessageReader(SocketChannel _in) {
         inputChannel = _in;

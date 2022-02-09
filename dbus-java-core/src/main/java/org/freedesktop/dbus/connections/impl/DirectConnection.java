@@ -1,14 +1,20 @@
 package org.freedesktop.dbus.connections.impl;
 
+import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
+
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
@@ -94,13 +100,13 @@ public class DirectConnection extends AbstractConnection {
         try {
             Introspectable intro = getRemoteObject(_path, Introspectable.class);
             String data = intro.Introspect();
-            String[] tags = data.split("[<>]");
-            List<String> ifaces = new ArrayList<>();
-            for (String tag : tags) {
-                if (tag.startsWith("interface")) {
-                    ifaces.add(tag.replaceAll("^interface *name *= *['\"]([^'\"]*)['\"].*$", "$1"));
-                }
-            }
+            
+            String[] tags = PROXY_SPLIT_PATTERN.split(data);
+            
+            List<String> ifaces = Arrays.stream(tags).filter(t -> t.startsWith("interface"))
+                .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
+                .collect(Collectors.toList());
+            
             List<Class<? extends Object>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
                 int j = 0;

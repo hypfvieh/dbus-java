@@ -311,7 +311,7 @@ public final class Marshalling {
     * @throws DBusException on error
     */
     public static int getJavaType(String _dbusType, List<Type> _resultValue, int _limit) throws DBusException {
-        if (null == _dbusType || "".equals(_dbusType) || 0 == _limit) {
+        if (null == _dbusType || _dbusType.isEmpty() || 0 == _limit) {
             return 0;
         }
 

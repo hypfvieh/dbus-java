@@ -28,20 +28,21 @@ public class FallbackContainer {
 
     public synchronized ExportedObject get(String _path) {
         int best = 0;
-        int i = 0;
         ExportedObject bestobject = null;
         String[] pathel = _path.split("/");
-        for (String[] fbpath : fallbacks.keySet()) {
+        for (Map.Entry<String[], ExportedObject> entry : fallbacks.entrySet()) {
+            String[] fbpath = entry.getKey();
             logger.trace("Trying fallback path {} to match {}",
                     LoggingHelper.arraysDeepString(logger.isTraceEnabled(), fbpath),
                     LoggingHelper.arraysDeepString(logger.isTraceEnabled(), pathel));
+            int i;
             for (i = 0; i < pathel.length && i < fbpath.length; i++) {
                 if (!pathel[i].equals(fbpath[i])) {
                     break;
                 }
             }
             if (i > 0 && i == fbpath.length && i > best) {
-                bestobject = fallbacks.get(fbpath);
+                bestobject = entry.getValue();
             }
             logger.trace("Matches {} bestobject now {}", i, bestobject);
         }

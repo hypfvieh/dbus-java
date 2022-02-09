@@ -1,8 +1,14 @@
 package org.freedesktop.dbus.errors;
 
+import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_EXTRACT_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_PARTIAL_PATTERN;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -10,14 +16,11 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Error messages which can be sent over the bus.
  */
 public class Error extends Message {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public Error() {
     }
@@ -78,8 +81,8 @@ public class Error extends Message {
                 c = (Class<? extends DBusExecutionException>) Class.forName(_name);
             } catch (ClassNotFoundException _exCnf) {
             }
-            _name = _name.replaceAll("\\.([^\\.]*)$", "\\$$1");
-        } while (null == c && _name.matches(".*\\..*"));
+            _name = EXCEPTION_EXTRACT_PATTERN.matcher(_name).replaceAll("\\$$1");
+        } while (null == c && EXCEPTION_PARTIAL_PATTERN.matcher(_name).matches());
         return c;
     }
 
@@ -100,11 +103,7 @@ public class Error extends Message {
             if (null == args || 0 == args.length) {
                 ex = con.newInstance("");
             } else {
-                String s = "";
-                for (Object o : args) {
-                    s += o + " ";
-                }
-                ex = con.newInstance(s.trim());
+                ex = con.newInstance(Arrays.stream(args).map(Objects::toString).collect(Collectors.joining(" ")).trim());
             }
             ex.setType(getName());
             return ex;
@@ -119,11 +118,7 @@ public class Error extends Message {
             if (null == args || 0 == args.length) {
                 ex = new DBusExecutionException("");
             } else {
-                String s = "";
-                for (Object o : args) {
-                    s += o + " ";
-                }
-                ex = new DBusExecutionException(s.trim());
+                ex = new DBusExecutionException(Arrays.stream(args).map(Objects::toString).collect(Collectors.joining(" ")).trim());
             }
             ex.setType(getName());
             return ex;

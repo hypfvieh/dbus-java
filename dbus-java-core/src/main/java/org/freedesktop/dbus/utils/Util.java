@@ -463,7 +463,6 @@ public final class Util {
         Random r = new Random();
         byte[] buf = new byte[16];
         r.nextBytes(buf);
-        String guid = Hexdump.toHex(buf);
-        return guid.replaceAll(" ", "");
+        return Hexdump.toHex(buf, false);
     }
 }

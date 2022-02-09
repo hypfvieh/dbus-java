@@ -32,7 +32,7 @@ public class SenderThread extends Thread {
 
     @Override
     public void run() {
-        Message m = null;
+        Message m;
 
         logger.trace("Monitoring outbound queue");
         // block on the outbound queue and send from it
@@ -41,7 +41,6 @@ public class SenderThread extends Thread {
                 m = outgoingQueue.take();
                 if (m != null) {
                     abstractConnection.sendMessage(m);
-                    m = null;
                 }
             } catch (InterruptedException _ex) {
                 if (!terminate) { // if terminate is true, shutdown was requested, do not log that

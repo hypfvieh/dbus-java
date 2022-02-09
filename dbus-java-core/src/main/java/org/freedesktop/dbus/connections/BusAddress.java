@@ -17,7 +17,7 @@ public class BusAddress {
     private final String rawAddress;
 
     public BusAddress(String _address) throws DBusException {
-        if (null == _address || "".equals(_address)) {
+        if (null == _address ||_address.isEmpty()) {
             throw new DBusException("Bus address is blank");
         }
 

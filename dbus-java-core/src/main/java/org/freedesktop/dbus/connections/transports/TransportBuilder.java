@@ -322,16 +322,16 @@ public class TransportBuilder {
     public AbstractTransport build() throws DBusException, IOException {
         updateAddress();
 
-        BusAddress busAddress = getAddress();
+        BusAddress myBusAddress = getAddress();
 
         AbstractTransport transport = null;
-        ITransportProvider provider = PROVIDERS.get(busAddress.getBusType());
+        ITransportProvider provider = PROVIDERS.get(myBusAddress.getBusType());
         if (provider == null) {
-            throw new DBusException("No transport provider found for bustype " + busAddress.getBusType());
+            throw new DBusException("No transport provider found for bustype " + myBusAddress.getBusType());
         }
 
         try {
-            transport = provider.createTransport(busAddress, timeout);
+            transport = provider.createTransport(myBusAddress, timeout);
             if (authMode != null) {
                 transport.setSaslAuthMode(authMode.getAuthMode());
             }
@@ -340,11 +340,11 @@ public class TransportBuilder {
         }
 
         if (transport == null) {
-            throw new DBusException("Unknown address type " + busAddress.getType() + " or no transport provider found for bus type " + busAddress.getBusType());
+            throw new DBusException("Unknown address type " + myBusAddress.getType() + " or no transport provider found for bus type " + myBusAddress.getBusType());
         }
 
-        if (busAddress.isListeningSocket() && busAddress.isFileBasedAddress()) {
-            setFilePermissions(new File(busAddress.getPath()).toPath());
+        if (myBusAddress.isListeningSocket() && myBusAddress.isFileBasedAddress()) {
+            setFilePermissions(new File(myBusAddress.getPath()).toPath());
         }
 
         if (autoConnect) {

@@ -1,12 +1,15 @@
 package org.freedesktop.dbus.connections.impl;
 
+import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
+
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
@@ -26,7 +29,6 @@ import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
@@ -36,7 +38,6 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.utils.AddressBuilder;
 import org.slf4j.Logger;
@@ -180,7 +181,7 @@ public final class DBusConnection extends AbstractConnection {
      */
     @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
-        String address = null;
+        String address;
 
         switch (_bustype) {
             case SYSTEM:
@@ -256,21 +257,21 @@ public final class DBusConnection extends AbstractConnection {
             Introspectable intro = getRemoteObject(_source, _path, Introspectable.class);
             String data = intro.Introspect();
             logger.trace("Got introspection data: {}", data);
-
-            String[] tags = data.split("[<>]");
-            List<String> ifaces = new ArrayList<>();
-            for (String tag : tags) {
-                if (tag.startsWith("interface")) {
-                    ifaces.add(tag.replaceAll("^interface *name *= *['\"]([^'\"]*)['\"].*$", "$1"));
-                }
-            }
+            
+            String[] tags = PROXY_SPLIT_PATTERN.split(data);
+            
+            List<String> ifaces = Arrays.stream(tags).filter(t -> t.startsWith("interface"))
+                .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
+                .map(i -> {
+                    if (i.startsWith("org.freedesktop.DBus.")) { // if this is a default DBus interface, look for it in our package structure
+                        return DBUS_IFACE_PATTERN.matcher(i).replaceAll("$1");
+                    }
+                    return i;
+                })
+                .collect(Collectors.toList());
             List<Class<?>> ifcs = new ArrayList<>();
             for (String iface : ifaces) {
-                // if this is a default DBus interface, look for it in our package structure
-                if (iface.startsWith("org.freedesktop.DBus.")) {
-                    iface = iface.replaceAll("^.*\\.([^\\.]+)$", DBusInterface.class.getPackage().getName() + ".$1");
-                }
-
+                
                 logger.debug("Trying interface {}", iface);
                 int j = 0;
                 while (j >= 0) {
@@ -299,7 +300,7 @@ public final class DBusConnection extends AbstractConnection {
 
             RemoteObject ro = new RemoteObject(_source, _path, null, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
-                    ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
+                    ifcs.toArray(Class[]::new), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
             return newi;
         } catch (Exception e) {
@@ -312,7 +313,7 @@ public final class DBusConnection extends AbstractConnection {
 
     @Override
     public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
-        ExportedObject o = null;
+        ExportedObject o;
         synchronized (getExportedObjects()) {
             o = getExportedObjects().get(_path);
         }
@@ -376,14 +377,11 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException(_exDb);
         }
         switch (rv.intValue()) {
-            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-                break;
             case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-                throw new DBusException("Failed to register bus name");
             case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
                 throw new DBusException("Failed to register bus name");
+            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
             case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-                break;
             default:
                 break;
         }
@@ -409,7 +407,7 @@ public final class DBusConnection extends AbstractConnection {
     public String[] getNames() {
         Set<String> names = new TreeSet<>();
         names.addAll(busnames);
-        return names.toArray(new String[0]);
+        return names.toArray(String[]::new);
     }
 
     public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type)
@@ -892,31 +890,6 @@ public final class DBusConnection extends AbstractConnection {
 		disconnect();
 	}
 
-	private void cleanupPendingCalls(Error _err, boolean _clearPendingCalls) throws DBusException {
-
-        synchronized (getPendingCalls()) {
-            Iterator<Entry<Long, MethodCall>> iter = getPendingCalls().entrySet().iterator();
-            while (iter.hasNext()) {
-                Entry<Long, MethodCall> entry = iter.next();
-                if (entry.getKey() != -1) {
-                    MethodCall m = entry.getValue();
-
-                    iter.remove();
-
-                    if (m != null) {
-                        m.setReply(_err);
-                    }
-                }
-            }
-            if (_clearPendingCalls) {
-                getPendingCalls().clear();
-            }
-        }
-    }
-
-	/**
-	 * {@inheritDoc}
-	 */
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
@@ -937,9 +910,6 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());

@@ -29,7 +29,8 @@ public class UInt64 extends Number implements Comparable<UInt64> {
         if (_value < MIN_VALUE || _value > MAX_LONG_VALUE) {
             throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_LONG_VALUE));
         }
-        this.value = new BigInteger("" + _value);
+        
+        this.value = BigInteger.valueOf(_value);
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
         this.bottom = this.value.and(new BigInteger("4294967295")).longValue();
     }
@@ -40,9 +41,9 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     * @param _bottom Least significant 4 bytes.
     */
     public UInt64(long _top, long _bottom) {
-        BigInteger a = new BigInteger("" + _top);
+        BigInteger a = BigInteger.valueOf(_top);
         a = a.shiftLeft(32);
-        a = a.add(new BigInteger("" + _bottom));
+        a = a.add(BigInteger.valueOf(_bottom));
         if (0 > a.compareTo(BigInteger.ZERO)) {
             throw new NumberFormatException(String.format("%s is not between %s and %s.", a, MIN_VALUE, MAX_BIG_VALUE));
         }

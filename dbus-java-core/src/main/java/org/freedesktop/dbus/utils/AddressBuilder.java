@@ -46,7 +46,7 @@ public class AddressBuilder {
             if (null == display) {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address");
             }
-            if (!display.startsWith(":") && display.contains(":")) { // display seems to be a remote display
+            if (display.charAt(0) != ':' && display.contains(":")) { // display seems to be a remote display
                                                                      // (e.g. X forward through SSH)
                 display = display.substring(display.indexOf(':'));
             }

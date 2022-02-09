@@ -23,6 +23,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +32,6 @@ public class DBusSignal extends Message {
             new ConcurrentHashMap<>();
 
     private static final Map<Class<? extends DBusSignal>, Type[]>                            TYPE_CACHE          =
-            new ConcurrentHashMap<>();
-
-    private static final Map<Class<? extends DBusSignal>, Constructor<? extends DBusSignal>> CONSTRUCTOR_CACHE   =
             new ConcurrentHashMap<>();
 
     private static final Map<String, String>                                                 SIGNAL_NAMES        =
@@ -104,8 +102,8 @@ public class DBusSignal extends Message {
                 c = (Class<? extends DBusSignal>) Class.forName(name);
             } catch (ClassNotFoundException _exCnf) {
             }
-            name = name.replaceAll("\\.([^\\.]*)$", "\\$$1");
-        } while (null == c && name.matches(".*\\..*"));
+            name = CommonRegexPattern.EXCEPTION_EXTRACT_PATTERN.matcher(name).replaceAll("\\$$1");
+        } while (null == c && CommonRegexPattern.EXCEPTION_PARTIAL_PATTERN.matcher(name).matches());
         if (null == c) {
             throw new DBusException("Could not create class from signal " + _intName + '.' + _sigName);
         }
@@ -225,26 +223,10 @@ public class DBusSignal extends Message {
             iface = AbstractConnection.DOLLAR_PATTERN.matcher(enc.getName()).replaceAll(".");
         }
 
-        getHeaders().put(Message.HeaderField.PATH, _objectPath);
-        getHeaders().put(Message.HeaderField.MEMBER, member);
-        getHeaders().put(Message.HeaderField.INTERFACE, iface);
-
         List<Object> hargs = new ArrayList<>();
-        hargs.add(new Object[] {
-                Message.HeaderField.PATH, new Object[] {
-                        ArgumentType.OBJECT_PATH_STRING, _objectPath
-                }
-        });
-        hargs.add(new Object[] {
-                Message.HeaderField.INTERFACE, new Object[] {
-                        ArgumentType.STRING_STRING, iface
-                }
-        });
-        hargs.add(new Object[] {
-                Message.HeaderField.MEMBER, new Object[] {
-                        ArgumentType.STRING_STRING, member
-                }
-        });
+        hargs.add(createHeaderArgs(HeaderField.PATH, ArgumentType.OBJECT_PATH_STRING, _objectPath));
+        hargs.add(createHeaderArgs(HeaderField.INTERFACE, ArgumentType.STRING_STRING, iface));
+        hargs.add(createHeaderArgs(HeaderField.MEMBER, ArgumentType.STRING_STRING, member));
 
         String sig = null;
         if (0 < _args.length) {
@@ -253,7 +235,6 @@ public class DBusSignal extends Message {
                 if (null == types) {
                     Constructor<? extends DBusSignal> con =
                             (Constructor<? extends DBusSignal>) tc.getDeclaredConstructors()[0];
-                    CONSTRUCTOR_CACHE.put(tc, con);
                     Type[] ts = con.getGenericParameterTypes();
                     types = new Type[ts.length - 1];
                     for (int i = 1; i <= types.length; i++) {
@@ -266,12 +247,7 @@ public class DBusSignal extends Message {
                     TYPE_CACHE.put(tc, types);
                 }
                 sig = Marshalling.getDBusType(types);
-                hargs.add(new Object[] {
-                        Message.HeaderField.SIGNATURE, new Object[] {
-                                ArgumentType.SIGNATURE_STRING, sig
-                        }
-                });
-                getHeaders().put(Message.HeaderField.SIGNATURE, sig);
+                hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, sig));
                 setArgs(_args);
             } catch (Exception e) {
                 logger.debug("", e);

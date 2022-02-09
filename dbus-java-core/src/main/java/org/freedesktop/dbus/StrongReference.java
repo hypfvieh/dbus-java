@@ -29,8 +29,4 @@ public class StrongReference<T> extends WeakReference<T> {
         return referant;
     }
 
-    @Override
-    public boolean isEnqueued() {
-        return false;
-    }
 }

@@ -791,7 +791,6 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
 
-    // TODO: Replace this by ConcurrentLinkedDeque
     static class MagicMap<A, B> {
         private final Logger                logger = LoggerFactory.getLogger(getClass());
 

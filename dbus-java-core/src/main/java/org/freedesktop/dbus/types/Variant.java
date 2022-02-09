@@ -128,7 +128,7 @@ public class Variant<T> {
 
     /** 
      * Compare this Variant with another by comparing contents.
-     * @param _other other object
+     * @param _obj other object
      * @return boolean
      */
     @Override

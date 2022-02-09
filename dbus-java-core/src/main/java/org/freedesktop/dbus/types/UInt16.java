@@ -9,7 +9,7 @@ public class UInt16 extends Number implements Comparable<UInt16> {
     public static final int MAX_VALUE = 65535;
     /** Minimum possible value. */
     public static final int MIN_VALUE = 0;
-    private int             value;
+    private final int value;
 
     /** Create a UInt16 from an int.
     * @param _value Must be within MIN_VALUE&ndash;MAX_VALUE
@@ -82,12 +82,12 @@ public class UInt16 extends Number implements Comparable<UInt16> {
     */
     @Override
     public int compareTo(UInt16 _other) {
-        return this.value - _other.value;
+        return Integer.compare(value, _other.value);
     }
 
     /** The value of this as a string. */
     @Override
     public String toString() {
-        return "" + value;
+        return String.valueOf(value);
     }
 }

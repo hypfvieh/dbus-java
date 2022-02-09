@@ -2,6 +2,7 @@ package org.freedesktop.dbus;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
@@ -16,6 +17,7 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 
 public class DBusMatchRule {
+    private static final Pattern IFACE_PATTERN = Pattern.compile(".*\\..*");
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
 
     /* signal, error, method_call, method_reply */
@@ -30,16 +32,16 @@ public class DBusMatchRule {
     }
 
     public DBusMatchRule(String _type, String _iface, String _member) {
-        this.type = _type;
-        this.iface = _iface;
-        this.member = _member;
+        type = _type;
+        iface = _iface;
+        member = _member;
     }
 
     public DBusMatchRule(String _type, String _iface, String _member, String _object) {
-        this.type = _type;
-        this.iface = _iface;
-        this.member = _member;
-        this.object = _object;
+        type = _type;
+        iface = _iface;
+        member = _member;
+        object = _object;
     }
 
     public DBusMatchRule(DBusExecutionException _e) throws DBusException {
@@ -71,8 +73,8 @@ public class DBusMatchRule {
 
     public DBusMatchRule(Class<? extends Object> _c, String _source, String _object) throws DBusException {
         this(_c);
-        this.source = _source;
-        this.object = _object;
+        source = _source;
+        object = _object;
     }
 
     @SuppressWarnings("unchecked")
@@ -83,9 +85,8 @@ public class DBusMatchRule {
             } else {
                 iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getName()).replaceAll(".");
             }
-            if (!iface.matches(".*\\..*")) {
-                throw new DBusException("DBusInterfaces must be defined in a package.");
-            }
+            assertDBusInterface(iface);
+
             member = null;
             type = null;
         } else if (DBusSignal.class.isAssignableFrom(_c)) {
@@ -97,9 +98,8 @@ public class DBusMatchRule {
                 iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getEnclosingClass().getName()).replaceAll(".");
             }
             // Don't export things which are invalid D-Bus interfaces
-            if (!iface.matches(".*\\..*")) {
-                throw new DBusException("DBusInterfaces must be defined in a package.");
-            }
+            assertDBusInterface(iface);
+
             if (_c.isAnnotationPresent(DBusMemberName.class)) {
                 member = _c.getAnnotation(DBusMemberName.class).value();
             } else {
@@ -113,9 +113,7 @@ public class DBusMatchRule {
             } else {
                 iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getName()).replaceAll(".");
             }
-            if (!iface.matches(".*\\..*")) {
-                throw new DBusException("DBusInterfaces must be defined in a package.");
-            }
+            assertDBusInterface(iface);
             member = null;
             type = "error";
         } else if (DBusExecutionException.class.isAssignableFrom(_c)) {
@@ -124,9 +122,7 @@ public class DBusMatchRule {
             } else {
                 iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getClass().getName()).replaceAll(".");
             }
-            if (!iface.matches(".*\\..*")) {
-                throw new DBusException("DBusInterfaces must be defined in a package.");
-            }
+            assertDBusInterface(iface);
             member = null;
             type = "error";
         } else {
@@ -134,6 +130,12 @@ public class DBusMatchRule {
         }
     }
 
+    void assertDBusInterface(String _str) throws DBusException {
+        if (!IFACE_PATTERN.matcher(_str).matches()) {
+            throw new DBusException("DBusInterfaces must be defined in a package.");
+        }
+    }
+    
     @Override
     public String toString() {
         String s = null;

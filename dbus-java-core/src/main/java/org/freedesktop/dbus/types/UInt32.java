@@ -9,7 +9,7 @@ public class UInt32 extends Number implements Comparable<UInt32> {
     public static final long MAX_VALUE = 4294967295L;
     /** Minimum allowed value */
     public static final long MIN_VALUE = 0;
-    private long             value;
+    private final long value;
 
     /** Create a UInt32 from a long.
     * @param _value Must be a valid integer within MIN_VALUE&ndash;MAX_VALUE
@@ -19,7 +19,7 @@ public class UInt32 extends Number implements Comparable<UInt32> {
         if (_value < MIN_VALUE || _value > MAX_VALUE) {
             throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_VALUE));
         }
-        this.value = _value;
+        value = _value;
     }
 
     /** Create a UInt32 from a String.
@@ -82,12 +82,12 @@ public class UInt32 extends Number implements Comparable<UInt32> {
     */
     @Override
     public int compareTo(UInt32 _other) {
-        return (int) (this.value - _other.value);
+        return Long.compare(value, _other.value);
     }
 
     /** The value of this as a string */
     @Override
     public String toString() {
-        return "" + value;
+        return String.valueOf(value);
     }
 }

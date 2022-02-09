@@ -80,37 +80,6 @@ public class Message {
     private int                        bufferuse       = 0;
 
     /**
-     * Returns the name of the given header field.
-     *
-     * @param _field field
-     * @return string
-     */
-    public static String getHeaderFieldName(byte _field) {
-        switch (_field) {
-        case HeaderField.PATH:
-            return "Path";
-        case HeaderField.INTERFACE:
-            return "Interface";
-        case HeaderField.MEMBER:
-            return "Member";
-        case HeaderField.ERROR_NAME:
-            return "Error Name";
-        case HeaderField.REPLY_SERIAL:
-            return "Reply Serial";
-        case HeaderField.DESTINATION:
-            return "Destination";
-        case HeaderField.SENDER:
-            return "Sender";
-        case HeaderField.SIGNATURE:
-            return "Signature";
-        case HeaderField.UNIX_FDS:
-            return "Unix FD";
-        default:
-            return "Invalid";
-        }
-    }
-
-    /**
      * Create a message; only to be called by sub-classes.
      *
      * @param _endian The endianness to create the message.
@@ -373,7 +342,8 @@ public class Message {
             marshallintLittle(_l, _buf, _ofs, _width);
         }
 
-        logger.trace("Marshalled int {} to {}", _l, Hexdump.toHex(_buf, _ofs, _width));
+        LoggingHelper.logIf(logger.isTraceEnabled(), 
+                () -> logger.trace("Marshalled int {} to {}", _l, Hexdump.toHex(_buf, _ofs, _width, true)));
     }
 
     /**
@@ -432,11 +402,11 @@ public class Message {
         if (headers.isEmpty()) {
             sb.append('}');
         } else {
-            for (Byte field : headers.keySet()) {
-                sb.append(getHeaderFieldName(field));
+            for (Map.Entry<Byte, Object> entry : headers.entrySet()) {
+                sb.append(getHeaderFieldName(entry.getKey()));
                 sb.append('=');
                 sb.append('>');
-                sb.append(headers.get(field).toString());
+                sb.append(entry.getValue());
                 sb.append(',');
                 sb.append(' ');
             }
@@ -951,11 +921,13 @@ public class Message {
             break;
         case ArgumentType.DICT_ENTRY1:
             Object[] decontents = new Object[2];
-            if(logger.isTraceEnabled()) { // avoid allocating these large heapdumps when trace logging is disabled
+            
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
                 logger.trace("Extracting Dict Entry ({}) from: {}",
                         Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]),
-                        Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA]));
-            }
+                        Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA], true));
+            });
+            
             _offsets[OFFSET_SIG]++;
             decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
             _offsets[OFFSET_SIG]++;
@@ -1331,6 +1303,37 @@ public class Message {
         logger.trace("Appended body, type: {} start: {} end: {} size: {}",_sig, c, getByteCounter(), getByteCounter() - c);
         marshallint(getByteCounter() - c, blen, 0, 4);
         logger.trace("marshalled size ({}): {}",blen, Hexdump.format(blen));
+    }
+
+    /**
+     * Returns the name of the given header field.
+     *
+     * @param _field field
+     * @return string
+     */
+    public static String getHeaderFieldName(byte _field) {
+        switch (_field) {
+        case HeaderField.PATH:
+            return "Path";
+        case HeaderField.INTERFACE:
+            return "Interface";
+        case HeaderField.MEMBER:
+            return "Member";
+        case HeaderField.ERROR_NAME:
+            return "Error Name";
+        case HeaderField.REPLY_SERIAL:
+            return "Reply Serial";
+        case HeaderField.DESTINATION:
+            return "Destination";
+        case HeaderField.SENDER:
+            return "Sender";
+        case HeaderField.SIGNATURE:
+            return "Signature";
+        case HeaderField.UNIX_FDS:
+            return "Unix FD";
+        default:
+            return "Invalid";
+        }
     }
 
     /** Defines constants representing the flags which can be set on a message. */
