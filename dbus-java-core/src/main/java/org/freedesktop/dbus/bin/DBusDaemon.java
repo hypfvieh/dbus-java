@@ -22,14 +22,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
@@ -230,7 +231,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     if (names.get(name) == _c) {
                         toRemove.add(name);
                         try {
-                            send(null, new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", name, _c.unique, ""));
+                            send(null, new NameOwnerChanged("/org/freedesktop/DBus", name, _c.unique, ""));
                         } catch (DBusException dbe) {
                             LOGGER.debug("", dbe);
                         }
@@ -278,7 +279,6 @@ public class DBusDaemon extends Thread implements Closeable {
         boolean printaddress = false;
         boolean unix = true;
         boolean tcp = false;
-        byte endianess = AbstractConnection.getSystemEndianness();
 
         // parse options
         try {
@@ -293,15 +293,6 @@ public class DBusDaemon extends Thread implements Closeable {
                     pidfile = _args[++i];
                 } else if ("--addressfile".equals(_args[i]) || "-a".equals(_args[i])) {
                     addrfile = _args[++i];
-                } else if ("--endianess".equals(_args[i]) || "-e".equals(_args[i])) {
-                    String val = _args[++i];
-                    if ("L".equalsIgnoreCase(val) || "little".equalsIgnoreCase(val)) {
-                        endianess = Message.Endian.LITTLE;
-                    } else if ("B".equalsIgnoreCase(val) || "big".equalsIgnoreCase(val)) {
-                        endianess = Message.Endian.BIG;
-                    } else {
-                        System.err.println("Unknown endianess '" + val + "', only 'big' and 'little' supported. Using system default");
-                    }
                 } else if ("--print-address".equals(_args[i]) || "-r".equals(_args[i])) {
                     printaddress = true;
                 } else if ("--unix".equals(_args[i]) || "-u".equals(_args[i])) {
@@ -395,7 +386,7 @@ public class DBusDaemon extends Thread implements Closeable {
         public String Hello() {
             synchronized (connStruct) {
                 if (null != connStruct.unique) {
-                    throw new org.freedesktop.dbus.errors.AccessDenied("Connection has already sent a Hello message");
+                    throw new AccessDenied("Connection has already sent a Hello message");
                 }
                 synchronized (uniqueLock) {
                     connStruct.unique = ":1." + (++nextUnique);

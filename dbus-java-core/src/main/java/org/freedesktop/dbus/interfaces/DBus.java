@@ -92,7 +92,7 @@ public interface DBus extends DBusInterface {
     }
 
     /**
-    * Signal sent to a connection when it loses a name
+    * Signal sent to a connection when it loses a name.
     */
     class NameLost extends DBusSignal {
         public final String name;
@@ -104,14 +104,14 @@ public interface DBus extends DBusInterface {
     }
 
     /**
-    * Signal sent to a connection when it aquires a name
+    * Signal sent to a connection when it acquires a name.
     */
     class NameAcquired extends DBusSignal {
         public final String name;
 
         public NameAcquired(String _path, String _name) throws DBusException {
             super(_path, _name);
-            this.name = _name;
+            name = _name;
         }
     }
 

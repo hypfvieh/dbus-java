@@ -844,12 +844,12 @@ public abstract class AbstractConnection implements Closeable {
         t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
         if (null != t) {
             handlers.addAll(t);
-            }
+        }
 
         Queue<DBusSigHandler<DBusSignal>> gt;
         Set<SignalTuple> allTuples = SignalTuple.getAllPossibleTuples(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource());
-        for( SignalTuple tuple : allTuples ){
-           gt = getGenericHandledSignals().get(tuple);
+        for (SignalTuple tuple : allTuples) {
+            gt = getGenericHandledSignals().get(tuple);
             if (null != gt) {
                 genericHandlers.addAll(gt);
             }
