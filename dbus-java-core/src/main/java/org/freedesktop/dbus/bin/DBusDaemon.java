@@ -341,6 +341,35 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
+    /**
+     * Create a 'NameAcquired' signal manually.
+     * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
+     * 
+     * @param _name name to announce
+     * 
+     * @return signal
+     * @throws DBusException if signal creation fails
+     */
+    private DBusSignal generateNameAcquiredSignal(String _name) throws DBusException {
+        return new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", _name);
+    }
+
+    /**
+     * Create a 'NameOwnerChanged' signal manually.
+     * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
+     * 
+     * @param _name name to announce
+     * @param _oldOwner previous owner
+     * @param _newOwner new owner
+     * 
+     * @return signal
+     * @throws DBusException if signal creation fails
+     */
+    private DBusSignal generatedNameOwnerChangedSignal(String _name, String _oldOwner, String _newOwner) throws DBusException {
+        return new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
+    }
+
+    
     public static class ConnectionStruct {
         private final InputStreamMessageReader  inputReader;
         private final OutputStreamMessageWriter outputWriter;
@@ -397,14 +426,15 @@ public class DBusDaemon extends Thread implements Closeable {
             LOGGER.info("Client {} registered", connStruct.unique);
 
             try {
-                send(connStruct, new NameAcquired("/org/freedesktop/DBus", connStruct.unique));
-                send(null, new NameOwnerChanged("/org/freedesktop/DBus", connStruct.unique, "", connStruct.unique));
+                send(connStruct, generateNameAcquiredSignal(connStruct.unique));
+                send(null, generatedNameOwnerChangedSignal(connStruct.unique, "", connStruct.unique));
             } catch (DBusException dbe) {
                 LOGGER.debug("", dbe);
             }
 
             return connStruct.unique;
         }
+
 
         @Override
         public String[] ListNames() {
@@ -461,14 +491,15 @@ public class DBusDaemon extends Thread implements Closeable {
 
                 rv = DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
                 try {
-                    send(connStruct, new NameAcquired("/org/freedesktop/DBus", _name));
-                    send(null, new NameOwnerChanged("/org/freedesktop/DBus", _name, "", connStruct.unique));
+                    send(connStruct, generateNameAcquiredSignal(_name));
+                    send(null, generatedNameOwnerChangedSignal(_name, "", connStruct.unique));
                 } catch (DBusException dbe) {
                     LOGGER.debug("", dbe);
                 }
             }
             return new UInt32(rv);
         }
+
 
         @Override
         public UInt32 ReleaseName(String _name) {
