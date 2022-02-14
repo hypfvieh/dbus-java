@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>4.0.1-SNAPSHOT</version>
+        <version>4.1.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -62,7 +62,7 @@
                             <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
-                                <classpathDependencyExclude>${project.groupId}:${dbus-java.transport.exclude}</classpathDependencyExclude>
+                                <classpathDependencyExclude>${project.groupId}:dbus-java-transport-jnr-unixsocket</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
                     </execution>
@@ -105,12 +105,14 @@
             <artifactId>dbus-java-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>dbus-java-transport-tcp</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
@@ -118,6 +120,13 @@
             <scope>test</scope>
         </dependency>
         
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-native-unixsocket</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>

@@ -22,13 +22,13 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
     protected static EmbeddedDBusDaemon edbus;
 
     /**
-     * Wait 300 ms if the current test uses TCP transport.
+     * Wait 500 ms if the current test uses TCP transport.
      *
      * @throws InterruptedException on interruption
      */
     protected static void waitIfTcp() throws InterruptedException {
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
-            Thread.sleep(300L);
+            Thread.sleep(500L);
         }
     }
 
