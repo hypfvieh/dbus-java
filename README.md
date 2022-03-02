@@ -51,6 +51,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Applied changes found by PMD/IntelliJ static code analyzers
    - Deprecated `DBusConnection.newConnection`/`DBusConnection.getConnection`, please use DBusConnectionBuilder
    - Deprecated public constructors of `DirectConnection`, please use DirectConnectionBuilder
+   - Added dbus-java-example module which contains samples and demonstration code on how to use dbus-java
    
 ##### Changes in 4.0.0 (2021-12-30):
    - Requires at least **Java 11**

@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.connections.impl;
 
-import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
