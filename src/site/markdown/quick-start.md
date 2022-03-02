@@ -1,6 +1,6 @@
 # DBus-Java Quickstart
 
-1. Add in dbus-java to your dependencies. [Documentation on adding to dependencies.](./dependency-info.html)
+1. Add in dbus-java-core and a apropriate transport to your dependencies. [Documentation on adding to dependencies.](./dependency-info.html)
 2. (optional) Add in a logging framework of your choice to see the log messages.
   DBus-Java uses SLF4J internally for logging.
 
@@ -10,12 +10,12 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>2.17.1</version>
+                <version>2.17.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.17.1</version>
+                <version>2.17.2</version>
             </dependency>
 
         </dependencies>
@@ -47,3 +47,6 @@ You should always be able to listen to events on the system bus, but you may not
 be able to request a bus name without updating some permissions.  The process
 of updating permissions is outside the scope of this document; however, the XML
 files that control the permissions can be found in `/etc/dbus-1/system.d`.
+
+## Examples
+For example code checkout dbus-java-examples module of this project. 

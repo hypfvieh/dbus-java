@@ -34,6 +34,9 @@ Therefore it is recommended to run the code generator using Maven or your develo
           -Dexec.executable="java" \
           -Dexec.args="%classpath --system --outputDir /tmp/classes org.bluez /org/bluez"	
           
+ * You may replace  `org.bluez` and `/org/bluez` with the busname and object path of the DBus service 
+ you want to generate java classes for.
+          
  * You can also use introspection data which is stored in an xml file:
  
         mvn exec:java \

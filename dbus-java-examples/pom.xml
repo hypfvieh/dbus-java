@@ -58,6 +58,22 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- We use jnr-unixsocket transport for our examples -->
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- We also may use TCP -->
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-tcp</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>java-utils</artifactId>
