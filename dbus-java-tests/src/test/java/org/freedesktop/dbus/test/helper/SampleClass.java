@@ -22,6 +22,7 @@ import org.freedesktop.dbus.test.TestAll;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
@@ -31,7 +32,7 @@ import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
-public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, Properties {
+public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties {
     private DBusConnection conn;
 
     public SampleClass(DBusConnection _conn) {
@@ -357,5 +358,10 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public SampleStruct returnSamplestruct( SampleStruct s ){
         return s;
+    }
+
+    @Override
+    public TestEnum getEnumValue() {
+        return TestEnum.TESTVAL2;
     }
 }

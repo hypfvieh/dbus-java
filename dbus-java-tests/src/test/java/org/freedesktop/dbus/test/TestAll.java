@@ -32,6 +32,8 @@ import org.freedesktop.dbus.test.helper.callbacks.handler.CallbackHandlerImpl;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestArraySignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEmptySignal;
@@ -395,6 +397,13 @@ public class TestAll extends AbstractDBusBaseTest {
         assertEquals(elem2.getValue2(), out[1][1]);
     }
 
+    @Test
+    public void testEnum() throws DBusException {
+        SampleRemoteInterfaceEnum tri = (SampleRemoteInterfaceEnum) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+
+        assertEquals(TestEnum.TESTVAL2, tri.getEnumValue());
+    }
+    
     public void testFrob() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         logger.debug("frobnicating");
