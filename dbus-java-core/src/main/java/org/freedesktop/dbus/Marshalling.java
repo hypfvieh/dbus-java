@@ -279,7 +279,10 @@ public final class Marshalling {
                 }
                 _out[_level].append(')');
 
-            } else {
+            } else if(Enum.class.isAssignableFrom(dataTypeClazz)) {
+                _out[_level].append((char) Message.ArgumentType.STRING);
+            }
+            else {
                 boolean found = false;
 
                 for (Entry<Class<?>, Byte> entry : CLASS_TO_ARGUMENTTYPE.entrySet()) {
@@ -471,7 +474,7 @@ public final class Marshalling {
         return _parameters;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnection _conn) throws Exception {
         LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type.getClass());
 
@@ -494,6 +497,11 @@ public final class Marshalling {
             } else {
                 _parameter = new DBusPath(((ObjectPath) _parameter).getPath());
             }
+        }
+        
+        // its an enum, parse either as the string name or the ordinal
+        if(_parameter instanceof String && _type instanceof Class && Enum.class.isAssignableFrom((Class<?>)_type)) {
+        	_parameter = Enum.valueOf((Class<Enum>) _type, (String)_parameter);
         }
 
         // it should be a struct. create it
