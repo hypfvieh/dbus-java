@@ -744,6 +744,12 @@ public abstract class AbstractConnection implements Closeable {
             }
             o = eo.getObject().get();
         }
+        
+        if(ExportedObject.isExcluded(meth)) {
+            sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
+                    "The method `%s.%s' is not exported.", _methodCall.getInterface(), _methodCall.getName()))));
+            return;
+        }
 
         // now execute it
         final Method me = meth;

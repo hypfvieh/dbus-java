@@ -25,6 +25,7 @@ import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.StrongReference;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusIgnore;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.DBusProperties;
@@ -154,7 +155,7 @@ public class ExportedObject {
     protected String generateMethodsXml(Class<?> _clz) throws DBusException {
         StringBuilder sb = new StringBuilder();
         for (Method meth : _clz.getDeclaredMethods()) {
-            if (!Modifier.isPublic(meth.getModifiers())) {
+            if (isExcluded(meth)) {
                 continue;
             }
             String ms = "";
@@ -323,5 +324,11 @@ public class ExportedObject {
     public String getIntrospectiondata() {
         return introspectionData;
     }
+
+	public static boolean isExcluded(Method meth) {
+		return !Modifier.isPublic(meth.getModifiers()) ||
+				meth.getAnnotation(DBusIgnore.class) != null ||
+				(meth.getName().equals("getObjectPath") && meth.getReturnType().equals(String.class) && meth.getParameterCount() == 0);
+	}
 
 }
