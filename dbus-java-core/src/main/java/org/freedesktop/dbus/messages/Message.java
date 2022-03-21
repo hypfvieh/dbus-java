@@ -20,6 +20,7 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.freedesktop.dbus.exceptions.UnknownTypeCodeException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
@@ -530,9 +531,17 @@ public class Message {
                 break;
             case ArgumentType.STRING:
             case ArgumentType.OBJECT_PATH:
-                // Strings are marshalled as a UInt32 with the length,
-                // followed by the String, followed by a null byte.
-                String payload = _data.toString();
+                
+                String payload;
+                // if the given data is an object, not a ObjectPath itself
+                if (_data instanceof DBusInterface) {
+                    payload = ((DBusInterface) _data).getObjectPath();
+                } else {
+                    // Strings are marshalled as a UInt32 with the length,
+                    // followed by the String, followed by a null byte.
+                    payload = _data.toString();
+                }
+                
                 byte[] payloadbytes = null;
                 try {
                     payloadbytes = payload.getBytes("UTF-8");
