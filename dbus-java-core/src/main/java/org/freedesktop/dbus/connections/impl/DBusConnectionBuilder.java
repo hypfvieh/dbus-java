@@ -53,6 +53,9 @@ public class DBusConnectionBuilder {
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
         String address = AddressBuilder.getSessionConnection(_machineIdFileLocation);
         address = tcpFallback(address);
+        if (address == null) {
+            throw new IllegalArgumentException("No valid connection address found for any transport");
+        }
         DBusConnectionBuilder instance = new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
         return instance;
     }
@@ -287,6 +290,9 @@ public class DBusConnectionBuilder {
 
             // no UNIX transport available, or lookup did not return anything useful
             _address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
+            if (_address == null || _address.isBlank()) {
+                throw new IllegalArgumentException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
+            }
         }
         return _address;
     }
