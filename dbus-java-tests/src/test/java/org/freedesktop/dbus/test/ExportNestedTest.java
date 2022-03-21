@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
