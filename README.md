@@ -52,6 +52,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Deprecated `DBusConnection.newConnection`/`DBusConnection.getConnection`, please use DBusConnectionBuilder
    - Deprecated public constructors of `DirectConnection`, please use DirectConnectionBuilder
    - Added dbus-java-example module which contains samples and demonstration code on how to use dbus-java
+   - Fixed issue when exporting nested objects ([#163](https://github.com/hypfvieh/dbus-java/issues/163))
    
 ##### Changes in 4.0.0 (2021-12-30):
    - Requires at least **Java 11**

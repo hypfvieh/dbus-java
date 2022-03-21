@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.messages;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 
 public class MethodCall extends MethodBase {
-    private static long  REPLY_WAIT_TIMEOUT = 200000;
+    private static long REPLY_WAIT_TIMEOUT = Duration.ofSeconds(20).toMillis();
 
     
 
@@ -69,7 +70,6 @@ public class MethodCall extends MethodBase {
         REPLY_WAIT_TIMEOUT = _timeout;
     }
 
-    
     public synchronized boolean hasReply() {
         return null != reply;
     }
@@ -99,18 +99,7 @@ public class MethodCall extends MethodBase {
     * @return The reply to this MethodCall, or null if a timeout happens.
     */
     public synchronized Message getReply() {
-        logger.trace("Blocking on {}", this);
-
-        if (null != reply) {
-            return reply;
-        }
-        try {
-            wait(REPLY_WAIT_TIMEOUT);
-            return reply;
-        } catch (InterruptedException exI) {
-            Thread.currentThread().interrupt(); // keep interrupted state
-            return reply;
-        }
+        return getReply(REPLY_WAIT_TIMEOUT);
     }
 
     public synchronized void setReply(Message _reply) {
