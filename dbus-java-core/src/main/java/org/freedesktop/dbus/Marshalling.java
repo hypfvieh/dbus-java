@@ -493,7 +493,7 @@ public final class Marshalling {
         // its an object path, get/create the proxy
         if (_parameter instanceof ObjectPath) {
             if (_type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) _type)) {
-                _parameter = _conn.getExportedObject(((ObjectPath) _parameter).getSource(), ((ObjectPath) _parameter).getPath());
+                _parameter = _conn.getExportedObject(((ObjectPath) _parameter).getSource(), ((ObjectPath) _parameter).getPath(), (Class<DBusInterface>)_type);
             } else {
                 _parameter = new DBusPath(((ObjectPath) _parameter).getPath());
             }
