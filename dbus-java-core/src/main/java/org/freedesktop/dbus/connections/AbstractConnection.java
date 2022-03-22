@@ -151,7 +151,28 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
+    /**
+     * Retrieves an remote object using source and path.
+     * Will try to find suitable exported DBusInterface automatically.
+     *
+     * @param _source source 
+     * @param _path path
+     * 
+     * @return {@link DBusInterface} compatible object
+     */
     public abstract DBusInterface getExportedObject(String _source, String _path) throws DBusException;
+
+    /**
+     * Retrieves an remote object using source and path.
+     * Will use the given type as object class. 
+     *
+     * @param _source source 
+     * @param _path path
+     * @param _type class of remote object 
+     * 
+     * @return {@link DBusInterface} compatible object
+     */
+    public abstract <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException;
 
     /**
      * Remove a match rule with the given {@link DBusSigHandler}.

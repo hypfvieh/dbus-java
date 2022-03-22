@@ -259,7 +259,22 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
-    protected DBusInterface dynamicProxy(String _source, String _path) throws DBusException {
+    /**
+     * Tries to resolve a proxy to a remote object.
+     * If a type class is given, it tries to convert the object using that class.
+     * If null is given as type, it tries to find a proper interface for this object.
+     * 
+     * @param <T> object type (DBusInterface compatible)
+     * @param _source source
+     * @param _path path
+     * @param _type class of object type
+     * 
+     * @return DBusInterface compatible object
+     * 
+     * @throws DBusException when something goes wrong
+     */
+	@SuppressWarnings("unchecked")
+    protected <T extends DBusInterface> T dynamicProxy(String _source, String _path, Class<T> _type) throws DBusException {
         logger.debug("Introspecting {} on {} for dynamic proxy creation", _path, _source);
         try {
             Introspectable intro = getRemoteObject(_source, _path, Introspectable.class);
@@ -278,31 +293,35 @@ public final class DBusConnection extends AbstractConnection {
                 })
                 .collect(Collectors.toList());
             List<Class<?>> ifcs = new ArrayList<>();
-            for (String iface : ifaces) {
-                
-                logger.debug("Trying interface {}", iface);
-                int j = 0;
-                while (j >= 0) {
-                    try {
-                        Class<?> ifclass = Class.forName(iface);
-                        if (!ifcs.contains(ifclass)) {
-                            ifcs.add(ifclass);
-                        }
-                        break;
-                    } catch (Exception _ex) {
-                    }
-                    j = iface.lastIndexOf('.');
-                    char[] cs = iface.toCharArray();
-                    if (j >= 0) {
-                        cs[j] = '$';
-                        iface = String.valueOf(cs);
-                    }
-                }
+            if(_type == null) {
+	            for (String iface : ifaces) {
+	                
+	                logger.debug("Trying interface {}", iface);
+	                int j = 0;
+	                while (j >= 0) {
+	                    try {
+	                        Class<?> ifclass = Class.forName(iface);
+	                        if (!ifcs.contains(ifclass)) {
+	                            ifcs.add(ifclass);
+	                        }
+	                        break;
+	                    } catch (Exception _ex) {
+	                    }
+	                    j = iface.lastIndexOf('.');
+	                    char[] cs = iface.toCharArray();
+	                    if (j >= 0) {
+	                        cs[j] = '$';
+	                        iface = String.valueOf(cs);
+	                    }
+	                }
+	            }
+            }
+            else {
+            	ifcs.add(_type);
             }
 
             // interface could not be found, we guess that this exported object at least support DBusInterface
             if (ifcs.isEmpty()) {
-                // throw new DBusException("Could not find an interface to cast to");
                 ifcs.add(DBusInterface.class);
             }
 
@@ -310,7 +329,8 @@ public final class DBusConnection extends AbstractConnection {
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
                     ifcs.toArray(Class[]::new), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
-            return newi;
+            
+            return (T) newi;
         } catch (Exception e) {
             logger.debug("", e);
             throw new DBusException(
@@ -319,23 +339,29 @@ public final class DBusConnection extends AbstractConnection {
         }
     }
 
+	@SuppressWarnings("unchecked")
     @Override
-    public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
-        ExportedObject o;
+    public <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException {
+    	ExportedObject o;
         synchronized (getExportedObjects()) {
             o = getExportedObjects().get(_path);
         }
-        if (null != o && null == o.getObject().get()) {
+        if (null != o && o.getObject().get() == null) {
             unExportObject(_path);
             o = null;
         }
         if (null != o) {
-            return o.getObject().get();
+            return (T) o.getObject().get();
         }
         if (null == _source) {
             throw new DBusException("Not an object exported by this connection and no remote specified");
         }
-        return dynamicProxy(_source, _path);
+        return (T) dynamicProxy(_source, _path, _type);
+    }
+
+    @Override
+    public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
+    	return getExportedObject(_source, _path, null);
     }
 
     /**
@@ -456,7 +482,7 @@ public final class DBusConnection extends AbstractConnection {
 
         String unique = dbus.GetNameOwner(_busname);
 
-        return dynamicProxy(unique, _objectpath);
+        return dynamicProxy(unique, _objectpath, null);
     }
 
     /**
@@ -498,7 +524,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: " + _objectpath);
         }
 
-        return dynamicProxy(_busname, _objectpath);
+        return dynamicProxy(_busname, _objectpath, null);
     }
 
     /**
