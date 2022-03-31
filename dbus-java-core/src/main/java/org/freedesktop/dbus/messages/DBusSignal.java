@@ -314,15 +314,15 @@ public class DBusSignal extends Message {
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class<?> class1 = parameterTypes.get(i);
                 
-                if(Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
-                	continue;
-                }
-
-                if(DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
+                if (Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
                     continue;
                 }
-                
-                if(Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
+
+                if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
+                    continue;
+                }
+
+                if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
                     continue;
                 }
                 	

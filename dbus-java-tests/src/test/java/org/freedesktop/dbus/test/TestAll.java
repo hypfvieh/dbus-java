@@ -85,7 +85,6 @@ public class TestAll extends AbstractDBusBaseTest {
 
     @BeforeEach
     public void setUp() throws DBusException {
-        //serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
         serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
         clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
         serverconn.requestBusName("foo.bar.Test");
