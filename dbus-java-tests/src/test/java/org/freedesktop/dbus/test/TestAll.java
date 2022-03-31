@@ -15,11 +15,13 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.errors.ServiceUnknown;
+import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
@@ -37,12 +39,15 @@ import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.Tes
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestArraySignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEmptySignal;
+import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEnumSignal;
+import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestObjectSignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestPathSignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestRenamedSignal;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestSignal;
 import org.freedesktop.dbus.test.helper.signals.handler.ArraySignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.BadArraySignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.EmptySignalHandler;
+import org.freedesktop.dbus.test.helper.signals.handler.EnumSignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.GenericHandlerWithDecode;
 import org.freedesktop.dbus.test.helper.signals.handler.GenericSignalHandler;
 import org.freedesktop.dbus.test.helper.signals.handler.ObjectSignalHandler;
@@ -81,8 +86,8 @@ public class TestAll extends AbstractDBusBaseTest {
     @BeforeEach
     public void setUp() throws DBusException {
         //serverconn = DBusConnection.getConnection(DBusBusType.SESSION);
-        serverconn = DBusConnectionBuilder.forSessionBus().withWeakReferences(true).build();
-        clientconn = DBusConnectionBuilder.forSessionBus().withWeakReferences(true).build();
+        serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
+        clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
         serverconn.requestBusName("foo.bar.Test");
 
         tclass = new SampleClass(serverconn);
@@ -116,11 +121,13 @@ public class TestAll extends AbstractDBusBaseTest {
         SignalHandler sigh = new SignalHandler(1, new UInt32(42), "Bar");
         RenamedSignalHandler rsh = new RenamedSignalHandler(1, new UInt32(42), "Bar");
         EmptySignalHandler esh = new EmptySignalHandler(1);
-
         ArraySignalHandler ash = new ArraySignalHandler(1);
+        ObjectSignalHandler osh = new ObjectSignalHandler(1);
+        PathSignalHandler psh = new PathSignalHandler(1);
+        EnumSignalHandler ensh = new EnumSignalHandler(1);
 
         /** This gets a remote object matching our bus name and exported object path. */
-        Peer peer = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Peer.class);
+        SampleRemoteInterface peer = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         DBus dbus = clientconn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
 
@@ -134,15 +141,17 @@ public class TestAll extends AbstractDBusBaseTest {
         String source = dbus.GetNameOwner("foo.bar.Test");
 
         clientconn.addSigHandler(SampleSignals.TestArraySignal.class, source, peer, ash);
-        clientconn.addSigHandler(SampleSignals.TestObjectSignal.class, new ObjectSignalHandler(1));
-        clientconn.addSigHandler(SampleSignals.TestPathSignal.class, new PathSignalHandler(1));
+        clientconn.addSigHandler(SampleSignals.TestObjectSignal.class, osh);
+        clientconn.addSigHandler(SampleSignals.TestPathSignal.class, psh);
+        clientconn.addSigHandler(SampleSignals.TestEnumSignal.class, ensh);
 
         BadArraySignalHandler<TestSignal> bash = new BadArraySignalHandler<>(1);
         clientconn.addSigHandler(TestSignal.class, bash);
         clientconn.removeSigHandler(TestSignal.class, bash);
         logger.debug("done");
 
-        logger.debug("Sending Signal");
+        logger.debug("Sending Signals");
+        
         /**
          * This creates an instance of the Test Signal, with the given object path, signal name and parameters, and
          * broadcasts in on the Bus.
@@ -151,17 +160,59 @@ public class TestAll extends AbstractDBusBaseTest {
         serverconn.sendMessage(new TestEmptySignal("/foo/bar/Wibble"));
         serverconn.sendMessage(new TestRenamedSignal("/foo/bar/Wibble", "Bar", new UInt32(42)));
 
+        logger.debug("Sending Path Signal...");
+        DBusPath path = new DBusPath("/nonexistantwooooooo");
+        DBusPath p = peer.pathrv(path);
+        logger.debug(path.toString() + " => " + p.toString());
+        assertEquals(path, p, "pathrv incorrect");
+        List<DBusPath> paths = new ArrayList<>();
+        paths.add(path);
+        List<DBusPath> ps = peer.pathlistrv(paths);
+        logger.debug(paths.toString() + " => " + ps.toString());
+        Map<DBusPath, DBusPath> pathm = new HashMap<>();
+        pathm.put(path, path);
+        serverconn.sendMessage(new TestPathSignal(TEST_OBJECT_PATH, path, paths, pathm));
+
+        logger.debug("Sending Array Signal...");
+        List<SampleStruct2> tsl = new ArrayList<>();
+        List<String> l = new ArrayList<>();
+        l.add("hi");
+        l.add("hello");
+        l.add("hej");
+        l.add("hey");
+        l.add("aloha");
+        tsl.add(new SampleStruct2(l, new Variant<>(new UInt64(567))));
+        Map<UInt32, SampleStruct2> tsm = new HashMap<>();
+        tsm.put(new UInt32(1), new SampleStruct2(l, new Variant<>(new UInt64(678))));
+        tsm.put(new UInt32(42), new SampleStruct2(l, new Variant<>(new UInt64(789))));
+        serverconn.sendMessage(new TestArraySignal(TEST_OBJECT_PATH, tsl, tsm));
+
+        logger.debug("Sending Object Signal...");
+		serverconn.sendMessage(new TestObjectSignal(TEST_OBJECT_PATH, tclass));
+
+        logger.debug("Sending Enum Signal...");
+        serverconn.sendMessage(new TestEnumSignal(TEST_OBJECT_PATH, TestEnum.TESTVAL1, Arrays.asList(TestEnum.TESTVAL2, TestEnum.TESTVAL3)));
+
         // wait some time to receive signals
         Thread.sleep(1000L);
 
         // ensure callback has been fired at least once
         assertTrue(sigh.getActualTestRuns() == 1, "SignalHandler should have been called");
-        assertTrue(rsh.getActualTestRuns() == 1, "EmptySignalHandler should have been called");
+        assertTrue(esh.getActualTestRuns() == 1, "EmptySignalHandler should have been called");
+        assertTrue(rsh.getActualTestRuns() == 1, "RenamedSignalHandler should have been called");
+        assertTrue(ash.getActualTestRuns() == 1, "ArraySignalHandler should have been called");
+        assertTrue(ensh.getActualTestRuns() == 1, "EnumSignalHandler should have been called");
+        assertTrue(psh.getActualTestRuns() == 1, "PathSignalHandler should have been called");
+        assertTrue(osh.getActualTestRuns() == 1, "ObjectSignalHandler should have been called");
 
         /** Remove sig handler */
         clientconn.removeSigHandler(SampleSignals.TestSignal.class, sigh);
         clientconn.removeSigHandler(SampleSignals.TestEmptySignal.class, esh);
         clientconn.removeSigHandler(SampleSignals.TestRenamedSignal.class, rsh);
+        clientconn.removeSigHandler(SampleSignals.TestArraySignal.class, ash);
+        clientconn.removeSigHandler(SampleSignals.TestObjectSignal.class, osh);
+        clientconn.removeSigHandler(SampleSignals.TestPathSignal.class, psh);
+        clientconn.removeSigHandler(SampleSignals.TestEnumSignal.class, ensh);
 
     }
 
@@ -330,21 +381,6 @@ public class TestAll extends AbstractDBusBaseTest {
     public void testFloats() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
-        DBusPath path = new DBusPath("/nonexistantwooooooo");
-        DBusPath p = tri.pathrv(path);
-        logger.debug(path.toString() + " => " + p.toString());
-        assertEquals(path, p, "pathrv incorrect");
-
-        List<DBusPath> paths = new ArrayList<>();
-        paths.add(path);
-        List<DBusPath> ps = tri.pathlistrv(paths);
-        logger.debug(paths.toString() + " => " + ps.toString());
-
-        Map<DBusPath, DBusPath> pathm = new HashMap<>();
-        pathm.put(path, path);
-
-        serverconn.sendMessage(new TestPathSignal(TEST_OBJECT_PATH, path, paths, pathm));
-
         logger.debug("sending it to sleep");
         tri.waitawhile();
         logger.debug("testing floats");
@@ -402,6 +438,14 @@ public class TestAll extends AbstractDBusBaseTest {
         SampleRemoteInterfaceEnum tri = (SampleRemoteInterfaceEnum) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         assertEquals(TestEnum.TESTVAL2, tri.getEnumValue());
+    }
+
+    @Test
+    public void testDbusIgnore() throws DBusException {
+        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+        assertThrowsExactly(UnknownMethod.class, () -> {
+            tri.thisShouldBeIgnored();
+        });
     }
     
     public void testFrob() throws DBusException {
@@ -560,7 +604,7 @@ public class TestAll extends AbstractDBusBaseTest {
         /** Call the remote object and get a response. */
         SampleTuple<String, List<Integer>, Boolean> rv = tri2.show(234);
         logger.debug("Show returned: " + rv);
-        if (!serverconn.getUniqueName().equals(rv.getFirstValue()) || 1 != rv.getSecondValue().size() || 1953 != rv.getSecondValue().get(0)
+        if (!clientconn.getUniqueName().equals(rv.getFirstValue()) || 1 != rv.getSecondValue().size() || 1953 != rv.getSecondValue().get(0)
                 || true != rv.getThirdValue().booleanValue()) {
             fail("show return value incorrect (" + rv.getFirstValue() + "," + rv.getSecondValue() + "," + rv.getThirdValue() + ")");
         }
@@ -607,19 +651,8 @@ public class TestAll extends AbstractDBusBaseTest {
         assertEquals(-12, is.get(3).intValue());
         assertEquals(-18, is.get(4).intValue());
 
-        assertEquals(tclass, tri2.getThis(tri2), "Didn't get the correct this");
-
-        logger.debug("Sending Array Signal...");
-        /**
-         * This creates an instance of the Test Signal, with the given object path, signal name and parameters, and
-         * broadcasts in on the Bus.
-         */
-        List<SampleStruct2> tsl = new ArrayList<>();
-        tsl.add(new SampleStruct2(l, new Variant<>(new UInt64(567))));
-        Map<UInt32, SampleStruct2> tsm = new HashMap<>();
-        tsm.put(new UInt32(1), new SampleStruct2(l, new Variant<>(new UInt64(678))));
-        tsm.put(new UInt32(42), new SampleStruct2(l, new Variant<>(new UInt64(789))));
-        serverconn.sendMessage(new TestArraySignal(TEST_OBJECT_PATH, tsl, tsm));
+        DBusInterface other = tri2.getThis(tri2);
+        assertEquals(tclass, other, "Didn't get the correct this");
 
     }
 

@@ -7,4 +7,6 @@ module org.freedesktop.dbus.utils {
     
     requires java.xml;
     requires java.desktop;
+    
+    opens org.freedesktop.dbus.utils.generator;
 }

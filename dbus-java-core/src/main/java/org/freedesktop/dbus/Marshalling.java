@@ -228,6 +228,8 @@ public final class Marshalling {
                 _out[_level].append((char) Message.ArgumentType.VARIANT);
             } else if (DBusInterface.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 _out[_level].append((char) Message.ArgumentType.OBJECT_PATH);
+            } else if (Struct.class.isAssignableFrom((Class<?>) p.getRawType())) {
+                _out[_level].append((char) Message.ArgumentType.STRUCT1);
             } else if (Tuple.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 Type[] ts = p.getActualTypeArguments();
                 List<String> vs = new ArrayList<>();

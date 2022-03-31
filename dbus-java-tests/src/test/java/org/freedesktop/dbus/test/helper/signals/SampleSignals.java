@@ -9,6 +9,8 @@ import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
 import org.freedesktop.dbus.types.UInt32;
 
@@ -86,9 +88,9 @@ public interface SampleSignals extends DBusInterface {
     @IntrospectionDescription("Test signal sending an object path")
     @DBusMemberName("TestSignalObject")
     public class TestObjectSignal extends DBusSignal {
-        public final DBusInterface otherpath;
+        public final SampleRemoteInterface otherpath;
 
-        public TestObjectSignal(String _path, DBusInterface _otherpath) throws DBusException {
+        public TestObjectSignal(String _path, SampleRemoteInterface _otherpath) throws DBusException {
             super(_path, _otherpath);
             this.otherpath = _otherpath;
         }
@@ -117,6 +119,26 @@ public interface SampleSignals extends DBusInterface {
 
         public List<SampleStruct2> getListOfStruct() {
             return listOfStruct;
+        }
+    }
+    
+    @IntrospectionDescription("Test signal with enums")
+    public class TestEnumSignal extends DBusSignal {
+        private final List<TestEnum>             enums;
+        private final TestEnum anEnum;
+
+        public TestEnumSignal(String _path, TestEnum _anEnum, List<TestEnum> _enums) throws DBusException {
+            super(_path, _anEnum, _enums);
+            this.anEnum = _anEnum;
+            this.enums = _enums;
+        }
+
+        public TestEnum getEnum() {
+            return anEnum;
+        }
+
+        public List<TestEnum> getEnums() {
+            return enums;
         }
     }
 }

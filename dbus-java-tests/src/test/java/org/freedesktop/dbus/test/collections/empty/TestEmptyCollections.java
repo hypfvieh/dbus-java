@@ -65,8 +65,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@BeforeEach
 	public void setUp()  {
 		try {
-			serverconn = DBusConnectionBuilder.forSessionBus().build();
-			clientconn = DBusConnectionBuilder.forSessionBus().build();
+			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+			clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
 			serverconn.setWeakReferences(true);
 			clientconn.setWeakReferences(true);
 

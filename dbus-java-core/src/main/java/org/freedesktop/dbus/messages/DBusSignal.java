@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.ObjectPath;
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -311,9 +313,24 @@ public class DBusSignal extends Message {
 
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class<?> class1 = parameterTypes.get(i);
-                if (!class1.isAssignableFrom(_wantedArgs.get(i))) {
-                    return false;
+                
+                if(Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
+                	continue;
                 }
+
+                if(DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
+                    continue;
+                }
+                
+                if(Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
+                    continue;
+                }
+                	
+                if (class1.isAssignableFrom(_wantedArgs.get(i))) {
+                    continue;
+                }
+                
+                return false;
             }
 
             return true;

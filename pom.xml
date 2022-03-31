@@ -132,9 +132,6 @@
                             <manifest>
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
-                            <manifestEntries>
-                                <Multi-Release>true</Multi-Release>
-                            </manifestEntries>
                         </archive>
                     </configuration>
                 </plugin>

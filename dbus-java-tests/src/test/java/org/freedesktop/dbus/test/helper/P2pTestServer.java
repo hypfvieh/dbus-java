@@ -130,4 +130,9 @@ public class P2pTestServer implements SampleRemoteInterface {
             dc.exportObject("/Test", new P2pTestServer());
         }
     }
+
+    @Override
+    public void thisShouldBeIgnored() {
+        System.out.println("You should never see this message!");
+    }
 }

@@ -14,9 +14,9 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
     public void testStuffAfterDisconnect() throws DBusException, InterruptedException {
 
         DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus()
-                .withWeakReferences(true).build();
+                .withWeakReferences(true).withShared(false).build();
         DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus()
-                .withWeakReferences(true).build();
+                .withWeakReferences(true).withShared(false).build();
 
         serverConnection.requestBusName("foo.bar.why.again.disconnect.Test");
 

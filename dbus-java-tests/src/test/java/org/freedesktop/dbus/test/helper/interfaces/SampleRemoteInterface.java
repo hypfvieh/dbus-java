@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.annotations.DBusIgnore;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -62,4 +63,8 @@ public interface SampleRemoteInterface extends DBusInterface {
 
     @IntrospectionDescription("Some function to test collections")
 	int[][] testListstruct(SampleStruct4 in);
+    
+    @DBusIgnore
+    @IntrospectionDescription("This should not appear in introspection data, nor should it be callable remotely")
+    void thisShouldBeIgnored();
 }

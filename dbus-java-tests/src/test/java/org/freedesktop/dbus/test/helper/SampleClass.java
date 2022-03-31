@@ -364,4 +364,9 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public TestEnum getEnumValue() {
         return TestEnum.TESTVAL2;
     }
+
+    @Override
+    public void thisShouldBeIgnored() {
+        System.out.println("You should never see this message!");
+    }
 }
