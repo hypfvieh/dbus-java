@@ -21,7 +21,6 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBus;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
@@ -649,12 +648,9 @@ public class TestAll extends AbstractDBusBaseTest {
         assertEquals(-7, is.get(2).intValue());
         assertEquals(-12, is.get(3).intValue());
         assertEquals(-18, is.get(4).intValue());
-
-        DBusInterface other = tri2.getThis(tri2);
-        assertEquals(tclass, other, "Didn't get the correct this");
-
     }
 
+   
     public void testSerialization() throws DBusException {
         SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         List<Integer> v = new ArrayList<>();
