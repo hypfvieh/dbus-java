@@ -28,6 +28,7 @@
         <module>dbus-java-utils</module>
         <module>dbus-java-transport-jnr-unixsocket</module>
         <module>dbus-java-transport-tcp</module>
+        <module>dbus-java-bom</module>
         <module>dbus-java-tests</module>
         <module>dbus-java-examples</module>
     </modules>
