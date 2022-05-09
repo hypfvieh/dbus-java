@@ -4,9 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.annotations.DBusMemberName;
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -15,6 +12,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.utils.DBusNamingUtil;
 
 public class DBusMatchRule {
     private static final Pattern IFACE_PATTERN = Pattern.compile(".*\\..*");
@@ -80,11 +78,7 @@ public class DBusMatchRule {
     @SuppressWarnings("unchecked")
     public DBusMatchRule(Class<? extends Object> _c) throws DBusException {
         if (DBusInterface.class.isAssignableFrom(_c)) {
-            if (null != _c.getAnnotation(DBusInterfaceName.class)) {
-                iface = _c.getAnnotation(DBusInterfaceName.class).value();
-            } else {
-                iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getName()).replaceAll(".");
-            }
+            iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
 
             member = null;
@@ -92,36 +86,21 @@ public class DBusMatchRule {
         } else if (DBusSignal.class.isAssignableFrom(_c)) {
             if (null == _c.getEnclosingClass()) {
                 throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
-            } else if (null != _c.getEnclosingClass().getAnnotation(DBusInterfaceName.class)) {
-                iface = _c.getEnclosingClass().getAnnotation(DBusInterfaceName.class).value();
-            } else {
-                iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getEnclosingClass().getName()).replaceAll(".");
             }
+            iface = DBusNamingUtil.getInterfaceName(_c.getEnclosingClass());
             // Don't export things which are invalid D-Bus interfaces
             assertDBusInterface(iface);
 
-            if (_c.isAnnotationPresent(DBusMemberName.class)) {
-                member = _c.getAnnotation(DBusMemberName.class).value();
-            } else {
-                member = _c.getSimpleName();
-            }
+            member = DBusNamingUtil.getSignalName(_c);
             SIGNALTYPEMAP.put(iface + '$' + member, (Class<? extends DBusSignal>) _c);
             type = "signal";
         } else if (Error.class.isAssignableFrom(_c)) {
-            if (null != _c.getAnnotation(DBusInterfaceName.class)) {
-                iface = _c.getAnnotation(DBusInterfaceName.class).value();
-            } else {
-                iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getName()).replaceAll(".");
-            }
+            iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
             member = null;
             type = "error";
         } else if (DBusExecutionException.class.isAssignableFrom(_c)) {
-            if (null != _c.getClass().getAnnotation(DBusInterfaceName.class)) {
-                iface = _c.getClass().getAnnotation(DBusInterfaceName.class).value();
-            } else {
-                iface = AbstractConnection.DOLLAR_PATTERN.matcher(_c.getClass().getName()).replaceAll(".");
-            }
+            iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
             member = null;
             type = "error";
