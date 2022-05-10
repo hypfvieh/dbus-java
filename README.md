@@ -54,6 +54,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Added dbus-java-example module which contains samples and demonstration code on how to use dbus-java
    - Fixed issue when exporting nested objects ([#163](https://github.com/hypfvieh/dbus-java/issues/163))
    - Added bom ("Bill of Material") project module, thanks to [mk868](https://github.com/mk868) ([PR#167](https://github.com/hypfvieh/dbus-java/issues/167))
+   - Fixed missing value in deprecated annotation; Removed duplicated code, thanks to [mk868](https://github.com/mk868) ([PR#168](https://github.com/hypfvieh/dbus-java/issues/168))
    
 ##### Changes in 4.0.0 (2021-12-30):
    - Requires at least **Java 11**
