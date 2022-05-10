@@ -12,4 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @DBusInterfaceName("org.freedesktop.DBus.Method.NoReply")
 public @interface MethodNoReply {
+
+    /**
+     * Annotation value, true by default
+     *
+     * @return true when a method doesn't send a reply
+     */
+    boolean value() default true;
 }

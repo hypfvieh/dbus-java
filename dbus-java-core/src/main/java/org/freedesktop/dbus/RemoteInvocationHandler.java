@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
@@ -19,6 +17,7 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,20 +104,12 @@ public class RemoteInvocationHandler implements InvocationHandler {
             flags |= Message.Flags.NO_REPLY_EXPECTED;
         }
         try {
-            String name;
-            if (_m.isAnnotationPresent(DBusMemberName.class)) {
-                name = _m.getAnnotation(DBusMemberName.class).value();
-            } else {
-                name = _m.getName();
-            }
+            String name = DBusNamingUtil.getMethodName(_m);
             if (null == _ro.getInterface()) {
                 call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), null, name, flags, sig, _args);
             } else {
-                if (null != _ro.getInterface().getAnnotation(DBusInterfaceName.class)) {
-                    call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), _ro.getInterface().getAnnotation(DBusInterfaceName.class).value(), name, flags, sig, _args);
-                } else {
-                    call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), AbstractConnection.DOLLAR_PATTERN.matcher(_ro.getInterface().getName()).replaceAll("."), name, flags, sig, _args);
-                }
+                String iface = DBusNamingUtil.getInterfaceName(_ro.getInterface());
+                call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), iface, name, flags, sig, _args);
             }
         } catch (DBusException dbe) {
             LOGGER.debug("Failed to construct outgoing method call.", dbe);

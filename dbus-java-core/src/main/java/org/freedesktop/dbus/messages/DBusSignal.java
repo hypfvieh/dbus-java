@@ -18,14 +18,13 @@ import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.ObjectPath;
 import org.freedesktop.dbus.Struct;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.utils.CommonRegexPattern;
+import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,34 +90,25 @@ public class DBusSignal extends Message {
     @SuppressWarnings("unchecked")
     protected DBusSignal(String _objectPath, Object... _args) throws DBusException {
         super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
-    
+
         if (!OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
             throw new DBusException("Invalid object path: " + _objectPath);
         }
-    
+
         Class<? extends DBusSignal> tc = getClass();
-        String member;
-        if (tc.isAnnotationPresent(DBusMemberName.class)) {
-            member = tc.getAnnotation(DBusMemberName.class).value();
-        } else {
-            member = tc.getSimpleName();
-        }
-        String iface = null;
+        String member = DBusNamingUtil.getSignalName(tc);
         Class<? extends Object> enc = tc.getEnclosingClass();
         if (null == enc || !DBusInterface.class.isAssignableFrom(enc) || enc.getName().equals(enc.getSimpleName())) {
             throw new DBusException(
                     "Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
-        } else if (null != enc.getAnnotation(DBusInterfaceName.class)) {
-            iface = enc.getAnnotation(DBusInterfaceName.class).value();
-        } else {
-            iface = AbstractConnection.DOLLAR_PATTERN.matcher(enc.getName()).replaceAll(".");
         }
-    
+        String iface = DBusNamingUtil.getInterfaceName(enc);
+
         List<Object> hargs = new ArrayList<>();
         hargs.add(createHeaderArgs(HeaderField.PATH, ArgumentType.OBJECT_PATH_STRING, _objectPath));
         hargs.add(createHeaderArgs(HeaderField.INTERFACE, ArgumentType.STRING_STRING, iface));
         hargs.add(createHeaderArgs(HeaderField.MEMBER, ArgumentType.STRING_STRING, member));
-    
+
         String sig = null;
         if (0 < _args.length) {
             try {
@@ -145,7 +135,7 @@ public class DBusSignal extends Message {
                 throw new DBusException("Failed to add signal parameters: " + e.getMessage());
             }
         }
-    
+
         blen = new byte[4];
         appendBytes(blen);
         long newSerial = getSerial() + 1;
@@ -313,7 +303,7 @@ public class DBusSignal extends Message {
 
             for (int i = 0; i < parameterTypes.size(); i++) {
                 Class<?> class1 = parameterTypes.get(i);
-                
+
                 if (Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
                     continue;
                 }
@@ -325,11 +315,11 @@ public class DBusSignal extends Message {
                 if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
                     continue;
                 }
-                	
+
                 if (class1.isAssignableFrom(_wantedArgs.get(i))) {
                     continue;
                 }
-                
+
                 return false;
             }
 
