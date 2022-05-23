@@ -223,19 +223,19 @@ public final class DBusConnection extends AbstractConnection {
         DBusConnection.dbusMachineIdFile = _dbusMachineIdFile;
     }
 
- 
+
     DBusConnection(String _address, boolean _shared, String _machineId, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_address, _timeout, _rsCfg);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;
-        
+
     }
 
     /**
      * Connect to bus and register if asked.
      * Should only be called by Builder.
-     * 
+     *
      * @param _registerSelf true to register
      * @throws DBusException if registering fails
      */
@@ -263,14 +263,14 @@ public final class DBusConnection extends AbstractConnection {
      * Tries to resolve a proxy to a remote object.
      * If a type class is given, it tries to convert the object using that class.
      * If null is given as type, it tries to find a proper interface for this object.
-     * 
+     *
      * @param <T> object type (DBusInterface compatible)
      * @param _source source
      * @param _path path
      * @param _type class of object type
-     * 
+     *
      * @return DBusInterface compatible object
-     * 
+     *
      * @throws DBusException when something goes wrong
      */
 	@SuppressWarnings("unchecked")
@@ -280,9 +280,9 @@ public final class DBusConnection extends AbstractConnection {
             Introspectable intro = getRemoteObject(_source, _path, Introspectable.class);
             String data = intro.Introspect();
             logger.trace("Got introspection data: {}", data);
-            
+
             String[] tags = PROXY_SPLIT_PATTERN.split(data);
-            
+
             List<String> ifaces = Arrays.stream(tags).filter(t -> t.startsWith("interface"))
                 .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
                 .map(i -> {
@@ -295,7 +295,7 @@ public final class DBusConnection extends AbstractConnection {
             List<Class<?>> ifcs = new ArrayList<>();
             if(_type == null) {
 	            for (String iface : ifaces) {
-	                
+
 	                logger.debug("Trying interface {}", iface);
 	                int j = 0;
 	                while (j >= 0) {
@@ -306,6 +306,7 @@ public final class DBusConnection extends AbstractConnection {
 	                        }
 	                        break;
 	                    } catch (Exception _ex) {
+	                        logger.trace("No class found for {}", iface, _ex);
 	                    }
 	                    j = iface.lastIndexOf('.');
 	                    char[] cs = iface.toCharArray();
@@ -329,7 +330,7 @@ public final class DBusConnection extends AbstractConnection {
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
                     ifcs.toArray(Class[]::new), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
-            
+
             return (T) newi;
         } catch (Exception e) {
             logger.debug("", e);
@@ -356,7 +357,7 @@ public final class DBusConnection extends AbstractConnection {
         if (null == _source) {
             throw new DBusException("Not an object exported by this connection and no remote specified");
         }
-        return (T) dynamicProxy(_source, _path, _type);
+        return dynamicProxy(_source, _path, _type);
     }
 
     @Override
@@ -702,7 +703,7 @@ public final class DBusConnection extends AbstractConnection {
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
         validateSignal(_type, _source);
-        
+
         String objectpath = getImportedObjects().get(_object).getObjectPath();
         if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
@@ -783,7 +784,7 @@ public final class DBusConnection extends AbstractConnection {
     public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
         validateSignal(_type, _source);
-        
+
         String objectpath = getImportedObjects().get(_object).getObjectPath();
         if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
@@ -793,10 +794,10 @@ public final class DBusConnection extends AbstractConnection {
 
     /**
      * Checks if given type is a DBusSignal and matches the required rules.
-     * 
+     *
      * @param <T> type of class
      * @param _type class
-     * @param _source 
+     * @param _source
      * @throws DBusException when validation fails
      */
     private <T extends DBusSignal> void validateSignal(Class<T> _type, String _source) throws DBusException {

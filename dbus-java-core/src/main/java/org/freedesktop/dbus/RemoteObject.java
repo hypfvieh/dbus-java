@@ -24,25 +24,17 @@ public class RemoteObject {
 
         if (!them.objectpath.equals(this.objectpath)) {
             return false;
-        }
-
-        if (null == this.busname && null != them.busname) {
+        } else if (null == this.busname && null != them.busname) {
             return false;
-        }
-        if (null != this.busname && null == them.busname) {
+        } else if (null != this.busname && null == them.busname) {
             return false;
-        }
-        if (null != them.busname && !them.busname.equals(this.busname)) {
+        } else if (null != them.busname && !them.busname.equals(this.busname)) {
             return false;
-        }
-
-        if (null == this.iface && null != them.iface) {
+        } else if (null == this.iface && null != them.iface) {
             return false;
-        }
-        if (null != this.iface && null == them.iface) {
+        } else if (null != this.iface && null == them.iface) {
             return false;
-        }
-        if (null != them.iface && !them.iface.equals(this.iface)) {
+        } else if (null != them.iface && !them.iface.equals(this.iface)) {
             return false;
         }
 

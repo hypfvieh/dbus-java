@@ -121,6 +121,7 @@ public class BusAddress {
             try {
                 return new BusAddress(rawAddress + ",listen=true");
             } catch (DBusException _ex) {
+                logger.trace("Could not create listening address", _ex);
             }
         }
         return this;

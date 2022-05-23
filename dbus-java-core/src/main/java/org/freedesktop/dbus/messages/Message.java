@@ -60,6 +60,7 @@ public class Message {
     private static long                globalserial    = 0;
 
     protected final Logger             logger          = LoggerFactory.getLogger(getClass());
+
     private final List<FileDescriptor> filedescriptors = new ArrayList<>();
     private final Map<Byte, Object>    headers         = new HashMap<>();
 
@@ -343,7 +344,7 @@ public class Message {
             marshallintLittle(_l, _buf, _ofs, _width);
         }
 
-        LoggingHelper.logIf(logger.isTraceEnabled(), 
+        LoggingHelper.logIf(logger.isTraceEnabled(),
                 () -> logger.trace("Marshalled int {} to {}", _l, Hexdump.toHex(_buf, _ofs, _width, true)));
     }
 
@@ -531,7 +532,7 @@ public class Message {
                 break;
             case ArgumentType.STRING:
             case ArgumentType.OBJECT_PATH:
-                
+
                 String payload;
                 // if the given data is an object, not a ObjectPath itself
                 if (_data instanceof DBusInterface) {
@@ -541,7 +542,7 @@ public class Message {
                     // followed by the String, followed by a null byte.
                     payload = _data.toString();
                 }
-                
+
                 byte[] payloadbytes = null;
                 try {
                     payloadbytes = payload.getBytes("UTF-8");
@@ -930,13 +931,13 @@ public class Message {
             break;
         case ArgumentType.DICT_ENTRY1:
             Object[] decontents = new Object[2];
-            
+
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
                 logger.trace("Extracting Dict Entry ({}) from: {}",
                         Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]),
                         Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA], true));
             });
-            
+
             _offsets[OFFSET_SIG]++;
             decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
             _offsets[OFFSET_SIG]++;
@@ -1274,11 +1275,11 @@ public class Message {
     /**
      * Creates a message header.
      * Will automatically add the values to the current instances header map.
-     * 
+     *
      * @param _header header type (one of {@link HeaderField})
      * @param _argType arguement type (one of {@link ArgumentType})
      * @param _value value
-     * 
+     *
      * @return Object array
      */
     protected Object[] createHeaderArgs(byte _header, String _argType, Object _value) {
@@ -1292,7 +1293,7 @@ public class Message {
 
     /**
      * Adds message padding and marshalling.
-     * 
+     *
      * @param _hargs
      * @param _serial
      * @param _sig
@@ -1304,7 +1305,7 @@ public class Message {
         appendBytes(blen);
         append("ua(yv)", _serial, _hargs.toArray());
         pad((byte) 8);
-    
+
         long c = getByteCounter();
         if (null != _sig) {
             append(_sig, _args);

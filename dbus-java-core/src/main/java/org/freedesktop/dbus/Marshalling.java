@@ -500,7 +500,7 @@ public final class Marshalling {
                 _parameter = new DBusPath(((ObjectPath) _parameter).getPath());
             }
         }
-        
+
         // its an enum, parse either as the string name or the ordinal
         if(_parameter instanceof String && _type instanceof Class && Enum.class.isAssignableFrom((Class<?>)_type)) {
         	_parameter = Enum.valueOf((Class<Enum>) _type, (String)_parameter);
@@ -530,6 +530,7 @@ public final class Marshalling {
                     _parameter = con.newInstance((Object[]) _parameter);
                     break;
                 } catch (IllegalArgumentException _exIa) {
+                    LOGGER.trace("Could not create new instance", _exIa);
                 }
             }
         }

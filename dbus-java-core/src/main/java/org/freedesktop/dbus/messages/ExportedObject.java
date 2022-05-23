@@ -37,6 +37,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
+import org.slf4j.LoggerFactory;
 
 public class ExportedObject {
     private final Map<MethodTuple, Method> methods = new HashMap<>();
@@ -77,7 +78,7 @@ public class ExportedObject {
                     value = m.invoke(a).toString();
                 }
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException _ex) {
-                // ignore
+                LoggerFactory.getLogger(getClass()).trace("Could not find value", _ex);
             }
 
             String name = DBusNamingUtil.getAnnotationName(t);

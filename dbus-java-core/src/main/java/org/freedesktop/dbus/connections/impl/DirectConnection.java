@@ -32,7 +32,7 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** 
+/**
  * Handles a peer to peer connection between two applications without a bus daemon.
  * <p>
  * Signal Handlers and method calls from remote objects are run in their own threads, you MUST handle the concurrency issues.
@@ -72,7 +72,7 @@ public class DirectConnection extends AbstractConnection {
             super.listen();
         }
     }
-    
+
     /**
      * Use this method when running on server side.
      * Call will block.
@@ -90,7 +90,10 @@ public class DirectConnection extends AbstractConnection {
         try {
             ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
             return ascii;
-        } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
+        } catch (NoSuchAlgorithmException _ex) {
+            logger.trace("MD5 algorithm not present", _ex);
+        } catch (UnknownHostException _ex) {
+            logger.trace("Unable to determine this machines hostname", _ex);
         }
 
         return Util.randomString(32);
@@ -101,13 +104,13 @@ public class DirectConnection extends AbstractConnection {
         try {
             Introspectable intro = getRemoteObject(_path, Introspectable.class);
             String data = intro.Introspect();
-            
+
             String[] tags = PROXY_SPLIT_PATTERN.split(data);
-            
+
             List<String> ifaces = Arrays.stream(tags).filter(t -> t.startsWith("interface"))
                 .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
                 .collect(Collectors.toList());
-            
+
             List<Class<? extends Object>> ifcs = new ArrayList<>();
             if(_type == null) {
 	            for (String iface : ifaces) {
@@ -117,6 +120,7 @@ public class DirectConnection extends AbstractConnection {
 	                        ifcs.add(Class.forName(iface));
 	                        break;
 	                    } catch (Exception _ex) {
+	                        logger.trace("No class found for {}", iface, _ex);
 	                    }
 	                    j = iface.lastIndexOf('.');
 	                    char[] cs = iface.toCharArray();

@@ -1,9 +1,6 @@
 package org.freedesktop.dbus;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
@@ -21,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DBusAsyncReply<T> {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger             logger = LoggerFactory.getLogger(getClass());
 
     private T                        rval   = null;
     private DBusExecutionException   error  = null;
@@ -112,14 +109,14 @@ public class DBusAsyncReply<T> {
     * @param _replies A Collection of handles to replies to check.
     * @return A Collection only containing those calls which have had replies.
     */
-    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> _replies) {
-        Collection<DBusAsyncReply<?>> c = new ArrayList<>(_replies);
-        Iterator<DBusAsyncReply<?>> i = c.iterator();
-        while (i.hasNext()) {
-            if (!i.next().hasReply()) {
-                i.remove();
-            }
-        }
-        return c;
-    }
+//    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> _replies) {
+//        Collection<DBusAsyncReply<?>> c = new ArrayList<>(_replies);
+//        Iterator<DBusAsyncReply<?>> i = c.iterator();
+//        while (i.hasNext()) {
+//            if (!i.next().hasReply()) {
+//                i.remove();
+//            }
+//        }
+//        return c;
+//    }
 }

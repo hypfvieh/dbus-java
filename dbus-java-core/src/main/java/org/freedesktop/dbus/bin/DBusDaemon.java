@@ -218,6 +218,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     _c.socketChannel.close();
                 }
             } catch (IOException _exIo) {
+                LOGGER.trace("Error while closing socketchannel", _exIo);
             }
 
             synchronized (names) {

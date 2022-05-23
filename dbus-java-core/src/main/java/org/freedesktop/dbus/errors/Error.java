@@ -16,11 +16,15 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Error messages which can be sent over the bus.
  */
 public class Error extends Message {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Error.class);
 
     public Error() {
     }
@@ -40,7 +44,7 @@ public class Error extends Message {
         List<Object> hargs = new ArrayList<>();
         hargs.add(createHeaderArgs(HeaderField.ERROR_NAME, ArgumentType.STRING_STRING, _errorName));
         hargs.add(createHeaderArgs(HeaderField.REPLY_SERIAL, ArgumentType.UINT32_STRING, _replyserial));
-        
+
         if (null != _source) {
             hargs.add(createHeaderArgs(HeaderField.SENDER, ArgumentType.STRING_STRING, _source));
         }
@@ -80,6 +84,7 @@ public class Error extends Message {
             try {
                 c = (Class<? extends DBusExecutionException>) Class.forName(_name);
             } catch (ClassNotFoundException _exCnf) {
+                LOGGER.trace("Could not find class for name {}", _name, _exCnf);
             }
             _name = EXCEPTION_EXTRACT_PATTERN.matcher(_name).replaceAll("\\$$1");
         } while (null == c && EXCEPTION_PARTIAL_PATTERN.matcher(_name).matches());
@@ -114,6 +119,7 @@ public class Error extends Message {
             try {
                 args = getParameters();
             } catch (Exception _ex2) {
+                LOGGER.trace("Cannot retrieve parameters", _ex2);
             }
             if (null == args || 0 == args.length) {
                 ex = new DBusExecutionException("");

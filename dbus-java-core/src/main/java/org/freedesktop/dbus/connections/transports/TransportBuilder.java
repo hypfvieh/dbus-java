@@ -174,7 +174,7 @@ public class TransportBuilder {
      * Please use {@link #listening(boolean)} instead.
      */
     @Deprecated(forRemoval = true, since = "4.1.1 - 2022-05-23")
-    public TransportBuilder isListening(boolean _listen) {
+    public TransportBuilder isListening(boolean _listen) { //NOPMD
         listening = _listen;
         return this;
     }

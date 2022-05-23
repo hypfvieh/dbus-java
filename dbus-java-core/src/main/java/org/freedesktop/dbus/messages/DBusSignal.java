@@ -29,26 +29,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBusSignal extends Message {
-    private static final Map<String, Class<? extends DBusSignal>>                            CLASS_CACHE         =
+    private static final Logger                                                    LOGGER              =
+            LoggerFactory.getLogger(DBusSignal.class);
+
+    private static final Map<String, Class<? extends DBusSignal>>                  CLASS_CACHE         =
             new ConcurrentHashMap<>();
 
-    private static final Map<Class<? extends DBusSignal>, Type[]>                            TYPE_CACHE          =
+    private static final Map<Class<? extends DBusSignal>, Type[]>                  TYPE_CACHE          =
             new ConcurrentHashMap<>();
 
-    private static final Map<String, String>                                                 SIGNAL_NAMES        =
+    private static final Map<String, String>                                       SIGNAL_NAMES        =
             new ConcurrentHashMap<>();
-    private static final Map<String, String>                                                 INT_NAMES           =
-            new ConcurrentHashMap<>();
-
-    private static final Map<Class<? extends DBusSignal>, List<CachedConstructor>>           CACHED_CONSTRUCTORS =
+    private static final Map<String, String>                                       INT_NAMES           =
             new ConcurrentHashMap<>();
 
-    private final Logger                                                                     logger              =
-            LoggerFactory.getLogger(getClass());
+    private static final Map<Class<? extends DBusSignal>, List<CachedConstructor>> CACHED_CONSTRUCTORS =
+            new ConcurrentHashMap<>();
 
-    private Class<? extends DBusSignal>                                                      clazz;
-    private boolean                                                                          bodydone            = false;
-    private byte[]                                                                           blen;
+
+    private Class<? extends DBusSignal>                                            clazz;
+    private boolean                                                                bodydone            = false;
+    private byte[]                                                                 blen;
 
     DBusSignal() {
     }
@@ -166,6 +167,7 @@ public class DBusSignal extends Message {
             try {
                 c = (Class<? extends DBusSignal>) Class.forName(name);
             } catch (ClassNotFoundException _exCnf) {
+                LOGGER.trace("Class not found for {}", name, _exCnf);
             }
             name = CommonRegexPattern.EXCEPTION_EXTRACT_PATTERN.matcher(name).replaceAll("\\$$1");
         } while (null == c && CommonRegexPattern.EXCEPTION_PARTIAL_PATTERN.matcher(name).matches());
@@ -306,21 +308,15 @@ public class DBusSignal extends Message {
 
                 if (Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
                     continue;
-                }
-
-                if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
+                } else  if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
                     continue;
-                }
-
-                if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
+                } else  if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
                     continue;
-                }
-
-                if (class1.isAssignableFrom(_wantedArgs.get(i))) {
+                } else if (class1.isAssignableFrom(_wantedArgs.get(i))) {
                     continue;
+                } else {
+                    return false;
                 }
-
-                return false;
             }
 
             return true;

@@ -24,26 +24,19 @@ public class SignalTuple {
         SignalTuple other = (SignalTuple) _o;
         if (null == this.type && null != other.type) {
             return false;
-        }
-        if (null != this.type && !this.type.equals(other.type)) {
+        } else if (null != this.type && !this.type.equals(other.type)) {
             return false;
-        }
-        if (null == this.name && null != other.name) {
+        } else if (null == this.name && null != other.name) {
             return false;
-        }
-        if (null != this.name && !this.name.equals(other.name)) {
+        } else if (null != this.name && !this.name.equals(other.name)) {
             return false;
-        }
-        if (null == this.object && null != other.object) {
+        } else if (null == this.object && null != other.object) {
             return false;
-        }
-        if (null != this.object && !this.object.equals(other.object)) {
+        } else if (null != this.object && !this.object.equals(other.object)) {
             return false;
-        }
-        if (null == this.source && null != other.source) {
+        } else if (null == this.source && null != other.source) {
             return false;
-        }
-        if (null != this.source && !this.source.equals(other.source)) {
+        } else  if (null != this.source && !this.source.equals(other.source)) {
             return false;
         }
         return true;

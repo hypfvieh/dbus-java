@@ -139,7 +139,7 @@ public abstract class AbstractConnection implements Closeable {
 
         transportBuilder = TransportBuilder.create(_address);
         readerThread = new IncomingMessageThread(this, transportBuilder.getAddress());
-        
+
         try {
             transport = transportBuilder.withTimeout(_timeout).build();
         } catch (IOException | DBusException _ex) {
@@ -155,21 +155,21 @@ public abstract class AbstractConnection implements Closeable {
      * Retrieves an remote object using source and path.
      * Will try to find suitable exported DBusInterface automatically.
      *
-     * @param _source source 
+     * @param _source source
      * @param _path path
-     * 
+     *
      * @return {@link DBusInterface} compatible object
      */
     public abstract DBusInterface getExportedObject(String _source, String _path) throws DBusException;
 
     /**
      * Retrieves an remote object using source and path.
-     * Will use the given type as object class. 
+     * Will use the given type as object class.
      *
-     * @param _source source 
+     * @param _source source
      * @param _path path
-     * @param _type class of remote object 
-     * 
+     * @param _type class of remote object
+     *
      * @return {@link DBusInterface} compatible object
      */
     public abstract <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException;
@@ -268,9 +268,9 @@ public abstract class AbstractConnection implements Closeable {
      */
     @Deprecated(forRemoval = true, since = "4.1.0")
     public void changeThreadCount(byte _newPoolSize) {
-        
+
     }
-    
+
     /**
      * If set to true the bus will not hold a strong reference to exported objects. If they go out of scope they will
      * automatically be unexported from the bus. The default is to hold a strong reference, which means objects must be
@@ -280,7 +280,7 @@ public abstract class AbstractConnection implements Closeable {
      *            reference
      */
     public void setWeakReferences(boolean _weakreferences) {
-        this.weakreferences = _weakreferences; 
+        this.weakreferences = _weakreferences;
     }
 
     /**
@@ -390,7 +390,7 @@ public abstract class AbstractConnection implements Closeable {
     	if (!isConnected()) {
     	    throw new NotConnected("Cannot send message: Not connected");
     	}
-    	
+
     	senderService.execute(runnable);
     }
 
@@ -535,7 +535,7 @@ public abstract class AbstractConnection implements Closeable {
      * This method is private as it should never be overwritten by subclasses,
      * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)}
      * which then will cause a StackOverflowError.
-     * 
+     *
      * @param _connectionError exception caused the disconnection (null if intended disconnect)
      */
     protected final synchronized void internalDisconnect(IOException _connectionError) {
@@ -552,7 +552,7 @@ public abstract class AbstractConnection implements Closeable {
             Optional.ofNullable(_connectionError)
                 .ifPresentOrElse(ex -> cb.disconnectOnError(ex), () -> cb.requestedDisconnect(null));
         });
-                
+
         // stop reading new messages
         readerThread.terminate();
 
@@ -765,7 +765,7 @@ public abstract class AbstractConnection implements Closeable {
             }
             o = eo.getObject().get();
         }
-        
+
         if(ExportedObject.isExcluded(meth)) {
             sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
                     "The method `%s.%s' is not exported.", _methodCall.getInterface(), _methodCall.getName()))));
@@ -785,7 +785,7 @@ public abstract class AbstractConnection implements Closeable {
             @Override
             public void run() {
                 logger.debug("Running method {} for remote call", me);
-               
+
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     _methodCall.setArgs(Marshalling.deSerializeParameters(_methodCall.getParameters(), ts, conn));
@@ -1029,6 +1029,7 @@ public abstract class AbstractConnection implements Closeable {
                 sendMessage(new Error(_mr, new DBusExecutionException(
                         "Spurious reply. No message with the given serial id was awaiting a reply.")));
             } catch (DBusException _exDe) {
+                logger.trace("Could not send error message", _exDe);
             }
         }
     }
@@ -1060,11 +1061,12 @@ public abstract class AbstractConnection implements Closeable {
 
         } catch (Exception _ex) {
             logger.debug("Exception while sending message.", _ex);
-           
+
             if (_message instanceof MethodCall && _ex instanceof DBusExecutionException) {
                 try {
                     ((MethodCall) _message).setReply(new Error(_message, _ex));
                 } catch (DBusException _exDe) {
+                    logger.trace("Could not set message reply", _exDe);
                 }
             } else if (_message instanceof MethodCall) {
                 try {
@@ -1072,6 +1074,7 @@ public abstract class AbstractConnection implements Closeable {
                     ((MethodCall) _message).setReply(
                             new Error(_message, new DBusExecutionException("Message Failed to Send: " + _ex.getMessage())));
                 } catch (DBusException _exDe) {
+                    logger.trace("Could not set message reply", _exDe);
                 }
             } else if (_message instanceof MethodReturn) {
                 try {
@@ -1098,10 +1101,10 @@ public abstract class AbstractConnection implements Closeable {
                 disconnectCallback.ifPresent(cb -> cb.clientDisconnect());
                 if (disconnecting // when we are already disconnecting, ignore further errors
                         || transportBuilder.getAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which is no error
-                    return null; 
-                } 
+                    return null;
+                }
             }
-               
+
             if (isConnected()) {
                 throw new FatalDBusException(_exIo);
             } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
@@ -1149,7 +1152,7 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     public boolean isConnected() {
-        return transport != null && transport.isConnected();    
+        return transport != null && transport.isConnected();
     }
 
     protected Queue<Error> getPendingErrorQueue() {
@@ -1209,7 +1212,7 @@ public abstract class AbstractConnection implements Closeable {
 
     /**
      * Returns the currently configured disconnect callback.
-     * 
+     *
      * @return callback or null if no callback registered
      */
     public IDisconnectCallback getDisconnectCallback() {
@@ -1219,7 +1222,7 @@ public abstract class AbstractConnection implements Closeable {
     /**
      * Set the callback which will be notified when a disconnection happens.
      * Use null to remove.
-     * 
+     *
      * @param _disconnectCallback callback to execute or null to remove
      */
     public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
@@ -1230,5 +1233,5 @@ public abstract class AbstractConnection implements Closeable {
     public String toString() {
         return getClass().getSimpleName() + "[address=" + transportBuilder.getAddress() + "]";
     }
-    
+
 }

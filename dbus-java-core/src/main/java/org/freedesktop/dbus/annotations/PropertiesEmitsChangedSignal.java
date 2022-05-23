@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * <b>From <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces">DBUS Specification</a>:</b><br>
- * If set to false, the org.freedesktop.DBus.Properties.PropertiesChanged signal,<br> 
+ * If set to false, the org.freedesktop.DBus.Properties.PropertiesChanged signal,<br>
  * see the section called “org.freedesktop.DBus.Properties” is not guaranteed to be emitted if the property changes.<br>
  * <br>
- * If set to const the property never changes value during the lifetime of the object it belongs to, <br> 
+ * If set to const the property never changes value during the lifetime of the object it belongs to, <br>
  * and hence the signal is never emitted for it. <br>
  * <br>
  * If set to invalidates the signal is emitted but the value is not included in the signal.<br>
@@ -21,17 +21,18 @@ import java.lang.annotation.Target;
  * <br>
  * This annotation is intended to be used by code generators to implement client-side caching of property values. <br>
  * For all properties for which the annotation is set to const, invalidates or true the client may unconditionally <br>
- * cache the values as the properties don't change or notifications are generated for them if they do. 
+ * cache the values as the properties don't change or notifications are generated for them if they do.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @DBusInterfaceName("org.freedesktop.DBus.Property.EmitsChangedSignal")
 public @interface PropertiesEmitsChangedSignal {
     EmitChangeSignal value();
-    
+
     enum EmitChangeSignal {
         TRUE, INVALIDATES, CONST, FALSE;
-        
+
+        @Override
         public String toString() {
             return name().toLowerCase();
         }
