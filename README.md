@@ -44,7 +44,11 @@ However [LogonBox](https://www.logonbox.com) is not responsible for this project
 The library will remain open source and MIT licensed and can still be used, forked or modified for free.
 
 #### Changes
-##### Changes in 4.1.0 (not yet released):
+
+##### Changes in 4.1.1 (not yet released):
+   - nothing yet
+
+##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
    - Throw AuthenticationException when SASL command was unreadable during logon handshake, thanks to [brett-smith](https://github.com/brett-smith) ([PR#158](https://github.com/hypfvieh/dbus-java/issues/158))
    - Fixed issue with handling signals in wrong order ([#159](https://github.com/hypfvieh/dbus-java/issues/159))
@@ -85,41 +89,5 @@ The library will remain open source and MIT licensed and can still be used, fork
   - Support annotation to specify properties provided by an exported object (DBusProperty annotation) ([PR#131](https://github.com/hypfvieh/dbus-java/pull/131)/[#130](https://github.com/hypfvieh/dbus-java/issues/130)), thanks to [mk868](https://github.com/mk868)
   - Added support for the new DBusProperty annotations in InterfaceCodeGenerator Util ([PR#132](https://github.com/hypfvieh/dbus-java/pull/132)), thanks to [mk868](https://github.com/mk868)
   - License changed from LGPLv2 to MIT
-
-##### Changes in 3.2.4:
-  - Improved logging usage of Arrays.deepToString(Object[]), so this message will not be called in log statements if the loglevel is not enabled
-  - Improved usage of regex and length checks [#119](https://github.com/hypfvieh/dbus-java/issues/119) & [PR#120](https://github.com/hypfvieh/dbus-java/pull/120) (thanks to [OlegAndreych](https://github.com/OlegAndreych))
-  - Improvements in InterfaceCodeGenerator Util regarding creation of Struct classes ([#121](https://github.com/hypfvieh/dbus-java/issues/121))
-  - Fixed possible race-conditions/dead-locks when disconnecting from DBus ([#123](https://github.com/hypfvieh/dbus-java/pull/123))
-  
-##### Changes in 3.2.3:
-  - Fixed regression introduced with [#110](https://github.com/hypfvieh/dbus-java/pull/110) ([#114](https://github.com/hypfvieh/dbus-java/pull/114))
-
-##### Changes in 3.2.2:
-  - Fixed issue with introspection caused by changes in [#80](https://github.com/hypfvieh/dbus-java/issues/80) ([#103](https://github.com/hypfvieh/dbus-java/issues/103)), thanks to [AsamK](https://github.com/AsamK)
-  - Added support for FreeBSD, ([#105](https://github.com/hypfvieh/dbus-java/pull/105)) thanks to [grembo](https://github.com/grembo)
-  - Fixed SASL authentication may get stuck when using TCP ([#106](https://github.com/hypfvieh/dbus-java/pull/106)) thanks to [brett-smith](https://github.com/brett-smith)
- - Fixed issues when dealing with multiple signals of the same name but different signatures ([#110](https://github.com/hypfvieh/dbus-java/pull/110))
- - Dependency updates
-
-##### Changes in 3.2.1
-  - Fixed leaking signal handlers when using addSigHandler/removeSigHandler a lot ([#76](https://github.com/hypfvieh/dbus-java/issues/76))
-  - Fixed unexported objects shown in introspection output ([#80](https://github.com/hypfvieh/dbus-java/issues/80))
-  - Added support for providing alternative implementations of IMessageReader/IMessageWriter ([#81](https://github.com/hypfvieh/dbus-java/issues/81))
-  - Removed support for file descriptor passing, as it is not working with jnr-unixsocket ([#81](https://github.com/hypfvieh/dbus-java/issues/81))
-  - Fixed issue dealing with handled signals ([#97](https://github.com/hypfvieh/dbus-java/issues/97))
-  - Fixes issue with InterfaceCodeGenerator util ([#95](https://github.com/hypfvieh/dbus-java/issues/95))
-  - Fixes issue with InterfaceCodeGenerator util using incorrect type ([#83](https://github.com/hypfvieh/dbus-java/issues/83))
-
-##### Changes in 3.2.0 
-  - Replaced libmatthew with jnr-unixsocket
-  - Removed all native library files and sources 
-  - Added new transport system to use jnr-unixsocket (replaces old Transport class)
-  - Added support for empty collections/arrays (thanks to [chris-melman](https://github.com/chris-melman))
-  - Added support of DBUS_MACHINE_ID_LOCATION environment property to allow usage of dbus-java on Windows (thanks to [chris-melman](https://github.com/chris-melman))
-  - Allow change of the default socket timeout (thanks to [chris-melman](https://github.com/chris-melman))
-  - Detect system endianness for DBus message instead of using BIG endian all the time (#54)
-  - Allow changing the default endianness (DBusConnection.setEndianness())
-  - Providing OSGi ready artifact ([#33](https://github.com/hypfvieh/dbus-java/issues/32)) (thanks to [stack-head](https://github.com/stack-head))
 
 ##### Older Changes: [See Wiki ChangeLog](https://github.com/hypfvieh/dbus-java/wiki/Changelog)
