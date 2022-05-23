@@ -21,6 +21,7 @@
     <properties>
         <!-- Disable native transport tests by default (will be enabled by profile if JDK 16+ is present) -->
         <jdk16.not.found>true</jdk16.not.found>
+        <parentDir>${project.parent.basedir}</parentDir>
     </properties>
 
     <build>

@@ -19,6 +19,7 @@
     </parent>
 
     <properties>
+        <parentDir>${project.parent.basedir}</parentDir>
     </properties>
 
     <build>

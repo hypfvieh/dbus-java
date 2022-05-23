@@ -100,7 +100,7 @@ public class DBusViewer {
 
 
     /**
-     * @param args args
+     * @param args _args
      */
     public static void main(String[] _args) {
         new DBusViewer(CONNECTION_TYPES);
@@ -118,7 +118,7 @@ public class DBusViewer {
         Runnable loader = new Runnable() {
             @Override
             public void run() {
-                boolean users = true; 
+                boolean users = true;
                 boolean owners = true;
                 for (final String key : _connectionTypes.keySet()) {
                     try {

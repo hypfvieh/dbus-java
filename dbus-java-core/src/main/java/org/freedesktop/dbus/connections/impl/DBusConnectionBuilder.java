@@ -12,6 +12,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.Message.Endian;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
 /**
@@ -45,9 +46,9 @@ public class DBusConnectionBuilder {
 
     /**
      * Create a new default connection connecting to DBus session bus but use an alternative input for the machineID.
-     * 
+     *
      * @param _machineIdFileLocation file with machine ID
-     * 
+     *
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
@@ -62,7 +63,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Create new default connection to the DBus system bus.
-     * 
+     *
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSystemBus() {
@@ -73,7 +74,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Create a new default connection connecting to the DBus session bus.
-     * 
+     *
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus() {
@@ -82,9 +83,9 @@ public class DBusConnectionBuilder {
 
     /**
      * Create a default connection to DBus using the given bus type.
-     * 
+     *
      * @param _type bus type
-     * 
+     *
      * @return this
      */
     public static DBusConnectionBuilder forType(DBusBusType _type) {
@@ -93,10 +94,10 @@ public class DBusConnectionBuilder {
 
     /**
      * Create a default connection to DBus using the given bus type and machineIdFile.
-     * 
+     *
      * @param _type bus type
      * @param _machineIdFile machineId file
-     * 
+     *
      * @return this
      */
     public static DBusConnectionBuilder forType(DBusBusType _type, String _machineIdFile) {
@@ -111,7 +112,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Use the given address to create the connection (e.g. used for remote TCP connected DBus daemons).
-     * 
+     *
      * @param _address address to use
      * @return this
      */
@@ -122,7 +123,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Register the new connection on DBus using 'hello' message. Default is true.
-     * 
+     *
      * @param _register boolean
      * @return this
      */
@@ -134,7 +135,7 @@ public class DBusConnectionBuilder {
     /**
      * Use this connection as shared connection. Shared connection means that the same connection is used multiple times
      * if the connection parameter did not change. Default is true.
-     * 
+     *
      * @param _shared boolean
      * @return this
      */
@@ -145,8 +146,8 @@ public class DBusConnectionBuilder {
 
     /**
      * Set the timeout for the connection (used for TCP connections only). Default is
-     * {@value AbstractConnection.TCP_CONNECT_TIMEOUT}.
-     * 
+     * {@value AbstractConnection#TCP_CONNECT_TIMEOUT}.
+     *
      * @param _timeout timeout
      * @return this
      */
@@ -160,7 +161,7 @@ public class DBusConnectionBuilder {
      * Caution: Using thread-pool size &gt; 1 may cause signals to be handled out-of-order
      * <p>
      * Default: 1
-     * 
+     *
      * @param _threads int &gt;= 1
      * @return this
      */
@@ -173,7 +174,7 @@ public class DBusConnectionBuilder {
      * Set the size of the thread-pool used to handle error messages received on the bus.
      * <p>
      * Default: 1
-     * 
+     *
      * @param _threads int &gt;= 1
      * @return this
      */
@@ -187,7 +188,7 @@ public class DBusConnectionBuilder {
      * The thread pool size has to be &gt; 1 to handle recursive calls.
      * <p>
      * Default: 4
-     * 
+     *
      * @param _threads int &gt;= 1
      * @return this
      */
@@ -195,12 +196,12 @@ public class DBusConnectionBuilder {
         methodCallThreadCount = Math.max(1, _threads);
         return this;
     }
-    
+
     /**
      * Set the size of the thread-pool used to handle method return values received on the bus.
      * <p>
      * Default: 1
-     * 
+     *
      * @param _threads int &gt;= 1
      * @return this
      */
@@ -210,14 +211,14 @@ public class DBusConnectionBuilder {
     }
 
     /**
-     * Set the endianess for the connection 
+     * Set the endianess for the connection
      * Default is based on system endianess.
-     * 
-     * @param _endianess {@value Message.Endian.BIG} or {@value Message.Endian.LITTLE}
+     *
+     * @param _endianess {@link Endian#BIG} or {@value Endian#LITTLE}
      * @return this
      */
     public DBusConnectionBuilder withEndianess(byte _endianess) {
-        if (_endianess == Message.Endian.BIG || _endianess == Message.Endian.LITTLE) {
+        if (_endianess == Endian.BIG || _endianess == Endian.LITTLE) {
             endianess = _endianess;
         }
         return this;
@@ -225,7 +226,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Set the given disconnect callback to the created connection.
-     * 
+     *
      * @param _disconnectCallback callback
      * @return this
      */
@@ -237,7 +238,7 @@ public class DBusConnectionBuilder {
     /**
      * Enable/Disable weak references on connection.
      * Default is false.
-     * 
+     *
      * @param _weakRef true to enable
      * @return this
      */
@@ -248,7 +249,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Create the new {@link DBusConnection}.
-     * 
+     *
      * @return {@link DBusConnection}
      * @throws DBusException when DBusConnection could not be opened
      */
@@ -269,7 +270,7 @@ public class DBusConnectionBuilder {
         } else {
             c = new DBusConnection(address, shared, machineId, timeout, cfg);
         }
-        
+
         c.setDisconnectCallback(disconnectCallback);
         c.setWeakReferences(weakReference);
         DBusConnection.setEndianness(endianess);
@@ -279,7 +280,7 @@ public class DBusConnectionBuilder {
 
     /**
      * Helper to use TCP fallback address when no UNIX address is found or no UNIX transport found.
-     * 
+     *
      * @param _address address which would be used if no fallback is used
      * @return input address or fallback address
      */
