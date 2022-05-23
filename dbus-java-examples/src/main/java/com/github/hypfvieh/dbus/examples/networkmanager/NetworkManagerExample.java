@@ -15,13 +15,13 @@ import org.freedesktop.dbus.types.Variant;
 
 /**
  * Sample code which connects to the network manager and queries devices, permissions and IPs.
- * 
+ *
  * @author hypfvieh
  *
  */
 public class NetworkManagerExample {
 
-    public static void main(String[] args) throws DBusException {
+    public static void main(String[] _args) throws DBusException {
 
         try (DBusConnection dbusConn = DBusConnectionBuilder.forSystemBus().build()) {
             NetworkManager nm = dbusConn.getRemoteObject("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager",
@@ -85,18 +85,18 @@ public class NetworkManagerExample {
         }
     }
 
-    private static void printAddressInfo(List<Map<String, Variant<?>>> addressArr, String _addrType) {
-        for (int i = 0; i < addressArr.size(); i++) {
+    private static void printAddressInfo(List<Map<String, Variant<?>>> _addressArr, String _addrType) {
+        for (int i = 0; i < _addressArr.size(); i++) {
             System.out.println("  " + _addrType+ " Address " + (i+1));
-            if (addressArr.get(i).containsKey("address")) {
-                System.out.print("     "+ _addrType +": " + String.valueOf(addressArr.get(i).get("address")).replaceAll("\\[|\\]", ""));
-                if (addressArr.get(i).containsKey("prefix")) {
-                    System.out.println(" / " + String.valueOf(addressArr.get(i).get("prefix")).replaceAll("\\[|\\]", ""));
+            if (_addressArr.get(i).containsKey("address")) {
+                System.out.print("     "+ _addrType +": " + String.valueOf(_addressArr.get(i).get("address")).replaceAll("\\[|\\]", ""));
+                if (_addressArr.get(i).containsKey("prefix")) {
+                    System.out.println(" / " + String.valueOf(_addressArr.get(i).get("prefix")).replaceAll("\\[|\\]", ""));
                 }
             } else {
                 System.out.println("");
             }
-            for (Entry<String, Variant<?>> entry : addressArr.get(i).entrySet()) {
+            for (Entry<String, Variant<?>> entry : _addressArr.get(i).entrySet()) {
                 if (entry.getKey().equals("address") || entry.getKey().equals("prefix")) {
                     continue;
                 }

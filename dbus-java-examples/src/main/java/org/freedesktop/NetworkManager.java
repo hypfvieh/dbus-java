@@ -14,75 +14,75 @@ import org.freedesktop.dbus.types.Variant;
 
 @DBusInterfaceName("org.freedesktop.NetworkManager")
 public interface NetworkManager extends DBusInterface, Properties {
-    public static class CheckPermissions extends DBusSignal {
-        public CheckPermissions(String path) throws DBusException {
-            super(path);
+    class CheckPermissions extends DBusSignal {
+        public CheckPermissions(String _path) throws DBusException {
+            super(_path);
         }
     }
 
-    public static class StateChanged extends DBusSignal {
+    class StateChanged extends DBusSignal {
         public final UInt32 state;
 
-        public StateChanged(String path, UInt32 state) throws DBusException {
-            super(path, state);
-            this.state = state;
+        public StateChanged(String _path, UInt32 _state) throws DBusException {
+            super(_path, _state);
+            this.state = _state;
         }
     }
 
-    public static class DeviceAdded extends DBusSignal {
-        public final DBusInterface device_path;
+    class DeviceAdded extends DBusSignal {
+        public final DBusInterface devicePath;
 
-        public DeviceAdded(String path, DBusInterface device_path) throws DBusException {
-            super(path, device_path);
-            this.device_path = device_path;
+        public DeviceAdded(String _path, DBusInterface _devicePath) throws DBusException {
+            super(_path, _devicePath);
+            this.devicePath = _devicePath;
         }
     }
 
-    public static class DeviceRemoved extends DBusSignal {
-        public final DBusInterface device_path;
+    class DeviceRemoved extends DBusSignal {
+        public final DBusInterface devicePath;
 
-        public DeviceRemoved(String path, DBusInterface device_path) throws DBusException {
-            super(path, device_path);
-            this.device_path = device_path;
+        public DeviceRemoved(String _path, DBusInterface _devicePath) throws DBusException {
+            super(_path, _devicePath);
+            this.devicePath = _devicePath;
         }
     }
 
-    public void Reload(UInt32 flags);
+   void Reload(UInt32 _flags);
 
-    public List<DBusPath> GetDevices();
+   List<DBusPath> GetDevices();
 
-    public List<DBusPath> GetAllDevices();
+   List<DBusPath> GetAllDevices();
 
-    public DBusInterface GetDeviceByIpIface(CharSequence iface);
+   DBusInterface GetDeviceByIpIface(CharSequence _iface);
 
-    public DBusInterface ActivateConnection(DBusInterface connection, DBusInterface device,
-            DBusInterface specific_object);
+   DBusInterface ActivateConnection(DBusInterface _connection, DBusInterface _device,
+    DBusInterface _specificObject);
 
-    public Pair<DBusInterface, DBusInterface> AddAndActivateConnection(
-            Map<CharSequence, Map<CharSequence, Variant<?>>> connection, DBusInterface device,
-            DBusInterface specific_object);
+   Pair<DBusInterface, DBusInterface> AddAndActivateConnection(
+    Map<CharSequence, Map<CharSequence, Variant<?>>> _connection, DBusInterface _device,
+    DBusInterface _specificObject);
 
-    public void DeactivateConnection(DBusInterface active_connection);
+   void DeactivateConnection(DBusInterface _activeConnection);
 
-    public void Sleep(boolean sleep);
+   void Sleep(boolean _sleep);
 
-    public void Enable(boolean enable);
+   void Enable(boolean _enable);
 
-    public Map<CharSequence, CharSequence> GetPermissions();
+   Map<CharSequence, CharSequence> GetPermissions();
 
-    public void SetLogging(CharSequence level, CharSequence domains);
+   void SetLogging(CharSequence _level, CharSequence _domains);
 
-    public Pair<CharSequence, CharSequence> GetLogging();
+   Pair<CharSequence, CharSequence> GetLogging();
 
-    public UInt32 CheckConnectivity();
+   UInt32 CheckConnectivity();
 
-    public UInt32 state();
+   UInt32 state();
 
-    public DBusInterface CheckpointCreate(List<DBusInterface> devices, UInt32 rollback_timeout, UInt32 flags);
+   DBusInterface CheckpointCreate(List<DBusInterface> _devices, UInt32 _rollbackTimeout, UInt32 _flags);
 
-    public void CheckpointDestroy(DBusInterface checkpoint);
+   void CheckpointDestroy(DBusInterface _checkpoint);
 
-    public Map<CharSequence, UInt32> CheckpointRollback(DBusInterface checkpoint);
+   Map<CharSequence, UInt32> CheckpointRollback(DBusInterface _checkpoint);
 
-    public void CheckpointAdjustRollbackTimeout(DBusInterface checkpoint, UInt32 add_timeout);
+   void CheckpointAdjustRollbackTimeout(DBusInterface _checkpoint, UInt32 _addTimeout);
 }

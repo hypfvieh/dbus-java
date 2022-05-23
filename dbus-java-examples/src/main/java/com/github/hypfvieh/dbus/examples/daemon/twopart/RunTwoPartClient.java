@@ -18,12 +18,12 @@ import com.github.hypfvieh.util.SystemUtil;
  * @author hypfvieh
  */
 public class RunTwoPartClient {
-	public static void main(String[] args) {
+	public static void main(String[] _args) {
 		String twopartAddress = FileIoUtil.readFileToString(new File(SystemUtil.getTempDir(), "twopartdaemon.address").getAbsolutePath());
 		if (StringUtil.isBlank(twopartAddress)) {
 			throw new RuntimeException("No twopart daemon found");
 		}
-		
+
 		try (DBusConnection conn = DBusConnectionBuilder.forAddress(twopartAddress).build()) {
 			// repeat until JVM is killed
 			while (true) {
@@ -32,13 +32,14 @@ public class RunTwoPartClient {
 
 				try {
 					Thread.sleep(500L);
-				} catch (InterruptedException ex) {
+				} catch (InterruptedException _ex) {
+				    System.err.println("interrupted");
 				}
 			}
 
-		} catch (IOException | DBusException e) {
+		} catch (IOException | DBusException _ex) {
 			throw new RuntimeException("Could not connect to twopart daemon");
 		}
 	}
-	
+
 }

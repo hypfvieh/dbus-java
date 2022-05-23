@@ -75,6 +75,7 @@ public final class ListDBus {
                 try {
                     System.out.print("\t" + dbus.GetNameOwner(s));
                 } catch (DBusExecutionException _exDe) {
+                    System.err.println("Error getting owner");
                 }
             }
             System.out.println();

@@ -14,8 +14,8 @@ public class StructServer implements IStructServer {
     private boolean method1Done = false;
     private boolean method2Done = false;
 
-    public static void main(String[] args) throws Exception {
-        
+    public static void main(String[] _args) throws Exception {
+
         DBusConnection sessionConnection = DBusConnectionBuilder.forSessionBus().build();
         StructServer structServer = new StructServer();
 

@@ -11,7 +11,7 @@ import org.freedesktop.dbus.types.Variant;
  * @author hypfvieh
  */
 public class StructClient {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] _args) throws Exception {
         try (DBusConnection sessionConnection = DBusConnectionBuilder.forSessionBus().build()) {
 
             System.out.println("getting server");

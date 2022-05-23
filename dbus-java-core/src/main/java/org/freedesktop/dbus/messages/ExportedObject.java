@@ -45,7 +45,7 @@ public class ExportedObject {
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
         object = _weakreferences ? new WeakReference<>(_object) : new StrongReference<>(_object);
-        
+
         Set<Class<?>> implementedInterfaces = getDBusInterfaces(_object.getClass());
         implementedInterfaces.add(Introspectable.class);
         implementedInterfaces.add(Peer.class);
@@ -325,10 +325,10 @@ public class ExportedObject {
         return introspectionData;
     }
 
-	public static boolean isExcluded(Method meth) {
-		return !Modifier.isPublic(meth.getModifiers()) ||
-				meth.getAnnotation(DBusIgnore.class) != null ||
-				(meth.getName().equals("getObjectPath") && meth.getReturnType().equals(String.class) && meth.getParameterCount() == 0);
+	public static boolean isExcluded(Method _meth) {
+		return !Modifier.isPublic(_meth.getModifiers()) ||
+				_meth.getAnnotation(DBusIgnore.class) != null ||
+				_meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class) && _meth.getParameterCount() == 0;
 	}
 
 }

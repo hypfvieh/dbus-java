@@ -10,8 +10,8 @@ public final class Pair<A, B> extends Tuple {
     @Position(1)
     public final B b;
 
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
+    public Pair(A _a, B _b) {
+        this.a = _a;
+        this.b = _b;
     }
 }

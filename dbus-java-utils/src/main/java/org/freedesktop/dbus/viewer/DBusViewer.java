@@ -41,6 +41,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.types.UInt32;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -196,6 +197,7 @@ public class DBusViewer {
                             entry.setUser(user);
                         }
                     } catch (DBusExecutionException _exDbe) {
+                        LoggerFactory.getLogger(getClass()).warn("Could not get unix user", _exDbe);
                     }
                 }
                 if (!name.startsWith(":") && _owners) {
@@ -205,6 +207,7 @@ public class DBusViewer {
                             entry.setOwner(owner);
                         }
                     } catch (DBusExecutionException _exDbe) {
+                        LoggerFactory.getLogger(getClass()).warn("Could not get owner", _exDbe);
                     }
                 }
                 for (DBusEntry entry : results) {

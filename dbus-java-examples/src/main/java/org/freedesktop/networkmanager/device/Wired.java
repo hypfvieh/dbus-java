@@ -10,12 +10,12 @@ import org.freedesktop.dbus.types.Variant;
 
 @DBusInterfaceName("org.freedesktop.NetworkManager.Device.DeviceEthernet")
 public interface Wired extends DBusInterface {
-    public static class PropertiesChanged extends DBusSignal {
+    class PropertiesChanged extends DBusSignal {
         public final Map<CharSequence, Variant<?>> properties;
 
-        public PropertiesChanged(String path, Map<CharSequence, Variant<?>> properties) throws DBusException {
-            super(path, properties);
-            this.properties = properties;
+        public PropertiesChanged(String _path, Map<CharSequence, Variant<?>> _properties) throws DBusException {
+            super(_path, _properties);
+            this.properties = _properties;
         }
     }
 

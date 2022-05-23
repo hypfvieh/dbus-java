@@ -107,15 +107,6 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    // TODO: Why the hell is a signal given when it is never used?
-    private List<ConnectionStruct> findSignalMatches(DBusSignal _sig) {
-        List<ConnectionStruct> l;
-        synchronized (sigrecips) {
-            l = new ArrayList<>(sigrecips);
-        }
-        return l;
-    }
-
     @Override
     public synchronized void start() {
         super.start();
@@ -169,7 +160,11 @@ public class DBusDaemon extends Thread implements Closeable {
                                     }
                                 } else {
                                     if (m instanceof DBusSignal) {
-                                        List<ConnectionStruct> list = findSignalMatches((DBusSignal) m);
+                                        List<ConnectionStruct> l;
+                                        synchronized (sigrecips) {
+                                            l = new ArrayList<>(sigrecips);
+                                        }
+                                        List<ConnectionStruct> list = l;
                                         for (ConnectionStruct d : list) {
                                             send(d, m);
                                         }
@@ -344,9 +339,9 @@ public class DBusDaemon extends Thread implements Closeable {
     /**
      * Create a 'NameAcquired' signal manually.
      * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
-     * 
+     *
      * @param _name name to announce
-     * 
+     *
      * @return signal
      * @throws DBusException if signal creation fails
      */
@@ -357,11 +352,11 @@ public class DBusDaemon extends Thread implements Closeable {
     /**
      * Create a 'NameOwnerChanged' signal manually.
      * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
-     * 
+     *
      * @param _name name to announce
      * @param _oldOwner previous owner
      * @param _newOwner new owner
-     * 
+     *
      * @return signal
      * @throws DBusException if signal creation fails
      */
@@ -369,7 +364,7 @@ public class DBusDaemon extends Thread implements Closeable {
         return new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
     }
 
-    
+
     public static class ConnectionStruct {
         private final InputStreamMessageReader  inputReader;
         private final OutputStreamMessageWriter outputWriter;
@@ -585,7 +580,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     this.connStruct = _connStruct;
                     rv = meth.invoke(dbusServer, args);
                     if (null == rv) {
-                        
+
                         send(_connStruct, new MethodReturn("org.freedesktop.DBus", (MethodCall) _msg, null), true);
                     } else {
                         String sig = Marshalling.getDBusType(meth.getGenericReturnType())[0];

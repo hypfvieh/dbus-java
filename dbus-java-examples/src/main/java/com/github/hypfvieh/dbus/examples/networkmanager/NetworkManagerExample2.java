@@ -10,12 +10,12 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.networkmanager.device.Wireless;
 
 public class NetworkManagerExample2 {
-    public static void main(String[] args) {
+    public static void main(String[] _args) {
         try (DBusConnection dbusConn = DBusConnectionBuilder.forSystemBus().build()) {
 
             Wireless wifiAdaptor = dbusConn.getRemoteObject("org.freedesktop.NetworkManager",
                     "/org/freedesktop/NetworkManager/Devices/0", Wireless.class);
-            
+
             List<DBusPath> getAllAccessPoints = wifiAdaptor.GetAllAccessPoints();
             System.out.println(getAllAccessPoints);
 

@@ -5,17 +5,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MyObject implements MyInterface {
-    
+
     private List<MyInterfacePart> parts = new ArrayList<>();
-    
+
+    @Override
     public String sayHello() {
         return "Hello!";
     }
-    
+
+    @Override
     public List<MyInterfacePart> getParts() {
         return parts;
     }
 
+    @Override
     public String getObjectPath() {
         return "/com/acme/MyObject";
     }

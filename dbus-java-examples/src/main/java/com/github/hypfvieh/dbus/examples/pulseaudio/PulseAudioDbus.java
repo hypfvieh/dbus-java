@@ -11,7 +11,7 @@ import org.freedesktop.dbus.interfaces.Properties;
  * Sample code which connects to the pulse audio system server.
  * It will fetch the server address and will then establish a connection to that address
  * to query some information about the server.
- *  
+ *
  * @author hypfvieh
  *
  */
@@ -20,7 +20,7 @@ public class PulseAudioDbus {
     public static void main(String[] _args) throws DBusException {
         DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().build();
 
-        Properties properties = sessionConnection.getRemoteObject("org.pulseaudio.Server", "/org/pulseaudio/server_lookup1", org.freedesktop.dbus.interfaces.Properties.class);
+        Properties properties = sessionConnection.getRemoteObject("org.pulseaudio.Server", "/org/pulseaudio/server_lookup1", Properties.class);
         String address =  properties.Get("org.PulseAudio.ServerLookup1", "Address");
 
         System.out.println("Found address: " + address + "\n");
@@ -37,7 +37,7 @@ public class PulseAudioDbus {
                     .withShared(false)
                     .build();
 
-            Properties core1Props = connection.getRemoteObject("org.PulseAudio.Core1", "/org/pulseaudio/core1", org.freedesktop.dbus.interfaces.Properties.class);
+            Properties core1Props = connection.getRemoteObject("org.PulseAudio.Core1", "/org/pulseaudio/core1", Properties.class);
             System.out.println("PulseAudio Name: " + core1Props.Get("org.PulseAudio.Core1", "Name"));
             System.out.println("PulseAudio Version: " + core1Props.Get("org.PulseAudio.Core1", "Version"));
 

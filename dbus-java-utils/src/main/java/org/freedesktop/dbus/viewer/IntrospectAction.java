@@ -78,12 +78,12 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
 
                         final JTabbedPane tabbedPane = new JTabbedPane();
 
-                        tabbedPane.addTab(xmlFile, createSourceTab(xmlFile, xml));
+                        tabbedPane.addTab(xmlFile, createSourceTab(xml));
 
                         for (String file : factory.streamMap.keySet()) {
                             final String source = factory.streamMap.get(file).toString();
 
-                            tabbedPane.addTab(file, createSourceTab(file, source));
+                            tabbedPane.addTab(file, createSourceTab(source));
                         }
                         tabbedPane.setPreferredSize(new Dimension(600, 400));
 
@@ -113,7 +113,7 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                     }
                 }
 
-                private JScrollPane createSourceTab(String _file, final String _source) {
+                private JScrollPane createSourceTab(final String _source) {
                     JTextArea area = new JTextArea(_source);
                     area.setLineWrap(true);
                     area.setWrapStyleWord(true);

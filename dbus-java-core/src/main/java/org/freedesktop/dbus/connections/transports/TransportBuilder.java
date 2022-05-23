@@ -167,9 +167,28 @@ public class TransportBuilder {
      * Default is a client connection.
      *
      * @param _listen true to create a listening transport (e.g. for server usage)
-     * @return
+     *
+     * @return this
+     *
+     * @deprecated method name indicates that a boolean is returned, but isn't.
+     * Please use {@link #listening(boolean)} instead.
      */
+    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-05-23")
     public TransportBuilder isListening(boolean _listen) {
+        listening = _listen;
+        return this;
+    }
+
+    /**
+     * Toggle the created transport to be a listening (server) or initiating (client) connection.
+     * <p>
+     * Default is a client connection.
+     *
+     * @param _listen true to create a listening transport (e.g. for server usage)
+     *
+     * @return this
+     */
+    public TransportBuilder listening(boolean _listen) {
         listening = _listen;
         return this;
     }

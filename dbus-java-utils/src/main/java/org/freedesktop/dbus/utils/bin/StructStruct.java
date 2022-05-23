@@ -40,8 +40,7 @@ class StructStruct {
     public boolean equals(Object _o) {
         if (!(_o instanceof StructStruct)) {
             return false;
-        }
-        if (!name.equals(((StructStruct) _o).name)) {
+        } else if (!name.equals(((StructStruct) _o).name)) {
             return false;
         }
         return true;

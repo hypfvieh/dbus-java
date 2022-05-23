@@ -13,25 +13,25 @@ import org.freedesktop.dbus.types.Variant;
 
 @DBusInterfaceName("org.freedesktop.NetworkManager.Device")
 public interface Device extends DBusInterface {
-    public static class StateChanged extends DBusSignal {
-        public final UInt32 new_state;
-        public final UInt32 old_state;
+    class StateChanged extends DBusSignal {
+        public final UInt32 newState;
+        public final UInt32 oldState;
         public final UInt32 reason;
 
-        public StateChanged(String path, UInt32 new_state, UInt32 old_state, UInt32 reason) throws DBusException {
-            super(path, new_state, old_state, reason);
-            this.new_state = new_state;
-            this.old_state = old_state;
-            this.reason = reason;
+        public StateChanged(String _path, UInt32 _newState, UInt32 _oldState, UInt32 _reason) throws DBusException {
+            super(_path, _newState, _oldState, _reason);
+            this.newState = _newState;
+            this.oldState = _oldState;
+            this.reason = _reason;
         }
     }
 
-    public void Reapply(Map<CharSequence, Map<CharSequence, Variant<?>>> connection, UInt64 version_id, UInt32 flags);
+    void Reapply(Map<CharSequence, Map<CharSequence, Variant<?>>> _connection, UInt64 _versionId, UInt32 _flags);
 
-    public Pair<Map<CharSequence, Map<CharSequence, Variant<?>>>, UInt64> GetAppliedConnection(UInt32 flags);
+    Pair<Map<CharSequence, Map<CharSequence, Variant<?>>>, UInt64> GetAppliedConnection(UInt32 _flags);
 
-    public void Disconnect();
+    void Disconnect();
 
-    public void Delete();
+    void Delete();
 
 }

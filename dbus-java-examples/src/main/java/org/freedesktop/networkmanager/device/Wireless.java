@@ -2,6 +2,7 @@ package org.freedesktop.networkmanager.device;
 
 import java.util.List;
 import java.util.Map;
+
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -15,13 +16,13 @@ import org.freedesktop.dbus.types.Variant;
 @DBusInterfaceName("org.freedesktop.NetworkManager.Device.Wireless")
 public interface Wireless extends DBusInterface {
 
-    public List<DBusPath> GetAccessPoints();
+    List<DBusPath> GetAccessPoints();
 
-    public List<DBusPath> GetAllAccessPoints();
+    List<DBusPath> GetAllAccessPoints();
 
-    public void RequestScan(Map<String, Variant<?>> options);
+    void RequestScan(Map<String, Variant<?>> _options);
 
-    public static class PropertiesChanged extends DBusSignal {
+    class PropertiesChanged extends DBusSignal {
 
         private final Map<String, Variant<?>> properties;
 
@@ -37,7 +38,7 @@ public interface Wireless extends DBusInterface {
 
     }
 
-    public static class AccessPointAdded extends DBusSignal {
+    class AccessPointAdded extends DBusSignal {
 
         private final DBusPath accessPoint;
 
@@ -52,7 +53,7 @@ public interface Wireless extends DBusInterface {
 
     }
 
-    public static class AccessPointRemoved extends DBusSignal {
+    class AccessPointRemoved extends DBusSignal {
 
         private final DBusPath accessPoint;
 

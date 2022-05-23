@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.freedesktop.dbus.annotations.Position;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is the super class of both Structs and Tuples
@@ -45,6 +46,7 @@ public abstract class Container {
             try {
                 args[p.value()] = f.get(this);
             } catch (IllegalAccessException _exIa) {
+                LoggerFactory.getLogger(getClass()).trace("Could not set value", _exIa);
             }
         }
 
@@ -87,7 +89,7 @@ public abstract class Container {
         if (_other == null) {
             return false;
         }
-    
+
         if (_other instanceof Container) {
             Container that = (Container) _other;
             if (this.getClass().equals(that.getClass())) {
@@ -107,5 +109,5 @@ public abstract class Container {
         result = prime * result + Arrays.deepHashCode(parameters);
         return result;
     }
-    
+
 }

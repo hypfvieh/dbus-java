@@ -13,17 +13,17 @@ import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
  * <p>
  * In this case a global {@link PropertiesChanged} handler is installed.
  * It will be queried for every properties changed event on the bus.
- * 
+ *
  * @author hypfvieh
  */
 public class PropertiesChangedSignal {
-    
-    public static void main(String[] args) throws DBusException, InterruptedException, IOException {
+
+    public static void main(String[] _args) throws DBusException, InterruptedException, IOException {
         // open connection to SYSTEM Bus
         try (DBusConnection connection = DBusConnectionBuilder.forSystemBus().build()) {
             // add our signal handler
             connection.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
-           
+
             // just do some sleep so you can see the events on stdout (you would probably do something else here)
             System.out.println("sleeping");
             Thread.sleep(60000L);

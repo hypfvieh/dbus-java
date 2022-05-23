@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Sample on how to start the {@link EmbeddedDBusDaemon} with transport protocol selection.
- * 
+ *
  * @author hypfvieh
  */
 public class RunDaemon {
@@ -82,8 +82,9 @@ public class RunDaemon {
                 }
                 break;
             } catch (DBusException dbe) {
-                if (i > 4)
+                if (i > 4) {
                     throw dbe;
+                }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -109,7 +110,7 @@ public class RunDaemon {
         runDaemon.connectSelf();
     }
 
-    static enum TransportProtocol {
+    enum TransportProtocol {
         TCP,
         UNIX
     }

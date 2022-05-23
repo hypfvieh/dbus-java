@@ -104,8 +104,9 @@ public class RunTwoPartDaemon {
                     }
                 }
             } catch (DBusException dbe) {
-                if (i > 4)
+                if (i > 4) {
                     throw dbe;
+                }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -131,7 +132,7 @@ public class RunTwoPartDaemon {
         runDaemon.connectSelf();
     }
 
-    static enum TransportProtocol {
+    enum TransportProtocol {
         TCP,
         UNIX
     }
