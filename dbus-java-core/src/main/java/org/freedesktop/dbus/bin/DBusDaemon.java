@@ -189,7 +189,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return run.get() && isAlive();
     }
 
@@ -755,7 +755,7 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
-        public void terminate() {
+        public synchronized void terminate() {
             running.set(false);
             interrupt();
         }

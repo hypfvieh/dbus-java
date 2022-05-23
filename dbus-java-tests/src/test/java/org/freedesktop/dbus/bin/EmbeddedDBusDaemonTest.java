@@ -52,15 +52,15 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress.getRawAddress());
-            
+
             try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress.getRawAddress()).build()) {
                 logger.debug("Connected to embedded DBus {}", busAddress.getRawAddress());
             } catch (Exception _ex) {
-                fail("Connection to EmbeddedDbusDaemon failed: " + _ex.getMessage());
+                fail("Connection to EmbeddedDbusDaemon failed", _ex);
                 logger.error("Error connecting to EmbeddedDbusDaemon", _ex);
             }
         } catch (IOException _ex1) {
-            fail("Failed to start EmbeddedDbusDaemon: " + _ex1.getMessage());
+            fail("Failed to start EmbeddedDbusDaemon", _ex1);
             logger.error("Error starting EmbeddedDbusDaemon", _ex1);
         }
     }

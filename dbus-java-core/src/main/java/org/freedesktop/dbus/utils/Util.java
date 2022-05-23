@@ -465,4 +465,43 @@ public final class Util {
         r.nextBytes(buf);
         return Hexdump.toHex(buf, false);
     }
+
+    /**
+     * Creates a unix socket address using.
+     *
+     * @param _listeningSocket true if the address should be used for a listing socket
+     * @param _abstract true to create an abstract socket
+     *
+     * @return address String
+     */
+    public static String createDynamicSessionAddress(boolean _listeningSocket, boolean _abstract) {
+        String address = "unix:";
+        String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
+        Random r = new Random();
+
+        do {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < 10; i++) {
+                sb.append((char) (Math.abs(r.nextInt()) % 26) + 65);
+            }
+            path = path.replaceAll("..........$", sb.toString());
+            LoggerFactory.getLogger(Util.class).trace("Trying path {}", path);
+        } while (new File(path).exists());
+
+        if (_abstract) {
+            address += "abstract=" + path;
+        } else {
+            address += "path=" + path;
+        }
+
+        if (_listeningSocket) {
+            address += ",listen=true";
+        }
+
+        address += ",guid=" + Util.genGUID();
+
+        LoggerFactory.getLogger(Util.class).debug("Created Session address: {}", address);
+
+        return address;
+    }
 }
