@@ -46,7 +46,8 @@ The library will remain open source and MIT licensed and can still be used, fork
 #### Changes
 
 ##### Changes in 4.1.1 (not yet released):
-   - nothing yet
+   - Deprecated `TransportBuilder.isListening(boolean)` as method name signals that a `boolean` is returned but `TransportBuilder` is returned. Please use `TransportBuilder.listening(boolean)` instead. Old method will be removed in 4.2.0
+   - Applied more PMD/CPD suggestions
 
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
