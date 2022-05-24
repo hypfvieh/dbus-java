@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Maven Build/Test Java 17
+name: Maven Build/Test JDK 17
 
 on:
   push:
@@ -22,5 +22,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Maven Build/Test Java 17
+    - name: Install Dbus
+      run: |
+          sudo apt-get update
+          sudo apt-get install -y dbus
+    - name: Build with Maven
       run: mvn -B package --file pom.xml
