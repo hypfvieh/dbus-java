@@ -27,8 +27,8 @@ import org.freedesktop.dbus.test.collections.empty.structs.MapArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructIntStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -58,14 +58,14 @@ import org.slf4j.LoggerFactory;
  */
 class TestEmptyCollections extends AbstractDBusBaseTest {
 
-	private DBusConnection serverconn;
-	private DBusConnection clientconn;
-	private ISampleCollectionInterface clientObj;
+	private static DBusConnection serverconn;
+	private static DBusConnection clientconn;
+	private static ISampleCollectionInterface clientObj;
 
-	@BeforeEach
-	public void setUp()  {
+	@BeforeAll
+	public static void setUp()  {
 		try {
-		    logger.debug("Initializing server and client");
+		    LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
 			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
 			clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
 			serverconn.setWeakReferences(true);
@@ -74,7 +74,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 			/** This exports an instance of the test class as the object /Test. */
 			ISampleCollectionInterface serverImpl = new SampleCollectionImpl();
 
-			logger.debug("Exporting sample collection");
+			LoggerFactory.getLogger(TestEmptyCollections.class).debug("Exporting sample collection");
 			serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
 
 			clientObj = clientconn.getRemoteObject(serverconn.getUniqueName(), serverImpl.getObjectPath(),
@@ -85,8 +85,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 
 	}
 
-	@AfterEach
-	public void tearDown() throws InterruptedException {
+	@AfterAll
+	public static void tearDown() throws InterruptedException {
 		DBusExecutionException dbee = serverconn.getError();
 		if (null != dbee) {
 			throw dbee;
@@ -115,9 +115,17 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("scenarios")
 	<T extends IEmptyCollectionStruct<?>> void testEmpty(ArgumentObj<T> arguments, String name) {
+	    logger.debug("Working on empty {}", name);
 		T object = arguments.factoryEmpty.apply(name);
 		String result = arguments.function.apply(clientObj, object);
 		assertEquals(object.getValidationValue(), result);
+
+		assertNull(serverconn.getError(), () -> {
+		    return "Exception in server connection:" + serverconn.getError().getMessage();
+		});
+		assertNull(clientconn.getError(), () -> {
+            return "Exception in client connection:" + serverconn.getError().getMessage();
+        });
 	}
 
 	/**
@@ -133,7 +141,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("scenarios")
 	<T extends IEmptyCollectionStruct<?>> void testNonEmpty(ArgumentObj<T> arguments, String name, String validationValue) {
-        logger.debug("Working on {}", name);
+        logger.debug("Working on non-empty {}", name);
 		T object = arguments.factoryNonEmpty.apply(name);
 		String result = arguments.function.apply(clientObj, object);
 		assertEquals(validationValue, result);
