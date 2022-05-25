@@ -118,7 +118,7 @@ public abstract class AbstractConnection implements Closeable {
 
     protected AbstractConnection(String _address, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
-        exportedObjects = new HashMap<>();
+        exportedObjects = Collections.synchronizedMap(new HashMap<>());
         importedObjects = new ConcurrentHashMap<>();
 
         exportedObjects.put(null, new ExportedObject(new GlobalHandler(this), weakreferences));
@@ -1112,7 +1112,7 @@ public abstract class AbstractConnection implements Closeable {
         return m;
     }
 
-    protected Map<String, ExportedObject> getExportedObjects() {
+    protected synchronized Map<String, ExportedObject> getExportedObjects() {
         return exportedObjects;
     }
 

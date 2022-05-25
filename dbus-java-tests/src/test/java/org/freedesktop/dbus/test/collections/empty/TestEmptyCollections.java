@@ -145,6 +145,13 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 		T object = arguments.factoryNonEmpty.apply(name);
 		String result = arguments.function.apply(clientObj, object);
 		assertEquals(validationValue, result);
+
+		assertNull(serverconn.getError(), () -> {
+            return "Exception in server connection:" + serverconn.getError().getMessage();
+        });
+        assertNull(clientconn.getError(), () -> {
+            return "Exception in client connection:" + serverconn.getError().getMessage();
+        });
 	}
 
 	/**
