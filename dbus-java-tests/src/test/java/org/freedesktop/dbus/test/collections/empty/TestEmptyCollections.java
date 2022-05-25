@@ -27,8 +27,8 @@ import org.freedesktop.dbus.test.collections.empty.structs.MapArrayStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructIntStruct;
 import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -58,12 +58,12 @@ import org.slf4j.LoggerFactory;
  */
 class TestEmptyCollections extends AbstractDBusBaseTest {
 
-	private static DBusConnection serverconn;
-	private static DBusConnection clientconn;
-	private static ISampleCollectionInterface clientObj;
+	private DBusConnection serverconn;
+	private DBusConnection clientconn;
+	private ISampleCollectionInterface clientObj;
 
-	@BeforeAll
-	public static void setUp()  {
+	@BeforeEach
+	public void setUp()  {
 		try {
 		    LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
 			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
@@ -85,8 +85,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 
 	}
 
-	@AfterAll
-	public static void tearDown() throws InterruptedException {
+	@AfterEach
+	public void tearDown() throws InterruptedException {
 		DBusExecutionException dbee = serverconn.getError();
 		if (null != dbee) {
 			throw dbee;
@@ -99,7 +99,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 		serverconn.disconnect();
 
 		// give the dbus daemon some time to unregister our calls before restarting test
-		Thread.sleep(800L);
+		//Thread.sleep(800L);
 	}
 
 	/**

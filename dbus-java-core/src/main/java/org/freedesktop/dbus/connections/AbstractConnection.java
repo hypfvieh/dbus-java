@@ -713,19 +713,19 @@ public abstract class AbstractConnection implements Closeable {
     private void handleMessage(final MethodCall _methodCall) throws DBusException {
         logger.debug("Handling incoming method call: {}", _methodCall);
 
-        ExportedObject eo;
+        ExportedObject exportObject;
         Method meth = null;
         Object o = null;
 
         if (null == _methodCall.getInterface() || _methodCall.getInterface().equals("org.freedesktop.DBus.Peer")
                 || _methodCall.getInterface().equals("org.freedesktop.DBus.Introspectable")) {
-            eo = getExportedObjects().get(null);
-            if (null != eo && null == eo.getObject().get()) {
+            exportObject = getExportedObjects().get(null);
+            if (null != exportObject && null == exportObject.getObject().get()) {
                 unExportObject(null);
-                eo = null;
+                exportObject = null;
             }
-            if (null != eo) {
-                meth = eo.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
+            if (null != exportObject) {
+                meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
             }
             if (null != meth) {
                 o = new GlobalHandler(this, _methodCall.getPath());
@@ -734,36 +734,36 @@ public abstract class AbstractConnection implements Closeable {
         if (null == o) {
             // now check for specific exported functions
 
-            eo = getExportedObjects().get(_methodCall.getPath());
-            if (null != eo && null == eo.getObject().get()) {
+            exportObject = getExportedObjects().get(_methodCall.getPath());
+            if (exportObject != null && exportObject.getObject().get() == null) {
                 logger.info("Unexporting {} implicitly", _methodCall.getPath());
                 unExportObject(_methodCall.getPath());
-                eo = null;
+                exportObject = null;
             }
 
-            if (null == eo) {
-                eo = fallbackContainer.get(_methodCall.getPath());
+            if (null == exportObject) {
+                exportObject = fallbackContainer.get(_methodCall.getPath());
             }
 
-            if (null == eo) {
+            if (null == exportObject) {
                 sendMessage(new Error(_methodCall,
                         new UnknownObject(_methodCall.getPath() + " is not an object provided by this process.")));
                 return;
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Searching for method {}  with signature {}", _methodCall.getName(), _methodCall.getSig());
-                logger.trace("List of methods on {}: ", eo);
-                for (MethodTuple mt : eo.getMethods().keySet()) {
-                    logger.trace("   {} => {}", mt, eo.getMethods().get(mt));
+                logger.trace("List of methods on {}: ", exportObject);
+                for (MethodTuple mt : exportObject.getMethods().keySet()) {
+                    logger.trace("   {} => {}", mt, exportObject.getMethods().get(mt));
                 }
             }
-            meth = eo.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
+            meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
             if (null == meth) {
                 sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
                         "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
                 return;
             }
-            o = eo.getObject().get();
+            o = exportObject.getObject().get();
         }
 
         if(ExportedObject.isExcluded(meth)) {
