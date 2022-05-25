@@ -139,7 +139,8 @@ public class DBusDaemon extends Thread implements Closeable {
                     for (WeakReference<ConnectionStruct> wc : wcs) {
                         ConnectionStruct c = wc.get();
                         if (null != c) {
-                            LOGGER.info("<inqueue> Got message {} from {}", m, c.unique);
+                            logMessage("<inqueue> Got message {} from {}", m, c.unique);
+
                             // check if they have hello'd
                             if (null == c.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
                                 send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
@@ -187,6 +188,19 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
+    }
+
+    private void logMessage(String _logStr, Message _m, String _connUniqueId) {
+        Object logMsg = _m;
+        if (_m != null && Introspectable.class.getName().equals(_m.getInterface()) && !LOGGER.isTraceEnabled()) {
+            logMsg = "<Introspection data only visible in loglevel trace>";
+        }
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(_logStr, logMsg, _connUniqueId);
+        } else {
+            LOGGER.debug(_logStr, _m, _connUniqueId);
+        }
     }
 
     public synchronized boolean isRunning() {
@@ -738,8 +752,7 @@ public class DBusDaemon extends Thread implements Closeable {
                         ConnectionStruct c = wc.get();
                         if (null != c) {
 
-                            logger.trace("<outqueue> Got message {} for {}", m, c.unique);
-                            logger.info("Sending message {} to {}", m, c.unique);
+                            logger.debug("<outqueue> Got message {} for {}", m, c.unique);
 
                             try {
                                 c.outputWriter.writeMessage(m);
@@ -795,7 +808,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
 
                 if (null != m) {
-                    LOGGER.info("Read {} from {}", m, conn.unique);
+                    logMessage("Read {} from {}", m, conn.unique);
 
                     synchronized (inqueue) {
                         inqueue.putLast(m, weakconn);
