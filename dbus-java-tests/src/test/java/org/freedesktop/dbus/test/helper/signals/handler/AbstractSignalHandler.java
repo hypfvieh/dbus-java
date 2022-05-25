@@ -1,11 +1,10 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.opentest4j.AssertionFailedError;
 
 /**
  * Base class for all signals which are tested.
@@ -16,6 +15,8 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
     private final AtomicInteger testRuns = new AtomicInteger(0);
 
     private final int expectedRuns;
+
+    protected AssertionFailedError assertionError;
 
     public AbstractSignalHandler(int _expectedRuns) {
         expectedRuns = _expectedRuns;
@@ -28,7 +29,8 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
     @Override
     public final void handle(T _s) { // should not be implemented by subclasses
         getTestRuns().incrementAndGet();
-        assertTrue(getExpectedRuns() <= getActualTestRuns(), "Signal received to often.");
+
+        setFailed(getExpectedRuns() > getActualTestRuns(), "Signal received to often.");
 
         System.out.println(getClass().getSimpleName() + " running");
 
@@ -45,6 +47,26 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
     public int getExpectedRuns() {
         return expectedRuns;
+    }
+
+    public void getAssertionError() {
+        if (assertionError != null) {
+            throw assertionError;
+        }
+    }
+
+    protected void setFailed(boolean _condition, String _message) {
+        if (_condition) {
+            assertionError = new AssertionFailedError(_message);
+            throw assertionError;
+        }
+    }
+
+    protected void setFailed(boolean _condition, String _message, Exception _ex) {
+        if (_condition) {
+            assertionError = new AssertionFailedError(_message, _ex);
+            throw assertionError;
+        }
     }
 
 }

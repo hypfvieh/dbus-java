@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import org.freedesktop.dbus.messages.DBusSignal;
 
 /**
@@ -16,6 +14,6 @@ public class BadArraySignalHandler<T extends DBusSignal> extends AbstractSignalH
     /** Handling a signal */
     @Override
     public void handleImpl(T s) {
-        fail("This signal handler shouldn't be called");
+        setFailed(false, "This signal handler shouldn't be called");
     }
 }

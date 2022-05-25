@@ -149,7 +149,7 @@ public class TestAll extends AbstractDBusBaseTest {
         logger.debug("done");
 
         logger.debug("Sending Signals");
-        
+
         /**
          * This creates an instance of the Test Signal, with the given object path, signal name and parameters, and
          * broadcasts in on the Bus.
@@ -202,6 +202,14 @@ public class TestAll extends AbstractDBusBaseTest {
         assertTrue(ensh.getActualTestRuns() == 1, "EnumSignalHandler should have been called");
         assertTrue(psh.getActualTestRuns() == 1, "PathSignalHandler should have been called");
         assertTrue(osh.getActualTestRuns() == 1, "ObjectSignalHandler should have been called");
+
+        assertDoesNotThrow(() -> sigh.getAssertionError());
+        assertDoesNotThrow(() -> esh.getAssertionError());
+        assertDoesNotThrow(() -> rsh.getAssertionError());
+        assertDoesNotThrow(() -> ash.getAssertionError());
+        assertDoesNotThrow(() -> ensh.getAssertionError());
+        assertDoesNotThrow(() -> psh.getAssertionError());
+        assertDoesNotThrow(() -> osh.getAssertionError());
 
         /** Remove sig handler */
         clientconn.removeSigHandler(SampleSignals.TestSignal.class, sigh);
@@ -445,7 +453,7 @@ public class TestAll extends AbstractDBusBaseTest {
             tri.thisShouldBeIgnored();
         });
     }
-    
+
     public void testFrob() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         logger.debug("frobnicating");
@@ -473,7 +481,7 @@ public class TestAll extends AbstractDBusBaseTest {
         logger.debug("Doing stuff asynchronously with callback");
         CallbackHandlerImpl cbWhichWorks = new CallbackHandlerImpl();
         clientconn.callWithCallback(tri, "getName", cbWhichWorks);
-        
+
         logger.debug("Doing stuff asynchronously with callback, which throws an error");
         CallbackHandlerImpl cbWhichThrows = new CallbackHandlerImpl();
         clientconn.callWithCallback(tri, "getNameAndThrow", cbWhichThrows);
@@ -650,7 +658,7 @@ public class TestAll extends AbstractDBusBaseTest {
         assertEquals(-18, is.get(4).intValue());
     }
 
-   
+
     public void testSerialization() throws DBusException {
         SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
         List<Integer> v = new ArrayList<>();

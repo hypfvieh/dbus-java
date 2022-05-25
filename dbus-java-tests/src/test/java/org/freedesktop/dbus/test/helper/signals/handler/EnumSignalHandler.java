@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Arrays;
 
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
@@ -19,7 +17,7 @@ public class EnumSignalHandler extends AbstractSignalHandler<SampleSignals.TestE
     /** Handling a signal */
     @Override
     public void handleImpl(SampleSignals.TestEnumSignal t) {
-    	assertEquals(TestEnum.TESTVAL1, t.getEnum());
-    	assertEquals(Arrays.asList(TestEnum.TESTVAL2, TestEnum.TESTVAL3), t.getEnums());
+        setFailed(TestEnum.TESTVAL1 != t.getEnum(), "Invalid enum value: " + t.getEnum());
+        setFailed(!Arrays.asList(TestEnum.TESTVAL2, TestEnum.TESTVAL3).equals(t.getEnums()), "Invalid enum values: " + t.getEnums());
     }
 }

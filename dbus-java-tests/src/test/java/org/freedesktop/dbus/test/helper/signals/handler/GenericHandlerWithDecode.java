@@ -4,15 +4,15 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.opentest4j.AssertionFailedError;
 
 
 public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
 
     private final UInt32 expectedIntResult;
     private final String expectedStringResult;
+
+    protected AssertionFailedError assertionError;
 
     private Object[] parameters;
 
@@ -23,10 +23,10 @@ public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
 
     @Override
     public void handle(DBusSignal s) {
-        try{
+        try {
             parameters = s.getParameters();
-        }catch( DBusException ex ){
-            fail( "Unexpected DBusException", ex );
+        } catch (DBusException ex) {
+            setFailed(false, "Unexpected DBusException", ex);
         }
     }
 
@@ -38,15 +38,33 @@ public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
         return expectedStringResult;
     }
 
-    public void incomingSameAsExpected(){
-        assertNotNull( parameters );
-        assertEquals( parameters.length, 2 );
+    public Throwable getAssertionError() {
+        return assertionError;
+    }
+
+    protected void setFailed(boolean _condition, String _message) {
+        if (!_condition) {
+            assertionError = new AssertionFailedError(_message);
+            throw assertionError;
+        }
+    }
+
+    protected void setFailed(boolean _condition, String _message, Exception _ex) {
+        if (!_condition) {
+            assertionError = new AssertionFailedError(_message, _ex);
+            throw assertionError;
+        }
+    }
+
+    public void incomingSameAsExpected() {
+        setFailed(parameters != null, "No parameters");
+        setFailed(parameters.length == 2, "2 parameters expected but " + parameters.length + " found");
 
         if (expectedIntResult != null) {
-            assertEquals((UInt32)parameters[0], getExpectedIntResult(), "Retrieved int does not match.");
+            setFailed(parameters[0].equals(getExpectedIntResult()), "Retrieved int does not match.");
         }
         if (expectedStringResult != null) {
-            assertEquals((String)parameters[1], getExpectedStringResult(), "Retrieved string does not match.");
+            setFailed(parameters[1].equals(getExpectedStringResult()), "Retrieved string does not match.");
         }
     }
 
