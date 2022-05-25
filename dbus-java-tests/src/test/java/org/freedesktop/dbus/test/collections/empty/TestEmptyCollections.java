@@ -65,6 +65,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@BeforeEach
 	public void setUp()  {
 		try {
+		    logger.debug("Initializing server and client");
 			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
 			clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
 			serverconn.setWeakReferences(true);
@@ -72,6 +73,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 
 			/** This exports an instance of the test class as the object /Test. */
 			ISampleCollectionInterface serverImpl = new SampleCollectionImpl();
+
+			logger.debug("Exporting sample collection");
 			serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
 
 			clientObj = clientconn.getRemoteObject(serverconn.getUniqueName(), serverImpl.getObjectPath(),
@@ -130,6 +133,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("scenarios")
 	<T extends IEmptyCollectionStruct<?>> void testNonEmpty(ArgumentObj<T> arguments, String name, String validationValue) {
+        logger.debug("Working on {}", name);
 		T object = arguments.factoryNonEmpty.apply(name);
 		String result = arguments.function.apply(clientObj, object);
 		assertEquals(validationValue, result);
