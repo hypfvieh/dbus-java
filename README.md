@@ -1,3 +1,5 @@
+[![Maven Build/Test JDK 17](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml)
+
 # dbus-java
  - Legacy 3.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
  - Javadoc 3.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java)
