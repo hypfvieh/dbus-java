@@ -18,7 +18,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit5.version>5.8.2</junit5.version>
-        <pmd.version>6.45.0</pmd.version>
+        <pmd.version>6.46.0</pmd.version>
         <parentDir>${project.basedir}</parentDir>
     </properties>
 
