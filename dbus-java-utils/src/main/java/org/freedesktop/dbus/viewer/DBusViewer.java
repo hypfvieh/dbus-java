@@ -101,7 +101,7 @@ public class DBusViewer {
 
 
     /**
-     * @param args _args
+     * @param _args unused
      */
     public static void main(String[] _args) {
         new DBusViewer(CONNECTION_TYPES);
