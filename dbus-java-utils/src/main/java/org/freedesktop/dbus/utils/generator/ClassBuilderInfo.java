@@ -177,7 +177,7 @@ public class ClassBuilderInfo {
 
     /**
      * Create the Java source for the class information provided.
-     * 
+     *
      * @return String
      */
     public String createClassFileContent() {
@@ -308,7 +308,7 @@ public class ClassBuilderInfo {
             String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
 
             if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, allImports)).collect(Collectors.joining(", ")) + ">";
+                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")) + ">";
             }
 
             String getterSetterName = Util.snakeToCamelCase(Util.upperCaseFirstChar(member.getName()));
@@ -361,7 +361,7 @@ public class ClassBuilderInfo {
 
     /**
      * Create the filename with path this java class should use.
-     * 
+     *
      * @return String, null if class name was null
      */
     public String getFileName() {
@@ -377,7 +377,7 @@ public class ClassBuilderInfo {
 
     /**
      * Creates the fully qualified classname based on the provided classname and package.
-     * 
+     *
      * @return String
      */
     public String getFqcn() {
@@ -386,7 +386,7 @@ public class ClassBuilderInfo {
 
     /**
      * Extract the class name from a given FQCN (fully qualified classname).
-     * 
+     *
      * @param _fqcn fqcn to analyze
      * @return classname, null if input was null
      */
@@ -577,7 +577,7 @@ public class ClassBuilderInfo {
 
             if (!getGenerics().isEmpty()) {
                 sb.append("<")
-                        .append(getGenerics().stream().map(c -> TypeConverter.getProperJavaClass(c, _allImports)).collect(Collectors.joining(", ")))
+                        .append(getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")))
                         .append(">");
             }
 

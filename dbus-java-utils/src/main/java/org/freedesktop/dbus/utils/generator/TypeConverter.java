@@ -90,7 +90,7 @@ public class TypeConverter {
      * @param _usePrimitives if true, boxed types will be converted to primitives
      * @return converted type or original input
      */
-    private static String convertJavaType(String _fqcn, boolean _usePrimitives) {
+    public static String convertJavaType(String _fqcn, boolean _usePrimitives) {
         if (_fqcn == null) {
             return _fqcn;
         }

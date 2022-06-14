@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+    <interface name="org.example">
+        <method name="ExampleMethod">
+            <arg type="(ai)" name="exampleArg" />
+        </method>
+    </interface>
+</node>

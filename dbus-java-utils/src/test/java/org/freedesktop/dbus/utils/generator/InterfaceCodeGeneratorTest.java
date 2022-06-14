@@ -94,4 +94,32 @@ class InterfaceCodeGeneratorTest {
         }
     }
 
+    @Test
+    void testCreateSampleStructArgs() {
+        String objectPath = "/";
+        String busName = "org.example";
+        boolean ignoreDtd = true;
+
+        Logger logger = LoggerFactory.getLogger(InterfaceCodeGenerator.class);
+
+        if (!StringUtils.isBlank(busName)) {
+            String introspectionData = Util.readFileToString(new File("src/test/resources/CreateInterface/sample_struct_args.xml"));
+
+            InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
+            try {
+                Map<File, String> analyze = ci2.analyze(ignoreDtd);
+
+                assertEquals(2, analyze.size()); // class with method and struct class expected
+
+                String clzContent = analyze.get(new File("org", "ExampleMethodStruct.java"));
+
+                assertTrue(clzContent.contains("@Position(0)"), "Position annotation expected");
+                assertTrue(clzContent.contains("private final List<Integer> member0;"), "Final List<Integer> member expected");
+                assertTrue(clzContent.contains("public ExampleMethodStruct(List<Integer> member0)"), "Constructor using List<Integer> expected");
+                assertTrue(clzContent.contains("public List<Integer> getMember0()"), "Getter for Member of type List<Integer> expected");
+            } catch (Exception _ex) {
+                logger.error("Error while analyzing introspection data", _ex);
+            }
+        }
+    }
 }
