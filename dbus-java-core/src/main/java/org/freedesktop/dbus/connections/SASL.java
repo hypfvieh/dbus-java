@@ -119,8 +119,8 @@ public class SASL {
 
         // acquire lock
         long start = System.currentTimeMillis();
-        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) {
-            ;
+        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) { //NOPMD
+
         }
 
         // read old file
@@ -216,7 +216,7 @@ public class SASL {
         return new String(res);
     }
 
-   
+
 
     public SASL.Command receive(SocketChannel _sock) throws IOException {
         StringBuffer sb = new StringBuffer();
@@ -482,7 +482,7 @@ public class SASL {
                                 state = SaslAuthState.FAILED;
                             } else {
                                 current = retVal;
-                            }                            
+                            }
                             break;
                         case ERROR:
                             // when asking for file descriptor support, ERROR means FD support is not supported
@@ -715,7 +715,7 @@ public class SASL {
 
     /**
      * Handle reject of authentication.
-     * 
+     *
      * @param _available
      * @param _luid
      * @param _sock socketchannel
@@ -736,7 +736,7 @@ public class SASL {
         }
         return current;
     }
-    
+
     /**
      * Tries to get the UID (user ID) of the current JVM process.
      * Will always return 0 on windows.
