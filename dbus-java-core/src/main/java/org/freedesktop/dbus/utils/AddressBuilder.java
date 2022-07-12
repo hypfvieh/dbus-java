@@ -8,8 +8,13 @@ import java.util.Properties;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 
 public class AddressBuilder {
-    public static final String DEFAULT_SYSTEM_BUS_ADDRESS = "unix:path=/var/run/dbus/system_bus_socket";
-    private static final String DBUS_MACHINE_ID_SYS_VAR = "DBUS_MACHINE_ID_LOCATION";
+    private static final String DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
+    public static final String  DEFAULT_SYSTEM_BUS_ADDRESS     = "unix:path=/var/run/dbus/system_bus_socket";
+
+    private static final String DBUS_MACHINE_ID_SYS_VAR        = "DBUS_MACHINE_ID_LOCATION";
+
+    private static final String DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
+    private static final String DBUS_SESSION_BUS_ADDRESS_MACOS = "DBUS_LAUNCHD_SESSION_BUS_SOCKET";
 
     /**
      * Determine the address of the DBus system connection.
@@ -17,7 +22,7 @@ public class AddressBuilder {
      * @return String
      */
     public static String getSystemConnection() {
-        String bus = System.getenv("DBUS_SYSTEM_BUS_ADDRESS");
+        String bus = System.getenv(DBUS_SYSTEM_BUS_ADDRESS);
         if (bus == null) {
             bus = DEFAULT_SYSTEM_BUS_ADDRESS;
         }
@@ -25,18 +30,24 @@ public class AddressBuilder {
     }
 
     /**
-     * Retrieves the connection address to connect to the DBus session-bus.
+     * Retrieves the connection address to connect to the DBus session-bus.<br>
+     * Will return TCP connection when no unix transport found and TCP is available.
+     *
      * @param _dbusMachineIdFile alternative location of dbus machine id file, use null if not needed
+     *
      * @return address
+     *
+     * @throws AddressResolvingException when no suitable address can be found for any available transport
      */
     public static String getSessionConnection(String _dbusMachineIdFile) {
+
         String s = null;
 
         // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
         if (Util.isMacOs()) {
-            s = "unix:path=" + System.getenv("DBUS_LAUNCHD_SESSION_BUS_SOCKET");
+            s = "unix:path=" + System.getenv(DBUS_SESSION_BUS_ADDRESS_MACOS);
         } else { // all others (linux)
-            s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
+            s = System.getenv(DBUS_SESSION_BUS_ADDRESS);
         }
 
         if (s == null) {
@@ -55,13 +66,13 @@ public class AddressBuilder {
             String homedir = System.getProperty("user.home");
             File addressfile = new File(homedir + "/.dbus/session-bus",
                     uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
-            
+
             if (!addressfile.exists()) {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address");
             }
-            
+
             Properties readProperties = Util.readProperties(addressfile);
-            String sessionAddress = readProperties.getProperty("DBUS_SESSION_BUS_ADDRESS");
+            String sessionAddress = readProperties.getProperty(DBUS_SESSION_BUS_ADDRESS);
 
             if (Util.isEmpty(sessionAddress)) {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address");
@@ -80,7 +91,7 @@ public class AddressBuilder {
 
     /**
      * Extracts the machine-id usually found on Linux in various system directories, or
-     * generate a fake id for non-Linux platforms. 
+     * generate a fake id for non-Linux platforms.
      *
      * @param _dbusMachineIdFile alternative location of dbus machine id file, null if not needed
      * @return machine-id string, never null
@@ -106,7 +117,7 @@ public class AddressBuilder {
      * Tries to find the DBus machine-id file in different locations.
      *
      * @param _dbusMachineIdFile alternative location of dbus machine id file
-     * 
+     *
      * @return File with machine-id
      */
     private static File determineMachineIdFile(String _dbusMachineIdFile) {

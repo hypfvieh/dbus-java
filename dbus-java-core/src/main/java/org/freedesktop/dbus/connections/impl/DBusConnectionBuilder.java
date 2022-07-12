@@ -10,6 +10,7 @@ import org.freedesktop.dbus.connections.ReceivingService;
 import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.exceptions.AddressResolvingException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.Message.Endian;
@@ -52,11 +53,10 @@ public class DBusConnectionBuilder {
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        String address = AddressBuilder.getSessionConnection(_machineIdFileLocation);
-        address = tcpFallback(address);
-        if (address == null) {
-            throw new IllegalArgumentException("No valid connection address found for any transport");
-        }
+        String address = TransportBuilder.getRegisteredBusTypes().contains("UNIX") ? // unix socket provider available
+                AddressBuilder.getSessionConnection(_machineIdFileLocation) // use session based on file/environment
+                    : System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY); // use TCP fallback when no unix socket provider found
+        address = validateTransportAddress(address);
         DBusConnectionBuilder instance = new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
         return instance;
     }
@@ -68,7 +68,7 @@ public class DBusConnectionBuilder {
      */
     public static DBusConnectionBuilder forSystemBus() {
         String address = AddressBuilder.getSystemConnection();
-        address = tcpFallback(address);
+        address = validateTransportAddress(address);
         return new DBusConnectionBuilder(address, getDbusMachineId(null));
     }
 
@@ -121,6 +121,48 @@ public class DBusConnectionBuilder {
         return instance;
     }
 
+    /**
+     * Checks if the given address can be used with the available transports.
+     * Will fallback to TCP if no address given and TCP transport is available.
+     *
+     * @param _address address to check
+     * @return address, maybe fallback address
+     */
+    private static String validateTransportAddress(String _address) {
+        if (TransportBuilder.getRegisteredBusTypes().isEmpty()) {
+            throw new IllegalArgumentException("No transports found to connect to DBus. Please add at least one transport provider to your classpath.'");
+        }
+
+        String address = _address == null ? "" : _address;
+
+        // no unix transport but address wants to use a unix socket
+        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
+                && address != null
+                && address.startsWith("unix:path=")) {
+            throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath.'");
+        }
+
+        // no tcp transport but TCP address given
+        if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
+                && address != null
+                && address.startsWith("tcp")) {
+            throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath.'");
+        }
+
+        // no address given, no unix transport available but TCP -> use TCP fallback
+        if (address.isBlank() && !TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
+                && TransportBuilder.getRegisteredBusTypes().contains("TCP")) {
+
+            address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
+            if (address == null || address.isBlank()) {
+                throw new IllegalArgumentException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
+            }
+
+        }
+
+        return address;
+
+    }
     /**
      * Register the new connection on DBus using 'hello' message. Default is true.
      *
@@ -276,26 +318,6 @@ public class DBusConnectionBuilder {
         DBusConnection.setEndianness(endianess);
         c.connect(registerSelf);
         return c;
-    }
-
-    /**
-     * Helper to use TCP fallback address when no UNIX address is found or no UNIX transport found.
-     *
-     * @param _address address which would be used if no fallback is used
-     * @return input address or fallback address
-     */
-    private static String tcpFallback(String _address) {
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
-                && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (_address == null || _address.startsWith("unix"))) { // no address or unix socket address
-
-            // no UNIX transport available, or lookup did not return anything useful
-            _address = System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
-            if (_address == null || _address.isBlank()) {
-                throw new IllegalArgumentException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
-            }
-        }
-        return _address;
     }
 
     /**
