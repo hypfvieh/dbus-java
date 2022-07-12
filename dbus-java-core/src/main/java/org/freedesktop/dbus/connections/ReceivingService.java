@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.connections;
 
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,24 +14,24 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Service providing threads for every type of message expected to be received by DBus.
- * 
+ *
  * @author hypfvieh
  * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
     private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig(1, 1, 4, 1);
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private boolean closed = false;
-    
-    private final Map<ExecutorNames, ExecutorService> executors = new EnumMap<>(ExecutorNames.class);
-    
+
+    private final Map<ExecutorNames, ExecutorService> executors = new ConcurrentHashMap<>();
+
     /**
      * Creates a new instance.
-     * 
+     *
      * @param _rsCfg configuration
      */
-    public ReceivingService(ReceivingServiceConfig _rsCfg) {
+    ReceivingService(ReceivingServiceConfig _rsCfg) {
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(DEFAULT_CFG);
         executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true)));
         executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true)));
@@ -40,7 +40,7 @@ public class ReceivingService {
         executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
         executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
     }
-    
+
     /**
      * Execute a runnable which handles a signal.
      * @param _r runnable
@@ -72,7 +72,7 @@ public class ReceivingService {
     void execMethodReturnHandler(Runnable _r) {
         execOrFail(ExecutorNames.METHODRETURN, _r);
     }
-    
+
     /**
      * Executes a runnable in a given executor.
      * @param _executor executor to use
@@ -82,19 +82,21 @@ public class ReceivingService {
         if (_r == null || _executor == null) { // ignore invalid runnables or executors
             return;
         }
+
         ExecutorService exec = executors.get(_executor);
-        if (closed || exec.isShutdown() || exec.isTerminated()) {
+        if (exec == null) { // this should never happen, map is initialized in constructor
+            throw new IllegalStateException("No executor found for " + _executor);
+        } else if (closed || exec.isShutdown() || exec.isTerminated()) {
             throw new IllegalStateException("Receiving service already closed");
         }
         exec.execute(_r);
     }
-    
+
     /**
      * Shutdown all executor services waiting up to the given timeout/unit.
-     *  
+     *
      * @param _timeout timeout
      * @param _unit time unit
-     * @throws InterruptedException when interrupted while waiting
      */
     public synchronized void shutdown(int _timeout, TimeUnit _unit) {
         for (Entry<ExecutorNames, ExecutorService> es : executors.entrySet()) {
@@ -124,10 +126,10 @@ public class ReceivingService {
             }
         }
     }
-    
+
     /**
      * Enum representing different executor services.
-     * 
+     *
      * @author hypfvieh
      * @version 4.0.1 - 2022-02-02
      */
@@ -136,9 +138,9 @@ public class ReceivingService {
         ERROR("ErrorExecutor"),
         METHODCALL("MethodCallExecutor"),
         METHODRETURN("MethodReturnExecutor");
-        
+
         private final String description;
-        
+
         ExecutorNames(String _name) {
             description = _name;
         }
@@ -146,13 +148,13 @@ public class ReceivingService {
         public String getDescription() {
             return description;
         }
-        
+
         @Override
         public String toString() {
             return description;
         }
     }
-    
+
     public static final class ReceivingServiceConfig {
         private final int signalThreadPoolSize;
         private final int errorThreadPoolSize;
@@ -182,6 +184,6 @@ public class ReceivingService {
         public int getMethodReturnThreadPoolSize() {
             return methodReturnThreadPoolSize;
         }
-        
+
     }
 }
