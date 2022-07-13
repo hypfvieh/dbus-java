@@ -63,11 +63,13 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 	private ISampleCollectionInterface clientObj;
 
 	@BeforeEach
-	public void setUp()  {
+	public void setUp() throws InterruptedException  {
 		try {
 		    LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
 			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+			waitIfTcp();
 			clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+			waitIfTcp();
 			serverconn.setWeakReferences(true);
 			clientconn.setWeakReferences(true);
 
@@ -76,6 +78,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 
 			LoggerFactory.getLogger(TestEmptyCollections.class).debug("Exporting sample collection");
 			serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
+			waitIfTcp();
 
 			clientObj = clientconn.getRemoteObject(serverconn.getUniqueName(), serverImpl.getObjectPath(),
 					ISampleCollectionInterface.class);
@@ -96,10 +99,9 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 			throw dbee;
 		}
 		clientconn.disconnect();
+		waitIfTcp();
 		serverconn.disconnect();
-
-		// give the dbus daemon some time to unregister our calls before restarting test
-		//Thread.sleep(800L);
+		waitIfTcp();
 	}
 
 	/**
