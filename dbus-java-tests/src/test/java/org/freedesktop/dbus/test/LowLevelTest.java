@@ -25,6 +25,7 @@ public class LowLevelTest extends AbstractDBusBaseTest {
         logger.debug("Testing using address: {}", address);
 
         try (AbstractTransport conn = TransportBuilder.create(address).build()) {
+            waitIfTcp();
             Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
             conn.writeMessage(m);
             waitIfTcp();

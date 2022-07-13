@@ -33,6 +33,7 @@ import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -798,7 +799,7 @@ public class SASL {
 
         public Command(String _s) throws IOException {
             String[] ss = _s.split(" ");
-            logger.trace("Creating command from: {}", Arrays.toString(ss));
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
             if (0 == col.compare(ss[0], "OK")) {
                 command = SaslCommand.OK;
                 data = ss[1];
