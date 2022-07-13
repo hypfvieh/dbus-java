@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
-    private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig(1, 1, 4, 1);
+    private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig(1, 1, 4, 1, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY);
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private boolean closed = false;
@@ -160,13 +160,22 @@ public class ReceivingService {
         private final int errorThreadPoolSize;
         private final int methodCallThreadPoolSize;
         private final int methodReturnThreadPoolSize;
+        private final int signalThreadPriority;
+        private final int methodCallThreadPriority;
+        private final int errorThreadPriority;
+        private final int methodReturnThreadPriority;
 
         public ReceivingServiceConfig(int _signalThreadPoolSize, int _errorThreadPoolSize,
-                int _methodCallThreadPoolSize, int _methodReturnThreadPoolSize) {
+                int _methodCallThreadPoolSize, int _methodReturnThreadPoolSize,
+                int _signalThreadPriority, int _errorThreadPriority, int _methodCallThreadPriority, int _methodReturnThreadPriority) {
             signalThreadPoolSize = _signalThreadPoolSize;
             errorThreadPoolSize = _errorThreadPoolSize;
             methodCallThreadPoolSize = _methodCallThreadPoolSize;
             methodReturnThreadPoolSize = _methodReturnThreadPoolSize;
+            signalThreadPriority = _signalThreadPriority;
+            methodCallThreadPriority = _methodCallThreadPriority;
+            errorThreadPriority = _errorThreadPriority;
+            methodReturnThreadPriority = _methodReturnThreadPriority;
         }
 
         public int getSignalThreadPoolSize() {
@@ -183,6 +192,22 @@ public class ReceivingService {
 
         public int getMethodReturnThreadPoolSize() {
             return methodReturnThreadPoolSize;
+        }
+
+        public int getSignalThreadPriority() {
+            return signalThreadPriority;
+        }
+
+        public int getMethodCallThreadPriority() {
+            return methodCallThreadPriority;
+        }
+
+        public int getErrorThreadPriority() {
+            return errorThreadPriority;
+        }
+
+        public int getMethodReturnThreadPriority() {
+            return methodReturnThreadPriority;
         }
 
     }

@@ -504,4 +504,24 @@ public final class Util {
 
         return address;
     }
+
+
+    /**
+     * Checks if given value is greater or equal to the given minimum and less or equal to the given maximum.
+     *
+     * @param _check value to check
+     * @param _min minimum allowed value (including)
+     * @param _max maximum allowed value (including)
+     *
+     * @return given value if in range
+     * @throws IllegalArgumentException when given value is out of range
+     *
+     * @since 4.1.1 - 2022-07-13
+     */
+    public static int checkIntInRange(int _check, int _min, int _max) {
+        if (_check >= _min && _check <= _max) {
+            return _check;
+        }
+        throw new IllegalArgumentException("Value " + _check + " is out ouf range (< " + _min + " && > " + _max + ")");
+    }
 }
