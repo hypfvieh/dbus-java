@@ -41,6 +41,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
 
     public ReceivingServiceConfigBuilder(Supplier<R> _bldr) {
         connectionBuilder = _bldr;
+        config.setRetryHandler(DEFAULT_RETRYHANDLER);
     }
 
     /**
@@ -158,14 +159,13 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     }
 
     /**
-     * Sets the thread priority of the created signal thread(s).
+     * Sets the retry handler which should be called when executing a runnable in {@link ReceivingService} thread pools fail.
      * <p>
-     * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
+     * Defaults to an implementation retrying executing the runnable up to ten times.
+     * If <code>null</code> is given, retrying will be disabled (but error will be logged).
      *
-     * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
+     * @param _handler handler to use
      * @return this
-     *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
      */
     public ReceivingServiceConfigBuilder<R> withRetryHandler(IThreadPoolRetryHandler _handler) {
         config.setRetryHandler(_handler);
