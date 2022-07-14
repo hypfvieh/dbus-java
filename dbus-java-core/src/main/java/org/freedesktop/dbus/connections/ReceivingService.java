@@ -83,15 +83,6 @@ public class ReceivingService {
 
     /**
      * Executes a runnable in a given executor.
-     * @param _executor executor to use
-     * @param _r runnable
-     */
-    void execOrFail(ExecutorNames _executor, Runnable _r) {
-        execOrFail(_executor, _r, 0);
-    }
-
-    /**
-     * Executes a runnable in a given executor.
      * May retry execution if {@link ExecutorService} has thrown an exception and retry handler
      * allows re-processing.
      * When re-processing fails for {@value #MAX_RETRIES} or more retries, an error will be logged
@@ -99,34 +90,40 @@ public class ReceivingService {
      *
      * @param _executor executor to use
      * @param _r runnable
-     * @param _failCount count of retries
      */
-    void execOrFail(ExecutorNames _executor, Runnable _r, int _failCount) {
+    void execOrFail(ExecutorNames _executor, Runnable _r) {
         if (_r == null || _executor == null) { // ignore invalid runnables or executors
             return;
         }
-        try {
-            ExecutorService exec = executors.get(_executor);
-            if (exec == null) { // this should never happen, map is initialized in constructor
-                throw new IllegalThreadPoolStateException("No executor found for " + _executor);
-            } else if (closed || exec.isShutdown() || exec.isTerminated()) {
-                throw new IllegalThreadPoolStateException("Receiving service already closed");
-            }
-            exec.execute(_r);
-        } catch (IllegalThreadPoolStateException _ex) { // just throw our exception
-            throw _ex;
-        } catch (Exception _ex) {
-            if (retryHandler == null) {
-                logger.error("Could not handle runnable for executor {}, runnable will be dropped", _executor, _ex);
-            } else if (_failCount < MAX_RETRIES) {
-                if (retryHandler.handle(_executor, _ex)) {
-                    execOrFail(_executor, _r, _failCount++);
-                } else {
-                    logger.debug("Ignoring unhandled runnable for executor {} due to {}, dropped by retry handler", _executor, _ex.getClass().getName());
+
+        int failCount = 0;
+        while (failCount < MAX_RETRIES) {
+            try {
+                ExecutorService exec = executors.get(_executor);
+                if (exec == null) { // this should never happen, map is initialized in constructor
+                    throw new IllegalThreadPoolStateException("No executor found for " + _executor);
+                } else if (closed || exec.isShutdown() || exec.isTerminated()) {
+                    throw new IllegalThreadPoolStateException("Receiving service already closed");
                 }
-            } else {
-                logger.error("Could not handle runnable for executor {} after {} retries, runnable will be dropped", _executor, _failCount);
+                exec.execute(_r);
+                break; // execution done, no retry needed
+            } catch (IllegalThreadPoolStateException _ex) { // just throw our exception
+                throw _ex;
+            } catch (Exception _ex) {
+                if (retryHandler == null) {
+                    logger.error("Could not handle runnable for executor {}, runnable will be dropped", _executor, _ex);
+                    break; // no handler, assume ignoring runnable is ok
+                }
+
+                failCount++;
+                if (!retryHandler.handle(_executor, _ex)) {
+                    logger.trace("Ignoring unhandled runnable for executor {} due to {}, dropped by retry handler", _executor, _ex.getClass().getName());
+                }
             }
+        }
+
+        if (failCount >= MAX_RETRIES) {
+            logger.error("Could not handle runnable for executor {} after {} retries, runnable will be dropped", _executor, failCount);
         }
     }
 

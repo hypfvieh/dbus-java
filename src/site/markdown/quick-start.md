@@ -102,7 +102,7 @@ The handler will receive the executor type (`ExecutorNames` enum value) which fa
 exception which was thrown in that case.
 It should return `true` if the execution should be retried, or `false` to ignore the runnable.
 
-In any case there is a 'hard' limit of retries (to avoid `StackOverflowError`s) which is 50 currently.
+In any case there is a 'hard' limit of retries (to avoid spinning up CPU without any use) which is 50 currently.
 After that hard limit is reached, error will be logged and runnable will be ignored.
 
 You can also set the configured retry handler to `null` which will cause the `ReceivingService` log an error (including exception) and ignoring the failed runnable.
