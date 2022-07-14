@@ -8,6 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +22,15 @@ import org.slf4j.LoggerFactory;
  * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
-    private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig(1, 1, 4, 1, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY, Thread.NORM_PRIORITY);
+    private static final int MAX_RETRIES = 50;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private boolean closed = false;
 
     private final Map<ExecutorNames, ExecutorService> executors = new ConcurrentHashMap<>();
+
+    private final IThreadPoolRetryHandler retryHandler;
 
     /**
      * Creates a new instance.
@@ -32,13 +38,15 @@ public class ReceivingService {
      * @param _rsCfg configuration
      */
     ReceivingService(ReceivingServiceConfig _rsCfg) {
-        ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(DEFAULT_CFG);
+        ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
         executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true)));
         executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true)));
 
         // we need multiple threads here so recursive method calls are possible
         executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
         executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
+
+        retryHandler = _rsCfg.getRetryHandler();
     }
 
     /**
@@ -79,17 +87,47 @@ public class ReceivingService {
      * @param _r runnable
      */
     void execOrFail(ExecutorNames _executor, Runnable _r) {
+        execOrFail(_executor, _r, 0);
+    }
+
+    /**
+     * Executes a runnable in a given executor.
+     * May retry execution if {@link ExecutorService} has thrown an exception and retry handler
+     * allows re-processing.
+     * When re-processing fails for {@value #MAX_RETRIES} or more retries, an error will be logged
+     * and the runnable will not be executed.
+     *
+     * @param _executor executor to use
+     * @param _r runnable
+     * @param _failCount count of retries
+     */
+    void execOrFail(ExecutorNames _executor, Runnable _r, int _failCount) {
         if (_r == null || _executor == null) { // ignore invalid runnables or executors
             return;
         }
-
-        ExecutorService exec = executors.get(_executor);
-        if (exec == null) { // this should never happen, map is initialized in constructor
-            throw new IllegalStateException("No executor found for " + _executor);
-        } else if (closed || exec.isShutdown() || exec.isTerminated()) {
-            throw new IllegalStateException("Receiving service already closed");
+        try {
+            ExecutorService exec = executors.get(_executor);
+            if (exec == null) { // this should never happen, map is initialized in constructor
+                throw new IllegalThreadPoolStateException("No executor found for " + _executor);
+            } else if (closed || exec.isShutdown() || exec.isTerminated()) {
+                throw new IllegalThreadPoolStateException("Receiving service already closed");
+            }
+            exec.execute(_r);
+        } catch (IllegalThreadPoolStateException _ex) { // just throw our exception
+            throw _ex;
+        } catch (Exception _ex) {
+            if (retryHandler == null) {
+                logger.error("Could not handle runnable for executor {}, runnable will be dropped", _executor, _ex);
+            } else if (_failCount < MAX_RETRIES) {
+                if (retryHandler.handle(_executor, _ex)) {
+                    execOrFail(_executor, _r, _failCount++);
+                } else {
+                    logger.debug("Ignoring unhandled runnable for executor {} due to {}, dropped by retry handler", _executor, _ex.getClass().getName());
+                }
+            } else {
+                logger.error("Could not handle runnable for executor {} after {} retries, runnable will be dropped", _executor, _failCount);
+            }
         }
-        exec.execute(_r);
     }
 
     /**
@@ -133,7 +171,7 @@ public class ReceivingService {
      * @author hypfvieh
      * @version 4.0.1 - 2022-02-02
      */
-    enum ExecutorNames {
+    public enum ExecutorNames {
         SIGNAL("SignalExecutor"),
         ERROR("ErrorExecutor"),
         METHODCALL("MethodCallExecutor"),
@@ -155,60 +193,27 @@ public class ReceivingService {
         }
     }
 
-    public static final class ReceivingServiceConfig {
-        private final int signalThreadPoolSize;
-        private final int errorThreadPoolSize;
-        private final int methodCallThreadPoolSize;
-        private final int methodReturnThreadPoolSize;
-        private final int signalThreadPriority;
-        private final int methodCallThreadPriority;
-        private final int errorThreadPriority;
-        private final int methodReturnThreadPriority;
-
-        public ReceivingServiceConfig(int _signalThreadPoolSize, int _errorThreadPoolSize,
-                int _methodCallThreadPoolSize, int _methodReturnThreadPoolSize,
-                int _signalThreadPriority, int _errorThreadPriority, int _methodCallThreadPriority, int _methodReturnThreadPriority) {
-            signalThreadPoolSize = _signalThreadPoolSize;
-            errorThreadPoolSize = _errorThreadPoolSize;
-            methodCallThreadPoolSize = _methodCallThreadPoolSize;
-            methodReturnThreadPoolSize = _methodReturnThreadPoolSize;
-            signalThreadPriority = _signalThreadPriority;
-            methodCallThreadPriority = _methodCallThreadPriority;
-            errorThreadPriority = _errorThreadPriority;
-            methodReturnThreadPriority = _methodReturnThreadPriority;
-        }
-
-        public int getSignalThreadPoolSize() {
-            return signalThreadPoolSize;
-        }
-
-        public int getErrorThreadPoolSize() {
-            return errorThreadPoolSize;
-        }
-
-        public int getMethodCallThreadPoolSize() {
-            return methodCallThreadPoolSize;
-        }
-
-        public int getMethodReturnThreadPoolSize() {
-            return methodReturnThreadPoolSize;
-        }
-
-        public int getSignalThreadPriority() {
-            return signalThreadPriority;
-        }
-
-        public int getMethodCallThreadPriority() {
-            return methodCallThreadPriority;
-        }
-
-        public int getErrorThreadPriority() {
-            return errorThreadPriority;
-        }
-
-        public int getMethodReturnThreadPriority() {
-            return methodReturnThreadPriority;
-        }
-
+    /**
+     * Interface which specifies a handler which will be called when the thread pool throws any exception.
+     *
+     * @author hypfvieh
+     * @since 4.1.1 - 2022-07-14
+     */
+    @FunctionalInterface
+    public interface IThreadPoolRetryHandler {
+        /**
+         * Called to handle an exception.
+         * <p>
+         * This method should return true to retry execution or false to
+         * just ignore the error and drop the unhandled message.
+         * </p>
+         *
+         * @param _executor the executor which has thrown the exception
+         * @param _ex the exception which was thrown
+         *
+         * @return true to retry execution of the failed runnable, false to ignore runnable
+         */
+        boolean handle(ExecutorNames _executor, Exception _ex);
     }
+
 }

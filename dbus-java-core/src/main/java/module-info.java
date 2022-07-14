@@ -3,6 +3,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.bin;
     exports org.freedesktop.dbus.annotations;
     exports org.freedesktop.dbus.connections;
+    exports org.freedesktop.dbus.connections.config;
     exports org.freedesktop.dbus.connections.impl;
     exports org.freedesktop.dbus.connections.transports;
     exports org.freedesktop.dbus.errors;

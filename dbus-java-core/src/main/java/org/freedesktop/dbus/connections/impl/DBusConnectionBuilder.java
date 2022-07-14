@@ -5,7 +5,7 @@ import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
@@ -19,7 +19,7 @@ import org.freedesktop.dbus.utils.AddressBuilder;
  * @author hypfvieh
  * @version 4.1.0 - 2022-02-04
  */
-public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionBuilder> {
+public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionBuilder, DBusConnection> {
 
     private final String        machineId;
     private boolean             registerSelf            = true;
@@ -177,6 +177,7 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      * @return {@link DBusConnection}
      * @throws DBusException when DBusConnection could not be opened
      */
+    @Override
     public DBusConnection build() throws DBusException {
         ReceivingServiceConfig cfg = buildThreadConfig();
 

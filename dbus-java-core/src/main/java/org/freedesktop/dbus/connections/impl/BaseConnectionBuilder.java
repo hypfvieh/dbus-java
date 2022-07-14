@@ -5,10 +5,11 @@ import java.nio.ByteOrder;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.ReceivingService;
-import org.freedesktop.dbus.connections.ReceivingService.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.Message.Endian;
-import org.freedesktop.dbus.utils.Util;
 
 /**
  * Base class for connection builders containing commonly used options.
@@ -18,7 +19,7 @@ import org.freedesktop.dbus.utils.Util;
  *
  * @param <R> concrete type of connection builder
  */
-public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> {
+public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?>, C extends AbstractConnection> {
 
     private final Class<R>      returnType;
 
@@ -30,19 +31,12 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
 
     private IDisconnectCallback disconnectCallback;
 
-    private int                 signalThreadCount          = 1;
-    private int                 errorThreadCount           = 1;
-    private int                 methodCallThreadCount      = 4;
-    private int                 methodReturnThreadCount    = 1;
-
-    private int                 signalThreadPriority       = Thread.NORM_PRIORITY;
-    private int                 errorThreadPriority        = Thread.NORM_PRIORITY;
-    private int                 methodCallThreadPriority   = Thread.NORM_PRIORITY;
-    private int                 methodReturnThreadPriority = Thread.NORM_PRIORITY;
+    private final ReceivingServiceConfigBuilder<R> rsConfigBuilder;
 
     protected BaseConnectionBuilder(Class<R> _returnType, String _address) {
         returnType = _returnType;
         address = _address;
+        rsConfigBuilder = new ReceivingServiceConfigBuilder<>(() -> self());
     }
 
     /**
@@ -59,10 +53,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
      * @return config
      */
     protected ReceivingServiceConfig buildThreadConfig() {
-        return new ReceivingService.ReceivingServiceConfig(
-                signalThreadCount, errorThreadCount, methodCallThreadCount, methodReturnThreadCount,
-                signalThreadPriority, errorThreadPriority, methodCallThreadPriority, methodReturnThreadPriority
-                );
+        return rsConfigBuilder.build();
     }
 
     protected boolean isWeakReference() {
@@ -86,6 +77,14 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
     }
 
     /**
+     * Returns the builder to configure the receiving thread pools.
+     * @return builder
+     */
+    public ReceivingServiceConfigBuilder<R> receivingThreadConfig() {
+        return rsConfigBuilder;
+    }
+
+    /**
      * Set the size of the thread-pool used to handle signals from the bus.
      * Caution: Using thread-pool size &gt; 1 may cause signals to be handled out-of-order
      * <p>
@@ -93,9 +92,11 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
      *
      * @param _threads int &gt;= 1
      * @return this
+     * @deprecated use receivingThreadConfig().withSignalThreadCount(_threads)
      */
+    @Deprecated(since = "4.1.1", forRemoval = true)
     public R withSignalThreadCount(int _threads) {
-        signalThreadCount = Math.max(1, _threads);
+        receivingThreadConfig().withSignalThreadCount(_threads);
         return self();
     }
 
@@ -106,9 +107,11 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
      *
      * @param _threads int &gt;= 1
      * @return this
+     * @deprecated use receivingThreadConfig().withErrorHandlerThreadCount(_threads)
      */
+    @Deprecated(since = "4.1.1", forRemoval = true)
     public R withErrorHandlerThreadCount(int _threads) {
-        errorThreadCount = Math.max(1, _threads);
+        receivingThreadConfig().withErrorHandlerThreadCount(_threads);
         return self();
     }
 
@@ -120,9 +123,11 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
      *
      * @param _threads int &gt;= 1
      * @return this
+     * @deprecated use receivingThreadConfig().withMethodCallThreadCount(_threads)
      */
+    @Deprecated(since = "4.1.1", forRemoval = true)
     public R withMethodCallThreadCount(int _threads) {
-        methodCallThreadCount = Math.max(1, _threads);
+        receivingThreadConfig().withMethodCallThreadCount(_threads);
         return self();
     }
 
@@ -133,77 +138,11 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
      *
      * @param _threads int &gt;= 1
      * @return this
+     * @deprecated use receivingThreadConfig().withMethodReturnThreadCount(_threads)
      */
+    @Deprecated(since = "4.1.1", forRemoval = true)
     public R withMethodReturnThreadCount(int _threads) {
-        methodReturnThreadCount = Math.max(1, _threads);
-        return self();
-    }
-
-    /**
-     * Sets the thread priority of the created signal thread(s).
-     * <p>
-     * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
-     *
-     * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
-     * @return this
-     *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
-     *
-     * @since 4.1.1 - 2022-07-13
-     */
-    public R withSignalThreadPriority(int _priority) {
-        signalThreadPriority = Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY);
-        return self();
-    }
-
-    /**
-     * Sets the thread priority of the created signal thread(s).
-     * <p>
-     * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
-     *
-     * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
-     * @return this
-     *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
-     *
-     * @since 4.1.1 - 2022-07-13
-     */
-    public R withErrorThreadPriority(int _priority) {
-        errorThreadPriority = Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY);
-        return self();
-    }
-
-    /**
-     * Sets the thread priority of the created signal thread(s).
-     * <p>
-     * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
-     *
-     * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
-     * @return this
-     *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
-     *
-     * @since 4.1.1 - 2022-07-13
-     */
-    public R withMethedCallThreadPriority(int _priority) {
-        methodCallThreadPriority = Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY);
-        return self();
-    }
-
-    /**
-     * Sets the thread priority of the created signal thread(s).
-     * <p>
-     * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
-     *
-     * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
-     * @return this
-     *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
-     *
-     * @since 4.1.1 - 2022-07-13
-     */
-    public R withMethodReturnThreadPriority(int _priority) {
-        methodReturnThreadPriority = Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY);
+        receivingThreadConfig().withMethodReturnThreadCount(_threads);
         return self();
     }
 
@@ -255,6 +194,8 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?>> 
         disconnectCallback = _disconnectCallback;
         return self();
     }
+
+    public abstract C build() throws DBusException;
 
     /**
      * Get the default system endianness.

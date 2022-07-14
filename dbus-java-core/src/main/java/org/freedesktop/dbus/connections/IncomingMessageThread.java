@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class IncomingMessageThread extends Thread {
 
                     connection.handleMessage(msg);
                 }
-            } catch (DBusException | RejectedExecutionException _ex) {
+            } catch (DBusException | RejectedExecutionException | IllegalThreadPoolStateException _ex) {
                 if (_ex instanceof FatalException) {
                     if (terminate) { // requested termination, ignore failures
                         return;
@@ -53,7 +54,7 @@ public class IncomingMessageThread extends Thread {
                     if (connection.isConnected()) {
                         terminate = true;
                         if (_ex.getCause() instanceof IOException) {
-                            connection.internalDisconnect((IOException) _ex.getCause());    
+                            connection.internalDisconnect((IOException) _ex.getCause());
                         } else {
                             connection.internalDisconnect(null);
                         }

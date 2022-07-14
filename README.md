@@ -49,7 +49,16 @@ The library will remain open source and MIT licensed and can still be used, fork
 ##### Changes in 4.1.1 (not yet released):
    - Deprecated `TransportBuilder.isListening(boolean)` as method name signals that a `boolean` is returned but `TransportBuilder` is returned. Please use `TransportBuilder.listening(boolean)` instead. Old method will be removed in 4.2.0
    - Applied more PMD/CPD suggestions
-
+   - Deprecated `DBusConnectionBuilder.getSystemEndianness()` and `DirectConnectionBuilder.getSystemEndianness()`, use `BaseConnectionBuilder.getSystemEndianness()` instead
+   - Refactoring of `DBusConnectionBuilder` and `DirectConnectionBuilder` to use same base class `BaseConnectionBuilder` to reduce duplicated code
+   - Moved receiving thread configuration stuff from `BaseConnectionBuilder` to `ReceivingServiceConfigBuilder`
+     to configure receiving thread-pools e.g. use `DBusConnectionBuilder.forSessionBus().receivingThreadConfig().withXXX` and continue either with `.buildConnection()` 
+     to get the connection object or `.connectionConfig()` to get back to the chosen connection builder
+   - Added methods `withXXXThreadPriority` methods to `ReceivingServiceConfigBuilder` to allow changing the thread priority set for `ReceivingService` thread pool threads  ([#173](https://github.com/hypfvieh/dbus-java/issues/173))
+   - Improved handling with different transports and address (e.g. fail early if no transport is provided for given address)
+   - Added possibility to add custom retry-handler to `ReceivingService` using the builder
+   - `ReceivingService` will now throw `IllegalThreadPoolStateException` (subclass of `IllegalStateException`) instead of `IllegalStateException` directly
+   
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
    - Throw AuthenticationException when SASL command was unreadable during logon handshake, thanks to [brett-smith](https://github.com/brett-smith) ([PR#158](https://github.com/hypfvieh/dbus-java/issues/158))

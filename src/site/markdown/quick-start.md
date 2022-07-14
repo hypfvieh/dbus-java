@@ -48,5 +48,76 @@ be able to request a bus name without updating some permissions.  The process
 of updating permissions is outside the scope of this document; however, the XML
 files that control the permissions can be found in `/etc/dbus-1/system.d`.
 
+## Connection configuration
+
+If you do not have any special requirements, usually `DBusConnectionBuilder.forSessionBus().build()` or `DBusConnectionBuilder.forSystemBus().build()` is all you need to do.
+
+In some cases you may have to change the default settings. This can be done through the appropriate builder options.
+The Builder allows you to change most settings used to connect and to communicate with DBus.
+
+### Changing thread-pool settings
+For receiving data from DBus dbus-java uses several thread pools. This is required due to the different purposes of 
+received messages. There are signals, methods and method returns.
+To prevent one message processing blocking other message processing, each of those message types are handled in different
+thread pools.
+
+The default settings is 1 thread per message type for signals, methods and errors. Method-Return messages have a thread pool
+size of 4. 
+
+To change those settings, use the `receivingThreadConfig()` method on the connection builders.
+Example:
+
+    DBusConnectionBuilder.forSessionBus()
+        .receivingThreadConfig()
+            .withSignalThreadCount(4)
+            .withMethodThreadCount(2)
+        .connectionConfig()
+        .withShared(false)
+        .build()
+
+In the example above, the signal thread pool will be increased to 4 threads, the method thread pool to 2 threads.
+Calling `connectionConfig()` will return the used connection builder (`DBusConnectionBuilder` in this case) to allow configure further settings on the connection before creating the actual connection.
+If you do not want to do additional configuration you can also call `.buildConnection()` on the `ReceivingServiceConfigBuilder` to create the connection directly.
+
+With this pattern you can also change the thread priority for each pool.
+
+### IMPORTANT NOTE ABOUT SIGNAL THREADPOOL
+Increasing the signal thread pool will improve the speed the signals are handled.
+Nevertheless increasing the thread pool may also cause the signals to be handled in any order, not necessarily in the order 
+they were sent/received. 
+
+This is caused by concurrency of the threads in the pool. If you receive e.g. 10 signals and have 4 signal handler threads, 4 of them are handled in parallel and thread 3 might be finished before thread 1 is finished etc.
+
+If signal order is important for your use case, DO NOT INCREMENT the signal thread pool size!
+
+### Using retry handler
+In some very rare cases (this has only been reported for some JDK versions of some vendors used on ARM 32-bit platform, see [#172](https://github.com/hypfvieh/dbus-java/issues/172)), the thread pool executors may throw unexpected NullPointerExceptions. 
+
+In such cases the default behavior is to retry adding the message callback runnable to the executor up to 10 times.
+If adding still fails, the message callback runnable will be dropped (ignored) and an error will be logged.
+
+You can change this behavior by installing a custom `IThreadPoolRetryHandler`. 
+This handler is a functional interface and can be expressed as lambda.
+The handler will receive the executor type (`ExecutorNames` enum value) which failed execute a runnable and the
+exception which was thrown in that case.
+It should return `true` if the execution should be retried, or `false` to ignore the runnable.
+
+In any case there is a 'hard' limit of retries (to avoid `StackOverflowError`s) which is 50 currently.
+After that hard limit is reached, error will be logged and runnable will be ignored.
+
+You can also set the configured retry handler to `null` which will cause the `ReceivingService` log an error (including exception) and ignoring the failed runnable.
+
+Retry handler can be installed like this:
+
+    DBusConnectionBuilder.forSessionBus()
+        .receivingThreadConfig()
+            .withRetryHandler((t, ex) -> {
+                // do something useful and return true or false
+                return false;
+            })
+        .connectionConfig()
+        .withShared(false)
+        .build()
+        
 ## Examples
 For example code checkout dbus-java-examples module of this project. 
