@@ -67,9 +67,8 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
 		try {
 		    LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
 			serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
-			waitIfTcp();
 			clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
-			waitIfTcp();
+			Thread.sleep(500L);
 			serverconn.setWeakReferences(true);
 			clientconn.setWeakReferences(true);
 
