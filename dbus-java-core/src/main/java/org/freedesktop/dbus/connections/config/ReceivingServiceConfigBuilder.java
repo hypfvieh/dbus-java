@@ -22,13 +22,15 @@ import org.slf4j.LoggerFactory;
  * @since 4.1.1 - 2022-07-14
  */
 public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder<?, ?>> {
+    public static final int DEFAULT_HANDLER_RETRIES = 10;
+
     private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig();
 
     private static final IThreadPoolRetryHandler DEFAULT_RETRYHANDLER = new IThreadPoolRetryHandler() {
         private AtomicInteger retries = new AtomicInteger(0);
         @Override
         public boolean handle(ExecutorNames _executor, Exception _ex) {
-            if (retries.incrementAndGet() < 10) {
+            if (retries.incrementAndGet() < DEFAULT_HANDLER_RETRIES) {
                 return true;
             }
             LoggerFactory.getLogger(ReceivingService.class).error("Dropping runnable for {}, retry failed for more than 10 iterations, cause:", _executor, _ex);

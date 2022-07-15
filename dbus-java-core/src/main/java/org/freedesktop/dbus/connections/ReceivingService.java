@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @version 4.1.0 - 2022-02-02
  */
 public class ReceivingService {
-    private static final int MAX_RETRIES = 50;
+    static final int MAX_RETRIES = 50;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,34 +51,46 @@ public class ReceivingService {
 
     /**
      * Execute a runnable which handles a signal.
+     *
      * @param _r runnable
+     *
+     * @return retries, if any input was null -1 is returned
      */
-    void execSignalHandler(Runnable _r) {
-        execOrFail(ExecutorNames.SIGNAL, _r);
+    int execSignalHandler(Runnable _r) {
+        return execOrFail(ExecutorNames.SIGNAL, _r);
     }
 
     /**
      * Execute a runnable which handles an error.
+     *
      * @param _r runnable
+     *
+     * @return retries, if any input was null -1 is returned
      */
-    void execErrorHandler(Runnable _r) {
-        execOrFail(ExecutorNames.ERROR, _r);
+    int execErrorHandler(Runnable _r) {
+        return execOrFail(ExecutorNames.ERROR, _r);
     }
 
     /**
      * Execute a runnable which handles a method call.
+     *
      * @param _r runnable
+     *
+     * @return retries, if any input was null -1 is returned
      */
-    void execMethodCallHandler(Runnable _r) {
-        execOrFail(ExecutorNames.METHODCALL, _r);
+    int execMethodCallHandler(Runnable _r) {
+       return execOrFail(ExecutorNames.METHODCALL, _r);
     }
 
     /**
      * Execute a runnable which handles the return of a method.
+     *
      * @param _r runnable
+     *
+     * @return retries, if any input was null -1 is returned
      */
-    void execMethodReturnHandler(Runnable _r) {
-        execOrFail(ExecutorNames.METHODRETURN, _r);
+    int execMethodReturnHandler(Runnable _r) {
+        return execOrFail(ExecutorNames.METHODRETURN, _r);
     }
 
     /**
@@ -90,16 +102,18 @@ public class ReceivingService {
      *
      * @param _executor executor to use
      * @param _r runnable
+     *
+     * @return retries, if any input was null -1 is returned
      */
-    void execOrFail(ExecutorNames _executor, Runnable _r) {
+    int execOrFail(ExecutorNames _executor, Runnable _r) {
         if (_r == null || _executor == null) { // ignore invalid runnables or executors
-            return;
+            return -1;
         }
 
         int failCount = 0;
         while (failCount < MAX_RETRIES) {
             try {
-                ExecutorService exec = executors.get(_executor);
+                ExecutorService exec = getExecutor(_executor);
                 if (exec == null) { // this should never happen, map is initialized in constructor
                     throw new IllegalThreadPoolStateException("No executor found for " + _executor);
                 } else if (closed || exec.isShutdown() || exec.isTerminated()) {
@@ -117,7 +131,8 @@ public class ReceivingService {
 
                 failCount++;
                 if (!retryHandler.handle(_executor, _ex)) {
-                    logger.trace("Ignoring unhandled runnable for executor {} due to {}, dropped by retry handler", _executor, _ex.getClass().getName());
+                    logger.trace("Ignoring unhandled runnable for executor {} due to {}, dropped by retry handler after {} retries", _executor, _ex.getClass().getName(), failCount);
+                    break;
                 }
             }
         }
@@ -125,6 +140,18 @@ public class ReceivingService {
         if (failCount >= MAX_RETRIES) {
             logger.error("Could not handle runnable for executor {} after {} retries, runnable will be dropped", _executor, failCount);
         }
+
+        return failCount;
+    }
+
+    /**
+     * Returns the executor or null.
+     *
+     * @param _executor executor to use
+     * @return executor or null
+     */
+    ExecutorService getExecutor(ExecutorNames _executor) {
+        return executors == null ? null : executors.get(_executor);
     }
 
     /**
@@ -160,6 +187,8 @@ public class ReceivingService {
                 es.getValue().shutdownNow();
             }
         }
+
+        closed = true;
     }
 
     /**
