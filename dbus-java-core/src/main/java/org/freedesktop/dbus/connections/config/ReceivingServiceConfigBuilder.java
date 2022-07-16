@@ -33,7 +33,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
             if (retries.incrementAndGet() < DEFAULT_HANDLER_RETRIES) {
                 return true;
             }
-            LoggerFactory.getLogger(ReceivingService.class).error("Dropping runnable for {}, retry failed for more than 10 iterations, cause:", _executor, _ex);
+            LoggerFactory.getLogger(ReceivingService.class).error("Dropping runnable for {}, retry failed for more than {} iterations, cause:", _executor, DEFAULT_HANDLER_RETRIES, _ex);
             return false;
         }
     };
