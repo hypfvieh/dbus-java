@@ -118,6 +118,10 @@ Retry handler can be installed like this:
         .connectionConfig()
         .withShared(false)
         .build()
+
+### IMPORTANT NOTE USING RETRY HANDLER
+The retry handler is executed synchronously (in the thread where the connection receives data from the bus).
+That means whatever you do in your retry handler, either do it quick or delegate the actual work to your own thread pool/thread and do it asynchronously. Doing too much work in the retry handler will cause delays in other received messages and may cause DBus to disconnect the session.
         
 ## Examples
 For example code checkout dbus-java-examples module of this project. 
