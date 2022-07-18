@@ -37,18 +37,18 @@ public class RunDaemon {
     private void startDaemon() throws DBusException {
         if (daemon == null) {
 
-            BusAddress listenBusAddress = new BusAddress(newAddress);
+            BusAddress listenBusAddress = BusAddress.of(newAddress);
             String listenAddress = newAddress;
 
             if (!listenBusAddress.isListeningSocket()) {
                 listenAddress = newAddress + ",listen=true";
-                listenBusAddress = new BusAddress(listenAddress);
+                listenBusAddress = BusAddress.of(listenAddress);
             }
 
-            log.info("Starting embedded bus on address {})", listenBusAddress.getRawAddress());
+            log.info("Starting embedded bus on address {})", listenBusAddress);
             daemon = new EmbeddedDBusDaemon(listenBusAddress);
             daemon.startInBackground();
-            log.info("Started embedded bus on address {}", listenBusAddress.getRawAddress());
+            log.info("Started embedded bus on address {}", listenBusAddress);
 
             long sleepMs = 200;
             long waited = 0;
@@ -72,12 +72,12 @@ public class RunDaemon {
     }
 
     private void connectSelf() throws DBusException, IOException {
-        BusAddress busAddress = new BusAddress(newAddress);
-        log.info("Connecting to embedded DBus {}", busAddress.getRawAddress());
+        BusAddress busAddress = BusAddress.of(newAddress);
+        log.info("Connecting to embedded DBus {}", busAddress);
         for (int i = 0; i < 6; i++) {
             try {
-                try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress.getRawAddress()).build()) {
-                    log.info("Connected to embedded DBus {}", busAddress.getRawAddress());
+                try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
+                    log.info("Connected to embedded DBus {}", busAddress);
                     // do something with the connection ;)
                 }
                 break;

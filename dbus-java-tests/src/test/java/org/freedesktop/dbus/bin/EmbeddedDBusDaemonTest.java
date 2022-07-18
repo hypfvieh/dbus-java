@@ -24,13 +24,13 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
         String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
-        BusAddress busAddress = new BusAddress(newAddress);
-        BusAddress listenBusAddress = new BusAddress(newAddress + ",listen=true");
+        BusAddress busAddress = BusAddress.of(newAddress);
+        BusAddress listenBusAddress = BusAddress.of(newAddress + ",listen=true");
 
-        logger.debug("Starting embedded bus on address {})", listenBusAddress.getRawAddress());
+        logger.debug("Starting embedded bus on address {})", listenBusAddress);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
             daemon.startInBackground();
-            logger.debug("Started embedded bus on address {}", listenBusAddress.getRawAddress());
+            logger.debug("Started embedded bus on address {}", listenBusAddress);
 
             long sleepMs = 200;
             long waited = 0;
@@ -51,10 +51,10 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             }
 
             // connect to started daemon process
-            logger.info("Connecting to embedded DBus {}", busAddress.getRawAddress());
+            logger.info("Connecting to embedded DBus {}", busAddress);
 
-            try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress.getRawAddress()).build()) {
-                logger.debug("Connected to embedded DBus {}", busAddress.getRawAddress());
+            try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
+                logger.debug("Connected to embedded DBus {}", busAddress);
             } catch (Exception _ex) {
                 fail("Connection to EmbeddedDbusDaemon failed", _ex);
                 logger.error("Error connecting to EmbeddedDbusDaemon", _ex);

@@ -45,15 +45,15 @@ public class RunTwoPartDaemon {
     private void startDaemon() throws DBusException {
         if (daemon == null) {
 
-            BusAddress listenBusAddress = new BusAddress(newAddress);
+            BusAddress listenBusAddress = BusAddress.of(newAddress);
             String listenAddress = newAddress;
 
             if (!listenBusAddress.isListeningSocket()) {
                 listenAddress = newAddress + ",listen=true";
-                listenBusAddress = new BusAddress(listenAddress);
+                listenBusAddress = BusAddress.of(listenAddress);
             }
 
-            log.info("Starting embedded bus on address {})", listenBusAddress.getRawAddress());
+            log.info("Starting embedded bus on address {})", listenBusAddress);
             daemon = new EmbeddedDBusDaemon(listenBusAddress);
 
             // run daemon in non-daemon thread so application will not quit
@@ -78,19 +78,19 @@ public class RunTwoPartDaemon {
                 waited += sleepMs;
                 log.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
             }
-            log.info("Started embedded bus on address {}", listenBusAddress.getRawAddress());
+            log.info("Started embedded bus on address {}", listenBusAddress);
 
         }
     }
 
     private void connectSelf() throws DBusException, IOException {
-        BusAddress busAddress = new BusAddress(newAddress);
-        log.info("Connecting to embedded DBus {}", busAddress.getRawAddress());
+        BusAddress busAddress = BusAddress.of(newAddress);
+        log.info("Connecting to embedded DBus {}", busAddress);
         for (int i = 0; i < 6; i++) {
         	DBusConnection conn;
             try  {
-            	conn = DBusConnectionBuilder.forAddress(busAddress.getRawAddress()).build();
-                log.info("Connected to embedded DBus {}", busAddress.getRawAddress());
+            	conn = DBusConnectionBuilder.forAddress(busAddress).build();
+                log.info("Connected to embedded DBus {}", busAddress);
 
                 conn.requestBusName(EXPORT_NAME);
                 SomeExport someExport = new SomeExport();

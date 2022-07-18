@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections.impl;
 
 import java.nio.ByteOrder;
 
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
@@ -14,7 +15,7 @@ import org.freedesktop.dbus.messages.Message;
  */
 public class DirectConnectionBuilder extends BaseConnectionBuilder<DirectConnectionBuilder, DirectConnection> {
 
-    private DirectConnectionBuilder(String _address) {
+    private DirectConnectionBuilder(BusAddress _address) {
         super(DirectConnectionBuilder.class, _address);
     }
 
@@ -25,7 +26,7 @@ public class DirectConnectionBuilder extends BaseConnectionBuilder<DirectConnect
      * @return this
      */
     public static DirectConnectionBuilder forAddress(String _address) {
-        DirectConnectionBuilder instance = new DirectConnectionBuilder(_address);
+        DirectConnectionBuilder instance = new DirectConnectionBuilder(BusAddress.of(_address));
         return instance;
     }
 

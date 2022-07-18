@@ -27,6 +27,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -182,7 +183,7 @@ public final class DBusConnection extends AbstractConnection {
      */
     @Deprecated(since = "4.1.0", forRemoval = true)
     public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
-        String address;
+        BusAddress address;
 
         switch (_bustype) {
             case SYSTEM:
@@ -197,13 +198,13 @@ public final class DBusConnection extends AbstractConnection {
 
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
                 && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (address == null || address.startsWith("unix"))) { // no address or unix socket address
+                && (address == null || address.getBusType().equals("UNIX"))) { // no address or unix socket address
 
             // no UNIX transport available, or lookup did not return anything useful
-            address = System.getProperty(TCP_ADDRESS_PROPERTY);
+            address = BusAddress.of(System.getProperty(TCP_ADDRESS_PROPERTY));
         }
 
-        return getConnection(address, true, _shared, _timeout);
+        return getConnection(address.toString(), true, _shared, _timeout);
     }
 
     private AtomicInteger getConcurrentConnections() {
@@ -224,7 +225,7 @@ public final class DBusConnection extends AbstractConnection {
     }
 
 
-    DBusConnection(String _address, boolean _shared, String _machineId, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
+    DBusConnection(BusAddress _address, boolean _shared, String _machineId, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_address, _timeout, _rsCfg);
         busnames = new ArrayList<>();
         machineId = _machineId;
@@ -863,10 +864,10 @@ public final class DBusConnection extends AbstractConnection {
         if (shared) {
 
 	        synchronized (CONNECTIONS) {
-	            DBusConnection connection = CONNECTIONS.get(getAddress().getRawAddress());
+	            DBusConnection connection = CONNECTIONS.get(getAddress().toString());
 	            if (connection != null) {
 	                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
-	                    CONNECTIONS.remove(getAddress().getRawAddress());
+	                    CONNECTIONS.remove(getAddress().toString());
 
 	                    super.disconnect();
 

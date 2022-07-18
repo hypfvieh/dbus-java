@@ -1,50 +1,62 @@
 package org.freedesktop.dbus.connections;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BusAddress {
-    private final Logger        logger = LoggerFactory.getLogger(getClass());
+    private static final Logger       LOGGER     = LoggerFactory.getLogger(BusAddress.class);
 
-    private final String              type;
-    private final Map<String, String> parameters = new HashMap<>();
+    private String                    type;
+    private final Map<String, String> parameters = new LinkedHashMap<>();
 
-    private final String rawAddress;
+    public BusAddress() {
+        this(null);
+    }
 
-    public BusAddress(String _address) throws DBusException {
+    public BusAddress(BusAddress _obj) {
+        if (_obj != null) {
+            parameters.putAll(_obj.parameters);
+            type = _obj.type;
+        }
+    }
+
+    public static BusAddress of(String _address) {
         if (null == _address ||_address.isEmpty()) {
-            throw new DBusException("Bus address is blank");
+            throw new InvalidBusAddressException("Bus address is blank");
         }
 
-        logger.trace("Parsing bus address: {}", _address);
+        BusAddress busAddress = new BusAddress(null);
+
+        LOGGER.trace("Parsing bus address: {}", _address);
 
         String[] ss = _address.split(":", 2);
         if (ss.length < 2) {
-            throw new DBusException("Bus address is invalid: " + _address);
+            throw new InvalidBusAddressException("Bus address is invalid: " + _address);
         }
 
-        type = ss[0] != null ? ss[0].toLowerCase() : null;
-        if (type == null) {
-            throw new DBusException("Unsupported transport type: " + ss[0]);
+        busAddress.type = ss[0] != null ? ss[0].toLowerCase() : null;
+        if (busAddress.type == null) {
+            throw new InvalidBusAddressException("Unsupported transport type: " + ss[0]);
         }
 
-        logger.trace("Transport type: {}", type);
-
-        rawAddress = _address;
+        LOGGER.trace("Transport type: {}", busAddress.type);
 
         String[] ps = ss[1].split(",");
         for (String p : ps) {
             String[] kv = p.split("=", 2);
-            parameters.put(kv[0], kv[1]);
+            busAddress.addParameter(kv[0], kv[1]);
         }
 
-        logger.trace("Transport options: {}", parameters);
+        LOGGER.trace("Transport options: {}", busAddress.parameters);
 
+        return busAddress;
     }
 
     public String getType() {
@@ -79,10 +91,6 @@ public class BusAddress {
         return parameters.containsKey("port");
     }
 
-    public boolean hasGuid() {
-        return parameters.containsKey("guid");
-    }
-
     public String getAbstract() {
         return parameters.get("abstract");
     }
@@ -104,26 +112,33 @@ public class BusAddress {
     }
 
     @Override
-    public String toString() {
-        return type + ": " + parameters;
-    }
-
-    public String getRawAddress() {
-        return rawAddress;
+    public final String toString() {
+        return type + ":" + parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(","));
     }
 
     public boolean isServer() {
         return isListeningSocket();
     }
 
+    public BusAddress addParameter(String _parameter, String _value) {
+        parameters.put(_parameter, _value);
+        return this;
+    }
+
+    public BusAddress removeParameter(String _parameter) {
+        parameters.remove(_parameter);
+        return this;
+    }
+
+    public Map<String, String> getParameters() {
+        return Collections.unmodifiableMap(parameters);
+    }
+
     public BusAddress getListenerAddress() {
         if (!isListeningSocket()) {
-            try {
-                return new BusAddress(rawAddress + ",listen=true");
-            } catch (DBusException _ex) {
-                logger.trace("Could not create listening address", _ex);
-            }
+            return new BusAddress(this).addParameter("listen", "true");
         }
         return this;
     }
+
 }

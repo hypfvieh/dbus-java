@@ -39,14 +39,14 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     public EmbeddedDBusDaemon(BusAddress _address) {
         address = Objects.requireNonNull(_address, "Address required");
-        if (_address.getRawAddress().startsWith("tcp")) {
-            String addrStr = _address.getRawAddress().replace(",listen=true", "");
+        if (_address.getBusType().equals("TCP")) {
+            String addrStr  = new BusAddress(address).removeParameter("listen").toString();
             System.setProperty(AbstractConnection.TCP_ADDRESS_PROPERTY, addrStr);
         }
     }
 
     public EmbeddedDBusDaemon(String _address) throws DBusException {
-        this(new BusAddress(_address));
+        this(BusAddress.of(_address));
     }
 
     /**
@@ -126,7 +126,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      *
      * @return true if running, false otherwise
      */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return daemonThread != null && daemonThread.isRunning();
     }
 

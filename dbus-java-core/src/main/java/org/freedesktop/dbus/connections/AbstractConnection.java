@@ -116,7 +116,7 @@ public abstract class AbstractConnection implements Closeable {
 
     private Optional<IDisconnectCallback>                                       disconnectCallback = Optional.ofNullable(null);
 
-    protected AbstractConnection(String _address, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
+    protected AbstractConnection(BusAddress _address, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
         exportedObjects = Collections.synchronizedMap(new HashMap<>());
         importedObjects = new ConcurrentHashMap<>();

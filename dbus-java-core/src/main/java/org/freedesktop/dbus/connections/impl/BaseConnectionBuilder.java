@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.impl;
 import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.ReceivingService;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
@@ -23,7 +24,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
 
     private final Class<R>      returnType;
 
-    private final String        address;
+    private final BusAddress    address;
 
     private boolean             weakReference              = false;
     private byte                endianess                  = getSystemEndianness();
@@ -33,7 +34,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
 
     private final ReceivingServiceConfigBuilder<R> rsConfigBuilder;
 
-    protected BaseConnectionBuilder(Class<R> _returnType, String _address) {
+    protected BaseConnectionBuilder(Class<R> _returnType, BusAddress _address) {
         returnType = _returnType;
         address = _address;
         rsConfigBuilder = new ReceivingServiceConfigBuilder<>(() -> self());
@@ -72,7 +73,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
         return disconnectCallback;
     }
 
-    protected String getAddress() {
+    protected BusAddress getAddress() {
         return address;
     }
 

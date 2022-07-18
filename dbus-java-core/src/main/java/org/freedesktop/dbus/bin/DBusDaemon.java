@@ -326,7 +326,7 @@ public class DBusDaemon extends Thread implements Closeable {
             addr = TransportBuilder.createDynamicSession("TCP", true);
         }
 
-        BusAddress address = new BusAddress(addr);
+        BusAddress address = BusAddress.of(addr);
 
         // print address to stdout
         if (printaddress) {

@@ -43,7 +43,6 @@ public class TransportBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportBuilder.class);
     private static final Map<String, ITransportProvider> PROVIDERS = getTransportProvider();
 
-    private String address;
     private BusAddress busAddress;
 
     private boolean listening;
@@ -94,14 +93,13 @@ public class TransportBuilder {
         if (_address == null || _address.isBlank()) {
             throw new IllegalArgumentException("BusAddress cannot be empty or null");
         }
-        address = _address;
+        busAddress = BusAddress.of(_address);
         listening = _address.contains(",listen=true");
         updateAddress();
     }
 
     private TransportBuilder(BusAddress _address) throws DBusException {
         Objects.requireNonNull(_address, "Address required");
-        address = _address.getRawAddress();
         listening = _address.isListeningSocket();
         busAddress = _address;
     }
@@ -382,14 +380,10 @@ public class TransportBuilder {
     }
 
     private void updateAddress() throws DBusException {
-
-        busAddress = new BusAddress(address);
         if (!busAddress.isListeningSocket() && listening) { // not a listening address, but should be one
-            address += ",listen=true";
-            busAddress = new BusAddress(address);
+            busAddress.addParameter("listen", "true");
         } else if (busAddress.isListeningSocket() && !listening) { // listening address, but should not be one
-            address = address.replace(",listen=true", "");
-            busAddress = new BusAddress(address);
+            busAddress.removeParameter("listen");
         }
     }
 

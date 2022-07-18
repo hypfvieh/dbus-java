@@ -54,9 +54,9 @@ public class LowLevelTest extends AbstractDBusBaseTest {
         }
     }
 
-    static String getAddress() throws DBusException {
+    static BusAddress getAddress() throws DBusException {
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
-            return System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY);
+            return BusAddress.of(System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY));
         }
 
         String s = System.getenv("DBUS_SESSION_BUS_ADDRESS");
@@ -84,9 +84,9 @@ public class LowLevelTest extends AbstractDBusBaseTest {
             if (Util.isEmpty(sessionAddress)) {
                 throw new RuntimeException("Cannot Resolve Session Bus Address");
             }
-            return sessionAddress;
+            return BusAddress.of(sessionAddress);
         }
 
-        return s;
+        return BusAddress.of(s);
     }
 }

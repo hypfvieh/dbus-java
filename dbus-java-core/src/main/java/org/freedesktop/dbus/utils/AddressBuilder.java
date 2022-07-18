@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 
 public class AddressBuilder {
@@ -21,12 +22,12 @@ public class AddressBuilder {
      *
      * @return String
      */
-    public static String getSystemConnection() {
+    public static BusAddress getSystemConnection() {
         String bus = System.getenv(DBUS_SYSTEM_BUS_ADDRESS);
         if (bus == null) {
             bus = DEFAULT_SYSTEM_BUS_ADDRESS;
         }
-        return bus;
+        return BusAddress.of(bus);
     }
 
     /**
@@ -39,7 +40,7 @@ public class AddressBuilder {
      *
      * @throws AddressResolvingException when no suitable address can be found for any available transport
      */
-    public static String getSessionConnection(String _dbusMachineIdFile) {
+    public static BusAddress getSessionConnection(String _dbusMachineIdFile) {
 
         String s = null;
 
@@ -83,10 +84,10 @@ public class AddressBuilder {
                 sessionAddress = sessionAddress.replaceFirst("^'([^']+)'$", "$1");
             }
 
-            return sessionAddress;
+            return BusAddress.of(sessionAddress);
         }
 
-        return s;
+        return BusAddress.of(s);
     }
 
     /**
