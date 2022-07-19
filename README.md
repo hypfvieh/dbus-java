@@ -58,6 +58,8 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Improved handling with different transports and address (e.g. fail early if no transport is provided for given address)
    - Added possibility to add custom retry-handler to `ReceivingService` using the builder
    - `ReceivingService` will now throw `IllegalThreadPoolStateException` (subclass of `IllegalStateException`) instead of `IllegalStateException` directly
+   - Use `BusAddress` internally instead of Strings
+   - Use subclasses of `BusAddress` in Tcp/UnixTransport
    
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
