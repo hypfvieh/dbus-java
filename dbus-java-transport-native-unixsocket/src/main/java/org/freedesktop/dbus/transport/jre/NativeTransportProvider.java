@@ -15,7 +15,13 @@ public class NativeTransportProvider implements ITransportProvider {
 
     @Override
     public AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
-        return new NativeUnixSocketTransport(_address);
+        UnixBusAddress address;
+        if (!(_address instanceof UnixBusAddress)) {
+            address = new UnixBusAddress(_address);
+        } else {
+            address = (UnixBusAddress) _address;
+        }
+        return new NativeUnixSocketTransport(address);
     }
 
     @Override

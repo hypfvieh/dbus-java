@@ -33,6 +33,11 @@ public class TcpTransport extends AbstractTransport {
         return false; // file descriptor passing not possible on TCP connections
     }
 
+    @Override
+    public TcpBusAddress getAddress() {
+        return (TcpBusAddress) super.getAddress();
+    }
+
     /**
      * Connect to DBus using TCP.
      * @throws IOException on error
@@ -74,6 +79,7 @@ public class TcpTransport extends AbstractTransport {
         }
     }
 
+    @Deprecated
     @Override
     protected boolean isAbstractAllowed() {
         return false;

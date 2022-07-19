@@ -21,7 +21,7 @@ public class LowLevelTest extends AbstractDBusBaseTest {
 
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException, InterruptedException {
-        BusAddress address = new BusAddress(getAddress());
+        BusAddress address = BusAddress.of(getAddress());
         logger.debug("Testing using address: {}", address);
 
         try (AbstractTransport conn = TransportBuilder.create(address).build()) {

@@ -40,7 +40,7 @@ public class EmbeddedDBusDaemon implements Closeable {
     public EmbeddedDBusDaemon(BusAddress _address) {
         address = Objects.requireNonNull(_address, "Address required");
         if (_address.getBusType().equals("TCP")) {
-            String addrStr  = new BusAddress(address).removeParameter("listen").toString();
+            String addrStr  = BusAddress.of(address).removeParameter("listen").toString();
             System.setProperty(AbstractConnection.TCP_ADDRESS_PROPERTY, addrStr);
         }
     }

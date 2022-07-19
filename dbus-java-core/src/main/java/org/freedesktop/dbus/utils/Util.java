@@ -12,10 +12,20 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -523,5 +533,54 @@ public final class Util {
             return _check;
         }
         throw new IllegalArgumentException("Value " + _check + " is out ouf range (< " + _min + " && > " + _max + ")");
+    }
+
+    /**
+     * Setup the unix socket file permissions.
+     * User and group can always be set, file permissions are only set on non-windows OSes.
+     *
+     * @param _path path to file which where permissions should be set
+     * @param _fileOwner new owner for the file
+     * @param _fileGroup new group for the file
+     * @param _fileUnixPermissions unix permissions to set on file
+     */
+    public static void setFilePermissions(Path _path, String _fileOwner, String _fileGroup, Set<PosixFilePermission> _fileUnixPermissions) {
+        Objects.requireNonNull(_path, "Path required");
+        UserPrincipalLookupService userPrincipalLookupService = _path.getFileSystem().getUserPrincipalLookupService();
+
+        if (userPrincipalLookupService == null) {
+            LOGGER.error("Unable to set user/group permissions on {}", _path);
+        }
+
+
+        if (!Util.isBlank(_fileOwner)) {
+            try {
+                UserPrincipal userPrincipal = userPrincipalLookupService.lookupPrincipalByName(_fileOwner);
+                if (userPrincipal != null) {
+                    Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setOwner(userPrincipal);
+                }
+            } catch (IOException _ex) {
+                LOGGER.error("Could not change owner of {} to {}", _path, _fileOwner, _ex);
+            }
+        }
+
+        if (!Util.isBlank(_fileGroup)) {
+            try {
+                GroupPrincipal groupPrincipal = userPrincipalLookupService.lookupPrincipalByGroupName(_fileGroup);
+                if (groupPrincipal != null) {
+                    Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(groupPrincipal);
+                }
+            } catch (IOException _ex) {
+                LOGGER.error("Could not change group of {} to {}", _path, _fileGroup, _ex);
+            }
+        }
+
+        if (!Util.isWindows() && _fileUnixPermissions != null) {
+            try {
+                Files.setPosixFilePermissions(_path, _fileUnixPermissions);
+            } catch (Exception _ex) {
+                LOGGER.error("Could not set file permissions of {} to {}", _path, _fileUnixPermissions, _ex);
+            }
+        }
     }
 }

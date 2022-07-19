@@ -19,7 +19,13 @@ public class TcpTransportProvider implements ITransportProvider {
 
     @Override
     public AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
-        return new TcpTransport(_address, _timeout);
+        TcpBusAddress address = null;
+        if (_address instanceof TcpBusAddress) {
+            address = (TcpBusAddress) _address;
+        } else {
+            address = new TcpBusAddress(_address);
+        }
+        return new TcpTransport(address, _timeout);
     }
 
     @Override

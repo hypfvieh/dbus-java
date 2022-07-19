@@ -3,7 +3,6 @@ package org.freedesktop.dbus.transport.jnr;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
@@ -26,7 +25,7 @@ public class UnixSocketTransport extends AbstractUnixTransport {
     private UnixSocketChannel       socket;
     private UnixServerSocketChannel serverSocket;
 
-    UnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
+    UnixSocketTransport(JnrUnixBusAddress _address) throws TransportConfigurationException {
         super(_address);
 
         if (_address.isAbstract()) {
@@ -88,6 +87,7 @@ public class UnixSocketTransport extends AbstractUnixTransport {
         }
     }
 
+    @Deprecated
     @Override
     protected boolean isAbstractAllowed() {
         return true;

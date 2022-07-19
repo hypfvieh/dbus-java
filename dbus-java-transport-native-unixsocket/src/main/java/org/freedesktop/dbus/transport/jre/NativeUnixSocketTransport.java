@@ -7,7 +7,6 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
@@ -34,12 +33,10 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
     private SocketChannel                 socket;
     private ServerSocketChannel           serverSocket;
 
-    NativeUnixSocketTransport(BusAddress _address) throws TransportConfigurationException {
+    NativeUnixSocketTransport(UnixBusAddress _address) throws TransportConfigurationException {
         super(_address);
 
-        if (_address.isAbstract()) {
-            throw new TransportConfigurationException("Abstract sockets are not supported using java native unix sockets");
-        } else if (_address.hasPath()) {
+        if (_address.hasPath()) {
             unixSocketAddress = UnixDomainSocketAddress.of(_address.getPath());
         } else {
             throw new TransportConfigurationException("Native unix socket url has to specify 'path'");
@@ -96,6 +93,7 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         }
     }
 
+    @Deprecated
     @Override
     public boolean isAbstractAllowed() {
         return false;

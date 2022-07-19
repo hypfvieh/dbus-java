@@ -43,10 +43,6 @@ public abstract class AbstractTransport implements Closeable {
     protected AbstractTransport(BusAddress _address) {
         address = _address;
 
-        if (!isAbstractAllowed() && _address.isAbstract()) {
-            throw new UnsupportedOperationException("Abstract sockets are not supported by transport " + getClass().getName());
-        }
-
         if (_address.isListeningSocket()) {
             saslMode = SASL.SaslMode.SERVER;
         } else {
@@ -92,10 +88,10 @@ public abstract class AbstractTransport implements Closeable {
      * @return boolean
      */
     public synchronized boolean isConnected() {
-        return outputWriter != null && !outputWriter.isClosed() 
+        return outputWriter != null && !outputWriter.isClosed()
                 && inputReader != null && !inputReader.isClosed();
     }
-    
+
     /**
      * Method to indicate if passing of file descriptors is allowed.
      *
@@ -106,7 +102,10 @@ public abstract class AbstractTransport implements Closeable {
     /**
      * Return true if the transport supports 'abstract' sockets.
      * @return true if abstract sockets supported, false otherwise
+     *
+     * @deprecated Is no longer used and will be removed
      */
+    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-07-18")
     protected abstract boolean isAbstractAllowed();
 
     /**

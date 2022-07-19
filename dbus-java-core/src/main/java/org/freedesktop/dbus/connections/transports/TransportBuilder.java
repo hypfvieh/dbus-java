@@ -1,15 +1,7 @@
 package org.freedesktop.dbus.connections.transports;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.attribute.GroupPrincipal;
-import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -279,56 +271,6 @@ public class TransportBuilder {
     }
 
     /**
-     * Setup the unix socket file permissions.
-     * Permissions are only set if they were configured using the appropriate withXXX method.
-     * <ul>
-     * <li>To set user: Use {@link #withUnixSocketFileOwner(String)}</li>
-     * <li>To set group: Use {@link #withUnixSocketFileGroup(String)}</li>
-     * <li>To set file permission: Use {@link #withUnixSocketFilePermissions(PosixFilePermission...)}</li>
-     * </ul>
-     * User and group can always be set, file permissions are only set on non-windows OSes.
-     */
-    private void setFilePermissions(Path _path) {
-        Objects.requireNonNull(_path, "Path required");
-        UserPrincipalLookupService userPrincipalLookupService = _path.getFileSystem().getUserPrincipalLookupService();
-
-        if (userPrincipalLookupService == null) {
-            LOGGER.error("Unable to set user/group permissions on {}", _path);
-        }
-
-
-        if (!Util.isBlank(fileOwner)) {
-            try {
-                UserPrincipal userPrincipal = userPrincipalLookupService.lookupPrincipalByName(fileOwner);
-                if (userPrincipal != null) {
-                    Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setOwner(userPrincipal);
-                }
-            } catch (IOException _ex) {
-                LOGGER.error("Could not change owner of {} to {}", _path, fileOwner, _ex);
-            }
-        }
-
-        if (!Util.isBlank(fileGroup)) {
-            try {
-                GroupPrincipal groupPrincipal = userPrincipalLookupService.lookupPrincipalByGroupName(fileGroup);
-                if (groupPrincipal != null) {
-                    Files.getFileAttributeView(_path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(groupPrincipal);
-                }
-            } catch (IOException _ex) {
-                LOGGER.error("Could not change group of {} to {}", _path, fileGroup, _ex);
-            }
-        }
-
-        if (!Util.isWindows() && fileUnixPermissions != null) {
-            try {
-                Files.setPosixFilePermissions(_path, fileUnixPermissions);
-            } catch (Exception _ex) {
-                LOGGER.error("Could not set file permissions of {} to {}", _path, fileUnixPermissions, _ex);
-            }
-        }
-    }
-
-    /**
      * Create the transport with the previously provided configuration.
      *
      * @return {@link AbstractTransport} instance
@@ -360,8 +302,8 @@ public class TransportBuilder {
             throw new DBusException("Unknown address type " + myBusAddress.getType() + " or no transport provider found for bus type " + myBusAddress.getBusType());
         }
 
-        if (myBusAddress.isListeningSocket() && myBusAddress.isFileBasedAddress()) {
-            setFilePermissions(new File(myBusAddress.getPath()).toPath());
+        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress) {
+            ((IFileBasedBusAddress) myBusAddress).updatePermissions(fileOwner, fileGroup, fileUnixPermissions);
         }
 
         if (autoConnect) {

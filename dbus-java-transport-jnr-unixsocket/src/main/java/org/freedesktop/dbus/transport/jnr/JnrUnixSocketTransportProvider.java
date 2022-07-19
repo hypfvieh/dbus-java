@@ -15,7 +15,13 @@ public class JnrUnixSocketTransportProvider implements ITransportProvider {
 
     @Override
     public AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
-        return new UnixSocketTransport(_address);
+        JnrUnixBusAddress address = null;
+        if (_address instanceof JnrUnixBusAddress) {
+            address = (JnrUnixBusAddress) _address;
+        } else {
+            address = new JnrUnixBusAddress(_address);
+        }
+        return new UnixSocketTransport(address);
     }
 
     @Override
