@@ -205,6 +205,18 @@ public class BusAddress {
     }
 
     /**
+     * Returns a the value of the given parameter.
+     * <p>
+     * When no value present, <code>null</code> is returned.
+     *
+     * @return Map, maybe empty
+     * @since 4.1.1 - 2022-07-19
+     */
+    public String getParameterValue(String _parameter) {
+        return parameters.get(_parameter);
+    }
+
+    /**
      * Creates a listening BusAddress if this instance is not already listening.
      *
      * @return new BusAddress or this
