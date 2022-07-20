@@ -146,14 +146,14 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
         // no unix transport but address wants to use a unix socket
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
                 && address != null
-                && address.getBusType().equals("UNIX")) {
+                && address.isBusType("UNIX")) {
             throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath.'");
         }
 
         // no tcp transport but TCP address given
         if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
                 && address != null
-                && address.getBusType().equals("TCP")) {
+                && address.isBusType("TCP")) {
             throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath.'");
         }
 

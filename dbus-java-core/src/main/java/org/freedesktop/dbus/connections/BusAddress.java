@@ -130,6 +130,25 @@ public class BusAddress {
     }
 
     /**
+     * Checks if this {@link BusAddress} is for the given bus type.<br>
+     * The given type will be compared case-insensitive.
+     * <br>
+     * e.g.
+     * <pre>
+     * isBusType("unix");
+     * </pre>
+     *
+     * @param _type to compare
+     *
+     * @return true if same type (case-insensitive), false if null or not same type
+     *
+     * @since 4.1.1 - 2022-07-20
+     */
+    public boolean isBusType(String _type) {
+        return type != null && type.equalsIgnoreCase(_type);
+    }
+
+    /**
      * True if this is a listening address.
      * @return true if listening
      */

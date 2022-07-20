@@ -198,7 +198,7 @@ public final class DBusConnection extends AbstractConnection {
 
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
                 && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (address == null || address.getBusType().equals("UNIX"))) { // no address or unix socket address
+                && (address == null || address.isBusType("UNIX"))) { // no address or unix socket address
 
             // no UNIX transport available, or lookup did not return anything useful
             address = BusAddress.of(System.getProperty(TCP_ADDRESS_PROPERTY));

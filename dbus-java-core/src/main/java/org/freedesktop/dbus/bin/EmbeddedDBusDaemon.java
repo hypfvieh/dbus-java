@@ -39,7 +39,7 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     public EmbeddedDBusDaemon(BusAddress _address) {
         address = Objects.requireNonNull(_address, "Address required");
-        if (_address.getBusType().equals("TCP")) {
+        if (_address.isBusType("TCP")) {
             String addrStr  = BusAddress.of(address).removeParameter("listen").toString();
             System.setProperty(AbstractConnection.TCP_ADDRESS_PROPERTY, addrStr);
         }
@@ -198,7 +198,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      * @throws DBusException when the provided bus address is wrong
      */
     private void startListening() throws IOException, DBusException {
-        if (!TransportBuilder.getRegisteredBusTypes().contains(address.getBusType().toUpperCase())) {
+        if (!TransportBuilder.getRegisteredBusTypes().contains(address.getBusType())) {
             throw new IllegalArgumentException("Unknown or unsupported address type: " + address.getType());
         }
 
