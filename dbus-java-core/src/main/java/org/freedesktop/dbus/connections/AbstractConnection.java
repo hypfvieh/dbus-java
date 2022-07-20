@@ -197,10 +197,11 @@ public abstract class AbstractConnection implements Closeable {
      * @param _handler handler to use
      *
      * @param <T> signal type
+     * @return closeable that removes signal handler
      *
      * @throws DBusException on error
      */
-    protected abstract <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
+    protected abstract <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
 
     /**
      * Remove a generic signal handler with the given {@link DBusMatchRule}.
@@ -220,9 +221,10 @@ public abstract class AbstractConnection implements Closeable {
      *
      * @param _rule rule to add
      * @param _handler handler to use
+     * @return closeable that removes signal handler
      * @throws DBusException on error
      */
-    protected abstract void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
+    protected abstract AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
 
     /**
      * The generated UUID of this machine.
@@ -454,16 +456,17 @@ public abstract class AbstractConnection implements Closeable {
      *            The signal to watch for.
      * @param _handler
      *            The handler to call when a signal is received.
+     * @return closeable that removes signal handler
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
+    public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
         }
-        addSigHandler(new DBusMatchRule(_type), _handler);
+        return addSigHandler(new DBusMatchRule(_type), _handler);
     }
 
     /**
@@ -478,12 +481,13 @@ public abstract class AbstractConnection implements Closeable {
      *            The object from which the signal will be emitted
      * @param _handler
      *            The handler to call when a signal is received.
+     * @return closeable that removes signal handler
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
+    public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
             throws DBusException {
         if (!DBusSignal.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Signal");
@@ -496,7 +500,7 @@ public abstract class AbstractConnection implements Closeable {
         if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
             throw new DBusException("Invalid object path: " + objectpath);
         }
-        addSigHandler(new DBusMatchRule(_type, null, objectpath), _handler);
+        return addSigHandler(new DBusMatchRule(_type, null, objectpath), _handler);
     }
 
     protected <T extends DBusSignal> void addSigHandlerWithoutMatch(Class<? extends DBusSignal> _signal, DBusSigHandler<T> _handler) throws DBusException {

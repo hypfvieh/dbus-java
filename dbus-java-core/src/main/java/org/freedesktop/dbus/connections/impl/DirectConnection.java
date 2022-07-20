@@ -255,7 +255,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
-    protected <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
+    protected <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
 
         Queue<DBusSigHandler<? extends DBusSignal>> v =
@@ -265,6 +265,12 @@ public class DirectConnection extends AbstractConnection {
                 });
 
         v.add(_handler);
+        return new AutoCloseable() {
+			@Override
+			public void close() throws Exception {
+				removeSigHandler(_rule, _handler);
+			}
+		};
     }
 
     @Override
@@ -280,7 +286,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
-    protected void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
+    protected AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
         Queue<DBusSigHandler<DBusSignal>> v =
                 getGenericHandledSignals().computeIfAbsent(key, val -> {
@@ -289,6 +295,12 @@ public class DirectConnection extends AbstractConnection {
                 });
 
         v.add(_handler);
+        return new AutoCloseable() {
+			@Override
+			public void close() throws Exception {
+				removeGenericSigHandler(_rule, _handler);
+			}
+		};
     }
 
     @Override
