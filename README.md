@@ -61,6 +61,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Use `BusAddress` internally instead of Strings
    - Use subclasses of `BusAddress` in Tcp/UnixTransport
    - Added method `isBusType(String)` to `BusAddress` class which allows checking which kind of transport is used case-insensitive and null-safe
+   - Support a custom callback on transports right before connecting (preConnectCallback) ([#174](https://github.com/hypfvieh/dbus-java/issues/174))
    
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))

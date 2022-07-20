@@ -29,16 +29,18 @@ public abstract class AbstractTransport implements Closeable {
 
     private final ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final BusAddress address;
+    private final Logger                         logger    = LoggerFactory.getLogger(getClass());
+    private final BusAddress                     address;
 
-    private SASL.SaslMode    saslMode;
+    private SASL.SaslMode                        saslMode;
 
-    private int              saslAuthMode;
-    private IMessageReader    inputReader;
-    private IMessageWriter    outputWriter;
+    private int                                  saslAuthMode;
+    private IMessageReader                       inputReader;
+    private IMessageWriter                       outputWriter;
 
-    private boolean fileDescriptorSupported;
+    private boolean                              fileDescriptorSupported;
+
+    private Runnable                             preConnectCallback;
 
     protected AbstractTransport(BusAddress _address) {
         address = _address;
@@ -122,10 +124,25 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException if connection fails
      */
     public final SocketChannel connect() throws IOException {
+        if (preConnectCallback != null) {
+            preConnectCallback.run();
+        }
         SocketChannel channel = connectImpl();
         authenticate(channel);
         setInputOutput(channel);
         return channel;
+    }
+
+    /**
+     * Set a callback which will be called right before the connection will
+     * be established to the transport.
+     *
+     * @param _run runnable to execute, null if no callback should be executed
+     *
+     * @since 4.1.1 - 2022-07-20
+     */
+    public void setPreConnectCallback(Runnable _run) {
+        preConnectCallback = _run;
     }
 
     /**

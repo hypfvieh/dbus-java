@@ -32,22 +32,24 @@ import org.slf4j.LoggerFactory;
  */
 public class TransportBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransportBuilder.class);
-    private static final Map<String, ITransportProvider> PROVIDERS = getTransportProvider();
+    private static final Logger                          LOGGER      = LoggerFactory.getLogger(TransportBuilder.class);
+    private static final Map<String, ITransportProvider> PROVIDERS   = getTransportProvider();
 
-    private BusAddress busAddress;
+    private BusAddress                                   busAddress;
 
-    private boolean listening;
-    private int timeout = AbstractConnection.TCP_CONNECT_TIMEOUT;
-    private boolean autoConnect = true;
-    private SaslAuthMode authMode = null;
+    private boolean                                      listening;
+    private Runnable                                     preConnectCallback;
+
+    private int                                          timeout     = AbstractConnection.TCP_CONNECT_TIMEOUT;
+    private boolean                                      autoConnect = true;
+    private SaslAuthMode                                 authMode    = null;
 
     /** user to set on socket file if this is a server transport (null to do nothing). */
-    private String fileOwner;
+    private String                                       fileOwner;
     /** group to set on socket file if this is a server transport (null to do nothing). */
-    private String fileGroup;
+    private String                                       fileGroup;
     /** unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if null) */
-    private Set<PosixFilePermission> fileUnixPermissions;
+    private Set<PosixFilePermission>                     fileUnixPermissions;
 
     static Map<String, ITransportProvider> getTransportProvider() {
         Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
@@ -184,6 +186,19 @@ public class TransportBuilder {
     }
 
     /**
+     * Set a callback which will be called right before the connection
+     * to the transport is established.
+     *
+     * @param _runnable runnable to call, null to remove any callback
+     *
+     * @return this
+     */
+    public TransportBuilder withPreConnectCallback(Runnable _runnable) {
+        preConnectCallback = _runnable;
+        return this;
+    }
+
+    /**
      * Instantly connect to DBus when {@link #build()} is called.
      * <p>
      * default: true
@@ -305,6 +320,8 @@ public class TransportBuilder {
         if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress) {
             ((IFileBasedBusAddress) myBusAddress).updatePermissions(fileOwner, fileGroup, fileUnixPermissions);
         }
+
+        transport.setPreConnectCallback(preConnectCallback);
 
         if (autoConnect) {
             transport.connect();
