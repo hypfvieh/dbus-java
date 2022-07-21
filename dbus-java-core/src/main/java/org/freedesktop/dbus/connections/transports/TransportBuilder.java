@@ -324,6 +324,7 @@ public class TransportBuilder {
             ((IFileBasedBusAddress) myBusAddress).updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
         }
 
+        transport.setSaslUid(config.getSaslUid());
         transport.setPreConnectCallback(config.getPreConnectCallback());
 
         if (config.isAutoConnect()) {
