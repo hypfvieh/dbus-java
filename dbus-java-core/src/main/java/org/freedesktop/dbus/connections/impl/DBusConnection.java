@@ -752,6 +752,7 @@ public final class DBusConnection extends AbstractConnection {
      * @param _source
      *            The process which will send the signal. This <b>MUST</b> be a unique bus name and not a well known
      *            name.
+     * @return closeable that removes signal handler
      * @param _handler
      *            The handler to call when a signal is received.
      * @throws DBusException
@@ -759,10 +760,17 @@ public final class DBusConnection extends AbstractConnection {
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
+    public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
         validateSignal(_type, _source);
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
+        return new AutoCloseable() {
+			
+			@Override
+			public void close() throws DBusException {
+				removeSigHandler(_type, _source, _handler);
+			}
+		};
     }
 
     /**
@@ -780,12 +788,13 @@ public final class DBusConnection extends AbstractConnection {
      *            The object from which the signal will be emitted
      * @param _handler
      *            The handler to call when a signal is received.
+     * @return closeable that removes signal handler
      * @throws DBusException
      *             If listening for the signal on the bus failed.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusSignal.
      */
-    public <T extends DBusSignal> void addSigHandler(Class<T> _type, String _source, DBusInterface _object,
+    public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
         validateSignal(_type, _source);
 
@@ -794,6 +803,12 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: " + objectpath);
         }
         addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
+        return new AutoCloseable() {
+			@Override
+			public void close() throws DBusException {
+				removeSigHandler(_type, _source, _object, _handler);
+			}
+		};
     }
 
     /**
@@ -821,7 +836,7 @@ public final class DBusConnection extends AbstractConnection {
      * {@inheritDoc}
      */
     @Override
-    public <T extends DBusSignal> void addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
+    public <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
         Objects.requireNonNull(_rule, "Match rule cannot be null");
@@ -850,6 +865,12 @@ public final class DBusConnection extends AbstractConnection {
                 throw new DBusException("Cannot add match rule.", dbee);
             }
         }
+        return new AutoCloseable() {
+			@Override
+			public void close() throws DBusException {
+				removeSigHandler(_rule, _handler);
+			}
+		};
     }
 
     /**
@@ -950,7 +971,7 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     @Override
-    public void addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
+    public AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
 
         AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
@@ -973,6 +994,12 @@ public final class DBusConnection extends AbstractConnection {
                 throw new DBusException(dbee.getMessage());
             }
         }
+        return new AutoCloseable() {
+			@Override
+			public void close() throws DBusException {
+				removeGenericSigHandler(_rule, _handler);
+			}
+		};
     }
 
     private class SigHandler implements DBusSigHandler<DBusSignal> {
