@@ -202,12 +202,13 @@ public class EmbeddedDBusDaemon implements Closeable {
             throw new IllegalArgumentException("Unknown or unsupported address type: " + address.getType());
         }
 
-        try (AbstractTransport transport = TransportBuilder.create(address)
+        try (AbstractTransport transport = TransportBuilder.create(address).configure()
                 .withSaslAuthMode(getSaslAuthMode())
                 .withUnixSocketFileOwner(unixSocketFileOwner)
                 .withUnixSocketFileGroup(unixSocketFileGroup)
                 .withUnixSocketFilePermissions(unixSocketFilePermissions)
                 .withAutoConnect(false)
+                .back()
                 .build()) {
             while (daemonThread.isRunning()) {
                 try {

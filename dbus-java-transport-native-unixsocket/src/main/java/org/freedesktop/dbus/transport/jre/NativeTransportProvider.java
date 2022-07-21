@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.transport.jre;
 
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
@@ -14,7 +15,7 @@ public class NativeTransportProvider implements ITransportProvider {
     }
 
     @Override
-    public AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
+    public AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         UnixBusAddress address;
         if (!(_address instanceof UnixBusAddress)) {
             address = new UnixBusAddress(_address);

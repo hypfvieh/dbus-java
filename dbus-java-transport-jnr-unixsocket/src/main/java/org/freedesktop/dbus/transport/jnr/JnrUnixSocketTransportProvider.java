@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.transport.jnr;
 
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
@@ -14,7 +15,7 @@ public class JnrUnixSocketTransportProvider implements ITransportProvider {
     }
 
     @Override
-    public AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
+    public AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         JnrUnixBusAddress address = null;
         if (_address instanceof JnrUnixBusAddress) {
             address = (JnrUnixBusAddress) _address;

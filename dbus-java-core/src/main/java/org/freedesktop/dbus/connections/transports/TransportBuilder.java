@@ -3,24 +3,21 @@ package org.freedesktop.dbus.connections.transports;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
-import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,21 +32,7 @@ public class TransportBuilder {
     private static final Logger                          LOGGER      = LoggerFactory.getLogger(TransportBuilder.class);
     private static final Map<String, ITransportProvider> PROVIDERS   = getTransportProvider();
 
-    private BusAddress                                   busAddress;
-
-    private boolean                                      listening;
-    private Runnable                                     preConnectCallback;
-
-    private int                                          timeout     = AbstractConnection.TCP_CONNECT_TIMEOUT;
-    private boolean                                      autoConnect = true;
-    private SaslAuthMode                                 authMode    = null;
-
-    /** user to set on socket file if this is a server transport (null to do nothing). */
-    private String                                       fileOwner;
-    /** group to set on socket file if this is a server transport (null to do nothing). */
-    private String                                       fileGroup;
-    /** unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if null) */
-    private Set<PosixFilePermission>                     fileUnixPermissions;
+    private TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
 
     static Map<String, ITransportProvider> getTransportProvider() {
         Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
@@ -83,19 +66,11 @@ public class TransportBuilder {
         return providers;
     }
 
-    private TransportBuilder(String _address) throws DBusException {
-        if (_address == null || _address.isBlank()) {
-            throw new IllegalArgumentException("BusAddress cannot be empty or null");
+    private TransportBuilder(TransportConfig _config) throws DBusException {
+        transportConfigBuilder = new TransportConfigBuilder<>(() -> this);
+        if (_config != null) {
+            transportConfigBuilder.withConfig(_config);
         }
-        busAddress = BusAddress.of(_address);
-        listening = _address.contains(",listen=true");
-        updateAddress();
-    }
-
-    private TransportBuilder(BusAddress _address) throws DBusException {
-        Objects.requireNonNull(_address, "Address required");
-        listening = _address.isListeningSocket();
-        busAddress = _address;
     }
 
     /**
@@ -105,9 +80,34 @@ public class TransportBuilder {
      *
      * @return new {@link TransportBuilder}
      * @throws DBusException if invalid address provided
+     *
      */
     public static TransportBuilder create(String _address) throws DBusException {
-        return new TransportBuilder(_address);
+        TransportConfig cfg = new TransportConfig();
+        cfg.setBusAddress(BusAddress.of(_address));
+        return new TransportBuilder(cfg);
+    }
+
+    /**
+     * Creates a new {@link TransportBuilder} instance using the given configuration.
+     *
+     * @param _config config, never null
+     *
+     * @return new {@link TransportBuilder}
+     * @throws DBusException if invalid address provided
+     */
+    public static TransportBuilder create(TransportConfig _config) throws DBusException {
+        return new TransportBuilder(_config);
+    }
+
+    /**
+     * Creates a new {@link TransportBuilder} instance using a empty transport configuration.
+     *
+     * @return new {@link TransportBuilder}
+     * @throws DBusException if invalid address provided
+     */
+    public static TransportBuilder create() throws DBusException {
+        return new TransportBuilder(null);
     }
 
     /**
@@ -119,7 +119,8 @@ public class TransportBuilder {
      * @throws DBusException if invalid address provided
      */
     public static TransportBuilder create(BusAddress _address) throws DBusException {
-        return new TransportBuilder(_address);
+        Objects.requireNonNull(_address, "BusAddress required");
+        return new TransportBuilder(new TransportConfig(_address));
     }
 
     /**
@@ -136,7 +137,7 @@ public class TransportBuilder {
         if (dynSession == null) {
             throw new DBusException("Could not create dynamic session for transport type '" + _transportType + "'");
         }
-        return new TransportBuilder(dynSession);
+        return create(dynSession);
     }
 
     /**
@@ -146,10 +147,11 @@ public class TransportBuilder {
      *
      * @param _timeout timeout, if &lt; 0 default timeout of {@link AbstractConnection#TCP_CONNECT_TIMEOUT} will be used
      *
-     * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withTimeout(int _timeout) {
-        timeout = _timeout < 0 ? AbstractConnection.TCP_CONNECT_TIMEOUT : _timeout;
+        configure().withTimeout(_timeout);
         return this;
     }
 
@@ -162,13 +164,11 @@ public class TransportBuilder {
      *
      * @return this
      *
-     * @deprecated method name indicates that a boolean is returned, but isn't.
-     * Please use {@link #listening(boolean)} instead.
+     * @deprecated please use {@link #configure()}
      */
     @Deprecated(forRemoval = true, since = "4.1.1 - 2022-05-23")
     public TransportBuilder isListening(boolean _listen) { //NOPMD
-        listening = _listen;
-        return this;
+        return listening(_listen);
     }
 
     /**
@@ -178,23 +178,11 @@ public class TransportBuilder {
      *
      * @param _listen true to create a listening transport (e.g. for server usage)
      *
-     * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder listening(boolean _listen) {
-        listening = _listen;
-        return this;
-    }
-
-    /**
-     * Set a callback which will be called right before the connection
-     * to the transport is established.
-     *
-     * @param _runnable runnable to call, null to remove any callback
-     *
-     * @return this
-     */
-    public TransportBuilder withPreConnectCallback(Runnable _runnable) {
-        preConnectCallback = _runnable;
+        configure().withListening(_listen);
         return this;
     }
 
@@ -206,9 +194,11 @@ public class TransportBuilder {
      * @param _connect boolean
      *
      * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withAutoConnect(boolean _connect) {
-        autoConnect = _connect;
+        configure().withAutoConnect(_connect);
         return this;
     }
 
@@ -220,10 +210,13 @@ public class TransportBuilder {
      * <p>
      *
      * @param _authMode authmode to use, if null is given, default mode will be used
+     *
      * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withSaslAuthMode(SaslAuthMode _authMode) {
-        authMode = _authMode;
+        configure().withSaslAuthMode(_authMode);
         return this;
     }
 
@@ -238,9 +231,11 @@ public class TransportBuilder {
      * @param _user user to set, if null is given JVM process user is used
      *
      * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFileOwner(String _user) {
-        fileOwner = _user;
+        configure().withUnixSocketFileOwner(_user);
         return this;
     }
 
@@ -255,9 +250,11 @@ public class TransportBuilder {
      * @param _group group to set, if null is given JVM process group is used
      *
      * @return this
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFileGroup(String _group) {
-        fileGroup = _group;
+        configure().withUnixSocketFileGroup(_group);
         return this;
     }
 
@@ -272,17 +269,21 @@ public class TransportBuilder {
      * @param _permissions permissions to set, if null is given default permissions will be used
      *
      * @return this
+     *
+     * @deprecated please use {@link #configure()}
      */
+    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFilePermissions(PosixFilePermission... _permissions) {
-        if (Util.isWindows()) {
-            return this;
-        }
-
-        if (_permissions == null || _permissions.length < 1) {
-            return this;
-        }
-        fileUnixPermissions = new LinkedHashSet<>(Arrays.asList(_permissions));
+        configure().withUnixSocketFilePermissions(_permissions);
         return this;
+    }
+
+    /**
+     * Returns the configuration builder to configure the transport.
+     * @return TransportConfigBuilder
+     */
+    public TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> configure() {
+        return transportConfigBuilder;
     }
 
     /**
@@ -294,20 +295,22 @@ public class TransportBuilder {
      * @throws IOException when autoconnect is true and connection to DBus failed
      */
     public AbstractTransport build() throws DBusException, IOException {
-        updateAddress();
-
         BusAddress myBusAddress = getAddress();
+        TransportConfig config = transportConfigBuilder.build();
+        if (myBusAddress == null) {
+            throw new DBusException("Transport requires a BusAddress, use withBusAddress() to configure before building");
+        }
 
         AbstractTransport transport = null;
-        ITransportProvider provider = PROVIDERS.get(myBusAddress.getBusType());
+        ITransportProvider provider = PROVIDERS.get(config.getBusAddress().getBusType());
         if (provider == null) {
-            throw new DBusException("No transport provider found for bustype " + myBusAddress.getBusType());
+            throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
         }
 
         try {
-            transport = provider.createTransport(myBusAddress, timeout);
-            if (authMode != null) {
-                transport.setSaslAuthMode(authMode.getAuthMode());
+            transport = provider.createTransport(myBusAddress, config);
+            if (config.getAuthMode() != null) {
+                transport.setSaslAuthMode(config.getAuthMode().getAuthMode());
             }
         } catch (TransportConfigurationException _ex) {
             LOGGER.error("Could not initialize transport", _ex);
@@ -318,12 +321,12 @@ public class TransportBuilder {
         }
 
         if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress) {
-            ((IFileBasedBusAddress) myBusAddress).updatePermissions(fileOwner, fileGroup, fileUnixPermissions);
+            ((IFileBasedBusAddress) myBusAddress).updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
         }
 
-        transport.setPreConnectCallback(preConnectCallback);
+        transport.setPreConnectCallback(config.getPreConnectCallback());
 
-        if (autoConnect) {
+        if (config.isAutoConnect()) {
             transport.connect();
         }
         return transport;
@@ -335,15 +338,7 @@ public class TransportBuilder {
      * @return {@link BusAddress}
      */
     public BusAddress getAddress() {
-        return busAddress;
-    }
-
-    private void updateAddress() throws DBusException {
-        if (!busAddress.isListeningSocket() && listening) { // not a listening address, but should be one
-            busAddress.addParameter("listen", "true");
-        } else if (busAddress.isListeningSocket() && !listening) { // listening address, but should not be one
-            busAddress.removeParameter("listen");
-        }
+        return configure().getBusAddress();
     }
 
     /**

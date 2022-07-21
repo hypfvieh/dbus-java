@@ -22,6 +22,7 @@ import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
@@ -63,11 +64,20 @@ public class DirectConnection extends AbstractConnection {
     */
     @Deprecated(since = "4.1.0", forRemoval = true)
     public DirectConnection(String _address, int _timeout) throws DBusException {
-        this(_timeout, BusAddress.of(_address), null);
+        this(createTransportConfig(_address, _timeout), null);
     }
 
-    DirectConnection(int _timeout, BusAddress _address, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_address, _timeout, _rsCfg);
+
+    @Deprecated(since = "4.1.1", forRemoval = true)
+    static TransportConfig createTransportConfig(String _address, int _timeout) {
+        TransportConfig cfg = new TransportConfig();
+        cfg.setBusAddress(BusAddress.of(_address));
+        cfg.getAdditionalConfig().put("TIMEOUT", _timeout);
+        return cfg;
+    }
+
+    DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_transportCfg, _rsCfg);
         machineId = createMachineId();
         if (!getAddress().isServer()) {
             super.listen();

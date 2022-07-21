@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
@@ -40,7 +41,7 @@ public abstract class AbstractTransport implements Closeable {
 
     private boolean                              fileDescriptorSupported;
 
-    private Runnable                             preConnectCallback;
+    private Consumer<AbstractTransport>          preConnectCallback;
 
     protected AbstractTransport(BusAddress _address) {
         address = _address;
@@ -125,7 +126,7 @@ public abstract class AbstractTransport implements Closeable {
      */
     public final SocketChannel connect() throws IOException {
         if (preConnectCallback != null) {
-            preConnectCallback.run();
+            preConnectCallback.accept(this);
         }
         SocketChannel channel = connectImpl();
         authenticate(channel);
@@ -141,7 +142,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @since 4.1.1 - 2022-07-20
      */
-    public void setPreConnectCallback(Runnable _run) {
+    public void setPreConnectCallback(Consumer<AbstractTransport> _run) {
         preConnectCallback = _run;
     }
 

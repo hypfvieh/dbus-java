@@ -30,6 +30,7 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -131,7 +132,9 @@ public final class DBusConnection extends AbstractConnection {
         return DBusConnectionBuilder.forAddress(_address)
             .withRegisterSelf(_registerSelf)
             .withShared(_shared)
-            .withTimeout(_timeout)
+            .transportConfig()
+                .withAdditionalConfig("TIMEOUT", 10000)
+            .back()
             .build();
     }
 
@@ -225,8 +228,8 @@ public final class DBusConnection extends AbstractConnection {
     }
 
 
-    DBusConnection(BusAddress _address, boolean _shared, String _machineId, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_address, _timeout, _rsCfg);
+    DBusConnection(boolean _shared, String _machineId, TransportConfig _tranportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_tranportCfg, _rsCfg);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;

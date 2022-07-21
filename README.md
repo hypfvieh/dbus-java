@@ -62,6 +62,11 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Use subclasses of `BusAddress` in Tcp/UnixTransport
    - Added method `isBusType(String)` to `BusAddress` class which allows checking which kind of transport is used case-insensitive and null-safe
    - Support a custom callback on transports right before connecting (preConnectCallback) ([#174](https://github.com/hypfvieh/dbus-java/issues/174))
+   - Reorganized `TransportBuilder`, this will also deprecate a lot of methods (`withXXX`) which were moved to `configure()` (which returns a `TransportConfigBuilder`)
+   - Transport configuration is now accessible using the `DBusConnectionBuilder` or `DirectConnectionBuilder` (by using e.g. `DBusConnectionBuilder.forSession().transportConfig()`)
+   - New `TransportConfig` supports additional configuration by providing a `Map<String,Object>` which allows passing arbitrary values to the transport
+   - Updated SPI `ITransportProvider` which now takes a `TransportConfig` object instead of the timeout int. For compatibility the old method is still present (and will be delegated), but should be considered deprecated and will be removed in the future
+   
    
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))

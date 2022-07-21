@@ -4,6 +4,7 @@ import java.nio.ByteOrder;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 
@@ -38,8 +39,10 @@ public class DirectConnectionBuilder extends BaseConnectionBuilder<DirectConnect
      */
     @Override
     public DirectConnection build() throws DBusException {
-        ReceivingServiceConfig cfg = buildThreadConfig();
-        DirectConnection c = new DirectConnection(getTimeout(), getAddress(), cfg);
+        ReceivingServiceConfig rsCfg = buildThreadConfig();
+        TransportConfig transportCfg = buildTransportConfig();
+
+        DirectConnection c = new DirectConnection(transportCfg, rsCfg);
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
         DirectConnection.setEndianness(getEndianess());

@@ -30,5 +30,5 @@ class NodeListIterator implements Iterator<Node> {
 
     @Override
     public void remove() {
-    };
+    }
 }

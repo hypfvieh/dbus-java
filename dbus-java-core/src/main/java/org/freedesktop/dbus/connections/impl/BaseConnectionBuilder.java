@@ -8,6 +8,9 @@ import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.ReceivingService;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.Message.Endian;
@@ -20,24 +23,24 @@ import org.freedesktop.dbus.messages.Message.Endian;
  *
  * @param <R> concrete type of connection builder
  */
-public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?>, C extends AbstractConnection> {
+public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C>, C extends AbstractConnection> {
 
-    private final Class<R>      returnType;
+    private final Class<R>                         returnType;
 
-    private final BusAddress    address;
+    private boolean                                weakReference = false;
+    private byte                                   endianess     = getSystemEndianness();
 
-    private boolean             weakReference              = false;
-    private byte                endianess                  = getSystemEndianness();
-    private int                 timeout                    = AbstractConnection.TCP_CONNECT_TIMEOUT;
-
-    private IDisconnectCallback disconnectCallback;
+    private IDisconnectCallback                    disconnectCallback;
 
     private final ReceivingServiceConfigBuilder<R> rsConfigBuilder;
 
+    private final TransportConfigBuilder<?, R>     transportConfigBuilder;
+
     protected BaseConnectionBuilder(Class<R> _returnType, BusAddress _address) {
         returnType = _returnType;
-        address = _address;
         rsConfigBuilder = new ReceivingServiceConfigBuilder<>(() -> self());
+        transportConfigBuilder = new TransportConfigBuilder<>(() -> self());
+        transportConfigBuilder.withBusAddress(_address);
     }
 
     /**
@@ -49,12 +52,21 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
     }
 
     /**
-     * Creates the configuration for to use for {@link ReceivingService}.
+     * Creates the configuration to use for {@link ReceivingService}.
      *
      * @return config
      */
     protected ReceivingServiceConfig buildThreadConfig() {
         return rsConfigBuilder.build();
+    }
+
+    /**
+     * Creates the configuration to use for {@link TransportBuilder}.
+     *
+     * @return config
+     */
+    protected TransportConfig buildTransportConfig() {
+        return transportConfigBuilder.build();
     }
 
     protected boolean isWeakReference() {
@@ -65,16 +77,8 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
         return endianess;
     }
 
-    protected int getTimeout() {
-        return timeout;
-    }
-
     protected IDisconnectCallback getDisconnectCallback() {
         return disconnectCallback;
-    }
-
-    protected BusAddress getAddress() {
-        return address;
     }
 
     /**
@@ -83,6 +87,14 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
      */
     public ReceivingServiceConfigBuilder<R> receivingThreadConfig() {
         return rsConfigBuilder;
+    }
+
+    /**
+     * Returns the builder to configure the used transport.
+     * @return builder
+     */
+    public TransportConfigBuilder<?, R> transportConfig() {
+        return transportConfigBuilder;
     }
 
     /**
@@ -158,18 +170,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<?, ?
         if (_endianess == Endian.BIG || _endianess == Endian.LITTLE) {
             endianess = _endianess;
         }
-        return self();
-    }
-
-    /**
-     * Set the timeout for the connection (used for TCP connections only). Default is
-     * {@value AbstractConnection#TCP_CONNECT_TIMEOUT}.
-     *
-     * @param _timeout timeout
-     * @return this
-     */
-    public R withTimeout(int _timeout) {
-        timeout = _timeout;
         return self();
     }
 

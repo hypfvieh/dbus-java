@@ -7,6 +7,7 @@ import java.nio.ByteOrder;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
@@ -199,21 +200,23 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
     @Override
     public DBusConnection build() throws DBusException {
         ReceivingServiceConfig cfg = buildThreadConfig();
+        TransportConfig transportCfg = buildTransportConfig();
 
         DBusConnection c;
         if (shared) {
             synchronized (DBusConnection.CONNECTIONS) {
-                c = DBusConnection.CONNECTIONS.get(getAddress().toString());
+                String busAddressStr = transportCfg.getBusAddress().toString();
+                c = DBusConnection.CONNECTIONS.get(busAddressStr);
                 if (c != null) {
                     c.concurrentConnections.incrementAndGet();
                     return c; // this connection already exists, do not change anything
                 } else {
-                    c = new DBusConnection(getAddress(), shared, machineId, getTimeout(), cfg);
-                    DBusConnection.CONNECTIONS.put(getAddress().toString(), c);
+                    c = new DBusConnection(shared, machineId, transportCfg, cfg);
+                    DBusConnection.CONNECTIONS.put(busAddressStr, c);
                 }
             }
         } else {
-            c = new DBusConnection(getAddress(), shared, machineId, getTimeout(), cfg);
+            c = new DBusConnection(shared, machineId, transportCfg, cfg);
         }
 
         c.setDisconnectCallback(getDisconnectCallback());

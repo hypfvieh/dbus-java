@@ -36,6 +36,7 @@ import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
@@ -67,7 +68,9 @@ public abstract class AbstractConnection implements Closeable {
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
     /**
      * Connect timeout, used for TCP only.
+     *
      */
+    @Deprecated
     public static final int TCP_CONNECT_TIMEOUT     = 100000;
 
     /**
@@ -116,7 +119,7 @@ public abstract class AbstractConnection implements Closeable {
 
     private Optional<IDisconnectCallback>                                       disconnectCallback = Optional.ofNullable(null);
 
-    protected AbstractConnection(BusAddress _address, int _timeout, ReceivingServiceConfig _rsCfg) throws DBusException {
+    protected AbstractConnection(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
         exportedObjects = Collections.synchronizedMap(new HashMap<>());
         importedObjects = new ConcurrentHashMap<>();
@@ -137,11 +140,11 @@ public abstract class AbstractConnection implements Closeable {
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
 
-        transportBuilder = TransportBuilder.create(_address);
+        transportBuilder = TransportBuilder.create(_transportConfig);
         readerThread = new IncomingMessageThread(this, transportBuilder.getAddress());
 
         try {
-            transport = transportBuilder.withTimeout(_timeout).build();
+            transport = transportBuilder.build();
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
             if (_ex instanceof IOException) {
