@@ -305,6 +305,8 @@ public class TransportBuilder {
         ITransportProvider provider = PROVIDERS.get(config.getBusAddress().getBusType());
         if (provider == null) {
             throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
+        } else {
+            LOGGER.info("Using transport {} to connect to {}", provider.getTransportName(), config.getBusAddress());
         }
 
         try {
