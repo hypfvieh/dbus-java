@@ -148,12 +148,12 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * <p>
      * Default is the user of the running JVM process on Unix-like operating systems. On Windows, the default is zero.<br><br>
      *
-     * @param _saslUid UID to set, if -1 is given default is used
+     * @param _saslUid UID to set, if a negative long is given the default is used
      *
      * @return this
      */
     public X withSaslUid(long _saslUid) {
-        config.setSaslUid(_saslUid == -1 ? OptionalLong.empty() : OptionalLong.of(_saslUid));
+        config.setSaslUid(_saslUid < 0 ? OptionalLong.empty() : OptionalLong.of(_saslUid));
         return self();
     }
 

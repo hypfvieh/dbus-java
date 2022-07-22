@@ -765,7 +765,7 @@ public final class DBusConnection extends AbstractConnection {
         validateSignal(_type, _source);
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
         return new AutoCloseable() {
-			
+
 			@Override
 			public void close() throws DBusException {
 				removeSigHandler(_type, _source, _handler);
@@ -890,7 +890,7 @@ public final class DBusConnection extends AbstractConnection {
 	        synchronized (CONNECTIONS) {
 	            DBusConnection connection = CONNECTIONS.get(getAddress().toString());
 	            if (connection != null) {
-	                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselfs
+	                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselves
 	                    CONNECTIONS.remove(getAddress().toString());
 
 	                    super.disconnect();
