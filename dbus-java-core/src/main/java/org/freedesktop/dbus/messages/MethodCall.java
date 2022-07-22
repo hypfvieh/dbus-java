@@ -11,8 +11,6 @@ import org.freedesktop.dbus.exceptions.MessageFormatException;
 public class MethodCall extends MethodBase {
     private static long REPLY_WAIT_TIMEOUT = Duration.ofSeconds(20).toMillis();
 
-    
-
     // CHECKSTYLE:OFF
     Message              reply              = null;
     // CHECKSTYLE:ON
@@ -60,7 +58,7 @@ public class MethodCall extends MethodBase {
         appendFileDescriptors(hargs, _sig, _args);
         padAndMarshall(hargs, getSerial(), _sig, _args);
     }
-   
+
     /**
     * Set the default timeout for method calls.
     * Default is 20s.
