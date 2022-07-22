@@ -385,16 +385,16 @@ public abstract class AbstractConnection implements Closeable {
      * @param _message message to send
      */
     public void sendMessage(Message _message) {
-    	Runnable runnable = new Runnable() {
+        if (!isConnected()) {
+            throw new NotConnected("Cannot send message: Not connected");
+        }
+
+        Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				sendMessageInternally(_message);
 			}
     	};
-
-    	if (!isConnected()) {
-    	    throw new NotConnected("Cannot send message: Not connected");
-    	}
 
     	senderService.execute(runnable);
     }
@@ -566,9 +566,28 @@ public abstract class AbstractConnection implements Closeable {
         // terminate the signal handling pool
         receivingService.shutdown(10, TimeUnit.SECONDS);
 
-        // shutdown sender executor service, send all remaining messages in main thread
-        for (Runnable runnable : senderService.shutdownNow()) {
-            runnable.run();
+        // stop potentially waiting method-calls
+        logger.debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
+        for (MethodCall mthCall : getPendingCalls().values()) {
+            try {
+                mthCall.setReply(new Error(mthCall, _connectionError));
+            } catch (DBusException _ex) {
+                logger.debug("Cannot set method reply to error", _ex);
+            }
+        }
+
+        // shutdown sender executor service, send all remaining messages in main thread when no exception caused disconnection
+        logger.debug("Shutting down SenderService");
+        List<Runnable> remainingMsgsToSend = senderService.shutdownNow();
+        // only try to send remaining messages when disconnection was not
+        // caused by an IOException, otherwise we may block for method calls waiting for
+        // reply which will never be received (due to disconnection by IOException)
+        if (_connectionError == null) {
+            for (Runnable runnable : remainingMsgsToSend) {
+                runnable.run();
+            }
+        } else if (!remainingMsgsToSend.isEmpty()) {
+            logger.debug("Will not send {} messages due to connection closed by IOException", remainingMsgsToSend.size());
         }
 
         // disconnect from the transport layer
@@ -1067,7 +1086,7 @@ public abstract class AbstractConnection implements Closeable {
             transport.writeMessage(_message);
 
         } catch (Exception _ex) {
-            logger.debug("Exception while sending message.", _ex);
+            logger.trace("Exception while sending message.", _ex);
 
             if (_message instanceof MethodCall && _ex instanceof DBusExecutionException) {
                 try {
@@ -1087,10 +1106,11 @@ public abstract class AbstractConnection implements Closeable {
                 try {
                     transport.writeMessage(new Error(_message, _ex));
                 } catch (IOException | DBusException _exIo) {
-                    logger.debug("", _exIo);
+                    logger.debug("Error writing method return to transport", _exIo);
                 }
             }
             if (_ex instanceof IOException) {
+                logger.debug("Fatal IOException while sending message, disconnecting", _ex);
                 internalDisconnect((IOException) _ex);
             }
         }
