@@ -25,7 +25,7 @@ public class TcpTransport extends AbstractTransport {
     TcpTransport(BusAddress _address, int _timeout) {
         super(_address);
         timeout = _timeout;
-        setSaslAuthMode(SASL.AUTH_SHA);
+        getSaslConfig().setAuthMode(SASL.AUTH_SHA);
     }
 
     @Override

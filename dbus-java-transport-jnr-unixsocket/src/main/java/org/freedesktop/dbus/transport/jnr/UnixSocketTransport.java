@@ -36,7 +36,7 @@ public class UnixSocketTransport extends AbstractUnixTransport {
             throw new TransportConfigurationException("Unix socket url has to specify 'path' or 'abstract'");
         }
 
-        setSaslAuthMode(SASL.AUTH_EXTERNAL);
+        getSaslConfig().setAuthMode(SASL.AUTH_EXTERNAL);
     }
 
     @Override

@@ -42,7 +42,7 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
             throw new TransportConfigurationException("Native unix socket url has to specify 'path'");
         }
 
-        setSaslAuthMode(SASL.AUTH_EXTERNAL);
+        getSaslConfig().setAuthMode(SASL.AUTH_EXTERNAL);
     }
 
     @Override

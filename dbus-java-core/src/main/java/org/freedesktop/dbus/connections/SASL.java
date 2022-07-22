@@ -26,9 +26,9 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalLong;
 import java.util.Random;
 
+import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
@@ -380,7 +380,7 @@ public class SASL {
             }
     }
 
-    public String[] getTypes(int _types) {
+    public String[] convertAuthTypes(int _types) {
         switch (_types) {
             case AUTH_EXTERNAL:
                 return new String[] {
@@ -430,11 +430,11 @@ public class SASL {
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */
-    public boolean auth(SaslMode _mode, int _types, String _guid, OptionalLong _saslUid, SocketChannel _sock, AbstractTransport _transport) throws IOException {
+    public boolean auth(SaslConfig _config, SocketChannel _sock, AbstractTransport _transport) throws IOException {
         String luid = null;
         String kernelUid = null;
 
-        long uid = _saslUid.orElse(getUserId());
+        long uid = _config.getSaslUid().orElse(getUserId());
         luid = stupidlyEncode("" + uid);
 
         SASL.Command c;
@@ -444,9 +444,9 @@ public class SASL {
 
         while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
 
-            logger.trace("Mode: {} AUTH state: {}", _mode, state);
+            logger.trace("Mode: {} AUTH state: {}", _config.getMode(), state);
 
-            switch (_mode) {
+            switch (_config.getMode()) {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
@@ -623,19 +623,19 @@ public class SASL {
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
                                     case OK:
-                                        send(_sock, SaslCommand.OK, _guid);
+                                        send(_sock, SaslCommand.OK, _config.getGuid());
                                         state = SaslAuthState.WAIT_BEGIN;
                                         current = 0;
                                         break;
                                     case REJECT:
                                     default:
-                                        send(_sock, REJECTED, getTypes(_types));
+                                        send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
                                         current = 0;
                                         break;
                                 }
                                 break;
                             case ERROR:
-                                send(_sock, REJECTED, getTypes(_types));
+                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
                                 break;
                             case BEGIN:
                                 state = SaslAuthState.FAILED;
@@ -655,20 +655,20 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
-                                send(_sock, SaslCommand.OK, _guid);
+                                send(_sock, SaslCommand.OK, _config.getGuid());
                                 state = SaslAuthState.WAIT_BEGIN;
                                 current = 0;
                                 break;
                             case REJECT:
                             default:
-                                send(_sock, REJECTED, getTypes(_types));
+                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
                                 current = 0;
                                 break;
                             }
                         break;
                         case ERROR:
                         case CANCEL:
-                            send(_sock, REJECTED, getTypes(_types));
+                            send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
                             state = SaslAuthState.WAIT_AUTH;
                         break;
                         case BEGIN:
@@ -684,7 +684,7 @@ public class SASL {
                         switch (c.getCommand()) {
                             case ERROR:
                             case CANCEL:
-                                send(_sock, REJECTED, getTypes(_types));
+                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
                                 state = SaslAuthState.WAIT_AUTH;
                             break;
                             case BEGIN:
