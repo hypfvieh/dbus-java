@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -29,6 +30,7 @@ public final class TransportConfig {
     private int                         timeout          = 10000;
     private boolean                     autoConnect      = true;
     private SaslAuthMode                authMode         = null;
+    private OptionalLong                saslUid          = OptionalLong.empty();
 
     /** user to set on socket file if this is a server transport (null to do nothing). */
     private String                      fileOwner;
@@ -94,7 +96,15 @@ public final class TransportConfig {
         timeout = _timeout;
     }
 
-    public SaslAuthMode getAuthMode() {
+    public OptionalLong getSaslUid() {
+		return saslUid;
+	}
+
+	public void setSaslUid(OptionalLong _saslUid) {
+		this.saslUid = _saslUid;
+	}
+
+	public SaslAuthMode getAuthMode() {
         return authMode;
     }
 

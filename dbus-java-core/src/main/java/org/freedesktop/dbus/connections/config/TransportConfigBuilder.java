@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections.config;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -139,6 +140,20 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
         if (_timeout >= 0) {
             config.setTimeout(_timeout);
         }
+        return self();
+    }
+
+    /**
+     * Set to UID to present during SASL authentication.
+     * <p>
+     * Default is the user of the running JVM process on Unix-like operating systems. On Windows, the default is zero.<br><br>
+     *
+     * @param _saslUid UID to set, if a negative long is given the default is used
+     *
+     * @return this
+     */
+    public X withSaslUid(long _saslUid) {
+        config.setSaslUid(_saslUid < 0 ? OptionalLong.empty() : OptionalLong.of(_saslUid));
         return self();
     }
 

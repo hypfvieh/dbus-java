@@ -26,6 +26,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Random;
 
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -422,17 +423,18 @@ public class SASL {
      * @param _mode mode
      * @param _types types
      * @param _guid guid
+     * @param _saslUid SASL UID
      * @param _sock socket channel
      * @param _transport transport
      *
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */
-    public boolean auth(SaslMode _mode, int _types, String _guid, SocketChannel _sock, AbstractTransport _transport) throws IOException {
+    public boolean auth(SaslMode _mode, int _types, String _guid, OptionalLong _saslUid, SocketChannel _sock, AbstractTransport _transport) throws IOException {
         String luid = null;
         String kernelUid = null;
 
-        long uid = getUserId();
+        long uid = _saslUid.orElse(getUserId());
         luid = stupidlyEncode("" + uid);
 
         SASL.Command c;

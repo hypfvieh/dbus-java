@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.transports;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.OptionalLong;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -34,6 +35,7 @@ public abstract class AbstractTransport implements Closeable {
     private final BusAddress                     address;
 
     private SASL.SaslMode                        saslMode;
+    private OptionalLong                         saslUid;
 
     private int                                  saslAuthMode;
     private IMessageReader                       inputReader;
@@ -155,7 +157,7 @@ public abstract class AbstractTransport implements Closeable {
     private void authenticate(SocketChannel _sock) throws IOException {
         SASL sasl = new SASL(hasFileDescriptorSupport());
         try {
-            if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), _sock, this)) {
+            if (!sasl.auth(saslMode, saslAuthMode, address.getGuid(), saslUid, _sock, this)) {
                 throw new AuthenticationException("Failed to authenticate");
             }
         } catch (IOException e) {
@@ -200,7 +202,15 @@ public abstract class AbstractTransport implements Closeable {
 
     }
 
-    protected int getSaslAuthMode() {
+    protected OptionalLong getSaslUid() {
+		return saslUid;
+	}
+
+	protected void setSaslUid(OptionalLong saslUid) {
+		this.saslUid = saslUid;
+	}
+
+	protected int getSaslAuthMode() {
         return saslAuthMode;
     }
 
