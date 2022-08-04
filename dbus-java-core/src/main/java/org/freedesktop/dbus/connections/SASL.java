@@ -420,10 +420,7 @@ public class SASL {
      * Mode selects whether to run as a SASL server or client.
      * Types is a bitmask of the available auth types.
      *
-     * @param _mode mode
-     * @param _types types
-     * @param _guid guid
-     * @param _saslUid SASL UID
+     * @param _config sasl configuration parameters
      * @param _sock socket channel
      * @param _transport transport
      *

@@ -10,6 +10,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;

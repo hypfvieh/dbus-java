@@ -106,7 +106,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
      * @return this
      *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
+     * @throws IllegalArgumentException when value is out ouf range (value &lt; {@value Thread#MIN_PRIORITY} &amp;&amp; &gt; {@value Thread#MAX_PRIORITY})
      */
     public ReceivingServiceConfigBuilder<R> withSignalThreadPriority(int _priority) {
         config.setSignalThreadPriority(Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY));
@@ -121,7 +121,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
      * @return this
      *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
+     * @throws IllegalArgumentException when value is out ouf range (value &lt; {@value Thread#MIN_PRIORITY} &amp;&amp; &gt; {@value Thread#MAX_PRIORITY})
      */
     public ReceivingServiceConfigBuilder<R> withErrorThreadPriority(int _priority) {
         config.setErrorThreadPriority(Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY));
@@ -136,7 +136,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
      * @return this
      *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
+     * @throws IllegalArgumentException when value is out ouf range (value &lt; {@value Thread#MIN_PRIORITY} &amp;&amp; &gt; {@value Thread#MAX_PRIORITY})
      */
     public ReceivingServiceConfigBuilder<R> withMethedCallThreadPriority(int _priority) {
         config.setMethodCallThreadPriority(Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY));
@@ -151,7 +151,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      * @param _priority int &gt;={@value Thread#MIN_PRIORITY} and &lt;= {@value Thread#MAX_PRIORITY}
      * @return this
      *
-     * @throws IllegalArgumentException when value is out ouf range (value &lt;{@value Thread#MIN_PRIORITY} && &gt; {@value Thread#MAX_PRIORITY})
+     * @throws IllegalArgumentException when value is out ouf range (value &lt; {@value Thread#MIN_PRIORITY} &amp;&amp; &gt; {@value Thread#MAX_PRIORITY})
      */
     public ReceivingServiceConfigBuilder<R> withMethodReturnThreadPriority(int _priority) {
         config.setMethodReturnThreadPriority(Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY));

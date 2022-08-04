@@ -231,7 +231,6 @@ public abstract class AbstractTransport implements Closeable {
     /**
      * Set the SASL authentication mode.
      *
-     * @param _mode mode to set
      * @deprecated please use {@link #getSaslConfig()}.getAuthMode() instead
      */
     @Deprecated(since = "4.1.1 - 2022-07-22", forRemoval = true)
