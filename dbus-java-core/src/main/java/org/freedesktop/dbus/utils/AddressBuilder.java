@@ -9,12 +9,12 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 
 public class AddressBuilder {
-    private static final String DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
+    public static final String  DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
     public static final String  DEFAULT_SYSTEM_BUS_ADDRESS     = "unix:path=/var/run/dbus/system_bus_socket";
+    public static final String  DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
 
     private static final String DBUS_MACHINE_ID_SYS_VAR        = "DBUS_MACHINE_ID_LOCATION";
 
-    private static final String DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
     private static final String DBUS_SESSION_BUS_ADDRESS_MACOS = "DBUS_LAUNCHD_SESSION_BUS_SOCKET";
 
     /**
@@ -42,21 +42,26 @@ public class AddressBuilder {
      */
     public static BusAddress getSessionConnection(String _dbusMachineIdFile) {
 
-        String s = null;
+        // try to read session address from running process instance properties first
+        String s = System.getProperty(DBUS_SESSION_BUS_ADDRESS);
 
-        // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
-        if (Util.isMacOs()) {
-            s = "unix:path=" + System.getenv(DBUS_SESSION_BUS_ADDRESS_MACOS);
-        } else { // all others (linux)
-            s = System.getenv(DBUS_SESSION_BUS_ADDRESS);
+        // no session address in process properties, try to get it from environment
+        if (s == null) {
+            // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
+            if (Util.isMacOs()) {
+                s = "unix:path=" + System.getenv(DBUS_SESSION_BUS_ADDRESS_MACOS);
+            } else { // all others (linux)
+                s = System.getenv(DBUS_SESSION_BUS_ADDRESS);
+            }
         }
 
+        // no address found in instance properties and environment, try to get the address from session properties file
         if (s == null) {
             // address gets stashed in $HOME/.dbus/session-bus/`dbus-uuidgen --get`-`sed 's/:\(.\)\..*/\1/' <<<
             // $DISPLAY`
             String display = System.getenv("DISPLAY");
-            if (null == display) {
-                throw new AddressResolvingException("Cannot Resolve Session Bus Address");
+            if (display == null) {
+                throw new AddressResolvingException("Cannot Resolve Session Bus Address: DISPLAY variable not set");
             }
             if (display.charAt(0) != ':' && display.contains(":")) { // display seems to be a remote display
                                                                      // (e.g. X forward through SSH)
@@ -69,14 +74,17 @@ public class AddressBuilder {
                     uuid + "-" + display.replaceAll(":([0-9]*)\\..*", "$1"));
 
             if (!addressfile.exists()) {
-                throw new AddressResolvingException("Cannot Resolve Session Bus Address");
+                throw new AddressResolvingException("Cannot Resolve Session Bus Address: " + addressfile + " not found");
             }
 
             Properties readProperties = Util.readProperties(addressfile);
+            if (readProperties == null) {
+                throw new AddressResolvingException("Cannot Resolve Session Bus Address: Unable to read " + addressfile);
+            }
             String sessionAddress = readProperties.getProperty(DBUS_SESSION_BUS_ADDRESS);
 
             if (Util.isEmpty(sessionAddress)) {
-                throw new AddressResolvingException("Cannot Resolve Session Bus Address");
+                throw new AddressResolvingException("Cannot Resolve Session Bus Address: No session information found in " + addressfile);
             }
 
             // sometimes (e.g. Ubuntu 18.04) the returned address is wrapped in single quotes ('), we have to remove them

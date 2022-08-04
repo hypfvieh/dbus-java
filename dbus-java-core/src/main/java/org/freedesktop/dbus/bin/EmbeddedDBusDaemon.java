@@ -7,7 +7,6 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -38,11 +37,8 @@ public class EmbeddedDBusDaemon implements Closeable {
     private PosixFilePermission[] unixSocketFilePermissions;
 
     public EmbeddedDBusDaemon(BusAddress _address) {
-        address = Objects.requireNonNull(_address, "Address required");
-        if (_address.isBusType("TCP")) {
-            String addrStr  = BusAddress.of(address).removeParameter("listen").toString();
-            System.setProperty(AbstractConnection.TCP_ADDRESS_PROPERTY, addrStr);
-        }
+        // create copy of address so manipulation happens later does not interfere with our instance
+        address = BusAddress.of(Objects.requireNonNull(_address, "Address required"));
     }
 
     public EmbeddedDBusDaemon(String _address) throws DBusException {

@@ -13,7 +13,7 @@ import com.github.hypfvieh.util.StringUtil;
 import com.github.hypfvieh.util.SystemUtil;
 
 /**
- * Sample client which connects to our sample sample (#{@link RunTwoPartServer}).
+ * Sample client which connects to our sample sample (#{@link RunTwoPartDaemon}).
  *
  * @author hypfvieh
  */

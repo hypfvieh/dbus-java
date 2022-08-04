@@ -4,7 +4,6 @@ import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 
 import java.nio.ByteOrder;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
@@ -12,7 +11,6 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
@@ -41,20 +39,10 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        BusAddress address = TransportBuilder.getRegisteredBusTypes().contains("UNIX") ? // unix socket provider available
-                AddressBuilder.getSessionConnection(_machineIdFileLocation) // use session based on file/environment
-                    : createTcpAddress(); // use TCP fallback when no unix socket provider found
+        BusAddress address = AddressBuilder.getSessionConnection(_machineIdFileLocation);
         address = validateTransportAddress(address);
         DBusConnectionBuilder instance = new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
         return instance;
-    }
-
-    private static BusAddress createTcpAddress() {
-        try {
-            return BusAddress.of(System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY));
-        } catch (InvalidBusAddressException _ex) {
-            throw new InvalidBusAddressException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
-        }
     }
 
     /**
@@ -139,7 +127,7 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      */
     private static BusAddress validateTransportAddress(BusAddress _address) {
         if (TransportBuilder.getRegisteredBusTypes().isEmpty()) {
-            throw new IllegalArgumentException("No transports found to connect to DBus. Please add at least one transport provider to your classpath.'");
+            throw new IllegalArgumentException("No transports found to connect to DBus. Please add at least one transport provider to your classpath");
         }
 
         BusAddress address = _address;
@@ -148,22 +136,27 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
                 && address != null
                 && address.isBusType("UNIX")) {
-            throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath.'");
+            throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
         }
 
         // no tcp transport but TCP address given
         if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
                 && address != null
                 && address.isBusType("TCP")) {
-            throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath.'");
+            throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
         }
 
-        // no address given, no unix transport available but TCP -> use TCP fallback
-        if (address == null && !TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
-                && TransportBuilder.getRegisteredBusTypes().contains("TCP")) {
-
-            address = createTcpAddress();
-        }
+//        // no address given, no unix transport available but TCP -> use TCP fallback
+//        if (address == null && !TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
+//                && TransportBuilder.getRegisteredBusTypes().contains("TCP")) {
+//
+//            try {
+//                address = BusAddress.of(System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY));
+//            } catch (InvalidBusAddressException _ex) {
+//                throw new InvalidBusAddressException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
+//            }
+//
+//        }
 
         return address;
 

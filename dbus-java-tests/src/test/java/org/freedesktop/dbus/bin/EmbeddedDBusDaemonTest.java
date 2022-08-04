@@ -10,6 +10,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.freedesktop.dbus.utils.AddressBuilder;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -70,9 +71,15 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
         for (int i = 0; i < 2; i++) {
             String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), true);
+            BusAddress busAddress = BusAddress.of(address);
 
             // initialize
-            EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address);
+            EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(busAddress);
+
+            if (busAddress.isBusType("TCP")) {
+                String addrStr  = busAddress.removeParameter("listen").toString();
+                System.setProperty(AddressBuilder.DBUS_SESSION_BUS_ADDRESS, addrStr);
+            }
 
             // start the daemon in background to not block the test
             AtomicReference<Exception> exception = new AtomicReference<>();
@@ -81,6 +88,7 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
                     daemon.startInForeground();
                 } catch (Exception ex) {
                     exception.set(ex);
+                    ex.printStackTrace();
                 }
             });
             daemonThread.start();

@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.time.Duration;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.AddressBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
@@ -44,9 +46,16 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
             String busType = TransportBuilder.getRegisteredBusTypes().get(0);
             String addr = TransportBuilder.createDynamicSession(busType, true);
+            BusAddress address = BusAddress.of(addr);
+
             logger.info("Creating {} based DBus daemon on address {}", busType, addr);
             edbus = new EmbeddedDBusDaemon(addr);
             edbus.startInBackground();
+
+            if (address.isBusType("TCP")) {
+                String addrStr  = address.removeParameter("listen").toString();
+                System.setProperty(AddressBuilder.DBUS_SESSION_BUS_ADDRESS, addrStr);
+            }
 
             long maxWait = Duration.ofSeconds(30).toMillis();
             long sleepMs = 500;

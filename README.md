@@ -66,6 +66,14 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Transport configuration is now accessible using the `DBusConnectionBuilder` or `DirectConnectionBuilder` (by using e.g. `DBusConnectionBuilder.forSession().transportConfig()`)
    - New `TransportConfig` supports additional configuration by providing a `Map<String,Object>` which allows passing arbitrary values to the transport
    - Updated SPI `ITransportProvider` which now takes a `TransportConfig` object instead of the timeout int. For compatibility the old method is still present (and will be delegated), but should be considered deprecated and will be removed in the future
+   - Improved handling of remaining messages to send when disconnection is happening due to `IOException`. 
+   In case the disconnect is forced by an exception the remaining messages will be omitted. Otherwise connection may block because of waiting for a replies for `MethodCall`s.
+   It is assumed that a disconnection caused by an exception might have closed the transport already so no further messages may be send or received.
+   - Allow setting the SASL user ID manually, thanks to [brett-smith](https://github.com/brett-smith) ([PR#178](https://github.com/hypfvieh/dbus-java/issues/178))
+   - Moved all SASL related configuration to SaslConfig bean, deprecated methods in AbstractTransport directly related to that change
+   - Removed usage of `AbstractConnection.TCP_ADDRESS_PROPERTY` as this was a special behavior for using/testing `DBusDaemon`
+   - `EmbeddedDBusDaemon` will no longer set `AbstractConnection.TCP_ADDRESS_PROPERTY`, instead you have to handle the address you used for construction of `EmbeddedDBusDaemon` yourself
+   - `DBusConnectionBuilder.forSessionBus()` will use the same validation applied to system addresses
    
    
 ##### Changes in 4.1.0 (2022-05-23):
