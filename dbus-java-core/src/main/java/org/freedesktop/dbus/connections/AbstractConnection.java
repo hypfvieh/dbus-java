@@ -34,7 +34,6 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
-import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -92,34 +91,35 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
 
-    private final Logger                                                        logger;
+    private final Logger                                                          logger;
 
-    private final ObjectTree                                                    objectTree;
+    private final ObjectTree                                                      objectTree;
 
-    private final Map<String, ExportedObject>                                   exportedObjects;
-    private final Map<DBusInterface, RemoteObject>                              importedObjects;
+    private final Map<String, ExportedObject>                                     exportedObjects;
+    private final Map<DBusInterface, RemoteObject>                                importedObjects;
 
-    private final PendingCallbackManager                                        callbackManager;
+    private final PendingCallbackManager                                          callbackManager;
 
-    private final FallbackContainer                                             fallbackContainer;
+    private final FallbackContainer                                               fallbackContainer;
 
-    private final Queue<Error>                                                  pendingErrorQueue;
+    private final Queue<Error>                                                    pendingErrorQueue;
 
-    private final Map<SignalTuple, Queue<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    private final Map<SignalTuple, Queue<DBusSigHandler<DBusSignal>>>           genericHandledSignals;
-    private final Map<Long, MethodCall>                                         pendingCalls;
+    private final Map<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> handledSignals;
+    private final Map<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>>           genericHandledSignals;
+    private final Map<Long, MethodCall>                                           pendingCalls;
 
-    private final IncomingMessageThread                                         readerThread;
-    private final ExecutorService                                               senderService;
-    private final ReceivingService                                              receivingService;
-    private final TransportBuilder                                              transportBuilder;
+    private final IncomingMessageThread                                           readerThread;
+    private final ExecutorService                                                 senderService;
+    private final ReceivingService                                                receivingService;
+    private final TransportBuilder                                                transportBuilder;
 
-    private boolean                                                             weakreferences       = false;
-    private volatile boolean                                                    disconnecting        = false;
+    private boolean                                                               weakreferences       = false;
+    private volatile boolean                                                      disconnecting        = false;
 
-    private AbstractTransport                                                   transport;
+    private AbstractTransport                                                     transport;
 
-    private Optional<IDisconnectCallback>                                       disconnectCallback = Optional.ofNullable(null);
+    private Optional<IDisconnectCallback>                                         disconnectCallback   =
+            Optional.ofNullable(null);
 
     protected AbstractConnection(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
@@ -130,6 +130,7 @@ public abstract class AbstractConnection implements Closeable {
 
         handledSignals = new ConcurrentHashMap<>();
         genericHandledSignals = new ConcurrentHashMap<>();
+
         pendingCalls = Collections.synchronizedMap(new LinkedHashMap<>());
         callbackManager = new PendingCallbackManager();
 
@@ -510,13 +511,12 @@ public abstract class AbstractConnection implements Closeable {
 
     protected <T extends DBusSignal> void addSigHandlerWithoutMatch(Class<? extends DBusSignal> _signal, DBusSigHandler<T> _handler) throws DBusException {
         DBusMatchRule rule = new DBusMatchRule(_signal);
-        SignalTuple key = new SignalTuple(rule.getInterface(), rule.getMember(), rule.getObject(), rule.getSource());
         synchronized (getHandledSignals()) {
-            Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
+            Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(rule);
             if (null == v) {
                 v = new ConcurrentLinkedQueue<>();
                 v.add(_handler);
-                getHandledSignals().put(key, v);
+                getHandledSignals().put(rule, v);
             } else {
                 v.add(_handler);
             }
@@ -890,30 +890,15 @@ public abstract class AbstractConnection implements Closeable {
         List<DBusSigHandler<? extends DBusSignal>> handlers = new ArrayList<>();
         List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
 
-        Queue<DBusSigHandler<? extends DBusSignal>> t;
-        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, null));
-        if (null != t) {
-            handlers.addAll(t);
-        }
-        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), null));
-        if (null != t) {
-            handlers.addAll(t);
-        }
-        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), null, _signal.getSource()));
-        if (null != t) {
-            handlers.addAll(t);
-        }
-        t = getHandledSignals().get(new SignalTuple(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()));
-        if (null != t) {
-            handlers.addAll(t);
+        for (Entry<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> e : getHandledSignals().entrySet()) {
+            if (e.getKey().matches(_signal, false)) {
+                handlers.addAll(e.getValue());
+            }
         }
 
-        Queue<DBusSigHandler<DBusSignal>> gt;
-        Set<SignalTuple> allTuples = SignalTuple.getAllPossibleTuples(_signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource());
-        for (SignalTuple tuple : allTuples) {
-            gt = getGenericHandledSignals().get(tuple);
-            if (null != gt) {
-                genericHandlers.addAll(gt);
+        for (Entry<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>> e : getGenericHandledSignals().entrySet()) {
+            if (e.getKey().matches(_signal, false)) {
+                genericHandlers.addAll(e.getValue());
             }
         }
 
@@ -1195,11 +1180,11 @@ public abstract class AbstractConnection implements Closeable {
         return pendingErrorQueue;
     }
 
-    protected Map<SignalTuple, Queue<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
+    protected Map<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
         return handledSignals;
     }
 
-    protected Map<SignalTuple, Queue<DBusSigHandler<DBusSignal>>> getGenericHandledSignals() {
+    protected Map<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>> getGenericHandledSignals() {
         return genericHandledSignals;
     }
 

@@ -119,6 +119,24 @@ public final class Util {
     }
 
     /**
+     * Null-safe equals for two strings.
+     *
+     * @param _str1 first string
+     * @param _str2 second string
+     * @return true if both are equal (also true if both are null)
+     */
+    public static boolean strEquals(String _str1, String _str2) {
+        if (_str1 == _str2) {
+            return true;
+        } else if (_str1 == null || _str2 == null) {
+            return false;
+        } else if (_str1.length() != _str2.length()) {
+            return false;
+        }
+        return _str1.equals(_str2);
+    }
+
+    /**
      * Checks if the given String is either null or empty.
      * Blank means:<br>
      * <pre>

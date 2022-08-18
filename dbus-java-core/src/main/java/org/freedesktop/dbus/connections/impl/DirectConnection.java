@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
-import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
@@ -254,22 +253,19 @@ public class DirectConnection extends AbstractConnection {
 
     @Override
     protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(key);
+        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(_rule);
         if (null != v) {
             v.remove(_handler);
             if (0 == v.size()) {
-                getHandledSignals().remove(key);
+                getHandledSignals().remove(_rule);
             }
         }
     }
 
     @Override
     protected <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-
         Queue<DBusSigHandler<? extends DBusSignal>> v =
-                getHandledSignals().computeIfAbsent(key, val -> {
+                getHandledSignals().computeIfAbsent(_rule, val -> {
                     Queue<DBusSigHandler<? extends DBusSignal>> l = new ConcurrentLinkedQueue<>();
                     return l;
                 });
@@ -285,21 +281,19 @@ public class DirectConnection extends AbstractConnection {
 
     @Override
     protected void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(key);
+        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(_rule);
         if (null != v) {
             v.remove(_handler);
             if (0 == v.size()) {
-                getGenericHandledSignals().remove(key);
+                getGenericHandledSignals().remove(_rule);
             }
         }
     }
 
     @Override
     protected AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
         Queue<DBusSigHandler<DBusSignal>> v =
-                getGenericHandledSignals().computeIfAbsent(key, val -> {
+                getGenericHandledSignals().computeIfAbsent(_rule, val -> {
                     Queue<DBusSigHandler<DBusSignal>> l = new ConcurrentLinkedQueue<>();
                     return l;
                 });

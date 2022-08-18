@@ -1,7 +1,10 @@
 package org.freedesktop.dbus;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.freedesktop.dbus.errors.Error;
@@ -13,10 +16,27 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
+import org.freedesktop.dbus.utils.Util;
 
 public class DBusMatchRule {
     private static final Pattern IFACE_PATTERN = Pattern.compile(".*\\..*");
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
+
+    /** Equals operations used in {@link #matches(DBusMatchRule, boolean)} - do not change order! */
+    private static final List<Function<DBusMatchRule, String>> MATCHRULE_EQUALS_OPERATIONS = List.of(
+            x -> x.getInterface(),
+            x -> x.getMember(),
+            x -> x.getObject(),
+            x -> x.getSource()
+            );
+
+    /** Equals operations used in {@link #matches(DBusSignal, boolean)} - do not change order! */
+    private static final List<Function<DBusSignal, String>> SIGNAL_EQUALS_OPERATIONS = List.of(
+            x -> x.getInterface(),
+            x -> x.getName(),
+            x -> x.getPath(),
+            x -> x.getSource()
+            );
 
     /* signal, error, method_call, method_reply */
     private String                                              type;
@@ -114,7 +134,90 @@ public class DBusMatchRule {
             throw new DBusException("DBusInterfaces must be defined in a package.");
         }
     }
-    
+
+    /**
+     * Checks if the given rule matches with our rule.
+     * <p>
+     * Method supports partial matching by setting strict to false.
+     * Partial means that only the parts of this object are compared to the given
+     * object which were set (non-null) on ourselves.
+     * Fields set on the given object but not on ourselves will be ignored.
+     * </p>
+     *
+     * @param _rule rule to compare
+     * @param _strict true to get an exact match, false to allow partial matches
+     *
+     * @return true if matching
+     */
+    public boolean matches(DBusMatchRule _rule, boolean _strict) {
+        if (_rule == null) {
+            return false;
+        }
+
+        if (_strict) {
+            return Util.strEquals(_rule.getInterface(), getInterface())
+                    && Util.strEquals(_rule.getMember(), getMember())
+                    && Util.strEquals(_rule.getObject(), getObject())
+                    && Util.strEquals(_rule.getSource(), getSource());
+        }
+
+        String[] compareVals = new String[] {getInterface(), getMember(), getObject(), getSource()};
+
+        for (int i = 0; i < compareVals.length; i++) {
+            if (compareVals[i] == null) {
+                continue;
+            }
+            Function<DBusMatchRule, String> function = MATCHRULE_EQUALS_OPERATIONS.get(i);
+            if (!Util.strEquals(compareVals[i], function.apply(_rule))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the given signal matches with our rule.
+     * <p>
+     * Method supports partial matching by setting strict to false.
+     * Partial means that only the parts of this rule are compared to the given
+     * signal which were set (non-null) on ourselves.
+     * Fields set on the given signal but not on ourselves will be ignored.
+     * </p>
+     *
+     * @param _signal signal to compare
+     * @param _strict true to get an exact match, false to allow partial matches
+     *
+     * @return true if matching
+     */
+    public boolean matches(DBusSignal _signal, boolean _strict) {
+        if (_signal == null) {
+            return false;
+        }
+
+       // _signal.getInterface(), _signal.getName(), _signal.getPath(), _signal.getSource()
+        if (_strict) {
+            return Util.strEquals(_signal.getInterface(), getInterface())
+                    && Util.strEquals(_signal.getName(), getMember())
+                    && Util.strEquals(_signal.getPath(), getObject())
+                    && Util.strEquals(_signal.getSource(), getSource());
+        }
+
+        String[] compareVals = new String[] {getInterface(), getMember(), getObject(), getSource()};
+
+        for (int i = 0; i < compareVals.length; i++) {
+            if (compareVals[i] == null) {
+                continue;
+            }
+            Function<DBusSignal, String> function = SIGNAL_EQUALS_OPERATIONS.get(i);
+            if (!Util.strEquals(compareVals[i], function.apply(_signal))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public String toString() {
         String s = null;
@@ -134,6 +237,25 @@ public class DBusMatchRule {
             s = null == s ? "path='" + object + "'" : s + ",path='" + object + "'";
         }
         return s;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(iface, member, object, source, type);
+    }
+
+    @Override
+    public boolean equals(Object _obj) {
+        if (this == _obj) {
+            return true;
+        }
+        if (!(_obj instanceof DBusMatchRule)) {
+            return false;
+        }
+        DBusMatchRule other = (DBusMatchRule) _obj;
+        return Objects.equals(iface, other.iface) && Objects.equals(member, other.member)
+                && Objects.equals(object, other.object) && Objects.equals(source, other.source)
+                && Objects.equals(type, other.type);
     }
 
     public String getType() {

@@ -75,7 +75,8 @@ The library will remain open source and MIT licensed and can still be used, fork
    - `EmbeddedDBusDaemon` will no longer set `AbstractConnection.TCP_ADDRESS_PROPERTY`, instead you have to handle the address you used for construction of `EmbeddedDBusDaemon` yourself
    - `DBusConnectionBuilder.forSessionBus()` will use the same validation applied to system addresses
    - Replaced calls to expensive method calls when logging with call which only gets executed if log level is enabled
-   
+   - Changed signal handling to use a matching method instead of relying on having a suitable map-key for every possible signal (causes high memory usage / lots of temporary objects, see [#182](https://github.com/hypfvieh/dbus-java/issues/182))
+   - Removed usage of `SignalTuple` class
    
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))

@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
-import org.freedesktop.dbus.SignalTuple;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectAction;
@@ -722,13 +721,12 @@ public final class DBusConnection extends AbstractConnection {
     protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(key);
+        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(_rule);
 
         if (null != dbusSignalList) {
             dbusSignalList.remove(_handler);
             if (dbusSignalList.isEmpty()) {
-                getHandledSignals().remove(key);
+                getHandledSignals().remove(_rule);
                 try {
                     dbus.RemoveMatch(_rule.toString());
                 } catch (NotConnected exNc) {
@@ -844,10 +842,8 @@ public final class DBusConnection extends AbstractConnection {
 
         AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
 
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-
         Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList =
-            getHandledSignals().computeIfAbsent(key, v -> {
+            getHandledSignals().computeIfAbsent(_rule, v -> {
                 Queue<DBusSigHandler<? extends DBusSignal>> signalList  = new ConcurrentLinkedQueue<>();
                 addMatch.set(true);
                 return signalList;
@@ -952,12 +948,11 @@ public final class DBusConnection extends AbstractConnection {
 
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(key);
+        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(_rule);
         if (null != genericSignalsList) {
             genericSignalsList.remove(_handler);
             if (genericSignalsList.isEmpty()) {
-                getGenericHandledSignals().remove(key);
+                getGenericHandledSignals().remove(_rule);
                 try {
                     dbus.RemoveMatch(_rule.toString());
                 } catch (NotConnected exNc) {
@@ -972,12 +967,10 @@ public final class DBusConnection extends AbstractConnection {
 
     @Override
     public AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        SignalTuple key = new SignalTuple(_rule.getInterface(), _rule.getMember(), _rule.getObject(), _rule.getSource());
-
         AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
 
         Queue<DBusSigHandler<DBusSignal>> genericSignalsList =
-                getGenericHandledSignals().computeIfAbsent(key, v -> {
+                getGenericHandledSignals().computeIfAbsent(_rule, v -> {
                     Queue<DBusSigHandler<DBusSignal>> signalsList = new ConcurrentLinkedQueue<>();
                     addMatch.set(true);
 

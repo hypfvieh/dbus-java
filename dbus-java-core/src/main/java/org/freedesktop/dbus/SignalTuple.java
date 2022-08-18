@@ -3,6 +3,10 @@ package org.freedesktop.dbus;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @deprecated this class was used as map key internally and is no longer in use
+ */
+@Deprecated(forRemoval = true, since = "4.1.1 - 2022-08-18")
 public class SignalTuple {
     private final String type;
     private final String name;
@@ -59,7 +63,9 @@ public class SignalTuple {
      * @param _object object
      * @param _source source
      * @return {@link Set} of {@link SignalTuple}, never null
+     * @deprecated should no longer be used
      */
+    @Deprecated
     public static Set<SignalTuple> getAllPossibleTuples(String _type, String _name, String _object, String _source){
         Set<SignalTuple> allTuples = new HashSet<>();
 
