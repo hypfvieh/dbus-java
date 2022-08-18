@@ -18,6 +18,10 @@ import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.Util;
 
+/**
+ * Defined a rule to match a message.<br>
+ * This is mainly used to handle / take actions when signals arrive.
+ */
 public class DBusMatchRule {
     private static final Pattern IFACE_PATTERN = Pattern.compile(".*\\..*");
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
@@ -39,20 +43,18 @@ public class DBusMatchRule {
             );
 
     /* signal, error, method_call, method_reply */
-    private String                                              type;
-    private String                                              iface;
-    private String                                              member;
-    private String                                              object;
-    private String                                              source;
+    private final String                                          type;
+    private final String                                          iface;
+    private final String                                          member;
+    private final String                                          object;
+    private final String                                          source;
 
     public static Class<? extends DBusSignal> getCachedSignalType(String _type) {
         return SIGNALTYPEMAP.get(_type);
     }
 
     public DBusMatchRule(String _type, String _iface, String _member) {
-        type = _type;
-        iface = _iface;
-        member = _member;
+        this(_type, _iface, _member, null);
     }
 
     public DBusMatchRule(String _type, String _iface, String _member, String _object) {
@@ -60,49 +62,43 @@ public class DBusMatchRule {
         iface = _iface;
         member = _member;
         object = _object;
+        source = null;
     }
 
     public DBusMatchRule(DBusExecutionException _e) throws DBusException {
         this(_e.getClass());
-        member = null;
-        type = "error";
     }
 
     public DBusMatchRule(Message _m) {
         iface = _m.getInterface();
-        member = _m.getName();
+        source = null;
+        object = null;
+        member = _m instanceof Error ? null : _m.getName();
         if (_m instanceof DBusSignal) {
             type = "signal";
         } else if (_m instanceof Error) {
             type = "error";
-            member = null;
         } else if (_m instanceof MethodCall) {
             type = "method_call";
         } else if (_m instanceof MethodReturn) {
             type = "method_reply";
+        } else {
+            type = null;
         }
     }
 
     public DBusMatchRule(Class<? extends DBusInterface> _c, String _method) throws DBusException {
-        this(_c);
-        member = _method;
-        type = "method_call";
-    }
-
-    public DBusMatchRule(Class<? extends Object> _c, String _source, String _object) throws DBusException {
-        this(_c);
-        source = _source;
-        object = _object;
+        this(_c, null, null, "method_call", _method);
     }
 
     @SuppressWarnings("unchecked")
-    public DBusMatchRule(Class<? extends Object> _c) throws DBusException {
+    DBusMatchRule(Class<? extends Object> _c, String _source, String _object, String _type, String _member) throws DBusException {
         if (DBusInterface.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
 
-            member = null;
-            type = null;
+            member = _member != null ? _member : null;
+            type = _type != null ? _type : null;
         } else if (DBusSignal.class.isAssignableFrom(_c)) {
             if (null == _c.getEnclosingClass()) {
                 throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
@@ -111,22 +107,33 @@ public class DBusMatchRule {
             // Don't export things which are invalid D-Bus interfaces
             assertDBusInterface(iface);
 
-            member = DBusNamingUtil.getSignalName(_c);
+            member = _member != null ? _member : DBusNamingUtil.getSignalName(_c);
             SIGNALTYPEMAP.put(iface + '$' + member, (Class<? extends DBusSignal>) _c);
-            type = "signal";
+            type = _type != null ? _type : "signal";
         } else if (Error.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
-            member = null;
-            type = "error";
+            member = _member != null ? _member : null;
+            type = _type != null ? _type : "error";
         } else if (DBusExecutionException.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
-            member = null;
-            type = "error";
+            member = _member != null ? _member : null;
+            type = _type != null ? _type : "error";
         } else {
             throw new DBusException("Invalid type for match rule: " + _c);
         }
+
+        source = _source;
+        object = _object;
+    }
+
+    public DBusMatchRule(Class<? extends Object> _c, String _source, String _object) throws DBusException {
+        this(_c, _source, _object, null, null);
+    }
+
+    public DBusMatchRule(Class<? extends Object> _c) throws DBusException {
+        this(_c, null, null);
     }
 
     void assertDBusInterface(String _str) throws DBusException {
