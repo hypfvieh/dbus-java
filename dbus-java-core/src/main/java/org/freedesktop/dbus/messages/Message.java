@@ -136,10 +136,11 @@ public class Message {
             filedescriptors.addAll(_descriptors);
         }
 
-        logger.trace("Message header: {}", Hexdump.toAscii(_headers));
+        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Message header: {}", Hexdump.toAscii(_headers)));
+
         Object[] hs = extract("a(yv)", _headers, 0);
 
-        LoggingHelper.arraysDeepString(logger.isTraceEnabled(), hs);
+        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Extracted objects: {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), hs)));
 
         for (Object o : (List<Object>) hs[0]) {
             this.headers.put((Byte) ((Object[]) o)[0], ((Variant<Object>) ((Object[]) o)[1]).getValue());

@@ -828,7 +828,14 @@ public abstract class AbstractConnection implements Closeable {
                     INFOMAP.put(Thread.currentThread(), info);
                     Object result;
                     try {
-                        logger.trace("Invoking Method: {} on {} with parameters {}", me, ob, Arrays.deepToString(_methodCall.getParameters()));
+                        LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
+                            try {
+                                logger.trace("Invoking Method: {} on {} with parameters {}", me, ob, Arrays.deepToString(_methodCall.getParameters()));
+                            } catch (DBusException _ex) {
+                                logger.trace("Error getting parameters from method call", _ex);
+                            }
+                        });
+
                         result = me.invoke(ob, _methodCall.getParameters());
                     } catch (InvocationTargetException ite) {
                         logger.debug(ite.getMessage(), ite);
