@@ -74,6 +74,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Removed usage of `AbstractConnection.TCP_ADDRESS_PROPERTY` as this was a special behavior for using/testing `DBusDaemon`
    - `EmbeddedDBusDaemon` will no longer set `AbstractConnection.TCP_ADDRESS_PROPERTY`, instead you have to handle the address you used for construction of `EmbeddedDBusDaemon` yourself
    - `DBusConnectionBuilder.forSessionBus()` will use the same validation applied to system addresses
+   - Replaced calls to expensive method calls when logging with call which only gets executed if log level is enabled
    
    
 ##### Changes in 4.1.0 (2022-05-23):
