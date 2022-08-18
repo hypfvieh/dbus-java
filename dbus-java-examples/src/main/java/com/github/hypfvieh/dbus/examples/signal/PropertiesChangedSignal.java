@@ -1,10 +1,7 @@
 package com.github.hypfvieh.dbus.examples.signal;
 
-import java.io.IOException;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
 import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 
