@@ -77,6 +77,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Replaced calls to expensive method calls when logging with call which only gets executed if log level is enabled
    - Changed signal handling to use a matching method instead of relying on having a suitable map-key for every possible signal (causes high memory usage / lots of temporary objects, see [#182](https://github.com/hypfvieh/dbus-java/issues/182))
    - Removed usage of `SignalTuple` class
+   - Improved InputMessageStreamReader to use a final socket channel and some more final member variables for constant size buffers ([#183](https://github.com/hypfvieh/dbus-java/issues/183))
    
 ##### Changes in 4.1.0 (2022-05-23):
    - Fixed regression not allowing to use classes directly implementing `DBusInterface` to be exported on the bus ([#157](https://github.com/hypfvieh/dbus-java/issues/157))
