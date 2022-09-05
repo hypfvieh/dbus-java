@@ -150,7 +150,7 @@ public class TransportBuilder {
      *
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withTimeout(int _timeout) {
         configure().withTimeout(_timeout);
         return this;
@@ -167,7 +167,7 @@ public class TransportBuilder {
      *
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-05-23")
+    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-05-23")
     public TransportBuilder isListening(boolean _listen) { //NOPMD
         return listening(_listen);
     }
@@ -181,7 +181,7 @@ public class TransportBuilder {
      *
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder listening(boolean _listen) {
         configure().withListening(_listen);
         return this;
@@ -197,7 +197,7 @@ public class TransportBuilder {
      * @return this
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withAutoConnect(boolean _connect) {
         configure().withAutoConnect(_connect);
         return this;
@@ -215,7 +215,7 @@ public class TransportBuilder {
      * @return this
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withSaslAuthMode(SaslAuthMode _authMode) {
         configure().withSaslAuthMode(_authMode);
         return this;
@@ -234,7 +234,7 @@ public class TransportBuilder {
      * @return this
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFileOwner(String _user) {
         configure().withUnixSocketFileOwner(_user);
         return this;
@@ -253,7 +253,7 @@ public class TransportBuilder {
      * @return this
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFileGroup(String _group) {
         configure().withUnixSocketFileGroup(_group);
         return this;
@@ -273,7 +273,7 @@ public class TransportBuilder {
      *
      * @deprecated please use {@link #configure()}
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     public TransportBuilder withUnixSocketFilePermissions(PosixFilePermission... _permissions) {
         configure().withUnixSocketFilePermissions(_permissions);
         return this;

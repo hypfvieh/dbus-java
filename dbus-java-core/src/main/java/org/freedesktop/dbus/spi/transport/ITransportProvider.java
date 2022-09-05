@@ -52,7 +52,7 @@ public interface ITransportProvider {
      * @throws TransformerConfigurationException when configuring transport fails
      * @deprecated just used for compatibility will be removed in the future. Please use {@link #createTransport(BusAddress, TransportConfig)}.
      */
-    @Deprecated(since = "4.1.1 - 2022-07-21", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
     default AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
         TransportConfig transportConfig = new TransportConfig();
         transportConfig.setTimeout(_timeout);

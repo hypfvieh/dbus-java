@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * @author hypfvieh
  *
  * @param <R> BaseConnectionBuilder type
- * @since 4.1.1 - 2022-07-14
+ * @since 4.2.0 - 2022-07-14
  */
 public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder<?, ?>> {
     public static final int DEFAULT_HANDLER_RETRIES = 10;

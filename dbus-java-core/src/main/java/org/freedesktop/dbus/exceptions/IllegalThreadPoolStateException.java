@@ -4,7 +4,7 @@ package org.freedesktop.dbus.exceptions;
  * Thrown when a used thread pool (e.g. in ReceivingService) is in an invalid state.
  *
  * @author hypfvieh
- * @since 4.1.1 - 2022-07-14
+ * @since 4.2.0 - 2022-07-14
  */
 public class IllegalThreadPoolStateException extends IllegalStateException {
 

@@ -9,7 +9,7 @@ import org.freedesktop.dbus.connections.SASL.SaslMode;
  *
  * @author hypfvieh
  *
- * @since 4.1.1 - 2022-07-22
+ * @since 4.2.0 - 2022-07-22
  */
 public class SaslConfig {
     private SaslMode     mode;

@@ -67,7 +67,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
 
-    @Deprecated(since = "4.1.1", forRemoval = true)
+    @Deprecated(since = "4.2.0", forRemoval = true)
     static TransportConfig createTransportConfig(String _address, int _timeout) {
         TransportConfig cfg = new TransportConfig();
         cfg.setBusAddress(BusAddress.of(_address));

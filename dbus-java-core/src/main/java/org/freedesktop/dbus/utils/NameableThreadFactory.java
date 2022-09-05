@@ -42,7 +42,7 @@ public class NameableThreadFactory implements ThreadFactory {
      * @param _daemonizeThreads turn all created threads to daemon threads
      * @param _threadPriority priority to use for new threads
      *
-     * @since 4.1.1 - 2022-07-13
+     * @since 4.2.0 - 2022-07-13
      */
     public NameableThreadFactory(String _name, boolean _daemonizeThreads, int _threadPriority) {
         group = Thread.currentThread().getThreadGroup(); //NOPMD

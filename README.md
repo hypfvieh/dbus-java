@@ -46,8 +46,11 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
-##### Changes in 4.1.1 (not yet released):
-   - Deprecated `TransportBuilder.isListening(boolean)` as method name signals that a `boolean` is returned but `TransportBuilder` is returned. Please use `TransportBuilder.listening(boolean)` instead. Old method will be removed in 4.2.0
+##### Changes in 4.2.1 (not released yet):
+   - nothing yet
+
+##### Changes in 4.2.0 (2022-09-05):
+   - Deprecated `TransportBuilder.isListening(boolean)` as method name signals that a `boolean` is returned but `TransportBuilder` is returned. Please use `TransportBuilder.listening(boolean)` instead. Old method will be removed in 4.3.0
    - Applied more PMD/CPD suggestions
    - Deprecated `DBusConnectionBuilder.getSystemEndianness()` and `DirectConnectionBuilder.getSystemEndianness()`, use `BaseConnectionBuilder.getSystemEndianness()` instead
    - Refactoring of `DBusConnectionBuilder` and `DirectConnectionBuilder` to use same base class `BaseConnectionBuilder` to reduce duplicated code

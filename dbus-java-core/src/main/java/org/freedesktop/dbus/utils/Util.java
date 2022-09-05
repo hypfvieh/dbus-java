@@ -544,7 +544,7 @@ public final class Util {
      * @return given value if in range
      * @throws IllegalArgumentException when given value is out of range
      *
-     * @since 4.1.1 - 2022-07-13
+     * @since 4.2.0 - 2022-07-13
      */
     public static int checkIntInRange(int _check, int _min, int _max) {
         if (_check >= _min && _check <= _max) {

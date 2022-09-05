@@ -10,7 +10,7 @@ import org.freedesktop.dbus.connections.BusAddress;
  * files as 'address' (e.g. unix sockets) and needs to set permission on those files.
  *
  * @author hypfvieh
- * @since 4.1.1 - 2022-07-18
+ * @since 4.2.0 - 2022-07-18
  */
 public interface IFileBasedBusAddress {
 

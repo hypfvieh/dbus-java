@@ -4,7 +4,7 @@ package org.freedesktop.dbus.exceptions;
  * Thrown when a invalid BusAddress should be created.
  *
  * @author hypfvieh
- * @since 4.1.1 - 2022-07-18
+ * @since 4.2.0 - 2022-07-18
  */
 public class InvalidBusAddressException extends IllegalStateException {
 

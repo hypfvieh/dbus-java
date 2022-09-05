@@ -76,7 +76,7 @@ public abstract class AbstractConnection implements Closeable {
      * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
      * @deprecated is no longer in use
      */
-    @Deprecated(since = "4.1.1 - 2022-08-04")
+    @Deprecated(since = "4.2.0 - 2022-08-04")
     public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
 
     /** Lame method to setup endianness used on DBus messages */

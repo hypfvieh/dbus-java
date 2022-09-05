@@ -1208,7 +1208,7 @@ public class Message {
      * Interface defining a method to extract a specific data type.
      * For internal usage only.
      *
-     * @since 4.1.1 - 2022-08-19
+     * @since 4.2.0 - 2022-08-19
      */
     @FunctionalInterface
     interface ExtractMethod {

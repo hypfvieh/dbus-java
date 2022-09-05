@@ -111,7 +111,7 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      * @param _address address to use
      * @return this
      *
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public static DBusConnectionBuilder forAddress(BusAddress _address) {
         DBusConnectionBuilder instance = new DBusConnectionBuilder(_address, getDbusMachineId(null));
@@ -225,7 +225,7 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      * @return LITTLE or BIG
      * @deprecated if required, use {@link BaseConnectionBuilder#getSystemEndianness()}
      */
-    @Deprecated(forRemoval = true, since = "4.1.1")
+    @Deprecated(forRemoval = true, since = "4.2.0")
     public static byte getSystemEndianness() {
        return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
                 Message.Endian.BIG

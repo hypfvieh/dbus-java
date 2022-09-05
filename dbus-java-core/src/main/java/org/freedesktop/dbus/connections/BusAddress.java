@@ -28,7 +28,7 @@ public class BusAddress {
      *
      * @deprecated Use BusAddress.of instead
      */
-    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-07-18")
+    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
     public BusAddress(String _address) throws DBusException {
         if (null == _address ||_address.isEmpty()) {
             throw new DBusException("Bus address is blank");
@@ -65,7 +65,7 @@ public class BusAddress {
      *
      * @param _address address to copy
      * @return BusAddress
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public static BusAddress of(BusAddress _address) {
         return new BusAddress(_address);
@@ -77,7 +77,7 @@ public class BusAddress {
      * @param _address address String, never null or empty
      *
      * @return BusAddress
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public static BusAddress of(String _address) {
         if (null == _address ||_address.isEmpty()) {
@@ -142,7 +142,7 @@ public class BusAddress {
      *
      * @return true if same type (case-insensitive), false if null or not same type
      *
-     * @since 4.1.1 - 2022-07-20
+     * @since 4.2.0 - 2022-07-20
      */
     public boolean isBusType(String _type) {
         return type != null && type.equalsIgnoreCase(_type);
@@ -166,7 +166,7 @@ public class BusAddress {
      *
      * @deprecated use {@link #toString()}
      */
-    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-07-18")
+    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
     public String getRawAddress() {
         return toString();
     }
@@ -192,7 +192,7 @@ public class BusAddress {
      * @param _value value
      *
      * @return this
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public BusAddress addParameter(String _parameter, String _value) {
         parameters.put(_parameter, _value);
@@ -206,7 +206,7 @@ public class BusAddress {
      * @param _parameter parameter to remove
      *
      * @return this
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public BusAddress removeParameter(String _parameter) {
         parameters.remove(_parameter);
@@ -217,7 +217,7 @@ public class BusAddress {
      * Returns a read-only view of the parameters currently configured.
      *
      * @return Map, maybe empty
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public Map<String, String> getParameters() {
         return Collections.unmodifiableMap(parameters);
@@ -229,7 +229,7 @@ public class BusAddress {
      * When no value present, <code>null</code> is returned.
      *
      * @return Map, maybe empty
-     * @since 4.1.1 - 2022-07-19
+     * @since 4.2.0 - 2022-07-19
      */
     public String getParameterValue(String _parameter) {
         return parameters.get(_parameter);
@@ -239,7 +239,7 @@ public class BusAddress {
      * Creates a listening BusAddress if this instance is not already listening.
      *
      * @return new BusAddress or this
-     * @since 4.1.1 - 2022-07-18
+     * @since 4.2.0 - 2022-07-18
      */
     public BusAddress getListenerAddress() {
         if (!isListeningSocket()) {

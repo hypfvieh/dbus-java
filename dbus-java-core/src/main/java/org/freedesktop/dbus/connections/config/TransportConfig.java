@@ -19,7 +19,7 @@ import org.freedesktop.dbus.utils.Util;
  * Configuration used to setup a transport.
  *
  * @author hypfvieh
- * @since v4.1.1 - 2022-07-21
+ * @since v4.2.0 - 2022-07-21
  */
 public final class TransportConfig {
 

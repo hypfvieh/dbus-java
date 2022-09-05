@@ -19,7 +19,7 @@ import org.freedesktop.dbus.messages.Message.Endian;
  * Base class for connection builders containing commonly used options.
  *
  * @author hypfvieh
- * @since 4.1.1 - 2022-07-13
+ * @since 4.2.0 - 2022-07-13
  *
  * @param <R> concrete type of connection builder
  */
@@ -107,7 +107,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return this
      * @deprecated use receivingThreadConfig().withSignalThreadCount(_threads)
      */
-    @Deprecated(since = "4.1.1", forRemoval = true)
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public R withSignalThreadCount(int _threads) {
         receivingThreadConfig().withSignalThreadCount(_threads);
         return self();
@@ -122,7 +122,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return this
      * @deprecated use receivingThreadConfig().withErrorHandlerThreadCount(_threads)
      */
-    @Deprecated(since = "4.1.1", forRemoval = true)
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public R withErrorHandlerThreadCount(int _threads) {
         receivingThreadConfig().withErrorHandlerThreadCount(_threads);
         return self();
@@ -138,7 +138,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return this
      * @deprecated use receivingThreadConfig().withMethodCallThreadCount(_threads)
      */
-    @Deprecated(since = "4.1.1", forRemoval = true)
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public R withMethodCallThreadCount(int _threads) {
         receivingThreadConfig().withMethodCallThreadCount(_threads);
         return self();
@@ -153,7 +153,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return this
      * @deprecated use receivingThreadConfig().withMethodReturnThreadCount(_threads)
      */
-    @Deprecated(since = "4.1.1", forRemoval = true)
+    @Deprecated(since = "4.2.0", forRemoval = true)
     public R withMethodReturnThreadCount(int _threads) {
         receivingThreadConfig().withMethodReturnThreadCount(_threads);
         return self();

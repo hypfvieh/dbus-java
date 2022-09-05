@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * @deprecated this class was used as map key internally and is no longer in use
  */
-@Deprecated(forRemoval = true, since = "4.1.1 - 2022-08-18")
+@Deprecated(forRemoval = true, since = "4.2.0 - 2022-08-18")
 public class SignalTuple {
     private final String type;
     private final String name;

@@ -109,7 +109,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @deprecated Is no longer used and will be removed
      */
-    @Deprecated(forRemoval = true, since = "4.1.1 - 2022-07-18")
+    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
     protected abstract boolean isAbstractAllowed();
 
     /**
@@ -141,7 +141,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @param _run runnable to execute, null if no callback should be executed
      *
-     * @since 4.1.1 - 2022-07-20
+     * @since 4.2.0 - 2022-07-20
      */
     public void setPreConnectCallback(Consumer<AbstractTransport> _run) {
         preConnectCallback = _run;
@@ -233,7 +233,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @deprecated please use {@link #getSaslConfig()}.getAuthMode() instead
      */
-    @Deprecated(since = "4.1.1 - 2022-07-22", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected int getSaslAuthMode() {
         return getSaslConfig().getAuthMode();
     }
@@ -243,7 +243,7 @@ public abstract class AbstractTransport implements Closeable {
      *
      * @deprecated please use {@link #getSaslConfig()}.getMode() instead
      */
-    @Deprecated(since = "4.1.1 - 2022-07-22", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected SASL.SaslMode getSaslMode() {
         return getSaslConfig().getMode();
     }
@@ -253,7 +253,7 @@ public abstract class AbstractTransport implements Closeable {
      * @param _saslMode mode to set
      * @deprecated please use {@link #getSaslConfig()}.setMode(int) instead
      */
-    @Deprecated(since = "4.1.1 - 2022-07-22", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected void setSaslMode(SASL.SaslMode _saslMode) {
         getSaslConfig().setMode(_saslMode);
     }
@@ -264,7 +264,7 @@ public abstract class AbstractTransport implements Closeable {
      * @param _mode mode to set
      * @deprecated please use {@link #getSaslConfig()}.setSaslAuthMode(int) instead
      */
-    @Deprecated(since = "4.1.1 - 2022-07-22", forRemoval = true)
+    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected void setSaslAuthMode(int _mode) {
         getSaslConfig().setAuthMode(_mode);
     }

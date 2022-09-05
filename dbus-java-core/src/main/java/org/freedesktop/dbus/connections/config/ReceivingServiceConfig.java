@@ -6,7 +6,7 @@ import org.freedesktop.dbus.connections.ReceivingService.IThreadPoolRetryHandler
  * Bean which holds configuration for {@link org.freedesktop.dbus.connections.ReceivingService}.
  *
  * @author hypfvieh
- * @since 4.1.1 - 2022-07-14
+ * @since 4.2.0 - 2022-07-14
  */
 public final class ReceivingServiceConfig {
     private int signalThreadPoolSize       = 1;

@@ -223,7 +223,7 @@ public class ReceivingService {
      * Interface which specifies a handler which will be called when the thread pool throws any exception.
      *
      * @author hypfvieh
-     * @since 4.1.1 - 2022-07-14
+     * @since 4.2.0 - 2022-07-14
      */
     @FunctionalInterface
     public interface IThreadPoolRetryHandler {

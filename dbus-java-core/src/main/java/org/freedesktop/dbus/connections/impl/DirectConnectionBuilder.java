@@ -55,7 +55,7 @@ public class DirectConnectionBuilder extends BaseConnectionBuilder<DirectConnect
      * @return LITTLE or BIG
      * @deprecated if required, use {@link BaseConnectionBuilder#getSystemEndianness()}
      */
-    @Deprecated(forRemoval = true, since = "4.1.1")
+    @Deprecated(forRemoval = true, since = "4.2.0")
     public static byte getSystemEndianness() {
        return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
                 Message.Endian.BIG
