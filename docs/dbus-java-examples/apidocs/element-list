@@ -1,0 +1,11 @@
+com.github.hypfvieh.dbus.examples.daemon
+com.github.hypfvieh.dbus.examples.daemon.twopart
+com.github.hypfvieh.dbus.examples.nested
+com.github.hypfvieh.dbus.examples.nested.data
+com.github.hypfvieh.dbus.examples.networkmanager
+com.github.hypfvieh.dbus.examples.pulseaudio
+com.github.hypfvieh.dbus.examples.signal
+com.github.hypfvieh.dbus.examples.struct
+org.freedesktop
+org.freedesktop.networkmanager
+org.freedesktop.networkmanager.device

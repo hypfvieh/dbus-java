@@ -1,0 +1,4 @@
+module:org.freedesktop.dbus.utils
+org.freedesktop.dbus.utils.bin
+org.freedesktop.dbus.utils.generator
+org.freedesktop.dbus.viewer
