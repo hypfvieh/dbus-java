@@ -146,18 +146,6 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
             throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
         }
 
-//        // no address given, no unix transport available but TCP -> use TCP fallback
-//        if (address == null && !TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
-//                && TransportBuilder.getRegisteredBusTypes().contains("TCP")) {
-//
-//            try {
-//                address = BusAddress.of(System.getProperty(AbstractConnection.TCP_ADDRESS_PROPERTY));
-//            } catch (InvalidBusAddressException _ex) {
-//                throw new InvalidBusAddressException("No valid TCP connection address found, please specify '" + AbstractConnection.TCP_ADDRESS_PROPERTY + "' system property");
-//            }
-//
-//        }
-
         return address;
 
     }

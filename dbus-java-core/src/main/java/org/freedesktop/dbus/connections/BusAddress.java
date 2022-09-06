@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class BusAddress {
             throw new DBusException("Bus address is invalid: " + _address);
         }
 
-        type = ss[0] != null ? ss[0].toLowerCase() : null;
+        type = ss[0] != null ? ss[0].toLowerCase(Locale.US) : null;
         if (type == null) {
             throw new DBusException("Unsupported transport type: " + ss[0]);
         }
@@ -93,7 +94,7 @@ public class BusAddress {
             throw new InvalidBusAddressException("Bus address is invalid: " + _address);
         }
 
-        busAddress.type = ss[0] != null ? ss[0].toLowerCase() : null;
+        busAddress.type = ss[0] != null ? ss[0].toLowerCase(Locale.US) : null;
         if (busAddress.type == null) {
             throw new InvalidBusAddressException("Unsupported transport type: " + ss[0]);
         }
@@ -126,7 +127,7 @@ public class BusAddress {
      * @return type
      */
     public String getBusType() {
-        return type.toUpperCase();
+        return type == null ? null : type.toUpperCase(Locale.US);
     }
 
     /**

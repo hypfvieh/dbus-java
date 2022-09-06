@@ -22,6 +22,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -447,12 +448,12 @@ public final class Util {
      */
     public static boolean isMacOs() {
         String osName = System.getProperty("os.name");
-        return osName != null && osName.toLowerCase().startsWith("mac");
+        return osName != null && osName.toLowerCase(Locale.US).startsWith("mac");
     }
 
     public static boolean isFreeBsd() {
         String osName = System.getProperty("os.name");
-        return osName != null && osName.toLowerCase().startsWith("freebsd");
+        return osName != null && osName.toLowerCase(Locale.US).startsWith("freebsd");
     }
 
     /**
@@ -461,7 +462,7 @@ public final class Util {
      */
     public static boolean isWindows() {
         String osName = System.getProperty("os.name");
-        return osName != null && osName.toLowerCase().startsWith("windows");
+        return osName != null && osName.toLowerCase(Locale.US).startsWith("windows");
     }
 
     /**

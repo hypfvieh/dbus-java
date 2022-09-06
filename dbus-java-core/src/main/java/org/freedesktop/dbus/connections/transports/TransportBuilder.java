@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceConfigurationError;
@@ -45,7 +46,7 @@ public class TransportBuilder {
                     LOGGER.warn("Transport {} is invalid: No bustype configured", provider.getClass());
                     continue;
                 }
-                providerBusType = providerBusType.toUpperCase();
+                providerBusType = providerBusType.toUpperCase(Locale.US);
 
                 LOGGER.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
 
@@ -364,7 +365,7 @@ public class TransportBuilder {
      */
     public static String createDynamicSession(String _busType, boolean _listeningAddress) {
         Objects.requireNonNull(_busType, "Bustype required");
-        ITransportProvider provider = PROVIDERS.get(_busType.toUpperCase());
+        ITransportProvider provider = PROVIDERS.get(_busType.toUpperCase(Locale.US));
         if (provider != null) {
             return provider.createDynamicSessionAddress(_listeningAddress);
         }
