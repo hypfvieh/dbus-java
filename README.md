@@ -49,6 +49,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 ##### Changes in 4.2.1 (not released yet):
    - Updated dependencies 
    - Compare bus type names using US locale ([#185](https://github.com/hypfvieh/dbus-java/issues/185))
+   - Smaller cleanup/redesign in DBusDaemon
 
 
 ##### Changes in 4.2.0 (2022-09-05):
