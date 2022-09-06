@@ -14,12 +14,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
@@ -52,20 +55,28 @@ import org.slf4j.LoggerFactory;
 public class DBusDaemon extends Thread implements Closeable {
     public static final int                                          QUEUE_POLL_WAIT = 500;
 
-    private static final Logger                                      LOGGER          =
+    private static final Logger                                                 LOGGER          =
             LoggerFactory.getLogger(DBusDaemon.class);
 
-    private final Map<ConnectionStruct, DBusDaemonReaderThread>      conns           = new ConcurrentHashMap<>();
-    private final Map<String, ConnectionStruct>                      names           = Collections.synchronizedMap(new HashMap<>());
-    private final MagicMap<Message, WeakReference<ConnectionStruct>> outqueue        = new MagicMap<>("out");
-    private final MagicMap<Message, WeakReference<ConnectionStruct>> inqueue         = new MagicMap<>("in");
-    private final MagicMap<Message, WeakReference<ConnectionStruct>> localqueue      = new MagicMap<>("local");
-    private final List<ConnectionStruct>                             sigrecips       = new ArrayList<>();
-    private final Object                                             uniqueLock      = new Object();
-    private final DBusServer                                         dbusServer      = new DBusServer();
-    private final DBusDaemonSenderThread                             sender          = new DBusDaemonSenderThread();
-    private final AtomicBoolean                                      run             = new AtomicBoolean(false);
-    private int                                                      nextUnique      = 0;
+    private final Map<ConnectionStruct, DBusDaemonReaderThread>                 conns           =
+            new ConcurrentHashMap<>();
+    private final Map<String, ConnectionStruct>                                 names           =
+            Collections.synchronizedMap(new HashMap<>());
+
+    private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> outqueue       =
+            new LinkedBlockingDeque<>();
+    private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> inqueue        =
+            new LinkedBlockingDeque<>();
+    private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> localqueue     =
+            new LinkedBlockingDeque<>();
+
+    private final List<ConnectionStruct>                                        sigrecips       = new ArrayList<>();
+    private final DBusServer                                                    dbusServer      = new DBusServer();
+    private final DBusDaemonSenderThread                                        sender          =
+            new DBusDaemonSenderThread();
+    private final AtomicBoolean                                                 run             =
+            new AtomicBoolean(false);
+    private AtomicInteger                                                       nextUnique      = new AtomicInteger(0);
 
     public DBusDaemon() {
         setName(getClass().getSimpleName() + "-Thread");
@@ -82,29 +93,22 @@ public class DBusDaemon extends Thread implements Closeable {
         if (null == _connStruct) {
             LOGGER.trace("Queuing message {} for all connections", _msg);
             synchronized (conns) {
-                synchronized (outqueue) {
-                    for (ConnectionStruct d : conns.keySet()) {
-                        if (_head) {
-                            outqueue.putFirst(_msg, new WeakReference<>(d));
-                        } else {
-                            outqueue.putLast(_msg, new WeakReference<>(d));
-                        }
+                for (ConnectionStruct d : conns.keySet()) {
+                    if (_head) {
+                        outqueue.addFirst(new Pair<>(_msg, new WeakReference<>(d)));
+                    } else {
+                        outqueue.addLast(new Pair<>(_msg, new WeakReference<>(d)));
                     }
-                    outqueue.notifyAll();
                 }
             }
         } else {
             LOGGER.trace("Queuing message {} for {}", _msg, _connStruct.unique);
-            synchronized (outqueue) {
-                if (_head) {
-                    outqueue.putFirst(_msg, new WeakReference<>(_connStruct));
-                } else {
-                    outqueue.putLast(_msg, new WeakReference<>(_connStruct));
-                }
-                outqueue.notifyAll();
+            if (_head) {
+                outqueue.addFirst(new Pair<>(_msg, new WeakReference<>(_connStruct)));
+            } else {
+                outqueue.addLast(new Pair<>(_msg, new WeakReference<>(_connStruct)));
             }
         }
-
     }
 
     @Override
@@ -121,70 +125,55 @@ public class DBusDaemon extends Thread implements Closeable {
 
         while (isRunning()) {
             try {
-                Message m;
-                List<WeakReference<ConnectionStruct>> wcs;
-                synchronized (inqueue) {
-                    while (0 == inqueue.size()) {
+                Pair<Message, WeakReference<ConnectionStruct>> pollFirst = inqueue.take();
+                ConnectionStruct connectionStruct = pollFirst.second.get();
+                if (connectionStruct != null) {
+                    Message m = pollFirst.first;
+                    logMessage("<inqueue> Got message {} from {}", m, connectionStruct.unique);
+
+                    // check if they have hello'd
+                    if (null == connectionStruct.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
+                        send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
+                    } else {
                         try {
-                            inqueue.wait();
-                        } catch (InterruptedException ex) {
-                            return;
+                            if (null != connectionStruct.unique) {
+                                m.setSource(connectionStruct.unique);
+                            }
+                        } catch (DBusException dbe) {
+                            LOGGER.debug("", dbe);
+                            send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
-                    }
 
-                    m = inqueue.head();
-                    wcs = inqueue.remove(m);
-                }
-                if (null != wcs) {
-                    for (WeakReference<ConnectionStruct> wc : wcs) {
-                        ConnectionStruct c = wc.get();
-                        if (null != c) {
-                            logMessage("<inqueue> Got message {} from {}", m, c.unique);
-
-                            // check if they have hello'd
-                            if (null == c.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
-                                send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
-                            } else {
-                                try {
-                                    if (null != c.unique) {
-                                        m.setSource(c.unique);
-                                    }
-                                } catch (DBusException dbe) {
-                                    LOGGER.debug("", dbe);
-                                    send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
+                        if ("org.freedesktop.DBus".equals(m.getDestination())) {
+                            localqueue.add(new Pair<>(m, new WeakReference<>(connectionStruct)));
+                        } else {
+                            if (m instanceof DBusSignal) {
+                                List<ConnectionStruct> l;
+                                synchronized (sigrecips) {
+                                    l = new ArrayList<>(sigrecips);
                                 }
+                                List<ConnectionStruct> list = l;
+                                for (ConnectionStruct d : list) {
+                                    send(d, m);
+                                }
+                            } else {
+                                ConnectionStruct dest = names.get(m.getDestination());
 
-                                if ("org.freedesktop.DBus".equals(m.getDestination())) {
-                                    synchronized (localqueue) {
-                                        localqueue.putLast(m, wc);
-                                        localqueue.notifyAll();
-                                    }
+                                if (null == dest) {
+                                    send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
                                 } else {
-                                    if (m instanceof DBusSignal) {
-                                        List<ConnectionStruct> l;
-                                        synchronized (sigrecips) {
-                                            l = new ArrayList<>(sigrecips);
-                                        }
-                                        List<ConnectionStruct> list = l;
-                                        for (ConnectionStruct d : list) {
-                                            send(d, m);
-                                        }
-                                    } else {
-                                        ConnectionStruct dest = names.get(m.getDestination());
-
-                                        if (null == dest) {
-                                            send(c, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
-                                        } else {
-                                            send(dest, m);
-                                        }
-                                    }
+                                    send(dest, m);
                                 }
                             }
                         }
                     }
                 }
+
             } catch (DBusException dbe) {
                 LOGGER.debug("", dbe);
+            } catch (InterruptedException _ex) {
+                close();
+                interrupt();
             }
         }
 
@@ -427,9 +416,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 if (null != connStruct.unique) {
                     throw new AccessDenied("Connection has already sent a Hello message");
                 }
-                synchronized (uniqueLock) {
-                    connStruct.unique = ":1." + (++nextUnique);
-                }
+                connStruct.unique = ":1." + nextUnique.incrementAndGet();
             }
             names.put(connStruct.unique, connStruct);
 
@@ -645,36 +632,27 @@ public class DBusDaemon extends Thread implements Closeable {
         public void run() {
 
             while (isRunning() && running.get()) {
-                Message msg;
-                List<WeakReference<ConnectionStruct>> wcs;
                 // block on outqueue
-                synchronized (localqueue) {
-                    while (localqueue.size() == 0) {
-                        try {
-                            localqueue.wait();
-                        } catch (InterruptedException ex) {
-                            return;
-                        }
-                    }
-                    msg = localqueue.head();
-                    wcs = localqueue.remove(msg);
-                }
-                if (null != wcs) {
-                    try {
-                        for (WeakReference<ConnectionStruct> wc : wcs) {
-                            ConnectionStruct constructor = wc.get();
-                            if (null != constructor) {
+                try {
+                    Pair<Message, WeakReference<ConnectionStruct>> pollFirst = localqueue.take();
+                    if (pollFirst != null) {
+                        ConnectionStruct connectionStruct = pollFirst.second.get();
+                        if (connectionStruct != null) {
+                            LOGGER.trace("<localqueue> Got message {} from {}", pollFirst.first, connectionStruct);
 
-                                LOGGER.trace("<localqueue> Got message {} from {}", msg, constructor);
-
-                                handleMessage(constructor, msg);
+                            try {
+                                handleMessage(connectionStruct, pollFirst.first);
+                            } catch (DBusException dbe) {
+                                LOGGER.debug("", dbe);
                             }
+                        } else if (LOGGER.isDebugEnabled()) {
+                            LOGGER.info("Discarding {} connection reaped", pollFirst.first);
+
                         }
-                    } catch (DBusException dbe) {
-                        LOGGER.debug("", dbe);
                     }
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("Discarding {} connection reaped", msg);
+                } catch (InterruptedException _ex) {
+                    LOGGER.debug("", _ex);
+                    terminate();
                 }
             }
 
@@ -732,39 +710,30 @@ public class DBusDaemon extends Thread implements Closeable {
 
                 logger.trace("Acquiring lock on outqueue and blocking for data");
 
-                Message m = null;
-                List<WeakReference<ConnectionStruct>> wcs = null;
                 // block on outqueue
-                synchronized (outqueue) {
-                    while (outqueue.size() == 0) {
-                        try {
-                            outqueue.wait();
-                        } catch (InterruptedException ex) {
-                            return;
-                        }
-                    }
-
-                    m = outqueue.head();
-                    wcs = outqueue.remove(m);
-                }
-                if (null != wcs) {
-                    for (WeakReference<ConnectionStruct> wc : wcs) {
-                        ConnectionStruct c = wc.get();
-                        if (null != c) {
-
-                            logger.debug("<outqueue> Got message {} for {}", m, c.unique);
+                try {
+                    Pair<Message, WeakReference<ConnectionStruct>> pollFirst = outqueue.take();
+                    if (pollFirst != null) {
+                        ConnectionStruct connectionStruct = pollFirst.second.get();
+                        if (connectionStruct != null) {
+                            logger.debug("<outqueue> Got message {} for {}", pollFirst.first, connectionStruct.unique);
 
                             try {
-                                c.outputWriter.writeMessage(m);
-                            } catch (IOException ioe) {
-                                logger.debug("", ioe);
-                                removeConnection(c);
+                                connectionStruct.outputWriter.writeMessage(pollFirst.first);
+                            } catch (IOException _ex) {
+                                logger.debug("", _ex);
+                                removeConnection(connectionStruct);
                             }
+
+                        } else {
+                            logger.info("Discarding {} connection reaped", pollFirst.first);
                         }
                     }
-                } else {
-                    logger.info("Discarding {} connection reaped", m);
+                } catch (InterruptedException _ex) {
+                    logger.debug("", _ex);
+                    terminate();
                 }
+
             }
         }
 
@@ -810,10 +779,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 if (null != m) {
                     logMessage("Read {} from {}", m, conn.unique);
 
-                    synchronized (inqueue) {
-                        inqueue.putLast(m, weakconn);
-                        inqueue.notifyAll();
-                    }
+                    inqueue.add(new Pair<>(m, weakconn));
                 }
             }
             conn = null;
@@ -821,59 +787,31 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
+    static class Pair<A, B> {
+        private final A first;
+        private final B second;
 
-    static class MagicMap<A, B> {
-        private final Logger                logger = LoggerFactory.getLogger(getClass());
-
-        private final Map<A, LinkedList<B>> m;
-        private final LinkedList<A>         q;
-        private final String                name;
-
-        MagicMap(String _name) {
-            m = new HashMap<>();
-            q = new LinkedList<>();
-            this.name = _name;
+        Pair(A _first, B _second) {
+            first = _first;
+            second = _second;
         }
 
-        public A head() {
-            return q.getFirst();
+        @Override
+        public int hashCode() {
+            return Objects.hash(first, second);
         }
 
-        public void putFirst(A _a, B _b) {
-            logger.debug("<{}> Queueing {{} => {}}", name, _a, _b);
-
-            if (m.containsKey(_a)) {
-                m.get(_a).add(_b);
-            } else {
-                LinkedList<B> l = new LinkedList<>();
-                l.add(_b);
-                m.put(_a, l);
+        @Override
+        public boolean equals(Object _obj) {
+            if (this == _obj) {
+                return true;
             }
-            q.addFirst(_a);
-        }
-
-        public void putLast(A _a, B _b) {
-            logger.debug("<{}> Queueing {{} => {}}", name, _a, _b);
-
-            if (m.containsKey(_a)) {
-                m.get(_a).add(_b);
-            } else {
-                LinkedList<B> l = new LinkedList<>();
-                l.add(_b);
-                m.put(_a, l);
+            if (!(_obj instanceof Pair)) {
+                return false;
             }
-            q.addLast(_a);
+            Pair<?, ?> other = (Pair<?, ?>) _obj;
+            return Objects.equals(first, other.first) && Objects.equals(second, other.second);
         }
 
-        public List<B> remove(A _a) {
-            logger.debug("<{}> Removing {{}}", name, _a);
-
-            q.remove(_a);
-            return m.remove(_a);
-        }
-
-        public int size() {
-            return q.size();
-        }
     }
 }
