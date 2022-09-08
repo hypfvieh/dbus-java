@@ -50,7 +50,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated dependencies 
    - Compare bus type names using US locale ([#185](https://github.com/hypfvieh/dbus-java/issues/185))
    - Smaller cleanup/redesign in DBusDaemon
-
+   - Fixed regression: Signals could not be created when using `@DBusInterfaceName("XX")` on signal interface classes ([#186](https://github.com/hypfvieh/dbus-java/issues/186))
 
 ##### Changes in 4.2.0 (2022-09-05):
    - Deprecated `TransportBuilder.isListening(boolean)` as method name signals that a `boolean` is returned but `TransportBuilder` is returned. Please use `TransportBuilder.listening(boolean)` instead. Old method will be removed in 4.3.0

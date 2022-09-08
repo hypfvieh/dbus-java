@@ -293,8 +293,7 @@ public class ExportedObject {
         StringBuilder sb = new StringBuilder();
         for (Class<?> iface : _interfaces) {
             String ifaceName = DBusNamingUtil.getInterfaceName(iface);
-            // don't let people export things which don't have a
-            // valid D-Bus interface name
+            // don't let people export things which don't have a valid D-Bus interface name
             if (ifaceName.equals(iface.getSimpleName())) {
                 throw new DBusException("DBusInterfaces cannot be declared outside a package");
             }
@@ -303,6 +302,12 @@ public class ExportedObject {
                         "Introspected interface name exceeds 255 characters. Cannot export objects of type "
                                 + ifaceName);
             }
+
+            // add mapping between class FQCN and name used in annotation (if present)
+            if (iface.isAnnotationPresent(DBusInterfaceName.class)) {
+                DBusSignal.addInterfaceMap(iface.getName(), ifaceName);
+            }
+
             sb.append(" <interface name=\"").append(ifaceName).append("\">\n");
             sb.append(generateAnnotationsXml(iface));
             sb.append(generateMethodsXml(iface));

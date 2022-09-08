@@ -1,8 +1,10 @@
 package org.freedesktop.dbus.test;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.Optional;
 
+import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,16 +14,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Base test class providing logger and common methods.
- * 
+ *
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-14
  */
 public class AbstractBaseTest extends Assertions {
+    /** Max wait time to wait for daemon to start. */
+    private static final long MAX_WAIT = Duration.ofSeconds(30).toMillis();
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /** Holds information about the current test. */
     private TestInfo lastTestInfo;
-    
+
     @BeforeEach
     public final void setTestMethodName(TestInfo _testInfo) {
         lastTestInfo = _testInfo;
@@ -54,6 +59,26 @@ public class AbstractBaseTest extends Assertions {
             logger.info(">>>>>>>>>> {} Test: {} <<<<<<<<<<", _prefix, _testInfo.getDisplayName());
         } else {
             logger.info(">>>>>>>>>> {} Test: {} ({}) <<<<<<<<<<", _prefix, _testInfo.getTestMethod().get().getName(), _testInfo.getDisplayName());
+        }
+    }
+
+    protected void waitForDaemon(EmbeddedDBusDaemon daemon) {
+        long sleepMs = 200;
+        long waited = 0;
+
+        while (!daemon.isRunning()) {
+            if (waited >= MAX_WAIT) {
+                throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + MAX_WAIT + " ms");
+            }
+
+            try {
+                Thread.sleep(sleepMs);
+            } catch (InterruptedException _ex) {
+                break;
+            }
+
+            waited += sleepMs;
+            logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
         }
     }
 }

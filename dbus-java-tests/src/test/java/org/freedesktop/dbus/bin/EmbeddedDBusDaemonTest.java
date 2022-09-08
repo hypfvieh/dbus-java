@@ -1,7 +1,6 @@
 package org.freedesktop.dbus.bin;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.freedesktop.dbus.connections.BusAddress;
@@ -17,8 +16,6 @@ import org.junit.jupiter.api.Test;
  *
  */
 public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
-    /** Max wait time to wait for daemon to start. */
-    private static final long MAX_WAIT = Duration.ofSeconds(30).toMillis();
 
     @Test
     public void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
@@ -33,23 +30,7 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             daemon.startInBackground();
             logger.debug("Started embedded bus on address {}", listenBusAddress);
 
-            long sleepMs = 200;
-            long waited = 0;
-
-            while (!daemon.isRunning()) {
-                if (waited >= MAX_WAIT) {
-                    throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + MAX_WAIT + " ms");
-                }
-
-                try {
-                    Thread.sleep(sleepMs);
-                } catch (InterruptedException _ex) {
-                    break;
-                }
-
-                waited += sleepMs;
-                logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
-            }
+            waitForDaemon(daemon);
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress);
@@ -65,6 +46,8 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             logger.error("Error starting EmbeddedDbusDaemon", _ex1);
         }
     }
+
+
 
     @Test
     public void test_start_stop() throws Exception {
