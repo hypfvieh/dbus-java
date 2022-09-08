@@ -63,10 +63,10 @@ public class AbstractBaseTest extends Assertions {
     }
 
     protected void waitForDaemon(EmbeddedDBusDaemon daemon) {
-        long sleepMs = 200;
+        long sleepMs = 500;
         long waited = 0;
 
-        while (!daemon.isRunning()) {
+        do {
             if (waited >= MAX_WAIT) {
                 throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + MAX_WAIT + " ms");
             }
@@ -79,6 +79,6 @@ public class AbstractBaseTest extends Assertions {
 
             waited += sleepMs;
             logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
-        }
+        } while (!daemon.isRunning());
     }
 }
