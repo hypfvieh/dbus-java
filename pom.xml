@@ -14,10 +14,10 @@
     <description>DBus-Java library module parent</description>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit5.version>5.7.0</junit5.version>
+        <junit5.version>5.9.0</junit5.version>
     </properties>
 
     <modules>
@@ -246,19 +246,19 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.30</version>
+                <version>1.7.36</version>
             </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.2.3</version>
+                <version>1.2.11</version>
             </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.2.3</version>
+                <version>1.2.11</version>
             </dependency>
 
             <!-- JUnit testing framework. -->
@@ -284,7 +284,7 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-launcher</artifactId>
-                <version>1.7.0</version>
+                <version>1.9.0</version>
             </dependency>
             
             <!-- Base dependencies for submodules -->
@@ -292,7 +292,7 @@
             <dependency>
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
-                <version>0.38.6</version>
+                <version>0.38.17</version>
             </dependency>
 
         </dependencies>        
