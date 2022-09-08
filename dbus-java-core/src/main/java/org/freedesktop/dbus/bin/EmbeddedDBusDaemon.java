@@ -83,7 +83,9 @@ public class EmbeddedDBusDaemon implements Closeable {
      */
     public void startInBackground() {
         Thread thread = new Thread(this::startInForeground);
-        thread.setName("EmbeddedDBusDaemon-" + address);
+        String threadName = address.toString().replaceAll("^([^,]+),.+", "$1");
+
+        thread.setName("EmbeddedDBusDaemon-" + threadName);
         thread.setDaemon(true);
         thread.setUncaughtExceptionHandler((th, ex) -> LOGGER.error("Got uncaught exception", ex));
         thread.start();
