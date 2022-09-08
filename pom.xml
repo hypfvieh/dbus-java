@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>3.3.2</version>
+    <version>3.3.3-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/${project.artifactId}</url>
