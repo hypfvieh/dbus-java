@@ -151,7 +151,7 @@ public class ReceivingService {
      * @return executor or null
      */
     ExecutorService getExecutor(ExecutorNames _executor) {
-        return executors == null ? null : executors.get(_executor);
+        return executors.get(_executor);
     }
 
     /**
