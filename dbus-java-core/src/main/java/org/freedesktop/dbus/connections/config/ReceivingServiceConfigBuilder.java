@@ -37,7 +37,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     };
 
     private final Supplier<R> connectionBuilder;
-    private ReceivingServiceConfig config = new ReceivingServiceConfig();
+    private final ReceivingServiceConfig config = new ReceivingServiceConfig();
 
     public ReceivingServiceConfigBuilder(Supplier<R> _bldr) {
         connectionBuilder = _bldr;
