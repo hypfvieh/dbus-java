@@ -39,12 +39,12 @@ public class ReceivingService {
      */
     ReceivingService(ReceivingServiceConfig _rsCfg) {
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
-        executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true)));
-        executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true)));
+        executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true, rsCfg.getSignalThreadPriority())));
+        executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true, rsCfg.getErrorThreadPriority())));
 
         // we need multiple threads here so recursive method calls are possible
-        executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
-        executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
+        executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true, rsCfg.getMethodCallThreadPriority())));
+        executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true, rsCfg.getMethodReturnThreadPriority())));
 
         retryHandler = rsCfg.getRetryHandler();
     }
