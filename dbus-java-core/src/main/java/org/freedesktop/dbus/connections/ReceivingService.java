@@ -46,7 +46,7 @@ public class ReceivingService {
         executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true)));
         executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true)));
 
-        retryHandler = _rsCfg.getRetryHandler();
+        retryHandler = rsCfg.getRetryHandler();
     }
 
     /**
