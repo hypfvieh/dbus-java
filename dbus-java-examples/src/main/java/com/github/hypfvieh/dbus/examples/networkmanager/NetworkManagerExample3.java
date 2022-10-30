@@ -15,6 +15,15 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
 
+/**
+ * Sample code which updates a connection's IPv4 method with the Update() method.
+ *
+ * This uses the new NM 1.0 setting properties. Configuration settings are
+ * described at https://networkmanager.dev/docs/api/latest/ref-settings.html
+ *
+ * @author mattdibi
+ *
+ */
 public class NetworkManagerExample3 {
     public static void main( String[] args ) {
         if(args.length < 2) {
