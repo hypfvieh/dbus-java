@@ -25,20 +25,20 @@ import org.freedesktop.networkmanager.settings.Connection;
  *
  */
 public class NetworkManagerExample3 {
-    public static void main( String[] args ) {
-        if(args.length < 2) {
+    public static void main(String[] _args) {
+        if (_args.length < 2) {
             System.out.println("Usage: <uuid> <auto|static> [address prefix gateway]");
             System.exit(1);
         }
 
-        String method = args[1];
-        if( method == "static" && args.length < 4) {
+        String method = _args[1];
+        if (method == "static" && _args.length < 4) {
             System.out.println("Usage: <uuid> <static> address prefix [gateway]");
             System.exit(1);
         }
 
         // Convert method to NM method
-        if(method.equals("static")) {
+        if (method.equals("static")) {
             method = "manual";
         }
 
@@ -54,7 +54,7 @@ public class NetworkManagerExample3 {
                 Map<String, Map<String, Variant<?>>> connectionSettings = connection.GetSettings();
 
                 // Look for the requested connection UUID
-                if(!connectionSettings.get("connection").get("uuid").getValue().toString().equals(args[0])) {
+                if(!connectionSettings.get("connection").get("uuid").getValue().toString().equals(_args[0])) {
                     continue;
                 }
 
@@ -79,14 +79,14 @@ public class NetworkManagerExample3 {
                 if(method.equals("manual")) {
                     // Add the static IP address, prefix and (optional) gateway
                     Map<String, Variant<?>> address = new HashMap<>();
-                    address.put("address", new Variant<String>(args[2]));
-                    address.put("prefix", new Variant<UInt32>(new UInt32(args[3])));
+                    address.put("address", new Variant<String>(_args[2]));
+                    address.put("prefix", new Variant<UInt32>(new UInt32(_args[3])));
 
                     List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
                     ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-                    if(args.length == 5) {
-                        ipv4Map.put("gateway", new Variant<String>(args[4]));
+                    if(_args.length == 5) {
+                        ipv4Map.put("gateway", new Variant<String>(_args[4]));
                     }
                 }
 

@@ -12,34 +12,34 @@ import org.freedesktop.dbus.types.Variant;
 @DBusInterfaceName("org.freedesktop.NetworkManager.Settings.Connection")
 public interface Connection extends DBusInterface {
 
-    void Update(Map<String, Map<String, Variant<?>>> properties);
+    void Update(Map<String, Map<String, Variant<?>>> _properties);
 
-    void UpdateUnsaved(Map<String, Map<String, Variant<?>>> properties);
+    void UpdateUnsaved(Map<String, Map<String, Variant<?>>> _properties);
 
     void Delete();
 
     Map<String, Map<String, Variant<?>>> GetSettings();
 
-    Map<String, Map<String, Variant<?>>> GetSecrets(String settingName);
+    Map<String, Map<String, Variant<?>>> GetSecrets(String _settingName);
 
     void ClearSecrets();
 
     void Save();
 
-    Map<String, Variant<?>> Update2(Map<String, Map<String, Variant<?>>> settings, UInt32 flags,
-            Map<String, Variant<?>> args);
+    Map<String, Variant<?>> Update2(Map<String, Map<String, Variant<?>>> _settings, UInt32 _flags,
+            Map<String, Variant<?>> _args);
 
-    public static class Updated extends DBusSignal {
+    class Updated extends DBusSignal {
 
-        public Updated(String path) throws DBusException {
-            super(path);
+        public Updated(String _path) throws DBusException {
+            super(_path);
         }
     }
 
-    public static class Removed extends DBusSignal {
+    class Removed extends DBusSignal {
 
-        public Removed(String path) throws DBusException {
-            super(path);
+        public Removed(String _path) throws DBusException {
+            super(_path);
         }
     }
 

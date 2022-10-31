@@ -15,24 +15,24 @@ import org.freedesktop.dbus.types.Variant;
 @DBusInterfaceName("org.freedesktop.NetworkManager.Settings")
 public interface Settings extends DBusInterface, Properties {
 
-    public List<DBusInterface> ListConnections();
+    List<DBusInterface> ListConnections();
 
-    public DBusInterface GetConnectionByUuid(String uuid);
+    DBusInterface GetConnectionByUuid(String _uuid);
 
-    public DBusInterface AddConnection(Map<String, Map<String, Variant<?>>> connection);
+    DBusInterface AddConnection(Map<String, Map<String, Variant<?>>> _connection);
 
-    public DBusInterface AddConnectionUnsaved(Map<String, Map<String, Variant<?>>> connection);
+    DBusInterface AddConnectionUnsaved(Map<String, Map<String, Variant<?>>> _connection);
 
-    public Pair<DBusInterface, Map<String, Variant<?>>> AddConnection2(Map<String, Map<String, Variant<?>>> settings,
-            UInt32 flags, Map<String, Variant<?>> args);
+    Pair<DBusInterface, Map<String, Variant<?>>> AddConnection2(Map<String, Map<String, Variant<?>>> _settings,
+     UInt32 _flags, Map<String, Variant<?>> _args);
 
-    public Pair<Boolean, List<String>> LoadConnections(List<String> filenames);
+    Pair<Boolean, List<String>> LoadConnections(List<String> _filenames);
 
-    public boolean ReloadConnections();
+    boolean ReloadConnections();
 
-    public void SaveHostname(String hostname);
+    void SaveHostname(String _hostname);
 
-    public static class NewConnection extends DBusSignal {
+    class NewConnection extends DBusSignal {
 
         /** Object path of the new connection. */
         private final DBusInterface connection;
@@ -47,7 +47,7 @@ public interface Settings extends DBusInterface, Properties {
         }
     }
 
-    public static class ConnectionRemoved extends DBusSignal {
+    class ConnectionRemoved extends DBusSignal {
 
         /** Object path of the removed connection. */
         private final DBusInterface connection;
