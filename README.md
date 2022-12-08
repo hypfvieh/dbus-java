@@ -50,6 +50,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed thread priority settings were never passed to thread factory, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#190](https://github.com/hypfvieh/dbus-java/issues/190))
    - Fixed possible NullPointer dereference in ReceivingService, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#191](https://github.com/hypfvieh/dbus-java/issues/191))
    - Make ReceivingServiceConfig final in builder, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#192](https://github.com/hypfvieh/dbus-java/issues/192))
+   - Fixed issues with code generator, creating tuple classes without proper imports and having issues creating nested structs (struct in struct) ([#195](https://github.com/hypfvieh/dbus-java/issues/195))
    
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
