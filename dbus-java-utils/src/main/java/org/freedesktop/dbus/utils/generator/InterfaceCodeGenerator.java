@@ -274,6 +274,8 @@ public class InterfaceCodeGenerator {
             List<MemberOrArgument> inputArgs = new ArrayList<>();
             List<MemberOrArgument> outputArgs = new ArrayList<>();
 
+            List<String> dbusOutputArgTypes = new ArrayList<>();
+
             int unknownArgNameCnt = 0;
             for (Element argElm : methodArgs) {
                 String argType;
@@ -303,13 +305,14 @@ public class InterfaceCodeGenerator {
                     inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
                 } else if ("out".equals(dirAttr)) {
                     outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
+                    dbusOutputArgTypes.add(argType);
                 }
             }
 
             String resultType;
             if (outputArgs.size() > 1) { // multi-value return
                 logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
-                resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses);
+                resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes);
             } else {
                 logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
                 resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
@@ -407,9 +410,10 @@ public class InterfaceCodeGenerator {
      * @param _className name the tuple class should get
      * @param _parentClzBldr parent class where the tuple was required in
      * @param _additionalClasses list where the new created tuple class will be added to
+     * @param _dbusOutputArgTypes Dbus argument names and data types
      * @return FQCN of the newly created tuple based class
      */
-    private String createTuple(List<MemberOrArgument> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses) {
+    private String createTuple(List<MemberOrArgument> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses, List<String> _dbusOutputArgTypes) {
         if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
             return null;
         }
@@ -429,6 +433,15 @@ public class InterfaceCodeGenerator {
             entry.getAnnotations().add("@Position(" + position++ + ")");
             cnstrctArgs.add(new MemberOrArgument(entry.getName(), entry.getType()));
         }
+
+        for (String outputType : _dbusOutputArgTypes) {
+            if (outputType.contains("<")) {
+                info.getImports().add(outputType.replaceAll("([^<]+).+", "$1"));
+            } else {
+                info.getImports().add(outputType);
+            }
+        }
+
         ClassConstructor cnstrct = new ClassConstructor();
         cnstrct.getArguments().addAll(cnstrctArgs);
 
@@ -630,4 +643,5 @@ public class InterfaceCodeGenerator {
             return map;
         }
     }
+
 }

@@ -353,7 +353,11 @@ public class ClassBuilderInfo {
         // write imports to resulting content if this is not a inner class
         if (!_staticClass) {
             content.add(2, "");
-            content.addAll(2, allImports.stream().filter(l -> !l.startsWith("java.lang.")).map(l -> "import " + l + ";").collect(Collectors.toList()));
+            content.addAll(2, allImports.stream()
+                    .filter(l -> !l.startsWith("java.lang.")) // do not include imports for 'java.lang'
+                    .filter(l -> !l.replaceFirst("(.+)\\..+", "$1").equals(getPackageName())) // do not add imports for classes in same package
+                    .map(l -> "import " + l + ";")
+                    .collect(Collectors.toList()));
         }
 
         return content;
