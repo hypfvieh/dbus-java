@@ -609,6 +609,24 @@ public class ClassBuilderInfo {
             return sb.toString();
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [name=" + name + ", type=" + type + ", finalArg=" + finalArg + ", generics="
+                    + generics + ", annotations=" + annotations + "]";
+        }
+
+
+    }
+
+
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [imports=" + imports + ", annotations=" + annotations + ", members=" + members
+                + ", implementedInterfaces=" + implementedInterfaces + ", methods=" + methods + ", innerClasses="
+                + innerClasses + ", constructors=" + constructors + ", className=" + className + ", packageName="
+                + packageName + ", dbusPackageName=" + dbusPackageName + ", classType=" + classType + ", extendClass="
+                + extendClass + "]";
     }
 
     /**
@@ -641,6 +659,14 @@ public class ClassBuilderInfo {
         public String argumentsAsString(Set<String> _allImports) {
             return getArguments().stream().map(a -> a.asOneLineString(_allImports, true)).collect(Collectors.joining(", "));
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [arguments=" + arguments + ", superArguments=" + superArguments
+                    + ", throwArguments=" + throwArguments + "]";
+        }
+
+
     }
 
     /**

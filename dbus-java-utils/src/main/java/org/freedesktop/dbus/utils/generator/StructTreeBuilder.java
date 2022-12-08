@@ -63,23 +63,23 @@ public class StructTreeBuilder {
 
         int cnt = 0;
         for (StructTree treeItem : structTree) {
-            ClassBuilderInfo info = new ClassBuilderInfo();
-            info.setClassName(Util.upperCaseFirstChar(_structName));
-            info.setPackageName(_clzBldr.getPackageName());
-            info.setExtendClass(Struct.class.getName());
-            info.setClassType(ClassType.CLASS);
+            ClassBuilderInfo root = new ClassBuilderInfo();
+            root.setClassName(Util.upperCaseFirstChar(_structName));
+            root.setPackageName(_clzBldr.getPackageName());
+            root.setExtendClass(Struct.class.getName());
+            root.setClassType(ClassType.CLASS);
 
-            _clzBldr.getImports().add(info.getFqcn());
+            _clzBldr.getImports().add(root.getFqcn());
 
-            _generatedClasses.add(info);
+            _generatedClasses.add(root);
 
             if (cnt == 0 && parentType != null) {
-                parentType += "<" + info.getClassName() + ">";
+                parentType += "<" + root.getClassName() + ">";
                 cnt++;
             }
 
             if (!treeItem.getSubType().isEmpty()) {
-                createNested(treeItem.getSubType(), info, _generatedClasses);
+                createNested(treeItem.getSubType(), root, _generatedClasses);
             }
             // _clzBldr.getImports().addAll(info.getImports());
         }
@@ -92,18 +92,20 @@ public class StructTreeBuilder {
      * Create nested Struct class.
      *
      * @param _list List of struct tree elements
-     * @param _info root class of this struct (maybe other struct)
+     * @param _root root class of this struct (maybe other struct)
      * @param _classes a list, this will contain additional struct classes created, if any. Should never be null!
+     *
+     * @return last created struct or null
      */
-    private void createNested(List<StructTree> _list, ClassBuilderInfo _info, List<ClassBuilderInfo> _classes) {
+    private ClassBuilderInfo createNested(List<StructTree> _list, ClassBuilderInfo _root, List<ClassBuilderInfo> _classes) {
         int position = 0;
 
-        ClassBuilderInfo info = _info;
-
+        ClassBuilderInfo root = _root;
+        ClassBuilderInfo retval = null;
         ClassConstructor classConstructor = new ClassConstructor();
 
         for (StructTree inTree : _list) {
-            ClassBuilderInfo.MemberOrArgument member = new ClassBuilderInfo.MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
+            MemberOrArgument member = new MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
             member.getAnnotations().add("@Position(" + position + ")");
 
             String constructorArg = "member" + position;
@@ -111,39 +113,47 @@ public class StructTreeBuilder {
             position++;
 
             if (Struct.class.isAssignableFrom(inTree.getDataType())) {
-                info = new ClassBuilderInfo();
-                info.setClassName(Util.upperCaseFirstChar(_info.getClassName()) + "Struct");
-                info.setPackageName(_info.getClassName());
-                info.setExtendClass(Struct.class.getName());
-                info.setClassType(ClassType.CLASS);
-                _classes.add(info);
-
+                ClassBuilderInfo temp = new ClassBuilderInfo();
+                temp.setClassName(Util.upperCaseFirstChar(_root.getClassName()) + "Struct");
+                temp.setPackageName(_root.getPackageName());
+                temp.setExtendClass(Struct.class.getName());
+                temp.setClassType(ClassType.CLASS);
                 classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
 
+                createNested(inTree.getSubType(), temp, _classes);
+
+                _classes.add(temp);
+                retval = temp;
             } else if (Collection.class.isAssignableFrom(inTree.getDataType()) || Map.class.isAssignableFrom(inTree.getDataType())) {
                 ClassBuilderInfo temp = new ClassBuilderInfo();
 
-                temp.setClassName(info.getClassName());
-                temp.setPackageName(info.getPackageName());
-                createNested(inTree.getSubType(), temp, _classes);
-                info.getImports().addAll(temp.getImports());
-                member.getGenerics().addAll(temp.getMembers().stream().map(l -> l.getType()).collect(Collectors.toList()));
+                temp.setClassName(root.getClassName());
+                temp.setPackageName(root.getPackageName());
+                ClassBuilderInfo x = createNested(inTree.getSubType(), temp, _classes);
+                if (x != null) {
+                    member.getGenerics().add(x.getClassName());
+                } else {
+                    member.getGenerics().addAll(temp.getMembers().stream().map(l -> l.getType()).collect(Collectors.toList()));
+                }
+                root.getImports().addAll(temp.getImports());
 
                 MemberOrArgument argument = new MemberOrArgument(constructorArg, inTree.getDataType().getName());
                 argument.getGenerics().addAll(member.getGenerics());
                 classConstructor.getArguments().add(argument);
+                retval = null;
             } else {
                 classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
+                retval = null;
             }
 
-            info.getImports().add(Position.class.getName()); // add position annotation as include
+            root.getImports().add(Position.class.getName()); // add position annotation as include
 
-            info.getImports().add(inTree.getDataType().getName());
-            info.getMembers().add(member);
+            root.getImports().add(inTree.getDataType().getName());
+            root.getMembers().add(member);
         }
 
-        info.getConstructors().add(classConstructor);
-
+        root.getConstructors().add(classConstructor);
+        return retval;
     }
 
     /**
@@ -252,6 +262,12 @@ public class StructTreeBuilder {
         public List<StructTree> getSubType() {
             return subType;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [dataType=" + dataType + ", subType=" + subType + "]";
+        }
+
 
     }
 }
