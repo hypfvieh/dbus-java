@@ -29,7 +29,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
         if (_value < MIN_VALUE || _value > MAX_LONG_VALUE) {
             throw new NumberFormatException(String.format("%s is not between %s and %s.", _value, MIN_VALUE, MAX_LONG_VALUE));
         }
-        
+
         this.value = BigInteger.valueOf(_value);
         this.top = this.value.shiftRight(32).and(new BigInteger("4294967295")).longValue();
         this.bottom = this.value.and(new BigInteger("4294967295")).longValue();

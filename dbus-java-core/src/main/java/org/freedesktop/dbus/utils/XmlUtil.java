@@ -1,5 +1,13 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.utils.XmlErrorHandlers.XmlErrorHandlerQuiet;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,16 +32,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import org.freedesktop.dbus.utils.XmlErrorHandlers.XmlErrorHandlerQuiet;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-
-
 
 /**
  * Assorted static XML utility methods.
@@ -162,9 +160,12 @@ public final class XmlUtil {
      * @throws IOException on error
      */
     public static Document parseXmlStringWithXsdValidation(String _xmlStr, boolean _namespaceAware, ErrorHandler _errorHandler) throws IOException  {
+        ErrorHandler handler = _errorHandler;
+
         if (_errorHandler == null) {
-            _errorHandler = new XmlErrorHandlers.XmlErrorHandlerQuiet();
+            handler = new XmlErrorHandlers.XmlErrorHandlerQuiet();
         }
+
         DocumentBuilderFactory dbFac = DocumentBuilderFactory.newInstance();
         dbFac.setValidating(true);
         dbFac.setNamespaceAware(_namespaceAware);
@@ -172,7 +173,7 @@ public final class XmlUtil {
                      "http://www.w3.org/2001/XMLSchema");
         try {
             DocumentBuilder builder = dbFac.newDocumentBuilder();
-            builder.setErrorHandler(_errorHandler);
+            builder.setErrorHandler(handler);
             return builder.parse(new ByteArrayInputStream(_xmlStr.getBytes(StandardCharsets.UTF_8)));
 
         } catch (IOException _ex) {
@@ -220,7 +221,7 @@ public final class XmlUtil {
             transformer.transform(new DOMSource(_docOrNode),
                  new StreamResult(new OutputStreamWriter(_outStream, "UTF-8")));
         } catch (UnsupportedEncodingException | TransformerException _ex) {
-            throw new IOException("Could not print Document or Node.",_ex);
+            throw new IOException("Could not print Document or Node.", _ex);
         }
 
     }

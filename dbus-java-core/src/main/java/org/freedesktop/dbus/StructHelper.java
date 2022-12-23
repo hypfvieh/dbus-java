@@ -1,11 +1,11 @@
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.types.DBusStructType;
+import org.freedesktop.dbus.types.Variant;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-
-import org.freedesktop.dbus.types.DBusStructType;
-import org.freedesktop.dbus.types.Variant;
 
 /**
  * Helper util to create {@link Struct} subclasses when receiving it from DBus.
@@ -13,7 +13,7 @@ import org.freedesktop.dbus.types.Variant;
  * @author David M.
  * @since v3.2.1 - 2019-10-25
  */
-public class StructHelper {
+public final class StructHelper {
 
     private StructHelper() {
 
@@ -35,7 +35,8 @@ public class StructHelper {
      * @throws IllegalArgumentException when data types are incompatible
      * @throws InvocationTargetException if the underlying constructor throws an exception
      */
-    public static <T extends Struct> T createStructFromVariant(Variant<?> _variant, Class<T> _structClass) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static <T extends Struct> T createStructFromVariant(Variant<?> _variant, Class<T> _structClass)
+            throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (_variant == null || _structClass == null) {
             return null;
         }
@@ -67,7 +68,8 @@ public class StructHelper {
      * @throws IllegalArgumentException when data types are incompatible
      * @throws InvocationTargetException if the underlying constructor throws an exception
      */
-    public static <T extends Struct> T createStruct(Class<?>[] _constructorArgs, Object _values,  Class<T> _classToConstruct) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static <T extends Struct> T createStruct(Class<?>[] _constructorArgs, Object _values,  Class<T> _classToConstruct)
+            throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (_constructorArgs == null || _classToConstruct == null || _values == null) {
             return null;
         }

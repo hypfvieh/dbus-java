@@ -1,5 +1,7 @@
 package org.freedesktop.dbus;
 
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,8 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.LoggerFactory;
 
 public final class ArrayFrob {
     private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = new ConcurrentHashMap<>();
@@ -30,7 +30,9 @@ public final class ArrayFrob {
         WRAPPER_TO_PRIMITIVE.put(Long.class, Long.TYPE);
         WRAPPER_TO_PRIMITIVE.put(Float.class, Float.TYPE);
         WRAPPER_TO_PRIMITIVE.put(Double.class, Double.TYPE);
+    }
 
+    private ArrayFrob() {
     }
 
     public static Map<Class<?>, Class<?>> getPrimitiveToWrapperTypes() {
@@ -39,9 +41,6 @@ public final class ArrayFrob {
 
     public static Map<Class<?>, Class<?>> getWrapperToPrimitiveTypes() {
         return Collections.unmodifiableMap(WRAPPER_TO_PRIMITIVE);
-    }
-
-    private ArrayFrob() {
     }
 
     @SuppressWarnings("unchecked")
@@ -165,9 +164,9 @@ public final class ArrayFrob {
                 return type((Object[]) _o, (Class<Object>) _c.getComponentType());
             }
 
-        } catch (Exception e) {
-            LoggerFactory.getLogger(ArrayFrob.class).debug("Cannot convert object.", e);
-            throw new IllegalArgumentException(e);
+        } catch (Exception _ex) {
+            LoggerFactory.getLogger(ArrayFrob.class).debug("Cannot convert object.", _ex);
+            throw new IllegalArgumentException(_ex);
         }
 
         throw new IllegalArgumentException(String.format("Not An Expected Convertion type from %s to %s", _o.getClass(), _c));

@@ -1,5 +1,8 @@
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.annotations.Position;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -8,9 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.freedesktop.dbus.annotations.Position;
-import org.slf4j.LoggerFactory;
-
 /**
  * This class is the super class of both Structs and Tuples
  * and holds common methods.
@@ -18,14 +18,6 @@ import org.slf4j.LoggerFactory;
 public abstract class Container {
     private static final Map<Type, Type[]> TYPE_CACHE = new HashMap<>();
     private Object[]                       parameters = null;
-
-    static void putTypeCache(Type _k, Type[] _v) {
-        TYPE_CACHE.put(_k, _v);
-    }
-
-    static Type[] getTypeCache(Type _k) {
-        return TYPE_CACHE.get(_k);
-    }
 
     Container() {
     }
@@ -108,6 +100,14 @@ public abstract class Container {
         int result = 1;
         result = prime * result + Arrays.deepHashCode(parameters);
         return result;
+    }
+
+    static void putTypeCache(Type _k, Type[] _v) {
+        TYPE_CACHE.put(_k, _v);
+    }
+
+    static Type[] getTypeCache(Type _k) {
+        return TYPE_CACHE.get(_k);
     }
 
 }

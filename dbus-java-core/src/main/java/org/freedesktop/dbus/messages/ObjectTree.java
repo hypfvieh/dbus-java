@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.messages;
 
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.regex.Pattern;
 
 /**
  * Keeps track of the exported objects for introspection data */
@@ -13,30 +13,9 @@ public class ObjectTree {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private TreeNode     root;
 
-    static class TreeNode {
-        // CHECKSTYLE:OFF
-        String         name;
-        ExportedObject object;
-        String         data;
-        TreeNode       right;
-        TreeNode       down;
-        // CHECKSTYLE:ON
-
-        TreeNode(String _name) {
-            name = _name;
-        }
-
-        TreeNode(String _name, ExportedObject _object, String _data) {
-            name = _name;
-            object = _object;
-            data = _data;
-        }
-    }
-
     public ObjectTree() {
         root = new TreeNode("");
     }
-
 
     private TreeNode recursiveFind(TreeNode _current, String _path) {
         if ("/".equals(_path)) {
@@ -48,9 +27,7 @@ public class ObjectTree {
             // this is us
             if (_path.equals(_current.name)) {
                 return _current;
-            }
-            // recurse down
-            else {
+            } else { // recurse down
                 if (_current.down == null) {
                     return null;
                 } else {
@@ -61,9 +38,7 @@ public class ObjectTree {
             return null;
         } else if (0 > _current.right.name.compareTo(elements[0])) {
             return null;
-        }
-        // recurse right
-        else {
+        } else { // recurse right
             return recursiveFind(_current.right, _path);
         }
     }
@@ -76,30 +51,22 @@ public class ObjectTree {
             if (1 == elements.length || "".equals(elements[1])) {
                 _current.object = _object;
                 _current.data = _data;
-            }
-            // recurse down
-            else {
+            } else { // recurse down
                 if (_current.down == null) {
                     String[] el = elements[1].split("/", 2);
                     _current.down = new TreeNode(el[0]);
                 }
                 _current.down = recursiveAdd(_current.down, elements[1], _object, _data);
             }
-        }
-        // need to create a new sub-tree on the end
-        else if (_current.right == null) {
+        } else if (_current.right == null) { // need to create a new sub-tree on the end
             _current.right = new TreeNode(elements[0]);
             _current.right = recursiveAdd(_current.right, _path, _object, _data);
-        }
-        // need to insert here
-        else if (0 > _current.right.name.compareTo(elements[0])) {
+        } else if (0 > _current.right.name.compareTo(elements[0])) { // need to insert here
             TreeNode t = new TreeNode(elements[0]);
             t.right = _current.right;
             _current.right = t;
             _current.right = recursiveAdd(_current.right, _path, _object, _data);
-        }
-        // recurse right
-        else {
+        } else { // recurse right
             _current.right = recursiveAdd(_current.right, _path, _object, _data);
         }
         return _current;
@@ -118,7 +85,7 @@ public class ObjectTree {
                 // this is us
                 _current.object = null;
                 _current.data = null;
-                if (_current.down != null ) {
+                if (_current.down != null) {
                     // This node has a child node so it needs to be kept
                     return _current;
                 }
@@ -197,5 +164,25 @@ public class ObjectTree {
     @Override
     public String toString() {
         return recursivePrint(root);
+    }
+
+    static class TreeNode {
+        // CHECKSTYLE:OFF
+        String         name;
+        ExportedObject object;
+        String         data;
+        TreeNode       right;
+        TreeNode       down;
+        // CHECKSTYLE:ON
+
+        TreeNode(String _name) {
+            name = _name;
+        }
+
+        TreeNode(String _name, ExportedObject _object, String _data) {
+            name = _name;
+            object = _object;
+            data = _data;
+        }
     }
 }

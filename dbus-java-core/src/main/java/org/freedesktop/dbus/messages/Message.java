@@ -1,16 +1,5 @@
 package org.freedesktop.dbus.messages;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-
 import org.freedesktop.dbus.ArrayFrob;
 import org.freedesktop.dbus.Container;
 import org.freedesktop.dbus.DBusMap;
@@ -31,6 +20,17 @@ import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Superclass of all messages which are sent over the Bus. This class deals with all the marshalling to/from the wire
@@ -61,7 +61,9 @@ public class Message {
 
     private static long                globalserial    = 0;
 
+    //CHECKSTYLE:OFF
     protected final Logger             logger          = LoggerFactory.getLogger(getClass());
+    //CHECKSTYLE:ON
 
     private final List<FileDescriptor> filedescriptors = new ArrayList<>();
     private final Map<Byte, Object>    headers         = new HashMap<>();
@@ -362,9 +364,10 @@ public class Message {
      * @param _width The byte-width of the int.
      */
     public static void marshallintBig(long _l, byte[] _buf, int _ofs, int _width) {
+        long l = _l;
         for (int i = _width - 1; i >= 0; i--) {
-            _buf[i + _ofs] = (byte) (_l & 0xFF);
-            _l >>= 8;
+            _buf[i + _ofs] = (byte) (l & 0xFF);
+            l >>= 8;
         }
     }
 
@@ -377,9 +380,10 @@ public class Message {
      * @param _width The byte-width of the int.
      */
     public static void marshallintLittle(long _l, byte[] _buf, int _ofs, int _width) {
+        long l = _l;
         for (int i = 0; i < _width; i++) {
-            _buf[i + _ofs] = (byte) (_l & 0xFF);
-            _l >>= 8;
+            _buf[i + _ofs] = (byte) (l & 0xFF);
+            l >>= 8;
         }
     }
 
@@ -387,7 +391,7 @@ public class Message {
         return wiredata;
     }
 
-    public List<FileDescriptor> getFiledescriptors(){
+    public List<FileDescriptor> getFiledescriptors() {
         return filedescriptors;
     }
 
@@ -426,8 +430,8 @@ public class Message {
         Object[] largs = null;
         try {
             largs = getParameters();
-        } catch (DBusException dbe) {
-            logger.debug("", dbe);
+        } catch (DBusException _ex) {
+            logger.debug("", _ex);
         }
         if (null == largs || 0 == largs.length) {
             sb.append('}');
@@ -531,9 +535,9 @@ public class Message {
                 appendint(((Number) _data).shortValue(), 2);
                 break;
             case ArgumentType.FILEDESCRIPTOR:
-                filedescriptors.add((FileDescriptor)_data);
+                filedescriptors.add((FileDescriptor) _data);
                 appendint(filedescriptors.size() - 1, 4);
-                logger.debug( "Just inserted {} as filedescriptor", filedescriptors.size() - 1 );
+                logger.debug("Just inserted {} as filedescriptor", filedescriptors.size() - 1);
                 break;
             case ArgumentType.STRING:
             case ArgumentType.OBJECT_PATH:
@@ -551,8 +555,8 @@ public class Message {
                 byte[] payloadbytes = null;
                 try {
                     payloadbytes = payload.getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    logger.debug("System does not support UTF-8 encoding", uee);
+                } catch (UnsupportedEncodingException _ex) {
+                    logger.debug("System does not support UTF-8 encoding", _ex);
                     throw new DBusException("System does not support UTF-8 encoding");
                 }
                 logger.trace("Appending String of length {}", payloadbytes.length);
@@ -729,8 +733,8 @@ public class Message {
                 break;
             }
             return i;
-        } catch (ClassCastException cce) {
-            logger.debug("Trying to marshall to unconvertible type.", cce);
+        } catch (ClassCastException _ex) {
+            logger.debug("Trying to marshall to unconvertible type.", _ex);
             throw new MarshallingException(
                     MessageFormat.format("Trying to marshall to unconvertible type (from {0} to {1}).",
                             _data.getClass().getName(), (char) _sigb[_sigofs]));
@@ -812,7 +816,7 @@ public class Message {
      * @throws DBusException on error
      */
     public void append(String _sig, Object... _data) throws DBusException {
-        logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysDeepString(logger.isDebugEnabled(),_data));
+        logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysDeepString(logger.isDebugEnabled(), _data));
         byte[] sigb = _sig.getBytes();
         int j = 0;
         for (int i = 0; i < sigb.length; i++) {
@@ -982,7 +986,7 @@ public class Message {
                 rv = extractVariant(_dataBuf, _offsets, (sig, obj) -> new Variant<>(obj, sig));
                 break;
             case ArgumentType.FILEDESCRIPTOR:
-                rv = filedescriptors.get((int)demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+                rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
                 _offsets[OFFSET_DATA] += 4;
                 break;
             case ArgumentType.STRING:
@@ -990,8 +994,8 @@ public class Message {
                 _offsets[OFFSET_DATA] += 4;
                 try {
                     rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                    logger.debug("System does not support UTF-8 encoding", uee);
+                } catch (UnsupportedEncodingException _ex) {
+                    logger.debug("System does not support UTF-8 encoding", _ex);
                     throw new DBusException("System does not support UTF-8 encoding");
                 }
                 _offsets[OFFSET_DATA] += length + 1;
@@ -1202,18 +1206,6 @@ public class Message {
                 rv = contents;
         }
         return rv;
-    }
-
-    /**
-     * Interface defining a method to extract a specific data type.
-     * For internal usage only.
-     *
-     * @since 4.2.0 - 2022-08-19
-     */
-    @FunctionalInterface
-    interface ExtractMethod {
-        Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained)
-                throws DBusException;
     }
 
     private int prepareCollection(byte[] _signatureBuf, int[] _offsets, long _size) throws DBusException {
@@ -1468,9 +1460,9 @@ public class Message {
         if (null != _sig) {
             append(_sig, _args);
         }
-        logger.trace("Appended body, type: {} start: {} end: {} size: {}",_sig, c, getByteCounter(), getByteCounter() - c);
+        logger.trace("Appended body, type: {} start: {} end: {} size: {}", _sig, c, getByteCounter(), getByteCounter() - c);
         marshallint(getByteCounter() - c, blen, 0, 4);
-        logger.trace("marshalled size ({}): {}",blen, Hexdump.format(blen));
+        logger.trace("marshalled size ({}): {}", blen, Hexdump.format(blen));
     }
 
     /**
@@ -1502,6 +1494,18 @@ public class Message {
         default:
             return "Invalid";
         }
+    }
+
+    /**
+     * Interface defining a method to extract a specific data type.
+     * For internal usage only.
+     *
+     * @since 4.2.0 - 2022-08-19
+     */
+    @FunctionalInterface
+    interface ExtractMethod {
+        Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained)
+                throws DBusException;
     }
 
     /** Defines constants representing the flags which can be set on a message. */

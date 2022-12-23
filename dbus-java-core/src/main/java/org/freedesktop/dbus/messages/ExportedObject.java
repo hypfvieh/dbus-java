@@ -1,5 +1,24 @@
 package org.freedesktop.dbus.messages;
 
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.MethodTuple;
+import org.freedesktop.dbus.StrongReference;
+import org.freedesktop.dbus.Tuple;
+import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusIgnore;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.annotations.DBusProperties;
+import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.utils.DBusNamingUtil;
+import org.slf4j.LoggerFactory;
+
 import java.lang.annotation.Annotation;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -19,25 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
-
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.StrongReference;
-import org.freedesktop.dbus.Tuple;
-import org.freedesktop.dbus.TypeRef;
-import org.freedesktop.dbus.annotations.DBusIgnore;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.annotations.DBusMemberName;
-import org.freedesktop.dbus.annotations.DBusProperties;
-import org.freedesktop.dbus.annotations.DBusProperty;
-import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.interfaces.Peer;
-import org.freedesktop.dbus.utils.DBusNamingUtil;
-import org.slf4j.LoggerFactory;
 
 public class ExportedObject {
     private final Map<MethodTuple, Method> methods = new HashMap<>();
@@ -331,10 +331,11 @@ public class ExportedObject {
         return introspectionData;
     }
 
-	public static boolean isExcluded(Method _meth) {
-		return !Modifier.isPublic(_meth.getModifiers()) ||
-				_meth.getAnnotation(DBusIgnore.class) != null ||
-				_meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class) && _meth.getParameterCount() == 0;
-	}
+    public static boolean isExcluded(Method _meth) {
+        return !Modifier.isPublic(_meth.getModifiers())
+                || _meth.getAnnotation(DBusIgnore.class) != null
+                || _meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class)
+                        && _meth.getParameterCount() == 0;
+    }
 
 }

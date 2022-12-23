@@ -1,29 +1,5 @@
 package org.freedesktop.dbus.bin;
 
-import java.io.Closeable;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.channels.SocketChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -48,6 +24,30 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.channels.SocketChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A replacement DBusDaemon
@@ -139,8 +139,8 @@ public class DBusDaemon extends Thread implements Closeable {
                             if (null != connectionStruct.unique) {
                                 m.setSource(connectionStruct.unique);
                             }
-                        } catch (DBusException dbe) {
-                            LOGGER.debug("", dbe);
+                        } catch (DBusException _ex) {
+                            LOGGER.debug("", _ex);
                             send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
 
@@ -160,7 +160,9 @@ public class DBusDaemon extends Thread implements Closeable {
                                 ConnectionStruct dest = names.get(m.getDestination());
 
                                 if (null == dest) {
-                                    send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s", String.format("The name `%s' does not exist", m.getDestination())));
+                                    send(connectionStruct, new Error("org.freedesktop.DBus", null,
+                                            "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s",
+                                            String.format("The name `%s' does not exist", m.getDestination())));
                                 } else {
                                     send(dest, m);
                                 }
@@ -169,8 +171,8 @@ public class DBusDaemon extends Thread implements Closeable {
                     }
                 }
 
-            } catch (DBusException dbe) {
-                LOGGER.debug("", dbe);
+            } catch (DBusException _ex) {
+                LOGGER.debug("", _ex);
             } catch (InterruptedException _ex) {
                 close();
                 interrupt();
@@ -231,8 +233,8 @@ public class DBusDaemon extends Thread implements Closeable {
                         toRemove.add(name);
                         try {
                             send(null, new NameOwnerChanged("/org/freedesktop/DBus", name, _c.unique, ""));
-                        } catch (DBusException dbe) {
-                            LOGGER.debug("", dbe);
+                        } catch (DBusException _ex) {
+                            LOGGER.debug("", _ex);
                         }
                     }
                 }
@@ -255,7 +257,9 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public static void syntax() {
-        System.out.println("Syntax: DBusDaemon [--version] [-v] [--help] [-h] [--listen address] [-l address] [--print-address] [-r] [--pidfile file] [-p file] [--addressfile file] [-a file] [--unix] [-u] [--tcp] [-t] ");
+        System.out.println("Syntax: DBusDaemon [--version] [-v] [--help] [-h] [--listen address] "
+                + "[-l address] [--print-address] [-r] [--pidfile file] [-p file] [--addressfile file] "
+                + "[-a file] [--unix] [-u] [--tcp] [-t] ");
         System.exit(1);
     }
 
@@ -304,7 +308,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     syntax();
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException exAioob) {
+        } catch (ArrayIndexOutOfBoundsException _ex) {
             syntax();
         }
 
@@ -368,7 +372,6 @@ public class DBusDaemon extends Thread implements Closeable {
         return new DBusSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
     }
 
-
     public static class ConnectionStruct {
         private final InputStreamMessageReader  inputReader;
         private final OutputStreamMessageWriter outputWriter;
@@ -425,13 +428,12 @@ public class DBusDaemon extends Thread implements Closeable {
             try {
                 send(connStruct, generateNameAcquiredSignal(connStruct.unique));
                 send(null, generatedNameOwnerChangedSignal(connStruct.unique, "", connStruct.unique));
-            } catch (DBusException dbe) {
-                LOGGER.debug("", dbe);
+            } catch (DBusException _ex) {
+                LOGGER.debug("", _ex);
             }
 
             return connStruct.unique;
         }
-
 
         @Override
         public String[] ListNames() {
@@ -471,6 +473,7 @@ public class DBusDaemon extends Thread implements Closeable {
         }
 
         @Override
+        @SuppressWarnings("checkstyle:innerassignment")
         public UInt32 RequestName(String _name, UInt32 _flags) {
             boolean exists = false;
             synchronized (names) {
@@ -490,13 +493,12 @@ public class DBusDaemon extends Thread implements Closeable {
                 try {
                     send(connStruct, generateNameAcquiredSignal(_name));
                     send(null, generatedNameOwnerChangedSignal(_name, "", connStruct.unique));
-                } catch (DBusException dbe) {
-                    LOGGER.debug("", dbe);
+                } catch (DBusException _ex) {
+                    LOGGER.debug("", _ex);
                 }
             }
             return new UInt32(rv);
         }
-
 
         @Override
         public UInt32 ReleaseName(String _name) {
@@ -517,8 +519,8 @@ public class DBusDaemon extends Thread implements Closeable {
                 try {
                     send(connStruct, new NameLost("/org/freedesktop/DBus", _name));
                     send(null, new NameOwnerChanged("/org/freedesktop/DBus", _name, connStruct.unique, ""));
-                } catch (DBusException dbe) {
-                    LOGGER.debug("", dbe);
+                } catch (DBusException _ex) {
+                    LOGGER.debug("", _ex);
                 }
             }
 
@@ -556,7 +558,6 @@ public class DBusDaemon extends Thread implements Closeable {
         public Byte[] GetConnectionSELinuxSecurityContext(String _args) {
             return new Byte[0];
         }
-
 
         @SuppressWarnings("unchecked")
         private void handleMessage(ConnectionStruct _connStruct, Message _msg) throws DBusException {
@@ -596,10 +597,12 @@ public class DBusDaemon extends Thread implements Closeable {
                    send(_connStruct, new Error("org.freedesktop.DBus", _msg, _exDnEe));
                 } catch (Exception _ex) {
                     LOGGER.debug("", _ex);
-                    send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
+                    send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique,
+                            "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
                 }
             } catch (NoSuchMethodException _exNsm) {
-                send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique, "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
+                send(_connStruct, new Error("org.freedesktop.DBus", _connStruct.unique,
+                        "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
             }
 
         }
@@ -611,17 +614,81 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public String Introspect() {
-            return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n" + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n" + "<node>\n" + "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n" + "    <method name=\"Introspect\">\n"
-                    + "      <arg name=\"data\" direction=\"out\" type=\"s\"/>\n" + "    </method>\n" + "  </interface>\n" + "  <interface name=\"org.freedesktop.DBus\">\n" + "    <method name=\"RequestName\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"in\" type=\"u\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n" + "    </method>\n" + "    <method name=\"ReleaseName\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"u\"/>\n" + "    </method>\n" + "    <method name=\"StartServiceByName\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"in\" type=\"u\"/>\n" + "      <arg direction=\"out\" type=\"u\"/>\n" + "    </method>\n" + "    <method name=\"Hello\">\n" + "      <arg direction=\"out\" type=\"s\"/>\n" + "    </method>\n"
-                    + "    <method name=\"NameHasOwner\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"b\"/>\n" + "    </method>\n" + "    <method name=\"ListNames\">\n" + "      <arg direction=\"out\" type=\"as\"/>\n" + "    </method>\n"
-                    + "    <method name=\"ListActivatableNames\">\n" + "      <arg direction=\"out\" type=\"as\"/>\n" + "    </method>\n" + "    <method name=\"AddMatch\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "    </method>\n" + "    <method name=\"RemoveMatch\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n" + "    </method>\n" + "    <method name=\"GetNameOwner\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"s\"/>\n" + "    </method>\n" + "    <method name=\"ListQueuedOwners\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"as\"/>\n" + "    </method>\n" + "    <method name=\"GetConnectionUnixUser\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"u\"/>\n" + "    </method>\n"
-                    + "    <method name=\"GetConnectionUnixProcessID\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n" + "      <arg direction=\"out\" type=\"u\"/>\n" + "    </method>\n" + "    <method name=\"GetConnectionSELinuxSecurityContext\">\n" + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"ay\"/>\n" + "    </method>\n" + "    <method name=\"ReloadConfig\">\n" + "    </method>\n" + "    <signal name=\"NameOwnerChanged\">\n" + "      <arg type=\"s\"/>\n" + "      <arg type=\"s\"/>\n" + "      <arg type=\"s\"/>\n" + "    </signal>\n"
-                    + "    <signal name=\"NameLost\">\n" + "      <arg type=\"s\"/>\n" + "    </signal>\n" + "    <signal name=\"NameAcquired\">\n" + "      <arg type=\"s\"/>\n" + "    </signal>\n" + "  </interface>\n" + "</node>";
+            return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n"
+                    + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n"
+                    + "<node>\n"
+                    + "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n"
+                    + "    <method name=\"Introspect\">\n"
+                    + "      <arg name=\"data\" direction=\"out\" type=\"s\"/>\n"
+                    + "    </method>\n"
+                    + "  </interface>\n"
+                    + "  <interface name=\"org.freedesktop.DBus\">\n"
+                    + "    <method name=\"RequestName\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"in\" type=\"u\"/>\n"
+                    + "      <arg direction=\"out\" type=\"u\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"ReleaseName\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"u\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"StartServiceByName\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"in\" type=\"u\"/>\n"
+                    + "      <arg direction=\"out\" type=\"u\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"Hello\">\n"
+                    + "      <arg direction=\"out\" type=\"s\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"NameHasOwner\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"b\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"ListNames\">\n"
+                    + "      <arg direction=\"out\" type=\"as\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"ListActivatableNames\">\n"
+                    + "      <arg direction=\"out\" type=\"as\"/>\n"
+                    + "    </method>\n" + "    <method name=\"AddMatch\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"RemoveMatch\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"GetNameOwner\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"s\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"ListQueuedOwners\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"as\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"GetConnectionUnixUser\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"u\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"GetConnectionUnixProcessID\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"u\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"GetConnectionSELinuxSecurityContext\">\n"
+                    + "      <arg direction=\"in\" type=\"s\"/>\n"
+                    + "      <arg direction=\"out\" type=\"ay\"/>\n"
+                    + "    </method>\n"
+                    + "    <method name=\"ReloadConfig\">\n"
+                    + "    </method>\n"
+                    + "    <signal name=\"NameOwnerChanged\">\n"
+                    + "      <arg type=\"s\"/>\n"
+                    + "      <arg type=\"s\"/>\n"
+                    + "      <arg type=\"s\"/>\n"
+                    + "    </signal>\n"
+                    + "    <signal name=\"NameLost\">\n"
+                    + "      <arg type=\"s\"/>\n"
+                    + "    </signal>\n"
+                    + "    <signal name=\"NameAcquired\">\n"
+                    + "      <arg type=\"s\"/>\n"
+                    + "    </signal>\n"
+                    + "  </interface>\n" + "</node>";
         }
 
         @Override
@@ -642,8 +709,8 @@ public class DBusDaemon extends Thread implements Closeable {
 
                             try {
                                 handleMessage(connectionStruct, pollFirst.first);
-                            } catch (DBusException dbe) {
-                                LOGGER.debug("", dbe);
+                            } catch (DBusException _ex) {
+                                LOGGER.debug("", _ex);
                             }
                         } else if (LOGGER.isDebugEnabled()) {
                             LOGGER.info("Discarding {} connection reaped", pollFirst.first);
@@ -698,7 +765,6 @@ public class DBusDaemon extends Thread implements Closeable {
     public class DBusDaemonSenderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private volatile AtomicBoolean running = new AtomicBoolean(true);
-
 
         public DBusDaemonSenderThread() {
             setName(getClass().getSimpleName());
@@ -766,12 +832,12 @@ public class DBusDaemon extends Thread implements Closeable {
                 Message m = null;
                 try {
                     m = conn.inputReader.readMessage();
-                } catch (IOException ioe) {
-                    LOGGER.debug("", ioe);
+                } catch (IOException _ex) {
+                    LOGGER.debug("", _ex);
                     removeConnection(conn);
-                } catch (DBusException dbe) {
-                    LOGGER.debug("", dbe);
-                    if (dbe instanceof FatalException) {
+                } catch (DBusException _ex) {
+                    LOGGER.debug("", _ex);
+                    if (_ex instanceof FatalException) {
                         removeConnection(conn);
                     }
                 }

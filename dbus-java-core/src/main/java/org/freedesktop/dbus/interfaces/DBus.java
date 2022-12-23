@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.interfaces;
 
-import java.util.Map;
-
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -9,8 +7,9 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
-//CHECKSTYLE:OFF
+import java.util.Map;
 
+@SuppressWarnings({"checkstyle:methodname"})
 @DBusInterfaceName("org.freedesktop.DBus")
 public interface DBus extends DBusInterface {
     int DBUS_NAME_FLAG_ALLOW_REPLACEMENT      = 0x01;
@@ -74,48 +73,6 @@ public interface DBus extends DBusInterface {
     boolean NameHasOwner(String _name);
 
     /**
-    * Signal sent when the owner of a name changes
-    */
-    class NameOwnerChanged extends DBusSignal {
-        public final String name;
-        public final String oldOwner;
-        public final String newOwner;
-
-        public NameOwnerChanged(String _path, String _name, String _oldOwner, String _newOwner) throws DBusException {
-            super(_path, new Object[] {
-                    _name, _oldOwner, _newOwner
-            });
-            name = _name;
-            oldOwner = _oldOwner;
-            newOwner = _newOwner;
-        }
-    }
-
-    /**
-    * Signal sent to a connection when it loses a name.
-    */
-    class NameLost extends DBusSignal {
-        public final String name;
-
-        public NameLost(String _path, String _name) throws DBusException {
-            super(_path, _name);
-            name = _name;
-        }
-    }
-
-    /**
-    * Signal sent to a connection when it acquires a name.
-    */
-    class NameAcquired extends DBusSignal {
-        public final String name;
-
-        public NameAcquired(String _path, String _name) throws DBusException {
-            super(_path, _name);
-            name = _name;
-        }
-    }
-
-    /**
     * Start a service. If the given service is not provided
     * by any application, it will be started according to the .service file
     * for that service.
@@ -133,7 +90,7 @@ public interface DBus extends DBusInterface {
      *
      * @param _environment Environment to add or update
      */
-    void UpdateActivationEnvironment(Map<String,String>[] _environment);
+    void UpdateActivationEnvironment(Map<String, String>[] _environment);
 
     /**
     * Get the connection unique name that owns the given name.
@@ -178,7 +135,6 @@ public interface DBus extends DBusInterface {
      */
     Map<String, Variant<?>> GetConnectionCredentials(String _busName);
 
-
     /**
      * <b><a href="https://dbus.freedesktop.org/doc/dbus-specification.html">DBUS Specification</a>:</b><br>
      *
@@ -187,7 +143,8 @@ public interface DBus extends DBusInterface {
      * documentation via the D-Bus bug tracking system.<br>
      * This method is on the core DBus interface for historical reasons;<br>
      * the same information should be made available via<br>
-     * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
+     * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">
+     * the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>"</a><br>
      * in future.<br>
      *
      * @param _busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
@@ -202,7 +159,8 @@ public interface DBus extends DBusInterface {
     * documentation via the D-Bus bug tracking system.<br>
     * This method is on the core DBus interface for historical reasons;<br>
     * the same information should be made available via<br>
-    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
+    * <a  href="https://dbus.freedesktop.org/doc/dbus-specification.html#bus-messages-get-connection-credentials">
+    * the section called "<code>org.freedesktop.DBus.GetConnectionCredentials</code>”</a><br>
     * in future.
     *
     * @param _busName Unique or well-known bus name of the connection to query, such as :12.34 or com.example.tea
@@ -233,8 +191,10 @@ public interface DBus extends DBusInterface {
      * bus daemon is listening on (TCP, UNIX domain socket, etc.) and its format is described in<br>
      * <a href="#uuids">the section called "UUIDs”</a>. <br>
      * Each address the bus is listening on also has its own unique<br>
-     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">the section called "Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
-     * There is also a per-machine ID, described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>”</a> and returned
+     * ID, as described in <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#addresses">
+     * the section called "Server Addresses”</a>. The per-bus and per-address IDs are not related.<br>
+     * There is also a per-machine ID, described in
+     * <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-peer">the section called "<code>org.freedesktop.DBus.Peer</code>”</a> and returned
      * by org.freedesktop.DBus.Peer.GetMachineId().<br>
      * For a desktop session bus, the bus ID can be used as a way to uniquely identify a user's session.
      *
@@ -242,6 +202,49 @@ public interface DBus extends DBusInterface {
      */
     String GetId();
 
+    /**
+    * Signal sent when the owner of a name changes
+    */
+    @SuppressWarnings("checkstyle:visibilitymodifier")
+    class NameOwnerChanged extends DBusSignal {
+        public final String name;
+        public final String oldOwner;
+        public final String newOwner;
+
+        public NameOwnerChanged(String _path, String _name, String _oldOwner, String _newOwner) throws DBusException {
+            super(_path, new Object[] {
+                    _name, _oldOwner, _newOwner
+            });
+            name = _name;
+            oldOwner = _oldOwner;
+            newOwner = _newOwner;
+        }
+    }
+
+    /**
+    * Signal sent to a connection when it loses a name.
+    */
+    @SuppressWarnings("checkstyle:visibilitymodifier")
+    class NameLost extends DBusSignal {
+        public final String name;
+
+        public NameLost(String _path, String _name) throws DBusException {
+            super(_path, _name);
+            name = _name;
+        }
+    }
+
+    /**
+    * Signal sent to a connection when it acquires a name.
+    */
+    @SuppressWarnings("checkstyle:visibilitymodifier")
+    class NameAcquired extends DBusSignal {
+        public final String name;
+
+        public NameAcquired(String _path, String _name) throws DBusException {
+            super(_path, _name);
+            name = _name;
+        }
+    }
 
 }
-//CHECKSTYLE:ON

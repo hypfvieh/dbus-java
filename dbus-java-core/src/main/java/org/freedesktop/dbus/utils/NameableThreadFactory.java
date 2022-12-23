@@ -28,7 +28,7 @@ public class NameableThreadFactory implements ThreadFactory {
      * @param _daemonizeThreads turn all created threads to daemon threads
      */
     public NameableThreadFactory(String _name, boolean _daemonizeThreads) {
-        this(_name, _daemonizeThreads,Thread.NORM_PRIORITY);
+        this(_name, _daemonizeThreads, Thread.NORM_PRIORITY);
     }
 
     /**

@@ -11,7 +11,6 @@ import java.util.TimeZone;
  */
 public class TimeMeasure {
 
-   
     /** Start time in milliseconds. */
     private volatile long startTm;
 

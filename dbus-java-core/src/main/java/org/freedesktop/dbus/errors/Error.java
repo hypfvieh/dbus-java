@@ -3,13 +3,6 @@ package org.freedesktop.dbus.errors;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_EXTRACT_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_PARTIAL_PATTERN;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -18,6 +11,13 @@ import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Error messages which can be sent over the bus.
@@ -74,20 +74,20 @@ public class Error extends Message {
     @SuppressWarnings("unchecked")
     private static Class<? extends DBusExecutionException> createExceptionClass(String _name) {
         Class<? extends DBusExecutionException> c = null;
-
+        String name = _name;
         // Fix package name for DBus own error messages
-        if (_name.startsWith("org.freedesktop.DBus.Error.")) {
-            _name = _name.replace("org.freedesktop.DBus.Error.", "org.freedesktop.dbus.errors.");
+        if (name.startsWith("org.freedesktop.DBus.Error.")) {
+            name = name.replace("org.freedesktop.DBus.Error.", "org.freedesktop.dbus.errors.");
         }
 
         do {
             try {
-                c = (Class<? extends DBusExecutionException>) Class.forName(_name);
+                c = (Class<? extends DBusExecutionException>) Class.forName(name);
             } catch (ClassNotFoundException _exCnf) {
-                LOGGER.trace("Could not find class for name {}", _name, _exCnf);
+                LOGGER.trace("Could not find class for name {}", name, _exCnf);
             }
-            _name = EXCEPTION_EXTRACT_PATTERN.matcher(_name).replaceAll("\\$$1");
-        } while (null == c && EXCEPTION_PARTIAL_PATTERN.matcher(_name).matches());
+            name = EXCEPTION_EXTRACT_PATTERN.matcher(name).replaceAll("\\$$1");
+        } while (null == c && EXCEPTION_PARTIAL_PATTERN.matcher(name).matches());
         return c;
     }
 

@@ -16,5 +16,4 @@ public class ObjectPath extends DBusPath {
         source = _source;
     }
 
-
 }

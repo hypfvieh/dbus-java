@@ -1,5 +1,8 @@
 package org.freedesktop.dbus.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,9 +33,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Utility class providing helper methods for handling strings, files and so on.
  *
@@ -60,7 +60,6 @@ public final class Util {
     }
 
     private Util() {}
-
 
     /**
      * Trys to read a properties file.
@@ -234,7 +233,7 @@ public final class Util {
             return _str;
         }
 
-        String abbr = _str.substring(0, _length -3) + "...";
+        String abbr = _str.substring(0, _length - 3) + "...";
 
         return abbr;
     }
@@ -534,7 +533,6 @@ public final class Util {
         return address;
     }
 
-
     /**
      * Checks if given value is greater or equal to the given minimum and less or equal to the given maximum.
      *
@@ -570,7 +568,6 @@ public final class Util {
         if (userPrincipalLookupService == null) {
             LOGGER.error("Unable to set user/group permissions on {}", _path);
         }
-
 
         if (!Util.isBlank(_fileOwner)) {
             try {

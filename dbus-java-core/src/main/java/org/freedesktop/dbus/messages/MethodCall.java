@@ -1,15 +1,15 @@
 package org.freedesktop.dbus.messages;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MethodCall extends MethodBase {
-    private static long REPLY_WAIT_TIMEOUT = Duration.ofSeconds(20).toMillis();
+    private static long replyWaitTimeout = Duration.ofSeconds(20).toMillis();
 
     // CHECKSTYLE:OFF
     Message              reply              = null;
@@ -65,7 +65,7 @@ public class MethodCall extends MethodBase {
     * @param _timeout New timeout in ms.
     */
     public static void setDefaultTimeout(long _timeout) {
-        REPLY_WAIT_TIMEOUT = _timeout;
+        replyWaitTimeout = _timeout;
     }
 
     public synchronized boolean hasReply() {
@@ -97,7 +97,7 @@ public class MethodCall extends MethodBase {
     * @return The reply to this MethodCall, or null if a timeout happens.
     */
     public synchronized Message getReply() {
-        return getReply(REPLY_WAIT_TIMEOUT);
+        return getReply(replyWaitTimeout);
     }
 
     public synchronized void setReply(Message _reply) {

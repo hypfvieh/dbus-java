@@ -2,18 +2,6 @@ package org.freedesktop.dbus.messages;
 
 import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
 
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.ObjectPath;
@@ -27,6 +15,18 @@ import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class DBusSignal extends Message {
     private static final Logger                                                    LOGGER              =
@@ -45,7 +45,6 @@ public class DBusSignal extends Message {
 
     private static final Map<Class<? extends DBusSignal>, List<CachedConstructor>> CACHED_CONSTRUCTORS =
             new ConcurrentHashMap<>();
-
 
     private Class<? extends DBusSignal>                                            clazz;
     private boolean                                                                bodydone            = false;
@@ -76,7 +75,7 @@ public class DBusSignal extends Message {
             setArgs(_args);
         }
 
-        setSerial(getSerial() +1);
+        setSerial(getSerial() + 1);
         padAndMarshall(hargs, getSerial(), _sig, _args);
         bodydone = true;
     }
@@ -131,9 +130,9 @@ public class DBusSignal extends Message {
                 sig = Marshalling.getDBusType(types);
                 hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, sig));
                 setArgs(_args);
-            } catch (Exception e) {
-                logger.debug("", e);
-                throw new DBusException("Failed to add signal parameters: " + e.getMessage());
+            } catch (Exception _ex) {
+                logger.debug("", _ex);
+                throw new DBusException("Failed to add signal parameters: " + _ex.getMessage());
             }
         }
 

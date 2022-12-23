@@ -11,5 +11,7 @@ public interface Introspectable extends DBusInterface {
     /**
      * @return The XML introspection data for this object
      */
+    //CHECKSTYLE:OFF
     String Introspect();
+    //CHECKSTYLE:ON
 }

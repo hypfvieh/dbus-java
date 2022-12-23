@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.messages;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MethodReturn extends MethodBase {
 
@@ -48,7 +48,6 @@ public class MethodReturn extends MethodBase {
         this(_source, _mc.getSource(), _mc.getSerial(), _sig, _args);
         this.call = _mc;
     }
-
 
     public MethodCall getCall() {
         return call;

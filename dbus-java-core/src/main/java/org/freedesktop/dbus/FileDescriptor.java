@@ -1,42 +1,43 @@
 package org.freedesktop.dbus;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Represents a FileDescriptor to be passed over the bus.  Can be created from
- * either an integer(gotten through some JNI/JNA/JNR call) or from a 
+ * either an integer(gotten through some JNI/JNA/JNR call) or from a
  * java.io.FileDescriptor.
- * 
+ *
  */
 public class FileDescriptor {
-    
+
     private final Logger      logger          = LoggerFactory.getLogger(getClass());
-    
+
     private final int fd;
-    
-    public FileDescriptor(int _fd){
+
+    public FileDescriptor(int _fd) {
         fd = _fd;
     }
-    
+
     // TODO this should have a better exception?
     public FileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
         fd = getFileDescriptor(_data);
     }
-    
+
     // TODO this should have a better exception?
     public java.io.FileDescriptor toJavaFileDescriptor() throws MarshallingException {
         return createFileDescriptorByReflection(fd);
     }
-    
-    public int getIntFileDescriptor(){
+
+    public int getIntFileDescriptor() {
         return fd;
     }
-    
+
     private int getFileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
         Field declaredField;
         try {

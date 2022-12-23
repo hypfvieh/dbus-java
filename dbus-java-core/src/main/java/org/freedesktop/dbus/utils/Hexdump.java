@@ -14,7 +14,7 @@ public final class Hexdump {
     public static String toHex(byte[] _buf) {
         return toHex(_buf, true);
     }
-    
+
     public static String toHex(byte[] _buf, boolean _spaces) {
         return toHex(_buf, 0, _buf.length, _spaces);
     }

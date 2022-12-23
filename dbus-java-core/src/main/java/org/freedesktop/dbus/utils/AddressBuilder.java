@@ -1,14 +1,14 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.exceptions.AddressResolvingException;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.exceptions.AddressResolvingException;
-
-public class AddressBuilder {
+public final class AddressBuilder {
     public static final String  DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
     public static final String  DEFAULT_SYSTEM_BUS_ADDRESS     = "unix:path=/var/run/dbus/system_bus_socket";
     public static final String  DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
@@ -16,6 +16,8 @@ public class AddressBuilder {
     private static final String DBUS_MACHINE_ID_SYS_VAR        = "DBUS_MACHINE_ID_LOCATION";
 
     private static final String DBUS_SESSION_BUS_ADDRESS_MACOS = "DBUS_LAUNCHD_SESSION_BUS_SOCKET";
+
+    private AddressBuilder() {}
 
     /**
      * Determine the address of the DBus system connection.
@@ -107,7 +109,7 @@ public class AddressBuilder {
      */
     public static String getDbusMachineId(String _dbusMachineIdFile) {
         File uuidfile = determineMachineIdFile(_dbusMachineIdFile);
-        if(uuidfile != null) {
+        if (uuidfile != null) {
             String uuid = Util.readFileToString(uuidfile);
             if (uuid.length() > 0) {
                 return uuid;

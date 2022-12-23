@@ -18,53 +18,6 @@ public class DBusMap<K, V> implements Map<K, V> {
         this.entries = _entries;
     }
 
-    class Entry implements Map.Entry<K, V>, Comparable<Entry> {
-        private final int entry;
-
-        Entry(int _i) {
-            this.entry = _i;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean equals(Object _o) {
-            if (null == _o) {
-                return false;
-            }
-            if (!(_o instanceof DBusMap.Entry)) {
-                return false;
-            }
-            return this.entry == ((Entry) _o).entry;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public K getKey() {
-            return (K) entries[entry][0];
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public V getValue() {
-            return (V) entries[entry][1];
-        }
-
-        @Override
-        public int hashCode() {
-            return entries[entry][0].hashCode();
-        }
-
-        @Override
-        public V setValue(V _value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int compareTo(Entry _e) {
-            return entry - _e.entry;
-        }
-    }
-
     @Override
     public void clear() {
         throw new UnsupportedOperationException();
@@ -180,5 +133,52 @@ public class DBusMap<K, V> implements Map<K, V> {
                 + "}";
 
         return sb;
+    }
+
+    class Entry implements Map.Entry<K, V>, Comparable<Entry> {
+        private final int entry;
+    
+        Entry(int _i) {
+            this.entry = _i;
+        }
+    
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean equals(Object _o) {
+            if (null == _o) {
+                return false;
+            }
+            if (!(_o instanceof DBusMap.Entry)) {
+                return false;
+            }
+            return this.entry == ((Entry) _o).entry;
+        }
+    
+        @Override
+        @SuppressWarnings("unchecked")
+        public K getKey() {
+            return (K) entries[entry][0];
+        }
+    
+        @Override
+        @SuppressWarnings("unchecked")
+        public V getValue() {
+            return (V) entries[entry][1];
+        }
+    
+        @Override
+        public int hashCode() {
+            return entries[entry][0].hashCode();
+        }
+    
+        @Override
+        public V setValue(V _value) {
+            throw new UnsupportedOperationException();
+        }
+    
+        @Override
+        public int compareTo(Entry _e) {
+            return entry - _e.entry;
+        }
     }
 }

@@ -4,6 +4,7 @@ import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.types.UInt32;
 
 @DBusInterfaceName("org.freedesktop.DBus.Monitoring.BecomeMonitor")
+@SuppressWarnings({"checkstyle:methodname"})
 public interface Monitoring {
     /**
      * Converts the connection into a <span class="emphasis"><em>monitor connection</em></span> which can be used as a

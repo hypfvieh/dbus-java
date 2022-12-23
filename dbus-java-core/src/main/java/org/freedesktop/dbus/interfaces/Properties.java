@@ -1,17 +1,18 @@
 package org.freedesktop.dbus.interfaces;
 
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * A standard properties interface.
  */
 @DBusInterfaceName("org.freedesktop.DBus.Properties")
+@SuppressWarnings({"checkstyle:methodname"})
 public interface Properties extends DBusInterface {
     /**
      * Get the value for the given property.
@@ -88,11 +89,11 @@ public interface Properties extends DBusInterface {
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" +
-                    "propertiesChanged=" + propertiesChanged +
-                    ", propertiesRemoved=" + propertiesRemoved +
-                    ", interfaceName='" + interfaceName + '\'' +
-                    ']';
+            return getClass().getSimpleName() + "["
+                    + "propertiesChanged=" + propertiesChanged
+                    + ", propertiesRemoved=" + propertiesRemoved
+                    + ", interfaceName='" + interfaceName + '\''
+                    + ']';
         }
     }
 }

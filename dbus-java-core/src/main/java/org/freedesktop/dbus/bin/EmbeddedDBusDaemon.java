@@ -1,12 +1,5 @@
 package org.freedesktop.dbus.bin;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -15,6 +8,13 @@ import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.channels.SocketChannel;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Simple DBusDaemon implementation to use if no DBusDaemon is running on the OS level.
@@ -68,9 +68,9 @@ public class EmbeddedDBusDaemon implements Closeable {
 
         try {
             startListening();
-        } catch (IOException | DBusException ex) {
+        } catch (IOException | DBusException _ex) {
             if (!closed.get()) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException(_ex);
             }
         }
     }
