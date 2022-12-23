@@ -17,8 +17,13 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit5.version>5.9.0</junit5.version>
-        <pmd.version>6.49.0</pmd.version>
+        
+        <junit5.minor.version>9.1</junit5.minor.version>
+        <pmd.version>6.52.0</pmd.version>
+        <logback.version>1.4.5</logback.version>
+        <slf4j.version>2.0.6</slf4j.version>
+        <jnr-unixsocket.version>0.38.19</jnr-unixsocket.version>
+        
         <parentDir>${project.basedir}</parentDir>
     </properties>
 
@@ -348,45 +353,45 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>2.0.0</version>
+                <version>${slf4j.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.4.0</version>
+                <version>${logback.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.4.0</version>
+                <version>${logback.version}</version>
             </dependency>
 
             <!-- JUnit testing framework. -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit5.version}</version>
+                <version>5.${junit5.minor.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-params</artifactId>
-                <version>${junit5.version}</version>
+                <version>5.${junit5.minor.version}</version>
             </dependency>
 
             <!-- needed for IDE support -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit5.version}</version>
+                <version>5.${junit5.minor.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-launcher</artifactId>
-                <version>1.9.0</version>
+                <version>1.${junit5.minor.version}</version>
             </dependency>
             
             <!-- Base dependencies for submodules -->
@@ -394,7 +399,7 @@
             <dependency>
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
-                <version>0.38.17</version>
+                <version>${jnr-unixsocket.version}</version>
             </dependency>
 
         </dependencies>        
