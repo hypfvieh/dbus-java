@@ -1,51 +1,51 @@
 package org.freedesktop.dbus.test.collections.empty.structs;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 
-public final class ListMapStruct extends Struct implements IEmptyCollectionStruct<List<Map<String,IntStruct>>> {
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-	@Position(0)
-	private final List<Map<String,IntStruct>> list;
+public final class ListMapStruct extends Struct implements IEmptyCollectionStruct<List<Map<String, IntStruct>>> {
 
-	@Position(1)
-	private final String validationValue;
+    @Position(0)
+    private final List<Map<String, IntStruct>> list;
 
-	public ListMapStruct(List<Map<String,IntStruct>> list, String validationValue) {
-		this.list = list;
-		this.validationValue = validationValue;
-	}
+    @Position(1)
+    private final String validationValue;
 
-	@Override
-	public List<Map<String,IntStruct>> getValue() {
-		return list;
-	}
+    public ListMapStruct(List<Map<String, IntStruct>> _list, String _validationValue) {
+        this.list = _list;
+        this.validationValue = _validationValue;
+    }
 
-	@Override
-	public String getValidationValue() {
-		return validationValue;
-	}
+    @Override
+    public List<Map<String, IntStruct>> getValue() {
+        return list;
+    }
 
-	@Override
-	public String getStringTestValue() {
-		return list.stream()
-				.map(m -> toPrintableMap(m))
-				.collect(Collectors.toList())
-				.toString();
-	}
+    @Override
+    public String getValidationValue() {
+        return validationValue;
+    }
 
-	private Map<String, String> toPrintableMap(Map<String, IntStruct> m) {
-		return m.entrySet().stream()
-				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().toSimpleString()));
-	}
+    @Override
+    public String getStringTestValue() {
+        return list.stream()
+                .map(m -> toPrintableMap(m))
+                .collect(Collectors.toList())
+                .toString();
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return list.isEmpty();
-	}
+    private Map<String, String> toPrintableMap(Map<String, IntStruct> _m) {
+        return _m.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().toSimpleString()));
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
 }

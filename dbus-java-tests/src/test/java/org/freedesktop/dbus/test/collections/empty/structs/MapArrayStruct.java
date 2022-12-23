@@ -1,51 +1,51 @@
 package org.freedesktop.dbus.test.collections.empty.structs;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 
-public final class MapArrayStruct extends Struct implements IEmptyCollectionStruct<Map<String,IntStruct[]>> {
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-	@Position(0)
-	private final Map<String,IntStruct[]> map;
+public final class MapArrayStruct extends Struct implements IEmptyCollectionStruct<Map<String, IntStruct[]>> {
 
-	@Position(1)
-	private final String validationValue;
+    @Position(0)
+    private final Map<String, IntStruct[]> map;
 
-	public MapArrayStruct(Map<String,IntStruct[]> map, String validationValue) {
-		this.map = map;
-		this.validationValue = validationValue;
-	}
+    @Position(1)
+    private final String validationValue;
 
-	@Override
-	public Map<String,IntStruct[]> getValue() {
-		return map;
-	}
+    public MapArrayStruct(Map<String, IntStruct[]> _map, String _validationValue) {
+        this.map = _map;
+        this.validationValue = _validationValue;
+    }
 
-	@Override
-	public String getValidationValue() {
-		return validationValue;
-	}
+    @Override
+    public Map<String, IntStruct[]> getValue() {
+        return map;
+    }
 
-	@Override
-	public String getStringTestValue() {
-		return map.entrySet().stream()
-				.collect(Collectors.toMap(e -> e.getKey(), e -> toPrintableArray(e.getValue())))
-				.toString();
-	}
+    @Override
+    public String getValidationValue() {
+        return validationValue;
+    }
 
-	private String toPrintableArray(IntStruct[] array) {
-		String values = Stream.of(array).map(e -> e.toSimpleString())
-				.collect(Collectors.joining(","));
-		return String.format("[%s]", values);
-	}
+    @Override
+    public String getStringTestValue() {
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> toPrintableArray(e.getValue())))
+                .toString();
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
+    private String toPrintableArray(IntStruct[] _array) {
+        String values = Stream.of(_array).map(e -> e.toSimpleString())
+                .collect(Collectors.joining(","));
+        return String.format("[%s]", values);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
 }

@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -12,6 +9,9 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.AddressBuilder;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.text.ParseException;
 
 public class LowLevelTest extends AbstractDBusBaseTest {
 

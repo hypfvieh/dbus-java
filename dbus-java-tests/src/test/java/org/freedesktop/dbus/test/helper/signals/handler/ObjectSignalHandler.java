@@ -12,9 +12,9 @@ public class ObjectSignalHandler extends AbstractSignalHandler<TestObjectSignal>
     }
 
     @Override
-    public void handleImpl(TestObjectSignal s) {
+    public void handleImpl(TestObjectSignal _s) {
         // this will never work as the receiving object is of type java.Proxy and not SampleClass / SampleRemoteInterface
         //setFailed(!(s.otherpath instanceof SampleClass), "Must be a SampleRemoteInterface, but was: " + s.otherpath.getClass().getName());
-        setFailed(!"This Is A UTF-8 Name: س !!".equals(s.otherpath.getName()), "Name does not match");
+        setFailed(!"This Is A UTF-8 Name: س !!".equals(_s.otherpath.getName()), "Name does not match");
     }
 }

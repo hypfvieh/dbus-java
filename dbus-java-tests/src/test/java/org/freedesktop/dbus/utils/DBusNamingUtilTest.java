@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.DeprecatedOnDBus;
@@ -9,8 +11,6 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DBusNamingUtilTest {
 
@@ -48,7 +48,7 @@ class DBusNamingUtilTest {
     interface Bar extends DBusInterface {
     }
 
-    public interface InterfaceWithMethodsAndSignals extends DBusInterface {
+    interface InterfaceWithMethodsAndSignals extends DBusInterface {
 
         void method1();
 
@@ -56,15 +56,15 @@ class DBusNamingUtilTest {
         void method2();
 
         class Signal1 extends DBusSignal {
-            public Signal1(String objectPath, Object... args) throws DBusException {
-                super(objectPath, args);
+            Signal1(String _objectPath, Object... _args) throws DBusException {
+                super(_objectPath, _args);
             }
         }
 
         @DBusMemberName("SignalAnnotationName")
         class Signal2 extends DBusSignal {
-            public Signal2(String objectPath, Object... args) throws DBusException {
-                super(objectPath, args);
+            Signal2(String _objectPath, Object... _args) throws DBusException {
+                super(_objectPath, _args);
             }
         }
     }

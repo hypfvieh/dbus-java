@@ -1,10 +1,5 @@
 package org.freedesktop.dbus.test.helper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
@@ -14,20 +9,10 @@ import org.freedesktop.dbus.test.helper.interfaces.Profiler;
 import org.freedesktop.dbus.test.helper.structs.ProfileStruct;
 import org.freedesktop.dbus.types.UInt32;
 
-class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
-    private int count = 0;
-
-    @Override
-    public void handle(Profiler.ProfileSignal s) {
-        if (0 == (count++ % Profile.SIGNAL_INNER)) {
-            System.out.print("-");
-        }
-    }
-
-    public int getCount() {
-        return count;
-    }
-}
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Profiling tests.
@@ -59,75 +44,16 @@ public final class Profile {
 
     }
 
-    public static class Log {
-        private long  last;
-        private int[] deltas;
-        private int   current = 0;
-
-        public Log(int size) {
-            deltas = new int[size];
-        }
-
-        public void start() {
-            last = System.currentTimeMillis();
-        }
-
-        public void stop() {
-            deltas[current] = (int) (System.currentTimeMillis() - last);
-            current++;
-        }
-
-        public double mean() {
-            if (0 == current) {
-                return 0;
-            }
-            long sum = 0;
-            for (int i = 0; i < current; i++) {
-                sum += deltas[i];
-            }
-            return sum /= current;
-        }
-
-        public long min() {
-            int m = Integer.MAX_VALUE;
-            for (int i = 0; i < current; i++) {
-                if (deltas[i] < m) {
-                    m = deltas[i];
-                }
-            }
-            return m;
-        }
-
-        public long max() {
-            int m = 0;
-            for (int i = 0; i < current; i++) {
-                if (deltas[i] > m) {
-                    m = deltas[i];
-                }
-            }
-            return m;
-        }
-
-        public double stddev() {
-            double mean = mean();
-            double sum = 0;
-            for (int i = 0; i < current; i++) {
-                sum += (deltas[i] - mean) * (deltas[i] - mean);
-            }
-            return Math.sqrt(sum / (current - 1));
-        }
-    }
-
-    public static void main(String[] args) {
+    public static void main(String[] _args) {
         try {
-            if (0 == args.length) {
+            if (0 == _args.length) {
                 System.out.println("You must specify a profile type.");
                 System.out.println("Syntax: profile <pings|arrays|introspect|maps|bytes|lists|structs|signals|rate|strings>");
                 System.exit(1);
             }
             DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
             conn.requestBusName("org.freedesktop.DBus.java.profiler");
-            if ("pings".equals(args[0])) {
+            if ("pings".equals(_args[0])) {
                 int count = PING_INNER * PING_OUTER;
                 System.out.print("Sending " + count + " pings...");
                 Peer p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Peer.class);
@@ -146,7 +72,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("strings".equals(args[0])) {
+            } else if ("strings".equals(_args[0])) {
                 int count = STRING_ARRAY_INNER * STRING_ARRAY_OUTER;
                 System.out.print("Sending array of " + STRING_ARRAY_LENGTH + " strings " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -172,7 +98,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("arrays".equals(args[0])) {
+            } else if ("arrays".equals(_args[0])) {
                 int count = ARRAY_INNER * ARRAY_OUTER;
                 System.out.print("Sending array of " + ARRAY_LENGTH + " ints " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -198,7 +124,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("maps".equals(args[0])) {
+            } else if ("maps".equals(_args[0])) {
                 int count = MAP_INNER * MAP_OUTER;
                 System.out.print("Sending map of " + MAP_LENGTH + " string=>strings " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -223,7 +149,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("lists".equals(args[0])) {
+            } else if ("lists".equals(_args[0])) {
                 int count = LIST_OUTER * LIST_INNER;
                 System.out.print("Sending list of " + LIST_LENGTH + " strings " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -248,7 +174,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("structs".equals(args[0])) {
+            } else if ("structs".equals(_args[0])) {
                 int count = STRUCT_OUTER * STRUCT_INNER;
                 System.out.print("Sending a struct " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -270,7 +196,7 @@ public final class Profile {
                 System.out.println("min/max/avg (ms): " + l.min() + "/" + l.max() + "/" + l.mean());
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
-            } else if ("introspect".equals(args[0])) {
+            } else if ("introspect".equals(_args[0])) {
                 int count = INTROSPECTION_OUTER * INTROSPECTION_INNER;
                 System.out.print("Recieving introspection data " + count + " times.");
                 ProfilerInstance pi = new ProfilerInstance();
@@ -293,7 +219,7 @@ public final class Profile {
                 System.out.println("deviation: " + l.stddev());
                 System.out.println("Total time: " + t + "ms");
                 System.out.println("Introspect data: " + s);
-            } else if ("bytes".equals(args[0])) {
+            } else if ("bytes".equals(_args[0])) {
                 System.out.print("Sending " + BYTES + " bytes");
                 ProfilerInstance pi = new ProfilerInstance();
                 conn.exportObject("/Profiler", pi);
@@ -305,11 +231,11 @@ public final class Profile {
                 long t = System.currentTimeMillis();
                 p.bytes(bs);
                 System.out.println(" done in " + (System.currentTimeMillis() - t) + "ms.");
-            } else if ("rate".equals(args[0])) {
+            } else if ("rate".equals(_args[0])) {
                 ProfilerInstance pi = new ProfilerInstance();
                 conn.exportObject("/Profiler", pi);
-                Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
-                Peer peer = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Peer.class);
+                final Profiler p = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Profiler.class);
+                final Peer peer = conn.getRemoteObject("org.freedesktop.DBus.java.profiler", "/Profiler", Peer.class);
 
                 long start = System.currentTimeMillis();
                 int count = 0;
@@ -363,7 +289,7 @@ public final class Profile {
                     System.out.println(len + " string) " + (count * len) + " bytes in " + ms + "ms (in " + count + " calls / " + (int) cps + " CPS): " + rate + "MB/s");
                     len <<= 1;
                 }
-            } else if ("signals".equals(args[0])) {
+            } else if ("signals".equals(_args[0])) {
                 int count = SIGNAL_OUTER * SIGNAL_INNER;
                 System.out.print("Sending " + count + " signals");
                 ProfileHandler ph = new ProfileHandler();
@@ -387,20 +313,94 @@ public final class Profile {
                 while (ph.getCount() < count) {
                     try {
                         Thread.sleep(100);
-                    } catch (InterruptedException exI) {
+                    } catch (InterruptedException _exI) {
                     }
                 }
-                ;
+
             } else {
                 conn.disconnect();
-                System.out.println("Invalid profile ``" + args[0] + "''.");
+                System.out.println("Invalid profile ``" + _args[0] + "''.");
                 System.out.println("Syntax: profile <pings|arrays|introspect|maps|bytes|lists|structs|signals>");
                 System.exit(1);
             }
             conn.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    static class ProfileHandler implements DBusSigHandler<Profiler.ProfileSignal> {
+        private int count = 0;
+
+        @Override
+        public void handle(Profiler.ProfileSignal _s) {
+            if (0 == (count++ % Profile.SIGNAL_INNER)) {
+                System.out.print("-");
+            }
+        }
+
+        public int getCount() {
+            return count;
+        }
+    }
+
+    public static class Log {
+        private long  last;
+        private int[] deltas;
+        private int   current = 0;
+
+        public Log(int _size) {
+            deltas = new int[_size];
+        }
+
+        public void start() {
+            last = System.currentTimeMillis();
+        }
+
+        public void stop() {
+            deltas[current] = (int) (System.currentTimeMillis() - last);
+            current++;
+        }
+
+        public double mean() {
+            if (0 == current) {
+                return 0;
+            }
+            long sum = 0;
+            for (int i = 0; i < current; i++) {
+                sum += deltas[i];
+            }
+            return sum / current;
+        }
+
+        public long min() {
+            int m = Integer.MAX_VALUE;
+            for (int i = 0; i < current; i++) {
+                if (deltas[i] < m) {
+                    m = deltas[i];
+                }
+            }
+            return m;
+        }
+
+        public long max() {
+            int m = 0;
+            for (int i = 0; i < current; i++) {
+                if (deltas[i] > m) {
+                    m = deltas[i];
+                }
+            }
+            return m;
+        }
+
+        public double stddev() {
+            double mean = mean();
+            double sum = 0;
+            for (int i = 0; i < current; i++) {
+                sum += (deltas[i] - mean) * (deltas[i] - mean);
+            }
+            return Math.sqrt(sum / (current - 1));
         }
     }
 }

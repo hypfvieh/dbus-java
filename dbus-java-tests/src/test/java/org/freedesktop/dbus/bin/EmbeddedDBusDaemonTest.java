@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.bin;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
@@ -11,6 +8,9 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.utils.AddressBuilder;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -47,10 +47,8 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
         }
     }
 
-
-
     @Test
-    public void test_start_stop() throws Exception {
+    public void testStartStop() throws Exception {
 
         for (int i = 0; i < 2; i++) {
             String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), true);
@@ -69,9 +67,9 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             Thread daemonThread = new Thread(() -> {
                 try {
                     daemon.startInForeground();
-                } catch (Exception ex) {
-                    exception.set(ex);
-                    ex.printStackTrace();
+                } catch (Exception _ex) {
+                    exception.set(_ex);
+                    _ex.printStackTrace();
                 }
             });
             daemonThread.start();

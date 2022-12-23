@@ -14,32 +14,6 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.junit.jupiter.api.Test;
 
 public class SignalNameTest extends AbstractBaseTest {
-    @DBusInterfaceName("d.e.f.Custom")
-    public interface CustomService extends DBusInterface {
-        void nothing();
-
-        @DBusMemberName("custom_signal")
-        class CustomSignal extends DBusSignal {
-            public final String data;
-
-            public CustomSignal(String path, String data) throws DBusException {
-                super(path, data);
-                this.data = data;
-            }
-        }
-    }
-
-    public static class MyCustomImpl implements CustomService {
-        @Override
-        public void nothing() {
-            System.out.println("Just doing nothing");
-        }
-
-        @Override
-        public String getObjectPath() {
-            return "/d/e/f/custom";
-        }
-    }
 
     /**
      * This test will fail when the signal in CustomService cannot be
@@ -69,15 +43,14 @@ public class SignalNameTest extends AbstractBaseTest {
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress);
 
-
             try (DBusConnection connection = DBusConnectionBuilder.forAddress(busAddress).build()) {
                 connection.requestBusName("d.e.f.Service");
                 connection.exportObject("/d/e/f/custom", new MyCustomImpl());
 
                 connection.addSigHandler(CustomService.CustomSignal.class, new DBusSigHandler<CustomService.CustomSignal>() {
                     @Override
-                    public void handle(CustomService.CustomSignal s) {
-                        System.out.printf("Received signal: %s%n", s.data);
+                    public void handle(CustomService.CustomSignal _s) {
+                        System.out.printf("Received signal: %s%n", _s.data);
                     }
                 });
 
@@ -88,4 +61,34 @@ public class SignalNameTest extends AbstractBaseTest {
             }
         }
     }
+
+    @DBusInterfaceName("d.e.f.Custom")
+    public interface CustomService extends DBusInterface {
+        void nothing();
+
+        @DBusMemberName("custom_signal")
+        class CustomSignal extends DBusSignal {
+            //CHECKSTYLE:OFF
+            public final String data;
+            //CHECKSTYLE:ON
+
+            public CustomSignal(String _path, String _data) throws DBusException {
+                super(_path, _data);
+                this.data = _data;
+            }
+        }
+    }
+
+    public static class MyCustomImpl implements CustomService {
+        @Override
+        public void nothing() {
+            System.out.println("Just doing nothing");
+        }
+
+        @Override
+        public String getObjectPath() {
+            return "/d/e/f/custom";
+        }
+    }
+
 }

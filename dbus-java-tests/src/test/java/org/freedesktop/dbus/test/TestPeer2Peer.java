@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-
 import org.freedesktop.dbus.connections.impl.DirectConnection;
 import org.freedesktop.dbus.connections.impl.DirectConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -14,11 +12,13 @@ import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class TestPeer2Peer extends AbstractBaseTest {
 
-    private volatile boolean finished = false;
-
     private static final String CONNECTION_ADDRESS = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), false);
+
+    private volatile boolean finished = false;
 
     @Test
     public void testP2p() throws InterruptedException {
@@ -37,7 +37,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
 
             try {
                 tri.throwme();
-            } catch (SampleException ex) {
+            } catch (SampleException _ex) {
             }
 
             Peer peer = dc.getRemoteObject("/Test", Peer.class);
@@ -56,7 +56,6 @@ public class TestPeer2Peer extends AbstractBaseTest {
             fail("Exception in client");
         }
     }
-
 
     private class P2pServer extends Thread {
 

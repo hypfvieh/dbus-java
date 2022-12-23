@@ -45,7 +45,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
 
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException _ex) {
             }
 
             if (conn != null) {
@@ -59,7 +59,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
 
     private class TwoPartServer extends Thread {
 
-        public TwoPartServer() {
+        TwoPartServer() {
             super("TwoPartServerThread");
             setDaemon(true);
         }
@@ -77,7 +77,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
                 while (!testDone) {
                     try {
                         Thread.sleep(500L);
-                    } catch (InterruptedException ex) {
+                    } catch (InterruptedException _ex) {
                     }
                 }
             } catch (DBusException _ex) {

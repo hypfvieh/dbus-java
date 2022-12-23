@@ -1,13 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.lang.reflect.Type;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
@@ -68,6 +60,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
  */
@@ -120,9 +120,9 @@ public class TestAll extends AbstractDBusBaseTest {
         RenamedSignalHandler rsh = new RenamedSignalHandler(1, new UInt32(42), "Bar");
         EmptySignalHandler esh = new EmptySignalHandler(1);
         ArraySignalHandler ash = new ArraySignalHandler(1);
-        ObjectSignalHandler osh = new ObjectSignalHandler(1);
-        PathSignalHandler psh = new PathSignalHandler(1);
-        EnumSignalHandler ensh = new EnumSignalHandler(1);
+        final ObjectSignalHandler osh = new ObjectSignalHandler(1);
+        final PathSignalHandler psh = new PathSignalHandler(1);
+        final EnumSignalHandler ensh = new EnumSignalHandler(1);
 
         /** This gets a remote object matching our bus name and exported object path. */
         SampleRemoteInterface peer = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
@@ -172,7 +172,7 @@ public class TestAll extends AbstractDBusBaseTest {
         serverconn.sendMessage(new TestPathSignal(TEST_OBJECT_PATH, path, paths, pathm));
 
         logger.debug("Sending Array Signal...");
-        List<SampleStruct2> tsl = new ArrayList<>();
+        final List<SampleStruct2> tsl = new ArrayList<>();
         List<String> l = new ArrayList<>();
         l.add("hi");
         l.add("hello");
@@ -186,7 +186,7 @@ public class TestAll extends AbstractDBusBaseTest {
         serverconn.sendMessage(new TestArraySignal(TEST_OBJECT_PATH, tsl, tsm));
 
         logger.debug("Sending Object Signal...");
-		serverconn.sendMessage(new TestObjectSignal(TEST_OBJECT_PATH, tclass));
+        serverconn.sendMessage(new TestObjectSignal(TEST_OBJECT_PATH, tclass));
 
         logger.debug("Sending Enum Signal...");
         serverconn.sendMessage(new TestEnumSignal(TEST_OBJECT_PATH, TestEnum.TESTVAL1, Arrays.asList(TestEnum.TESTVAL2, TestEnum.TESTVAL3)));
@@ -300,10 +300,10 @@ public class TestAll extends AbstractDBusBaseTest {
         logger.debug("These things are on the bus:");
 
         logger.debug("Listening for Method Calls");
-        SampleClass tclass = new SampleClass(serverconn);
+        SampleClass mtclass = new SampleClass(serverconn);
         SampleClass tclass2 = new SampleClass(serverconn);
         /** This exports an instance of the test class as the object /Test. */
-        serverconn.exportObject("/TestClassToFindOnBus", tclass);
+        serverconn.exportObject("/TestClassToFindOnBus", mtclass);
         serverconn.exportObject("/SecondTestClassToFindOnBus", tclass2);
 
         DBus dbus = clientconn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
@@ -341,7 +341,6 @@ public class TestAll extends AbstractDBusBaseTest {
         List<Type> ts = new ArrayList<>();
         Marshalling.getJavaType("ya{si}", ts, -1);
         tri.sig(ts.toArray(new Type[0]));
-
 
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = tri.pathrv(path);
@@ -399,7 +398,7 @@ public class TestAll extends AbstractDBusBaseTest {
 
     @Test
     public void testStruct() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+        final SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         List<List<Integer>> lli = new ArrayList<>();
         List<Integer> li = new ArrayList<>();
@@ -455,7 +454,7 @@ public class TestAll extends AbstractDBusBaseTest {
     }
 
     public void testFrob() throws DBusException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+        final SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
         logger.debug("frobnicating");
         List<Long> ls = new ArrayList<>();
         ls.add(2L);
@@ -476,7 +475,7 @@ public class TestAll extends AbstractDBusBaseTest {
 
     @Test
     public void testCallWithCallback() throws DBusException, InterruptedException {
-        SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
+        final SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH);
 
         logger.debug("Doing stuff asynchronously with callback");
         CallbackHandlerImpl cbWhichWorks = new CallbackHandlerImpl();
@@ -491,9 +490,9 @@ public class TestAll extends AbstractDBusBaseTest {
             logger.debug("Throwing stuff");
             tri.throwme();
             fail("Method Execution should have failed");
-        } catch (SampleException ex) {
-            logger.debug("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
-            if (!ex.getMessage().equals("test")) {
+        } catch (SampleException _ex) {
+            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
+            if (!_ex.getMessage().equals("test")) {
                 fail("Error message was not correct");
             }
         }
@@ -520,9 +519,9 @@ public class TestAll extends AbstractDBusBaseTest {
             logger.debug("Throwing stuff");
             tri.throwme();
             fail("Method Execution should have failed");
-        } catch (SampleException ex) {
-            logger.debug("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
-            if (!ex.getMessage().equals("test")) {
+        } catch (SampleException _ex) {
+            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
+            if (!_ex.getMessage().equals("test")) {
                 fail("Error message was not correct");
             }
         }
@@ -539,8 +538,8 @@ public class TestAll extends AbstractDBusBaseTest {
             tri = clientconn.getRemoteObject("foo.bar.NotATest", "/Moofle", SampleRemoteInterface.class);
             logger.debug("Got Remote Name: " + tri.getName());
             fail("Method Execution should have failed");
-        } catch (ServiceUnknown ex) {
-            logger.debug("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
+        } catch (ServiceUnknown _ex) {
+            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
         }
 
         /** Try and call an invalid remote object */
@@ -549,8 +548,8 @@ public class TestAll extends AbstractDBusBaseTest {
             tri = clientconn.getRemoteObject("foo.bar.Test", "/Moofle", SampleRemoteInterface.class);
             logger.debug("Got Remote Name: " + tri.getName());
             fail("Method Execution should have failed");
-        } catch (UnknownObject ex) {
-            logger.debug("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
+        } catch (UnknownObject _ex) {
+            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
         }
 
         /** Try and call an explicitly unexported object */
@@ -559,8 +558,8 @@ public class TestAll extends AbstractDBusBaseTest {
             tri = clientconn.getRemoteObject("foo.bar.Test", "/BadTest", SampleRemoteInterface.class);
             logger.debug("Got Remote Name: " + tri.getName());
             fail("Method Execution should have failed");
-        } catch (UnknownObject ex) {
-            logger.debug("Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
+        } catch (UnknownObject _ex) {
+            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
         }
 
     }
@@ -611,7 +610,7 @@ public class TestAll extends AbstractDBusBaseTest {
         SampleTuple<String, List<Integer>, Boolean> rv = tri2.show(234);
         logger.debug("Show returned: " + rv);
         if (!clientconn.getUniqueName().equals(rv.getFirstValue()) || 1 != rv.getSecondValue().size() || 1953 != rv.getSecondValue().get(0)
-                || true != rv.getThirdValue().booleanValue()) {
+                || !rv.getThirdValue().booleanValue()) {
             fail("show return value incorrect (" + rv.getFirstValue() + "," + rv.getSecondValue() + "," + rv.getThirdValue() + ")");
         }
 
@@ -631,7 +630,7 @@ public class TestAll extends AbstractDBusBaseTest {
 
     @Test
     public void testArrays() throws DBusException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        final SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
 
         List<String> l = new ArrayList<>();
         l.add("hi");
@@ -657,7 +656,6 @@ public class TestAll extends AbstractDBusBaseTest {
         assertEquals(-12, is.get(3).intValue());
         assertEquals(-18, is.get(4).intValue());
     }
-
 
     public void testSerialization() throws DBusException {
         SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
@@ -774,7 +772,7 @@ public class TestAll extends AbstractDBusBaseTest {
         // wait a bit to allow the async call to complete
         Thread.sleep(500L);
 
-        assertIterableEquals(lli, checklistReply.getReply(), "did not get back the same as sent in async" );
+        assertIterableEquals(lli, checklistReply.getReply(), "did not get back the same as sent in async");
         assertIterableEquals(li, checklistReply.getReply().get(0));
     }
 
@@ -788,12 +786,12 @@ public class TestAll extends AbstractDBusBaseTest {
 
         NestedListCallbackHandler cbHandle = new NestedListCallbackHandler();
 
-        clientconn.callWithCallback( tri2, "checklist", cbHandle, lli );
+        clientconn.callWithCallback(tri2, "checklist", cbHandle, lli);
 
         // wait a bit to allow the async call to complete
         Thread.sleep(500L);
 
-        assertIterableEquals(lli, cbHandle.getRetval(), "did not get back the same as sent in async" );
+        assertIterableEquals(lli, cbHandle.getRetval(), "did not get back the same as sent in async");
         assertIterableEquals(li, cbHandle.getRetval().get(0));
     }
 
@@ -801,33 +799,33 @@ public class TestAll extends AbstractDBusBaseTest {
             private List<List<Integer>> retval;
 
             @Override
-            public void handle(List<List<Integer>> r) {
-                retval = r;
+            public void handle(List<List<Integer>> _r) {
+                retval = _r;
             }
 
             @Override
-            public void handleError(DBusExecutionException e) {
+            public void handleError(DBusExecutionException _e) {
             }
 
-            List<List<Integer>> getRetval(){
+            List<List<Integer>> getRetval() {
                 return retval;
             }
-    }
 
-    @Test
-    public void testStructAsync() throws DBusException, InterruptedException {
-        SampleRemoteInterface2 tri2 = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
-        SampleStruct struct = new SampleStruct( "fizbuzz", new UInt32( 5248 ), new Variant<>( 2234 ) );
+            @Test
+            public void testStructAsync() throws DBusException, InterruptedException {
+                SampleRemoteInterface2 tri2 =
+                        clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+                SampleStruct struct = new SampleStruct("fizbuzz", new UInt32(5248), new Variant<>(2234));
 
+                @SuppressWarnings("unchecked")
+                DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
+                        struct);
 
-        @SuppressWarnings("unchecked")
-        DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
-                struct);
+                // wait a bit to allow the async call to complete
+                Thread.sleep(500L);
 
-        // wait a bit to allow the async call to complete
-        Thread.sleep(500L);
-
-        assertEquals(struct, structReply.getReply(), "struct did not match" );
+                assertEquals(struct, structReply.getReply(), "struct did not match");
+            }
     }
 
 }

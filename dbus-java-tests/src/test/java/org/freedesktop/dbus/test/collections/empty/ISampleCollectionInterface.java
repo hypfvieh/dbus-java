@@ -18,26 +18,26 @@ import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
  */
 public interface ISampleCollectionInterface extends DBusInterface {
 
-	String testListPrimitive(ListStructPrimitive param);
+    String testListPrimitive(ListStructPrimitive _param);
 
-	String testListIntStruct(ListStructStruct param);
+    String testListIntStruct(ListStructStruct _param);
 
-	String testDeepList(DeepListStruct param);
+    String testDeepList(DeepListStruct _param);
 
-	String testArrayPrimitive(ArrayStructPrimitive param);
+    String testArrayPrimitive(ArrayStructPrimitive _param);
 
-	String testArrayIntStruct(ArrayStructIntStruct param);
+    String testArrayIntStruct(ArrayStructIntStruct _param);
 
-	String testDeepArray(DeepArrayStruct param);
+    String testDeepArray(DeepArrayStruct _param);
 
-	String testMapPrimitive(MapStructPrimitive param);
+    String testMapPrimitive(MapStructPrimitive _param);
 
-	String testMapIntStruct(MapStructIntStruct param);
+    String testMapIntStruct(MapStructIntStruct _param);
 
-	String testDeepMap(DeepMapStruct param);
+    String testDeepMap(DeepMapStruct _param);
 
-	String testMixedListMap(ListMapStruct param);
+    String testMixedListMap(ListMapStruct _param);
 
-	String testMixedMapArray(MapArrayStruct param);
+    String testMixedMapArray(MapArrayStruct _param);
 
 }

@@ -35,6 +35,6 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
             System.out.println("getName() suceeded and returned: " + tri.getName());
             fail("Should not succeed when disconnected");
         });
-        
+
     }
 }

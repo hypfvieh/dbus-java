@@ -6,23 +6,6 @@ import org.freedesktop.dbus.test.helper.interfaces.TwoPartInterface;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartObject;
 
 public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
-    public class TwoPartTestObject implements TwoPartObject {
-        @Override
-        public boolean isRemote() {
-            return false;
-        }
-
-        @Override
-        public String getObjectPath() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return "give name";
-        }
-    }
-
     private DBusConnection conn;
 
     public TwoPartTestServer(DBusConnection _conn) {
@@ -45,15 +28,32 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
         System.out.println("export new");
         try {
             conn.exportObject("/12345", o);
-        } catch (Exception e) {
+        } catch (Exception _ex) {
         }
         System.out.println("give new");
         return o;
     }
 
     @Override
-    public void handle(TwoPartInterface.TwoPartSignal s) {
-        System.out.println("Got: " + s.o);
+    public void handle(TwoPartInterface.TwoPartSignal _s) {
+        System.out.println("Got: " + _s.o);
+    }
+
+    public class TwoPartTestObject implements TwoPartObject {
+        @Override
+        public boolean isRemote() {
+            return false;
+        }
+
+        @Override
+        public String getObjectPath() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "give name";
+        }
     }
 
 }

@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-import java.time.Duration;
-
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
@@ -13,6 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.time.Duration;
+
 /**
  * Base test which will start a embedded DBus daemon if no UNIX transport is found.
  *
@@ -21,7 +21,9 @@ import org.slf4j.LoggerFactory;
  */
 public class AbstractDBusBaseTest extends AbstractBaseTest {
 
+    //CHECKSTYLE:OFF
     protected static EmbeddedDBusDaemon edbus;
+    //CHECKSTYLE:ON
 
     /**
      * Wait 500 ms if the current test uses TCP transport.

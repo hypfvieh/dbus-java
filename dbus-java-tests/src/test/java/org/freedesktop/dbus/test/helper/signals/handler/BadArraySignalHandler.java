@@ -13,7 +13,7 @@ public class BadArraySignalHandler<T extends DBusSignal> extends AbstractSignalH
 
     /** Handling a signal */
     @Override
-    public void handleImpl(T s) {
+    public void handleImpl(T _s) {
         setFailed(false, "This signal handler shouldn't be called");
     }
 }

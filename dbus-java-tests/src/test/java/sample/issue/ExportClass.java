@@ -1,10 +1,10 @@
 package sample.issue;
-import java.io.IOException;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+
+import java.io.IOException;
 
 public class ExportClass implements DBusInterface {
 
@@ -18,20 +18,20 @@ public class ExportClass implements DBusInterface {
         return "/";
     }
 
-    public static void main(String[] args) throws DBusException, InterruptedException, IOException{
+    public static void main(String[] _args) throws DBusException, InterruptedException, IOException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
-            conn.requestBusName( "sample.issue" );
+            conn.requestBusName("sample.issue");
 
             ExportClass ex = new ExportClass();
-            conn.exportObject( "/path", ex);
+            conn.exportObject("/path", ex);
 
-            System.out.println( "Exported object, waiting" );
-            Thread.sleep( 5000 );
+            System.out.println("Exported object, waiting");
+            Thread.sleep(5000);
 
-            conn.unExportObject( "/path" );
-            System.out.println( "Unexported object, waiting" );
+            conn.unExportObject("/path");
+            System.out.println("Unexported object, waiting");
 
-            Thread.sleep( 5000 );
+            Thread.sleep(5000);
         }
     }
 

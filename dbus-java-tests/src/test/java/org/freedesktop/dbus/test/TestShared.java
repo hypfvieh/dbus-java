@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TestShared extends AbstractDBusBaseTest {
-    
+
     public static final String TEST_OBJECT_PATH = "/TestAll";
 
     // CHECKSTYLE:OFF
@@ -52,13 +52,13 @@ public class TestShared extends AbstractDBusBaseTest {
         serverconn.releaseBusName("foo.bar.Test");
         serverconn.disconnect();
     }
-    
+
     /**
      * This test case is only valid in on shared connections.
-     * This is because when two distinct connections are used, 
-     * the instanced returned by 'getThis' is always a RemoteInvocationProxy 
+     * This is because when two distinct connections are used,
+     * the instanced returned by 'getThis' is always a RemoteInvocationProxy
      * which will never be equal to the original object.
-     *  
+     *
      * @throws DBusException on connection failure
      */
     @Test
@@ -68,5 +68,5 @@ public class TestShared extends AbstractDBusBaseTest {
         DBusInterface other = tri2.getThis(tri2);
         assertEquals(tclass, other, "Didn't get the correct this");
     }
-    
+
 }

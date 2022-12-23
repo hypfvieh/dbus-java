@@ -3,7 +3,6 @@ package org.freedesktop.dbus.test.helper.structs;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.annotations.Position;
 
-//CHECKSTYLE:OFF
 public final class SampleTuple<A, B, C> extends Tuple {
     @Position(0)
     private final A firstValue;
@@ -31,4 +30,3 @@ public final class SampleTuple<A, B, C> extends Tuple {
     }
 
 }
-//CHECKSTYLE:ON

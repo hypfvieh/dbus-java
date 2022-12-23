@@ -7,17 +7,18 @@ public class GenericSignalHandler implements DBusSigHandler<DBusSignal> {
 
     private int testRuns;
 
-    public GenericSignalHandler(){
+    public GenericSignalHandler() {
         testRuns = 0;
     }
 
     @Override
-    public void handle(DBusSignal s) {
+    public void handle(DBusSignal _s) {
         testRuns++;
-        System.out.println( "GenericSignalHandler called" );
+        System.out.println("GenericSignalHandler called");
     }
 
-    public int getActualTestRuns(){
+    public int getActualTestRuns() {
         return testRuns;
     }
 }
+

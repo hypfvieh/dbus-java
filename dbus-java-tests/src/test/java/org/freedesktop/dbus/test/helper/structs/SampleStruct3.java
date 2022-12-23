@@ -1,11 +1,10 @@
 package org.freedesktop.dbus.test.helper.structs;
 
-import java.util.List;
-
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 
+import java.util.List;
 
 public final class SampleStruct3 extends Struct {
     @Position(0)

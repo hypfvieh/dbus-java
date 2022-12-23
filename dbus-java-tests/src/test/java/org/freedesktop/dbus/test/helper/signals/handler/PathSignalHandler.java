@@ -13,7 +13,7 @@ public class PathSignalHandler extends AbstractSignalHandler<TestPathSignal> {
 
     /** Handling a signal */
     @Override
-    public void handleImpl(TestPathSignal t) {
-        System.out.println("Path sighandler: " + t);
+    public void handleImpl(TestPathSignal _t) {
+        System.out.println("Path sighandler: " + _t);
     }
 }

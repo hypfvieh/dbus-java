@@ -6,49 +6,49 @@ import org.freedesktop.dbus.test.helper.structs.IntStruct;
 
 public final class DeepArrayStruct extends Struct implements IEmptyCollectionStruct<IntStruct[][][]> {
 
-	@Position(0)
-	private final IntStruct[][][] list;
+    @Position(0)
+    private final IntStruct[][][] list;
 
-	@Position(1)
-	private final String validationValue;
+    @Position(1)
+    private final String validationValue;
 
-	public DeepArrayStruct(IntStruct[][][] list, String validationValue) {
-		this.list = list.clone();
-		this.validationValue = validationValue;
-	}
+    public DeepArrayStruct(IntStruct[][][] _list, String _validationValue) {
+        this.list = _list.clone();
+        this.validationValue = _validationValue;
+    }
 
-	@Override
-	public IntStruct[][][] getValue() {
-		return list.clone();
-	}
+    @Override
+    public IntStruct[][][] getValue() {
+        return list.clone();
+    }
 
-	@Override
-	public String getValidationValue() {
-		return validationValue;
-	}
+    @Override
+    public String getValidationValue() {
+        return validationValue;
+    }
 
-	@Override
-	public String getStringTestValue() {
-		String string = "[";
-			for (IntStruct[][] l1 : list) {
-				string += "[";
-				for (IntStruct[] l2 : l1) {
-					string += "[";
-					for (IntStruct e : l2) {
-						string += e.toSimpleString();
-					}
-					string += "]";
-				}
-				string += "]";
-			}
-			string += "]";
+    @Override
+    public String getStringTestValue() {
+        String string = "[";
+            for (IntStruct[][] l1 : list) {
+                string += "[";
+                for (IntStruct[] l2 : l1) {
+                    string += "[";
+                    for (IntStruct e : l2) {
+                        string += e.toSimpleString();
+                    }
+                    string += "]";
+                }
+                string += "]";
+            }
+            string += "]";
 
-		return string;
+        return string;
 
-	}
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return list.length == 0;
-	}
+    @Override
+    public boolean isEmpty() {
+        return list.length == 0;
+    }
 }

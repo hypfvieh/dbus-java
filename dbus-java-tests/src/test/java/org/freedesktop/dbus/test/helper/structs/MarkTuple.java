@@ -9,25 +9,24 @@ public class MarkTuple extends Tuple {
     @Position(1)
     private String message;
 
-    public MarkTuple(String slotName, String message) {
-        this.slotName = slotName;
-        this.message = message;
+    public MarkTuple(String _slotName, String _message) {
+        this.slotName = _slotName;
+        this.message = _message;
     }
 
-    public void setSlotName(String arg) {
-        slotName = arg;
+    public void setSlotName(String _arg) {
+        slotName = _arg;
     }
 
     public String getSlotName() {
         return slotName;
     }
-    public void setMessage(String arg) {
-        message = arg;
+    public void setMessage(String _arg) {
+        message = _arg;
     }
 
     public String getMessage() {
         return message;
     }
-
 
 }

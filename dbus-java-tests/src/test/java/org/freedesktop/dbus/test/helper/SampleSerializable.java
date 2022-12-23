@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.test.helper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusSerializable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SampleSerializable<A> implements DBusSerializable {
     private int             first;

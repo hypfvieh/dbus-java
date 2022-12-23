@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 public class DBusConnectionTest extends AbstractDBusBaseTest {
 
     @Test
-    public void test_busnames_should_be_auto_released_on_close_of_non_shared_connection() throws Exception {
+    public void testBusnamesShouldBeAutoReleasedOnCloseOfNonSharedConnection() throws Exception {
 
         // prepare 2 independent connection
         String busName = "org.freedesktop.dbus.test.TestBus";
-        
+
         DBusConnection connection1 = DBusConnectionBuilder.forSessionBus().withShared(false).build();
         DBusConnection connection2 = DBusConnectionBuilder.forSessionBus().withShared(false).build();
         assertNotEquals(connection1.getUniqueName(), connection2.getUniqueName());

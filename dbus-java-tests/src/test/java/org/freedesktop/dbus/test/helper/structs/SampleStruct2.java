@@ -1,11 +1,12 @@
 package org.freedesktop.dbus.test.helper.structs;
 
-import java.util.List;
-
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.types.Variant;
+
+import java.util.List;
+
 public final class SampleStruct2 extends Struct {
     @Position(0)
     private final List<String>              valueList;
@@ -24,6 +25,5 @@ public final class SampleStruct2 extends Struct {
     public Variant<? extends Object> getVariantValue() {
         return variantValue;
     }
-
 
 }

@@ -1,5 +1,12 @@
 package org.freedesktop.dbus.test;
 
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,13 +16,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -66,10 +66,10 @@ public class StressTest extends AbstractDBusBaseTest {
         }
     }
 
-    private List<Thread> createClientThreads(List<DBusConnection> clientConnections, List<DBusConnection> serviceConnections, int numberOfRequestsPerClient) {
+    private List<Thread> createClientThreads(List<DBusConnection> _clientConnections, List<DBusConnection> _serviceConnections, int _numberOfRequestsPerClient) {
         List<Thread> threads = new ArrayList<>();
-        for (DBusConnection clientConnection : clientConnections) {
-            Thread thread = new Thread(() -> stressServices(clientConnection, serviceConnections, numberOfRequestsPerClient));
+        for (DBusConnection clientConnection : _clientConnections) {
+            Thread thread = new Thread(() -> stressServices(clientConnection, _serviceConnections, _numberOfRequestsPerClient));
             thread.setName("ClientThread-" + clientConnection.getUniqueName());
             thread.setDaemon(true);
             thread.setUncaughtExceptionHandler((t, e) -> asyncExceptions.add(e));
@@ -78,9 +78,9 @@ public class StressTest extends AbstractDBusBaseTest {
         return threads;
     }
 
-    private List<DBusConnection> createClientConnections(int numberOfClients) throws DBusException {
-        List<DBusConnection> clientConnections = new ArrayList<>(numberOfClients);
-        for (int i = 0; i < numberOfClients; i++) {
+    private List<DBusConnection> createClientConnections(int _numberOfClients) throws DBusException {
+        List<DBusConnection> clientConnections = new ArrayList<>(_numberOfClients);
+        for (int i = 0; i < _numberOfClients; i++) {
             clientConnections.add(DBusConnectionBuilder.forSessionBus().withShared(false).build());
         }
         return clientConnections;
@@ -89,9 +89,9 @@ public class StressTest extends AbstractDBusBaseTest {
     /**
      *
      */
-    private List<DBusConnection> createServices(int numberOfServices) throws DBusException {
+    private List<DBusConnection> createServices(int _numberOfServices) throws DBusException {
         List<DBusConnection> serviceConnections = new ArrayList<>();
-        for (int i = 0; i < numberOfServices; i++) {
+        for (int i = 0; i < _numberOfServices; i++) {
             RemoteObjectImpl service = new RemoteObjectImpl();
             DBusConnection serviceConnection = DBusConnectionBuilder.forSessionBus().withShared(false).build();
             closeables.add(serviceConnection);
@@ -104,29 +104,29 @@ public class StressTest extends AbstractDBusBaseTest {
     /**
      *
      */
-    private void stressServices(DBusConnection client, List<DBusConnection> serviceConnections, int requestCount) {
+    private void stressServices(DBusConnection _client, List<DBusConnection> _serviceConnections, int _requestCount) {
 
         // get the client stubs for each service
         List<RemoteObject> services = new ArrayList<>();
-        serviceConnections.forEach(connection -> runUnchecked(() -> {
-            RemoteObject service = client.getRemoteObject(connection.getUniqueName(), OBJECT_PATH, RemoteObject.class);
+        _serviceConnections.forEach(connection -> runUnchecked(() -> {
+            RemoteObject service = _client.getRemoteObject(connection.getUniqueName(), OBJECT_PATH, RemoteObject.class);
             services.add(service);
         }));
 
         // make stress
-        for (int i = 0; i < requestCount; i++) {
+        for (int i = 0; i < _requestCount; i++) {
             int serviceIdx = random.nextInt(services.size());
-            services.get(serviceIdx).doSomething(client.getUniqueName());
+            services.get(serviceIdx).doSomething(_client.getUniqueName());
         }
     }
 
-    private static void runUnchecked(ThrowingRunnable runnable) {
+    private static void runUnchecked(ThrowingRunnable _runnable) {
         try {
-            runnable.run();
-        } catch (RuntimeException | Error ex) {
-            throw ex;
-        } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            _runnable.run();
+        } catch (RuntimeException | Error _ex) {
+            throw _ex;
+        } catch (Throwable _ex) {
+            throw new RuntimeException(_ex);
         }
     }
 
@@ -137,9 +137,9 @@ public class StressTest extends AbstractDBusBaseTest {
     /**
      *
      */
-    public static interface RemoteObject extends DBusInterface {
+    public interface RemoteObject extends DBusInterface {
 
-        public void doSomething(String clientName);
+        void doSomething(String _clientName);
     }
 
     /**
@@ -158,13 +158,13 @@ public class StressTest extends AbstractDBusBaseTest {
         }
 
         @Override
-        public void doSomething(String clientName) {
+        public void doSomething(String _clientName) {
             AtomicInteger counter;
             synchronized (clientCalls) {
-                counter = clientCalls.get(clientName);
+                counter = clientCalls.get(_clientName);
                 if (counter == null) {
                     counter = new AtomicInteger(0);
-                    clientCalls.put(clientName, counter);
+                    clientCalls.put(_clientName, counter);
                 }
             }
             counter.incrementAndGet();

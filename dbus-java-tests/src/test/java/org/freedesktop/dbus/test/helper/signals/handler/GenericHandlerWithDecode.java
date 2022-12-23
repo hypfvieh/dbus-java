@@ -6,27 +6,28 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.opentest4j.AssertionFailedError;
 
-
 public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
 
     private final UInt32 expectedIntResult;
     private final String expectedStringResult;
 
+    //CHECKSTYLE:OFF
     protected AssertionFailedError assertionError;
+    //CHECKSTYLE:ON
 
     private Object[] parameters;
 
-    public GenericHandlerWithDecode( UInt32 _expectedIntResult, String _expectedStringResult ){
+    public GenericHandlerWithDecode(UInt32 _expectedIntResult, String _expectedStringResult) {
         expectedIntResult = _expectedIntResult;
         expectedStringResult = _expectedStringResult;
     }
 
     @Override
-    public void handle(DBusSignal s) {
+    public void handle(DBusSignal _s) {
         try {
-            parameters = s.getParameters();
-        } catch (DBusException ex) {
-            setFailed(false, "Unexpected DBusException", ex);
+            parameters = _s.getParameters();
+        } catch (DBusException _ex) {
+            setFailed(false, "Unexpected DBusException", _ex);
         }
     }
 

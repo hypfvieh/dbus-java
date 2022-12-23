@@ -1,9 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.util.Optional;
-
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Base test class providing logger and common methods.
@@ -22,7 +22,9 @@ public class AbstractBaseTest extends Assertions {
     /** Max wait time to wait for daemon to start. */
     private static final long MAX_WAIT = Duration.ofSeconds(30).toMillis();
 
+    //CHECKSTYLE:OFF
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    //CHECKSTYLE:ON
 
     /** Holds information about the current test. */
     private TestInfo lastTestInfo;
@@ -62,7 +64,7 @@ public class AbstractBaseTest extends Assertions {
         }
     }
 
-    protected void waitForDaemon(EmbeddedDBusDaemon daemon) {
+    protected void waitForDaemon(EmbeddedDBusDaemon _daemon) {
         long sleepMs = 500;
         long waited = 0;
 
@@ -79,6 +81,6 @@ public class AbstractBaseTest extends Assertions {
 
             waited += sleepMs;
             logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
-        } while (!daemon.isRunning());
+        } while (!_daemon.isRunning());
     }
 }

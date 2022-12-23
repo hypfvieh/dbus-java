@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.messages;
 
-import java.util.List;
-
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.types.UInt32;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 public class MessageTest extends AbstractBaseTest {
 

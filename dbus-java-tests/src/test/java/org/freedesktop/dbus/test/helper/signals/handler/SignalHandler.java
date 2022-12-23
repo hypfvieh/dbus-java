@@ -13,7 +13,7 @@ public class SignalHandler extends SignalHandlerBase<TestSignal> {
     }
 
     @Override
-    public void handleImpl(TestSignal t) {
+    public void handleImpl(TestSignal _t) {
         if (getExpectedIntResult() != null) {
             setFailed(!new UInt32(42).equals(getExpectedIntResult()), "Retrieved int does not match.");
         }

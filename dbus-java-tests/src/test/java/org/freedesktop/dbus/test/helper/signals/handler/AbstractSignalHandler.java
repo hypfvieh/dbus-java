@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.test.helper.signals.handler;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.opentest4j.AssertionFailedError;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Base class for all signals which are tested.
@@ -16,7 +16,9 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
     private final int expectedRuns;
 
+    //CHECKSTYLE:OFF
     protected AssertionFailedError assertionError;
+    //CHECKSTYLE:ON
 
     public AbstractSignalHandler(int _expectedRuns) {
         expectedRuns = _expectedRuns;

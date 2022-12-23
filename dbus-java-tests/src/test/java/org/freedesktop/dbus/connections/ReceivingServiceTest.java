@@ -1,5 +1,13 @@
 package org.freedesktop.dbus.connections;
 
+import org.freedesktop.dbus.connections.ReceivingService.ExecutorNames;
+import org.freedesktop.dbus.connections.ReceivingService.IThreadPoolRetryHandler;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
+import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.junit.jupiter.api.Test;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -9,14 +17,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.freedesktop.dbus.connections.ReceivingService.ExecutorNames;
-import org.freedesktop.dbus.connections.ReceivingService.IThreadPoolRetryHandler;
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
-import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
-import org.freedesktop.dbus.test.AbstractBaseTest;
-import org.junit.jupiter.api.Test;
 
 class ReceivingServiceTest extends AbstractBaseTest {
 
@@ -49,11 +49,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             @Override
             public boolean handle(ExecutorNames _executor, Exception _ex) {
                 count++;
-                if (count < 5) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return count < 5;
             }
         };
 
@@ -233,9 +229,9 @@ class ReceivingServiceTest extends AbstractBaseTest {
      */
     class NoOpExecutorService implements ExecutorService {
 
-        protected boolean throwException = true;
-        boolean shutdown;
-        boolean terminated;
+        private boolean throwException = true;
+        private boolean shutdown;
+        private boolean terminated;
 
         @Override
         public void execute(Runnable _command) {

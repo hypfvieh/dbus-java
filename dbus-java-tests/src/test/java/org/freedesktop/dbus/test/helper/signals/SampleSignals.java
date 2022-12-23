@@ -1,8 +1,5 @@
 package org.freedesktop.dbus.test.helper.signals;
 
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.IntrospectionDescription;
@@ -14,9 +11,12 @@ import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.Tes
 import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
 import org.freedesktop.dbus.types.UInt32;
 
+import java.util.List;
+import java.util.Map;
+
 public interface SampleSignals extends DBusInterface {
 
-    public class TestStringSignal extends DBusSignal {
+    class TestStringSignal extends DBusSignal {
         private final String contentString;
 
         public TestStringSignal(String _path, String _aoeu) throws DBusException {
@@ -28,9 +28,9 @@ public interface SampleSignals extends DBusInterface {
             return contentString;
         }
     }
-    
+
     @IntrospectionDescription("Test basic signal")
-    public class TestSignal extends DBusSignal {
+    class TestSignal extends DBusSignal {
         private final String value;
         private final UInt32 number;
 
@@ -51,9 +51,9 @@ public interface SampleSignals extends DBusInterface {
             return number;
         }
     }
-    
+
     @IntrospectionDescription("Test basic signal")
-    public class TestRenamedSignal extends DBusSignal {
+    class TestRenamedSignal extends DBusSignal {
         private final String value;
         private final UInt32 number;
         /**
@@ -71,8 +71,9 @@ public interface SampleSignals extends DBusInterface {
             return number;
         }
     }
-    
-    public class TestPathSignal extends DBusSignal {
+
+    @SuppressWarnings("checkstyle:visibilitymodifier")
+    class TestPathSignal extends DBusSignal {
         public final DBusPath            otherpath;
         public final List<DBusPath>      pathlist;
         public final Map<DBusPath, DBusPath> pathmap;
@@ -84,10 +85,11 @@ public interface SampleSignals extends DBusInterface {
             this.pathmap = _pathmap;
         }
     }
-    
+
     @IntrospectionDescription("Test signal sending an object path")
     @DBusMemberName("TestSignalObject")
-    public class TestObjectSignal extends DBusSignal {
+    @SuppressWarnings("checkstyle:visibilitymodifier")
+    class TestObjectSignal extends DBusSignal {
         public final SampleRemoteInterface otherpath;
 
         public TestObjectSignal(String _path, SampleRemoteInterface _otherpath) throws DBusException {
@@ -95,15 +97,15 @@ public interface SampleSignals extends DBusInterface {
             this.otherpath = _otherpath;
         }
     }
-    
-    public class TestEmptySignal extends DBusSignal {        
-        public TestEmptySignal(String path) throws DBusException {
-            super(path);
+
+    class TestEmptySignal extends DBusSignal {
+        public TestEmptySignal(String _path) throws DBusException {
+            super(_path);
         }
     }
-    
+
     @IntrospectionDescription("Test signal with arrays")
-    public class TestArraySignal extends DBusSignal {
+    class TestArraySignal extends DBusSignal {
         private final List<SampleStruct2>        listOfStruct;
         private final Map<UInt32, SampleStruct2> mapOfIntStruct;
 
@@ -121,9 +123,9 @@ public interface SampleSignals extends DBusInterface {
             return listOfStruct;
         }
     }
-    
+
     @IntrospectionDescription("Test signal with enums")
-    public class TestEnumSignal extends DBusSignal {
+    class TestEnumSignal extends DBusSignal {
         private final List<TestEnum>             enums;
         private final TestEnum anEnum;
 

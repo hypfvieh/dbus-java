@@ -1,9 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map.Entry;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -17,11 +13,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map.Entry;
+
 public class TestCross extends AbstractDBusBaseTest {
 
     private ServerThread serverThread;
     private CrossTestServer cts;
-
 
     private volatile boolean serverReady = false;
 
@@ -45,7 +44,7 @@ public class TestCross extends AbstractDBusBaseTest {
             Thread.sleep(500L);
         }
 
-        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()){
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
             /* init */
             CrossTestClient client = new CrossTestClient(conn);
             conn.exportObject("/TestClient", client);
@@ -69,11 +68,11 @@ public class TestCross extends AbstractDBusBaseTest {
                     System.out.println(s.getKey() + " failed: " + msg);
                 }
             }
-            
-        } catch (DBusException | IOException exDbe) {
-            exDbe.printStackTrace();
+
+        } catch (DBusException | IOException _exDbe) {
+            _exDbe.printStackTrace();
             fail("Exception while processing DBus");
-        } 
+        }
 
         while (serverThread.isAlive()) {
             Thread.sleep(300L);
@@ -82,7 +81,6 @@ public class TestCross extends AbstractDBusBaseTest {
         assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
 
     }
-
 
     private class ServerThread extends Thread {
         @Override
@@ -98,7 +96,7 @@ public class TestCross extends AbstractDBusBaseTest {
                     try {
                         //cts.wait();
                         Thread.sleep(500L);
-                    } catch (InterruptedException exIe) {
+                    } catch (InterruptedException _exIe) {
                     }
                 }
                 for (String s : cts.getDone()) {
@@ -108,8 +106,8 @@ public class TestCross extends AbstractDBusBaseTest {
                     System.out.println("---> " + s + " untested");
                 }
                 conn.disconnect();
-            } catch (DBusException | IOException exDe) {
-                exDe.printStackTrace();
+            } catch (DBusException | IOException _exDe) {
+                _exDe.printStackTrace();
                 fail("Exception while server running");
             }
         }

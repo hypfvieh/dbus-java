@@ -2,19 +2,19 @@ package org.freedesktop.dbus.test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ExportedObjectTest {
 
@@ -124,17 +124,17 @@ public class ExportedObjectTest {
         }
 
         @Override
-        public <A> A Get(String _interface_name, String _property_name) {
+        public <A> A Get(String _interfaceName, String _propertyName) {
             return null;
         }
 
         @Override
-        public <A> void Set(String _interface_name, String _property_name, A _value) {
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
 
         }
 
         @Override
-        public Map<String, Variant<?>> GetAll(String _interface_name) {
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
             return null;
         }
 
@@ -168,16 +168,16 @@ public class ExportedObjectTest {
         }
 
         @Override
-        public <A> A Get(String _interface_name, String _property_name) {
+        public <A> A Get(String _interfaceName, String _propertyName) {
             return null;
         }
 
         @Override
-        public <A> void Set(String _interface_name, String _property_name, A _value) {
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
         }
 
         @Override
-        public Map<String, Variant<?>> GetAll(String _interface_name) {
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
             return null;
         }
     }
@@ -189,16 +189,16 @@ public class ExportedObjectTest {
         }
 
         @Override
-        public <A> A Get(String _interface_name, String _property_name) {
+        public <A> A Get(String _interfaceName, String _propertyName) {
             return null;
         }
 
         @Override
-        public <A> void Set(String _interface_name, String _property_name, A _value) {
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
         }
 
         @Override
-        public Map<String, Variant<?>> GetAll(String _interface_name) {
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
             return null;
         }
     }

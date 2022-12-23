@@ -14,23 +14,24 @@ import org.freedesktop.dbus.types.UInt64;
 /**
 * Contains Binding-test interfaces
 */
+@SuppressWarnings({"checkstyle:methodname"})
 public interface Binding {
-    public interface SingleSample extends DBusInterface {
+    interface SingleSample extends DBusInterface {
         @IntrospectionDescription("Returns the sum of the values in the input list")
-        UInt32 Sum(byte[] a);
+        UInt32 Sum(byte[] _a);
     }
 
-    public interface SampleClient extends DBusInterface {
+    interface SampleClient extends DBusInterface {
         @IntrospectionDescription("when the trigger signal is received, this method should be called on the sending process/object.")
-        void Response(UInt16 a, double b);
+        void Response(UInt16 _a, double _b);
 
         @IntrospectionDescription("Causes a callback")
         class Trigger extends DBusSignal {
             private final UInt16 sampleUint16;
             private final double sampleDouble;
 
-            public Trigger(String path, UInt16 _a, double _b) throws DBusException {
-                super(path, _a, _b);
+            public Trigger(String _path, UInt16 _a, double _b) throws DBusException {
+                super(_path, _a, _b);
                 this.sampleUint16 = _a;
                 this.sampleDouble = _b;
             }
@@ -46,7 +47,7 @@ public interface Binding {
 
     }
 
-    public interface SampleSignals extends DBusInterface {
+    interface SampleSignals extends DBusInterface {
         @IntrospectionDescription("Sent in response to a method call")
         class Triggered extends DBusSignal {
             private final UInt64 sampleUint64;

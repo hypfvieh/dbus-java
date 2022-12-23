@@ -1,16 +1,16 @@
 package org.freedesktop.dbus.test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.helper.SampleClass;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestDisconnectCallback extends AbstractDBusBaseTest {
 
@@ -38,35 +38,35 @@ public class TestDisconnectCallback extends AbstractDBusBaseTest {
         Thread.sleep(1000L);
         serverConnection.disconnect();
         Thread.sleep(1000L);
-        
+
         assertEquals(1, callback.clientDisconnectCounter.get());
         assertEquals(0, callback.disconnectErrorCounter.get());
         assertEquals(0, callback.exceptionTerminateCounter.get());
         assertEquals(1, callback.expectedCounter.get(2));
         assertEquals(1, callback.expectedCounter.get(null));
     }
-    
+
     static class TestCallback implements IDisconnectCallback {
-        AtomicInteger clientDisconnectCounter = new AtomicInteger(0);
-        Map<Integer, Integer> expectedCounter = new HashMap<>();
-        AtomicInteger disconnectErrorCounter = new AtomicInteger(0);
-        AtomicInteger exceptionTerminateCounter = new AtomicInteger(0);
-        
+        private AtomicInteger clientDisconnectCounter = new AtomicInteger(0);
+        private Map<Integer, Integer> expectedCounter = new HashMap<>();
+        private AtomicInteger disconnectErrorCounter = new AtomicInteger(0);
+        private AtomicInteger exceptionTerminateCounter = new AtomicInteger(0);
+
         @Override
         public void clientDisconnect() {
             clientDisconnectCounter.incrementAndGet();
         }
-        
+
         @Override
         public void disconnectOnError(IOException _ex) {
             disconnectErrorCounter.incrementAndGet();
         }
-        
+
         @Override
         public void exceptionOnTerminate(IOException _ex) {
             exceptionTerminateCounter.incrementAndGet();
         }
-        
+
         @Override
         public void requestedDisconnect(Integer _connectionId) {
             Integer integer = expectedCounter.get(_connectionId);
