@@ -1,0 +1,11 @@
+#Organize Import Order
+#Fri Dec 23 10:35:32 CET 2022
+0=\#
+1=\#java
+2=\#javax
+3=\#javafx
+4=
+5=java
+6=javax
+7=javafx
+

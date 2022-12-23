@@ -5,7 +5,6 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 
-
 /**
  * Subclass this abstract class for creating a callback for changed properties.
  *

@@ -66,7 +66,7 @@ public class SignalTuple {
      * @deprecated should no longer be used
      */
     @Deprecated
-    public static Set<SignalTuple> getAllPossibleTuples(String _type, String _name, String _object, String _source){
+    public static Set<SignalTuple> getAllPossibleTuples(String _type, String _name, String _object, String _source) {
         Set<SignalTuple> allTuples = new HashSet<>();
 
         // Tuple with no null

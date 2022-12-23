@@ -2,7 +2,7 @@ package org.freedesktop.dbus.exceptions;
 
 /**
  * Thrown if registration of transport providers fails.
- * 
+ *
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-08
  */

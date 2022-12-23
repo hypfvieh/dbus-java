@@ -1,10 +1,5 @@
 package org.freedesktop.dbus.utils.translator;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -12,10 +7,15 @@ import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.DBusStructType;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Reads a DBus signature string and converts it to java classes tree.<br>
  * Uses a DBus signature string like "a(ia{sv})" and converts it something like:
- * 
+ *
  * <pre>
  * java.util.List
  *    org.freedesktop.dbus.Struct
@@ -24,7 +24,7 @@ import org.freedesktop.dbus.types.DBusStructType;
  *                java.lang.String
  *                org.freedesktop.dbus.types.Variant
  * </pre>
- * 
+ *
  * Each indent step represents another step in the hierarchy.<br>
  * Classes listed in the same indent level are part of the same structure (e.g. Map, Struct).
  * <p>
@@ -37,9 +37,11 @@ import org.freedesktop.dbus.types.DBusStructType;
  * @author hypfvieh
  * @since v3.3.0 - 2020-12-28
  */
-public class DBusTypeStringToJava {
+public final class DBusTypeStringToJava {
 
     private static final String INDENT = "   ";
+
+    private DBusTypeStringToJava() {}
 
     public static void main(String[] _args) throws DBusException {
         if (_args == null || _args.length < 1) {
@@ -87,7 +89,7 @@ public class DBusTypeStringToJava {
             }
         } else {
             String str = _t.getTypeName();
-            if (str.equals("java.lang.CharSequence")) {
+            if ("java.lang.CharSequence".equals(str)) {
                 str = String.class.getName();
             }
             System.out.println(repeat(INDENT, _indent) + str);

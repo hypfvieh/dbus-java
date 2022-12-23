@@ -1,19 +1,5 @@
 package org.freedesktop.dbus.utils.generator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusProperty;
@@ -40,6 +26,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Replacement for the old CreateInterface tool.
@@ -151,7 +151,7 @@ public class InterfaceCodeGenerator {
 
         logger.info("Creating interface: {}.{}", packageName, className);
 
-        Map<File, String> filesToCreate = new LinkedHashMap<>();
+        final Map<File, String> filesToCreate = new LinkedHashMap<>();
 
         ClassBuilderInfo interfaceClass = new ClassBuilderInfo();
         interfaceClass.setClassType(ClassType.INTERFACE);
@@ -394,9 +394,9 @@ public class InterfaceCodeGenerator {
             clzzName = _clzBldr.getClassName() + "." + typeRefInterfaceName;
         }
 
-        String annotationParams = "name = \"" + attrName + "\", " +
-                "type = " + clzzName + ".class, " +
-                "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
+        String annotationParams = "name = \"" + attrName + "\", "
+                + "type = " + clzzName + ".class, "
+                + "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
         AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
         _clzBldr.getAnnotations().add(annotationInfo);
 

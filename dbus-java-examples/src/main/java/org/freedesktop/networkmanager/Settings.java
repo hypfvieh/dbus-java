@@ -1,8 +1,5 @@
 package org.freedesktop.networkmanager;
 
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.Pair;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -12,7 +9,12 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
+import java.util.List;
+import java.util.Map;
+
 @DBusInterfaceName("org.freedesktop.NetworkManager.Settings")
+@SuppressWarnings({"checkstyle:methodname", "checkstyle:hideutilityclassconstructor",
+    "checkstyle:visibilitymodifier", "checkstyle:constantname"})
 public interface Settings extends DBusInterface, Properties {
 
     List<DBusInterface> ListConnections();

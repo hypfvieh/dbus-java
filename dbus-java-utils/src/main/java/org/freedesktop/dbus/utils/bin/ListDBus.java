@@ -10,17 +10,17 @@ import org.freedesktop.dbus.interfaces.DBus;
  * This class lists all the names currently connected on the bus
  */
 public final class ListDBus {
-    public static void syntax() {
-        System.out.println("Syntax: ListDBus [--version] [-v] [--help] [-h] [--owners] [-o] [--uids] [-u] [--session] [-s] [--system] [-y]");
-        System.exit(1);
-    }
-
     private ListDBus() {
 
     }
 
     public static void version() {
         System.out.println("Java D-Bus Version " + System.getProperty("Version"));
+        System.exit(1);
+    }
+
+    public static void syntax() {
+        System.out.println("Syntax: ListDBus [--version] [-v] [--help] [-h] [--owners] [-o] [--uids] [-u] [--session] [-s] [--system] [-y]");
         System.exit(1);
     }
 

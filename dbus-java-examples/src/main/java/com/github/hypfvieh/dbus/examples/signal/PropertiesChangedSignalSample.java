@@ -12,7 +12,9 @@ import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
  *
  * @author hypfvieh
  */
-public class PropertiesChangedSignal {
+public final class PropertiesChangedSignalSample {
+
+    private PropertiesChangedSignalSample() {}
 
     public static void main(String[] _args) throws Exception {
         // Open connection to the system bus.

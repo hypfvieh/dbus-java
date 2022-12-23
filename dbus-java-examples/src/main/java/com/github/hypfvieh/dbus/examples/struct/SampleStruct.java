@@ -38,6 +38,4 @@ public class SampleStruct extends Struct {
         aString = _aString;
     }
 
-
-
 }

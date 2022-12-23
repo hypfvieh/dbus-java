@@ -1,5 +1,12 @@
 package org.freedesktop.dbus.connections;
 
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
+import org.freedesktop.dbus.utils.NameableThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -7,13 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
-import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
-import org.freedesktop.dbus.utils.NameableThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Service providing threads for every type of message expected to be received by DBus.
@@ -39,12 +39,16 @@ public class ReceivingService {
      */
     ReceivingService(ReceivingServiceConfig _rsCfg) {
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
-        executors.put(ExecutorNames.SIGNAL, Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true, rsCfg.getSignalThreadPriority())));
-        executors.put(ExecutorNames.ERROR, Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true, rsCfg.getErrorThreadPriority())));
+        executors.put(ExecutorNames.SIGNAL,
+                Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory("DBus-Signal-Receiver-", true, rsCfg.getSignalThreadPriority())));
+        executors.put(ExecutorNames.ERROR,
+                Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory("DBus-Error-Receiver-", true, rsCfg.getErrorThreadPriority())));
 
         // we need multiple threads here so recursive method calls are possible
-        executors.put(ExecutorNames.METHODCALL, Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true, rsCfg.getMethodCallThreadPriority())));
-        executors.put(ExecutorNames.METHODRETURN, Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true, rsCfg.getMethodReturnThreadPriority())));
+        executors.put(ExecutorNames.METHODCALL,
+                Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory("DBus-MethodCall-Receiver-", true, rsCfg.getMethodCallThreadPriority())));
+        executors.put(ExecutorNames.METHODRETURN,
+                Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory("DBus-MethodReturn-Receiver-", true, rsCfg.getMethodReturnThreadPriority())));
 
         retryHandler = rsCfg.getRetryHandler();
     }

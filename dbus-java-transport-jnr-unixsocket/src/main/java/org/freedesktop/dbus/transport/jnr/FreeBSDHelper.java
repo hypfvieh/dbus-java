@@ -1,10 +1,5 @@
 package org.freedesktop.dbus.transport.jnr;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import jnr.constants.platform.Errno;
 import jnr.constants.platform.LastError;
 import jnr.constants.platform.SocketLevel;
@@ -18,21 +13,29 @@ import jnr.posix.util.Platform;
 import jnr.unixsocket.UnixSocket;
 import jnr.unixsocket.UnixSocketChannel;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 /**
  * Helpers to support FreeBSD. Ideally some of these will be abstracted
  * and moved to jnr-unixsocket at some point.
  *
  * @author grembo
+ * @deprecated no longer used
  */
+@Deprecated(forRemoval = true, since = "4.3.0 - 2022-12-23")
 public final class FreeBSDHelper {
-    private static final CmsgCredLayout cmsgCredLayout = new CmsgCredLayout(jnr.ffi.Runtime.getSystemRuntime());
+    private static final CmsgCredLayout CMSG_CRED_LAYOUT = new CmsgCredLayout(jnr.ffi.Runtime.getSystemRuntime());
 
     private FreeBSDHelper() {}
-    
+
     public static boolean isFreeBSD() {
         return Platform.IS_FREEBSD;
     }
-    
+
+    @SuppressWarnings({"checkstyle:methodname"})
     public static void send_cred(Socket _us) throws IOException {
         POSIX posix = POSIXFactory.getNativePOSIX();
         String data = "\0";
@@ -47,11 +50,11 @@ public final class FreeBSDHelper {
 
         outMessage.setIov(outIov);
 
-        CmsgHdr outControl = outMessage.allocateControl(cmsgCredLayout.size());
+        CmsgHdr outControl = outMessage.allocateControl(CMSG_CRED_LAYOUT.size());
         outControl.setLevel(SocketLevel.SOL_SOCKET.intValue());
         outControl.setType(0x03); // 0x03 == SCM_CREDS
 
-        ByteBuffer fdBuf = ByteBuffer.allocateDirect(cmsgCredLayout.size());
+        ByteBuffer fdBuf = ByteBuffer.allocateDirect(CMSG_CRED_LAYOUT.size());
         fdBuf.order(ByteOrder.nativeOrder());
         // fdBuf.putInt(i, 0);
         outControl.setData(fdBuf);
@@ -68,14 +71,15 @@ public final class FreeBSDHelper {
             if (Errno.valueOf(err) == Errno.EINVAL) {
                 _us.getOutputStream().write(dataBytes);
             } else {
-                throw new IOException("Failed to write credentials byte: " +
-                        LastError.valueOf(err).toString());
+                throw new IOException("Failed to write credentials byte: "
+                        + LastError.valueOf(err).toString());
             }
         } else if (sentBytes == 0) {
             throw new IOException("wrote zero bytes writing credentials byte");
         }
     }
 
+    @SuppressWarnings({"checkstyle:methodname"})
     public static long recv_cred(Socket _us) {
         NativePOSIX posix = (NativePOSIX) POSIXFactory.getNativePOSIX();
         MsgHdr inMessage = posix.allocateMsgHdr();
@@ -94,22 +98,23 @@ public final class FreeBSDHelper {
 
         if (recvBytes > 0 && inIov[0].get(0) == 0) {
             for (CmsgHdr cmsg : inMessage.getControls()) {
-                if (cmsg.getType() == 0x03 && // 0x03 == SCM_CREDS
-                        cmsg.getLevel() == SocketLevel.SOL_SOCKET.intValue() &&
-                        cmsg.getLen() >= posix.socketMacros().CMSG_LEN(84)) {
+                if (cmsg.getType() == 0x03 // 0x03 == SCM_CREDS
+                        && cmsg.getLevel() == SocketLevel.SOL_SOCKET.intValue()
+                        && cmsg.getLen() >= posix.socketMacros().CMSG_LEN(84)) {
                     ByteBuffer data = cmsg.getData();
                     final jnr.ffi.Pointer memory = jnr.ffi.Runtime.getSystemRuntime().getMemoryManager()
-                            .allocateTemporary(cmsgCredLayout.size(), true);
-                    for (int i = 0; i < cmsgCredLayout.size(); ++i) {
+                            .allocateTemporary(CMSG_CRED_LAYOUT.size(), true);
+                    for (int i = 0; i < CMSG_CRED_LAYOUT.size(); ++i) {
                         memory.putByte(i, data.get(i));
                     }
-                    return cmsgCredLayout.cmcred_euid.get(memory);
+                    return CMSG_CRED_LAYOUT.cmcred_euid.get(memory);
                 }
             }
         }
         return -1;
     }
-    
+
+    @SuppressWarnings({"checkstyle:membername", "checkstyle:visibilitymodifier"})
     static class CmsgCredLayout extends StructLayout {
 
         final pid_t    cmcred_pid     = new pid_t();

@@ -5,7 +5,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 
 @DBusInterfaceName("com.acme.MyInterfacePart")
 public interface MyInterfacePart extends DBusInterface {
-    
+
     String getVal1();
 
     String getVal2();

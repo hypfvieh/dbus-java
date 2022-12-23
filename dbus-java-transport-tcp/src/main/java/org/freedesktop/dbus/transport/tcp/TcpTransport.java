@@ -1,13 +1,13 @@
 package org.freedesktop.dbus.transport.tcp;
 
+import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.SASL;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
 
 /**
  * Transport type representing a transport connection to TCP.

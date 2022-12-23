@@ -3,18 +3,6 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import java.lang.reflect.Proxy;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -32,6 +20,18 @@ import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Proxy;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /**
  * Handles a peer to peer connection between two applications without a bus daemon.
@@ -66,6 +66,13 @@ public class DirectConnection extends AbstractConnection {
         this(createTransportConfig(_address, _timeout), null);
     }
 
+    DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_transportCfg, _rsCfg);
+        machineId = createMachineId();
+        if (!getAddress().isServer()) {
+            super.listen();
+        }
+    }
 
     @Deprecated(since = "4.2.0", forRemoval = true)
     static TransportConfig createTransportConfig(String _address, int _timeout) {
@@ -73,14 +80,6 @@ public class DirectConnection extends AbstractConnection {
         cfg.setBusAddress(BusAddress.of(_address));
         cfg.getAdditionalConfig().put("TIMEOUT", _timeout);
         return cfg;
-    }
-
-    DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportCfg, _rsCfg);
-        machineId = createMachineId();
-        if (!getAddress().isServer()) {
-            super.listen();
-        }
     }
 
     /**
@@ -110,7 +109,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @SuppressWarnings("unchecked")
-	<T> T dynamicProxy(String _path, Class<T> _type) throws DBusException {
+    <T> T dynamicProxy(String _path, Class<T> _type) throws DBusException {
         try {
             Introspectable intro = getRemoteObject(_path, Introspectable.class);
             String data = intro.Introspect();
@@ -122,27 +121,26 @@ public class DirectConnection extends AbstractConnection {
                 .collect(Collectors.toList());
 
             List<Class<? extends Object>> ifcs = new ArrayList<>();
-            if(_type == null) {
-	            for (String iface : ifaces) {
-	                int j = 0;
-	                while (j >= 0) {
-	                    try {
-	                        ifcs.add(Class.forName(iface));
-	                        break;
-	                    } catch (Exception _ex) {
-	                        logger.trace("No class found for {}", iface, _ex);
-	                    }
-	                    j = iface.lastIndexOf('.');
-	                    char[] cs = iface.toCharArray();
-	                    if (j >= 0) {
-	                        cs[j] = '$';
-	                        iface = String.valueOf(cs);
-	                    }
-	                }
-	            }
-            }
-            else {
-            	ifcs.add(_type);
+            if (_type == null) {
+                for (String iface : ifaces) {
+                    int j = 0;
+                    while (j >= 0) {
+                        try {
+                            ifcs.add(Class.forName(iface));
+                            break;
+                        } catch (Exception _ex) {
+                            logger.trace("No class found for {}", iface, _ex);
+                        }
+                        j = iface.lastIndexOf('.');
+                        char[] cs = iface.toCharArray();
+                        if (j >= 0) {
+                            cs[j] = '$';
+                            iface = String.valueOf(cs);
+                        }
+                    }
+                }
+            } else {
+                ifcs.add(_type);
             }
 
             if (ifcs.isEmpty()) {
@@ -152,15 +150,15 @@ public class DirectConnection extends AbstractConnection {
             RemoteObject ro = new RemoteObject(null, _path, null, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(), ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
-            return (T)newi;
-        } catch (Exception e) {
-            logger.debug("", e);
-            throw new DBusException(String.format("Failed to create proxy object for %s; reason: %s.", _path, e.getMessage()));
+            return (T) newi;
+        } catch (Exception _ex) {
+            logger.debug("", _ex);
+            throw new DBusException(String.format("Failed to create proxy object for %s; reason: %s.", _path, _ex.getMessage()));
         }
     }
 
     @SuppressWarnings("unchecked")
-	<T extends DBusInterface> T getExportedObject(String _path, Class<T> _type) throws DBusException {
+    <T extends DBusInterface> T getExportedObject(String _path, Class<T> _type) throws DBusException {
         ExportedObject o = null;
         synchronized (getExportedObjects()) {
             o = getExportedObjects().get(_path);
@@ -170,7 +168,7 @@ public class DirectConnection extends AbstractConnection {
             o = null;
         }
         if (null != o) {
-            return (T)o.getObject().get();
+            return (T) o.getObject().get();
         }
         return dynamicProxy(_path, _type);
     }
@@ -244,7 +242,7 @@ public class DirectConnection extends AbstractConnection {
 
         @SuppressWarnings("unchecked")
         T i = (T) Proxy.newProxyInstance(_type.getClassLoader(),
-                new Class[] { _type }, new RemoteInvocationHandler(this, ro));
+                new Class[] {_type}, new RemoteInvocationHandler(this, ro));
 
         getImportedObjects().put(i, ro);
 
@@ -272,11 +270,11 @@ public class DirectConnection extends AbstractConnection {
 
         v.add(_handler);
         return new AutoCloseable() {
-			@Override
-			public void close() throws Exception {
-				removeSigHandler(_rule, _handler);
-			}
-		};
+            @Override
+            public void close() throws Exception {
+                removeSigHandler(_rule, _handler);
+            }
+        };
     }
 
     @Override
@@ -300,11 +298,11 @@ public class DirectConnection extends AbstractConnection {
 
         v.add(_handler);
         return new AutoCloseable() {
-			@Override
-			public void close() throws Exception {
-				removeGenericSigHandler(_rule, _handler);
-			}
-		};
+            @Override
+            public void close() throws Exception {
+                removeGenericSigHandler(_rule, _handler);
+            }
+        };
     }
 
     @Override
@@ -317,8 +315,8 @@ public class DirectConnection extends AbstractConnection {
        return machineId;
     }
 
-	@Override
-	public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
-        return getExportedObject(_path, (Class<DBusInterface>)null);
-	}
+    @Override
+    public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
+        return getExportedObject(_path, (Class<DBusInterface>) null);
+    }
 }

@@ -1,15 +1,14 @@
 package org.freedesktop.dbus.transport.jre;
 
+import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
 import java.io.IOException;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-
-import org.freedesktop.dbus.connections.SASL;
-import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
-import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
 /**
  * Transport type representing a transport connection to a unix socket.
@@ -68,12 +67,6 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         }
 
         socket.configureBlocking(true);
-
-        // TODO: No longer needed? See jdk.net.ExtendedSocketOptions.SO_PEERCRED (line 198)
-        // MacOS and FreeBSD don't support SO_PASSCRED
-//        if (!Util.isMacOs() && !FreeBSDHelper.isFreeBSD()) {
-//            us.setOption(ExtendedSocketOptions.SO_PEERCRED, us.getOption(ExtendedSocketOptions.SO_PEERCRED));
-//        }
 
         return socket;
     }

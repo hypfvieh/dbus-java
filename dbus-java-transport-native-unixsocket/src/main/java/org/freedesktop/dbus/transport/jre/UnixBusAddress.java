@@ -1,12 +1,12 @@
 package org.freedesktop.dbus.transport.jre;
 
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Set;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.IFileBasedBusAddress;
 import org.freedesktop.dbus.utils.Util;
+
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Set;
 
 public class UnixBusAddress extends BusAddress implements IFileBasedBusAddress {
 

@@ -1,12 +1,12 @@
 package org.freedesktop.dbus.connections;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FallbackContainer {
 
@@ -15,7 +15,7 @@ public class FallbackContainer {
 
     FallbackContainer() {
     }
-    
+
     public synchronized void add(String _path, ExportedObject _eo) {
         logger.debug("Adding fallback on {} of {}", _path, _eo);
         fallbacks.put(_path.split("/"), _eo);

@@ -1,10 +1,10 @@
 package org.freedesktop.dbus.spi.message;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Represents a way to read messages from the bus.

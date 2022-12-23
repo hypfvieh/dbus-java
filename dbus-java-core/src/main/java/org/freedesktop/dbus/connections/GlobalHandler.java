@@ -5,7 +5,7 @@ import org.freedesktop.dbus.messages.ExportedObject;
 
 public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.freedesktop.dbus.interfaces.Introspectable {
     /**
-     * 
+     *
      */
     private final AbstractConnection connection;
     private final String             objectpath;

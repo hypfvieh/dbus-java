@@ -1,17 +1,17 @@
 package org.freedesktop.dbus.transport.jnr;
 
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
-
+import jnr.posix.util.Platform;
+import jnr.unixsocket.UnixServerSocketChannel;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+import jnr.unixsocket.UnixSocketOptions;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.utils.Util;
 
-import jnr.unixsocket.UnixServerSocketChannel;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-import jnr.unixsocket.UnixSocketOptions;
+import java.io.IOException;
+import java.nio.channels.SocketChannel;
 
 /**
  * Transport type representing a transport connection to a unix socket.
@@ -65,7 +65,7 @@ public class UnixSocketTransport extends AbstractUnixTransport {
         }
 
         // MacOS and FreeBSD don't support SO_PASSCRED
-        if (!Util.isMacOs() && !FreeBSDHelper.isFreeBSD()) {
+        if (!Util.isMacOs() && !Platform.IS_FREEBSD) {
             socket.setOption(UnixSocketOptions.SO_PASSCRED, true);
         }
 

@@ -4,24 +4,6 @@ import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -45,6 +27,24 @@ import org.freedesktop.dbus.utils.AddressBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 /**
  * Handles a connection to DBus.
  * <p>
@@ -60,11 +60,11 @@ public final class DBusConnection extends AbstractConnection {
 
     static final ConcurrentMap<String, DBusConnection> CONNECTIONS           = new ConcurrentHashMap<>();
 
+    private static String                              dbusMachineIdFile;
+
     private final Logger                               logger                = LoggerFactory.getLogger(getClass());
 
     private final List<String>                         busnames;
-
-    private static String                              dbusMachineIdFile;
 
     private final String                               machineId;
     private DBus                                       dbus;
@@ -72,12 +72,21 @@ public final class DBusConnection extends AbstractConnection {
     /** Count how many 'connections' we manage internally.
      * This is required because a {@link DBusConnection} to the same address will always return the same object and
      * the 'real' disconnection should only occur when there is no second/third/whatever connection is left. */
+    //CHECKSTYLE:OFF
     final AtomicInteger                                concurrentConnections = new AtomicInteger(1);
+    //CHECKSTYLE:ON
 
     /**
      * Whether this connection is used in shared mode.
      */
     private final boolean shared;
+
+    DBusConnection(boolean _shared, String _machineId, TransportConfig _tranportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_tranportCfg, _rsCfg);
+        busnames = new ArrayList<>();
+        machineId = _machineId;
+        shared = _shared;
+    }
 
     /**
      * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
@@ -168,7 +177,6 @@ public final class DBusConnection extends AbstractConnection {
         return getConnection(_bustype, false, AbstractConnection.TCP_CONNECT_TIMEOUT);
     }
 
-
     /**
      * Connect to the BUS.
      * If a connection to the specified Bus already exists and shared-flag is true, a reference to it is returned.
@@ -226,15 +234,6 @@ public final class DBusConnection extends AbstractConnection {
         DBusConnection.dbusMachineIdFile = _dbusMachineIdFile;
     }
 
-
-    DBusConnection(boolean _shared, String _machineId, TransportConfig _tranportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_tranportCfg, _rsCfg);
-        busnames = new ArrayList<>();
-        machineId = _machineId;
-        shared = _shared;
-
-    }
-
     /**
      * Connect to bus and register if asked.
      * Should only be called by Builder.
@@ -255,9 +254,9 @@ public final class DBusConnection extends AbstractConnection {
             dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
             try {
                 busnames.add(dbus.Hello());
-            } catch (DBusExecutionException dbee) {
-                logger.debug("", dbee);
-                throw new DBusException(dbee.getMessage());
+            } catch (DBusExecutionException _ex) {
+                logger.debug("", _ex);
+                throw new DBusException(_ex.getMessage());
             }
         }
     }
@@ -276,7 +275,7 @@ public final class DBusConnection extends AbstractConnection {
      *
      * @throws DBusException when something goes wrong
      */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     protected <T extends DBusInterface> T dynamicProxy(String _source, String _path, Class<T> _type) throws DBusException {
         logger.debug("Introspecting {} on {} for dynamic proxy creation", _path, _source);
         try {
@@ -296,32 +295,31 @@ public final class DBusConnection extends AbstractConnection {
                 })
                 .collect(Collectors.toList());
             List<Class<?>> ifcs = new ArrayList<>();
-            if(_type == null) {
-	            for (String iface : ifaces) {
+            if (_type == null) {
+                for (String iface : ifaces) {
 
-	                logger.debug("Trying interface {}", iface);
-	                int j = 0;
-	                while (j >= 0) {
-	                    try {
-	                        Class<?> ifclass = Class.forName(iface);
-	                        if (!ifcs.contains(ifclass)) {
-	                            ifcs.add(ifclass);
-	                        }
-	                        break;
-	                    } catch (Exception _ex) {
-	                        logger.trace("No class found for {}", iface, _ex);
-	                    }
-	                    j = iface.lastIndexOf('.');
-	                    char[] cs = iface.toCharArray();
-	                    if (j >= 0) {
-	                        cs[j] = '$';
-	                        iface = String.valueOf(cs);
-	                    }
-	                }
-	            }
-            }
-            else {
-            	ifcs.add(_type);
+                    logger.debug("Trying interface {}", iface);
+                    int j = 0;
+                    while (j >= 0) {
+                        try {
+                            Class<?> ifclass = Class.forName(iface);
+                            if (!ifcs.contains(ifclass)) {
+                                ifcs.add(ifclass);
+                            }
+                            break;
+                        } catch (Exception _ex) {
+                            logger.trace("No class found for {}", iface, _ex);
+                        }
+                        j = iface.lastIndexOf('.');
+                        char[] cs = iface.toCharArray();
+                        if (j >= 0) {
+                            cs[j] = '$';
+                            iface = String.valueOf(cs);
+                        }
+                    }
+                }
+            } else {
+                ifcs.add(_type);
             }
 
             // interface could not be found, we guess that this exported object at least support DBusInterface
@@ -335,18 +333,18 @@ public final class DBusConnection extends AbstractConnection {
             getImportedObjects().put(newi, ro);
 
             return (T) newi;
-        } catch (Exception e) {
-            logger.debug("", e);
+        } catch (Exception _ex) {
+            logger.debug("", _ex);
             throw new DBusException(
                     String.format("Failed to create proxy object for %s exported by %s. Reason: %s", _path,
-                            _source, e.getMessage()));
+                            _source, _ex.getMessage()));
         }
     }
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException {
-    	ExportedObject o;
+        ExportedObject o;
         synchronized (getExportedObjects()) {
             o = getExportedObjects().get(_path);
         }
@@ -365,7 +363,7 @@ public final class DBusConnection extends AbstractConnection {
 
     @Override
     public DBusInterface getExportedObject(String _source, String _path) throws DBusException {
-    	return getExportedObject(_source, _path, null);
+        return getExportedObject(_source, _path, null);
     }
 
     /**
@@ -382,9 +380,9 @@ public final class DBusConnection extends AbstractConnection {
         }
         try {
             dbus.ReleaseName(_busname);
-        } catch (DBusExecutionException dbee) {
-            logger.debug("", dbee);
-            throw new DBusException(dbee.getMessage());
+        } catch (DBusExecutionException _ex) {
+            logger.debug("", _ex);
+            throw new DBusException(_ex.getMessage());
         }
 
         synchronized (this.busnames) {
@@ -729,11 +727,11 @@ public final class DBusConnection extends AbstractConnection {
                 getHandledSignals().remove(_rule);
                 try {
                     dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected exNc) {
-                    logger.debug("No connection.", exNc);
-                } catch (DBusExecutionException dbee) {
-                    logger.debug("", dbee);
-                    throw new DBusException(dbee);
+                } catch (NotConnected _ex) {
+                    logger.debug("No connection.", _ex);
+                } catch (DBusExecutionException _ex) {
+                    logger.debug("", _ex);
+                    throw new DBusException(_ex);
                 }
             }
         }
@@ -764,11 +762,11 @@ public final class DBusConnection extends AbstractConnection {
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
         return new AutoCloseable() {
 
-			@Override
-			public void close() throws DBusException {
-				removeSigHandler(_type, _source, _handler);
-			}
-		};
+            @Override
+            public void close() throws DBusException {
+                removeSigHandler(_type, _source, _handler);
+            }
+        };
     }
 
     /**
@@ -802,11 +800,11 @@ public final class DBusConnection extends AbstractConnection {
         }
         addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
         return new AutoCloseable() {
-			@Override
-			public void close() throws DBusException {
-				removeSigHandler(_type, _source, _object, _handler);
-			}
-		};
+            @Override
+            public void close() throws DBusException {
+                removeSigHandler(_type, _source, _object, _handler);
+            }
+        };
     }
 
     /**
@@ -856,17 +854,17 @@ public final class DBusConnection extends AbstractConnection {
         if (addMatch.get()) {
             try {
                 dbus.AddMatch(_rule.toString());
-            } catch (DBusExecutionException dbee) {
-                logger.debug("Cannot add match rule: " + _rule.toString(), dbee);
-                throw new DBusException("Cannot add match rule.", dbee);
+            } catch (DBusExecutionException _ex) {
+                logger.debug("Cannot add match rule: " + _rule.toString(), _ex);
+                throw new DBusException("Cannot add match rule.", _ex);
             }
         }
         return new AutoCloseable() {
-			@Override
-			public void close() throws DBusException {
-				removeSigHandler(_rule, _handler);
-			}
-		};
+            @Override
+            public void close() throws DBusException {
+                removeSigHandler(_rule, _handler);
+            }
+        };
     }
 
     /**
@@ -883,34 +881,33 @@ public final class DBusConnection extends AbstractConnection {
         // if this is a shared connection, keep track of disconnect calls
         if (shared) {
 
-	        synchronized (CONNECTIONS) {
-	            DBusConnection connection = CONNECTIONS.get(getAddress().toString());
-	            if (connection != null) {
-	                if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselves
-	                    CONNECTIONS.remove(getAddress().toString());
+            synchronized (CONNECTIONS) {
+                DBusConnection connection = CONNECTIONS.get(getAddress().toString());
+                if (connection != null) {
+                    if (connection.getConcurrentConnections().get() <= 1) { // one left, this should be ourselves
+                        CONNECTIONS.remove(getAddress().toString());
 
-	                    super.disconnect();
+                        super.disconnect();
 
-	                } else {
-	                    logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() -1);
+                    } else {
+                        logger.debug("Still {} connections left, decreasing connection counter", connection.getConcurrentConnections().get() - 1);
                         Optional.ofNullable(getDisconnectCallback()).ifPresent(cb -> cb.requestedDisconnect(connection.getConcurrentConnections().get()));
-	                    connection.getConcurrentConnections().decrementAndGet();
-	                }
-	            }
-	        }
+                        connection.getConcurrentConnections().decrementAndGet();
+                    }
+                }
+            }
 
         } else { // this is a standalone non-shared session, disconnect directly using super's implementation
-        	IDisconnectAction beforeDisconnectAction = () -> {
+            IDisconnectAction beforeDisconnectAction = () -> {
 
-        	    // get all busnames from the list which matches the usual pattern
-        	    // this is required as the list also contains internal names like ":1.11"
-        	    // it is also required to put the results in a new list, otherwise we would get a
-        	    // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
-        	    synchronized (busnames) {
+                // get all busnames from the list which matches the usual pattern
+                // this is required as the list also contains internal names like ":1.11"
+                // it is also required to put the results in a new list, otherwise we would get a
+                // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
+                synchronized (busnames) {
                     List<String> lBusNames = busnames.stream()
-            	        .filter(busName -> busName != null && !(busName.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(busName).matches()))
-            	        .collect(Collectors.toList());
-
+                        .filter(busName -> busName != null && !(busName.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(busName).matches()))
+                        .collect(Collectors.toList());
 
                     lBusNames.forEach(busName -> {
                             try {
@@ -920,8 +917,8 @@ public final class DBusConnection extends AbstractConnection {
                                 logger.error("Error while releasing busName '" + busName + "'.", _ex);
                             }
 
-            	        });
-        	    }
+                        });
+                }
 
                 // remove all exported objects before disconnecting
                 Map<String, ExportedObject> exportedObjects = getExportedObjects();
@@ -932,7 +929,7 @@ public final class DBusConnection extends AbstractConnection {
                     }
                 }
 
-        	};
+            };
 
             super.disconnect(beforeDisconnectAction, null);
         }
@@ -942,9 +939,14 @@ public final class DBusConnection extends AbstractConnection {
      * Same as disconnect.
      */
     @Override
-	public void close() throws IOException {
-		disconnect();
-	}
+    public void close() throws IOException {
+        disconnect();
+    }
+
+    @Override
+    public String getMachineId() {
+        return machineId;
+    }
 
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
@@ -955,11 +957,11 @@ public final class DBusConnection extends AbstractConnection {
                 getGenericHandledSignals().remove(_rule);
                 try {
                     dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected exNc) {
-                    logger.debug("No connection.", exNc);
-                } catch (DBusExecutionException dbee) {
-                    logger.debug("", dbee);
-                    throw new DBusException(dbee);
+                } catch (NotConnected _ex) {
+                    logger.debug("No connection.", _ex);
+                } catch (DBusExecutionException _ex) {
+                    logger.debug("", _ex);
+                    throw new DBusException(_ex);
                 }
             }
         }
@@ -982,17 +984,17 @@ public final class DBusConnection extends AbstractConnection {
         if (addMatch.get()) {
             try {
                 dbus.AddMatch(_rule.toString());
-            } catch (DBusExecutionException dbee) {
-                logger.debug("", dbee);
-                throw new DBusException(dbee.getMessage());
+            } catch (DBusExecutionException _ex) {
+                logger.debug("", _ex);
+                throw new DBusException(_ex.getMessage());
             }
         }
         return new AutoCloseable() {
-			@Override
-			public void close() throws DBusException {
-				removeGenericSigHandler(_rule, _handler);
-			}
-		};
+            @Override
+            public void close() throws DBusException {
+                removeGenericSigHandler(_rule, _handler);
+            }
+        };
     }
 
     private class SigHandler implements DBusSigHandler<DBusSignal> {
@@ -1004,11 +1006,6 @@ public final class DBusConnection extends AbstractConnection {
                 }
             }
         }
-    }
-
-    @Override
-    public String getMachineId() {
-        return machineId;
     }
 
     public enum DBusBusType {

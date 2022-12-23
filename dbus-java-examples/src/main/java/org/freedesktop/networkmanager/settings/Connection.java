@@ -1,7 +1,5 @@
 package org.freedesktop.networkmanager.settings;
 
-import java.util.Map;
-
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -9,7 +7,10 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
+import java.util.Map;
+
 @DBusInterfaceName("org.freedesktop.NetworkManager.Settings.Connection")
+@SuppressWarnings("checkstyle:methodname")
 public interface Connection extends DBusInterface {
 
     void Update(Map<String, Map<String, Variant<?>>> _properties);
@@ -43,8 +44,8 @@ public interface Connection extends DBusInterface {
         }
     }
 
+    @SuppressWarnings({"checkstyle:constantname", "checkstyle:hideutilityclassconstructor"})
     class PropertyNames {
-
         public static final String Unsaved = "Unsaved";
         public static final String Flags = "Flags";
         public static final String Filename = "Filename";

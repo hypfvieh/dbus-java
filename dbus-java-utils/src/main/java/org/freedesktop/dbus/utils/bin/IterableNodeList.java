@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.utils.bin;
 
-import java.util.Iterator;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Iterator;
 
 class IterableNodeList implements Iterable<Node> {
     private final NodeList nl;

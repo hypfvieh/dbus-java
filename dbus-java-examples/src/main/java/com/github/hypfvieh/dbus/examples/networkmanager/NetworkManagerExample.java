@@ -1,10 +1,5 @@
 package com.github.hypfvieh.dbus.examples.networkmanager;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.freedesktop.NetworkManager;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -13,13 +8,20 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
  * Sample code which connects to the network manager and queries devices, permissions and IPs.
  *
  * @author hypfvieh
  *
  */
-public class NetworkManagerExample {
+public final class NetworkManagerExample {
+
+    private NetworkManagerExample() {}
 
     public static void main(String[] _args) throws DBusException {
 
@@ -57,7 +59,7 @@ public class NetworkManagerExample {
                 } else {
                     Properties ipv4Config = dbusConn.getRemoteObject("org.freedesktop.NetworkManager", ipv4Path.toString(), Properties.class);
 
-                    Map<String,Variant<?>> allIpV4 = ipv4Config.GetAll("org.freedesktop.NetworkManager.IP4Config");
+                    Map<String, Variant<?>> allIpV4 = ipv4Config.GetAll("org.freedesktop.NetworkManager.IP4Config");
                     for (String key : allIpV4.keySet()) {
                        System.out.println("key: " + key);
                     }
@@ -79,7 +81,6 @@ public class NetworkManagerExample {
                 System.out.println("");
             }
 
-
         } catch (IOException _ex) {
             _ex.printStackTrace();
         }
@@ -87,9 +88,9 @@ public class NetworkManagerExample {
 
     private static void printAddressInfo(List<Map<String, Variant<?>>> _addressArr, String _addrType) {
         for (int i = 0; i < _addressArr.size(); i++) {
-            System.out.println("  " + _addrType+ " Address " + (i+1));
+            System.out.println("  " + _addrType + " Address " + (i + 1));
             if (_addressArr.get(i).containsKey("address")) {
-                System.out.print("     "+ _addrType +": " + String.valueOf(_addressArr.get(i).get("address")).replaceAll("\\[|\\]", ""));
+                System.out.print("     " + _addrType + ": " + String.valueOf(_addressArr.get(i).get("address")).replaceAll("\\[|\\]", ""));
                 if (_addressArr.get(i).containsKey("prefix")) {
                     System.out.println(" / " + String.valueOf(_addressArr.get(i).get("prefix")).replaceAll("\\[|\\]", ""));
                 }

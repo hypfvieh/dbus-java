@@ -1,5 +1,10 @@
 package org.freedesktop.dbus.connections.config;
 
+import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
+import org.freedesktop.dbus.utils.Util;
+
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -9,11 +14,6 @@ import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
-import org.freedesktop.dbus.utils.Util;
 
 /**
  * Configuration used to setup a transport.
@@ -97,14 +97,14 @@ public final class TransportConfig {
     }
 
     public OptionalLong getSaslUid() {
-		return saslUid;
-	}
+        return saslUid;
+    }
 
-	public void setSaslUid(OptionalLong _saslUid) {
-		this.saslUid = _saslUid;
-	}
+    public void setSaslUid(OptionalLong _saslUid) {
+        this.saslUid = _saslUid;
+    }
 
-	public SaslAuthMode getAuthMode() {
+    public SaslAuthMode getAuthMode() {
         return authMode;
     }
 
@@ -166,6 +166,5 @@ public final class TransportConfig {
             busAddress.removeParameter("listen");
         }
     }
-
 
 }

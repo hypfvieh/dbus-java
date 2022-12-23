@@ -1,7 +1,5 @@
 package org.freedesktop.networkmanager;
 
-import java.util.Map;
-
 import org.freedesktop.Pair;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -11,8 +9,19 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.UInt64;
 import org.freedesktop.dbus.types.Variant;
 
+import java.util.Map;
+
 @DBusInterfaceName("org.freedesktop.NetworkManager.Device")
+@SuppressWarnings({"checkstyle:methodname", "checkstyle:hideutilityclassconstructor", "checkstyle:visibilitymodifier"})
 public interface Device extends DBusInterface {
+    void Reapply(Map<CharSequence, Map<CharSequence, Variant<?>>> _connection, UInt64 _versionId, UInt32 _flags);
+
+    Pair<Map<CharSequence, Map<CharSequence, Variant<?>>>, UInt64> GetAppliedConnection(UInt32 _flags);
+
+    void Disconnect();
+
+    void Delete();
+
     class StateChanged extends DBusSignal {
         public final UInt32 newState;
         public final UInt32 oldState;
@@ -25,13 +34,5 @@ public interface Device extends DBusInterface {
             this.reason = _reason;
         }
     }
-
-    void Reapply(Map<CharSequence, Map<CharSequence, Variant<?>>> _connection, UInt64 _versionId, UInt32 _flags);
-
-    Pair<Map<CharSequence, Map<CharSequence, Variant<?>>>, UInt64> GetAppliedConnection(UInt32 _flags);
-
-    void Disconnect();
-
-    void Delete();
 
 }

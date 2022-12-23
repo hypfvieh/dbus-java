@@ -10,18 +10,6 @@ class StructStruct {
     public String pack;
     // CHECKSTYLE:ON
 
-    public static Map<StructStruct, Type[]> fillPackages(Map<StructStruct, Type[]> _structs, String _pack) {
-        Map<StructStruct, Type[]> newmap = new HashMap<>();
-        for (StructStruct ss : _structs.keySet()) {
-            Type[] type = _structs.get(ss);
-            if (null == ss.pack) {
-                ss.pack = _pack;
-            }
-            newmap.put(ss, type);
-        }
-        return newmap;
-    }
-
     StructStruct(String _name) {
         this.name = _name;
     }
@@ -49,5 +37,19 @@ class StructStruct {
     @Override
     public String toString() {
         return "<" + name + ", " + pack + ">";
+    }
+
+    // CHECKSTYLE:ON
+
+    public static Map<StructStruct, Type[]> fillPackages(Map<StructStruct, Type[]> _structs, String _pack) {
+        Map<StructStruct, Type[]> newmap = new HashMap<>();
+        for (StructStruct ss : _structs.keySet()) {
+            Type[] type = _structs.get(ss);
+            if (null == ss.pack) {
+                ss.pack = _pack;
+            }
+            newmap.put(ss, type);
+        }
+        return newmap;
     }
 }

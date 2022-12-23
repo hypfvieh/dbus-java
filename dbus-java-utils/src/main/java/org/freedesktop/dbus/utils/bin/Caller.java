@@ -1,17 +1,17 @@
 package org.freedesktop.dbus.utils.bin;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public final class Caller {
 
@@ -46,7 +46,7 @@ public final class Caller {
                         try {
                             Constructor<?> c = ((Class<?>) ts[i - 5]).getConstructor(String.class);
                             os[i - 5] = c.newInstance(_args[i]);
-                        } catch (Exception e) {
+                        } catch (Exception _ex) {
                             os[i - 5] = _args[i];
                         }
                     } else {
@@ -66,8 +66,8 @@ public final class Caller {
                 Object[] os = m.getParameters();
                 System.out.println(Arrays.deepToString(os));
             }
-        } catch (Exception e) {
-            System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+        } catch (Exception _ex) {
+            System.out.println(_ex.getClass().getSimpleName() + ": " + _ex.getMessage());
             System.exit(1);
         }
     }

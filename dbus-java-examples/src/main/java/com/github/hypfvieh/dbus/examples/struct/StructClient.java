@@ -10,7 +10,10 @@ import org.freedesktop.dbus.types.Variant;
  *
  * @author hypfvieh
  */
-public class StructClient {
+public final class StructClient {
+
+    private StructClient() {}
+
     public static void main(String[] _args) throws Exception {
         try (DBusConnection sessionConnection = DBusConnectionBuilder.forSessionBus().build()) {
 
@@ -29,7 +32,6 @@ public class StructClient {
 
             System.err.println("Testing struct directly");
             remoteServer.setStructDirectly(directStruct);
-
 
             System.out.println("closing dbus connection");
         }

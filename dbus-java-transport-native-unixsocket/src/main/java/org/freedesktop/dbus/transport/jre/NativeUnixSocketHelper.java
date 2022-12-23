@@ -1,13 +1,15 @@
 package org.freedesktop.dbus.transport.jre;
 
+import jdk.net.ExtendedSocketOptions;
+import jdk.net.UnixDomainPrincipal;
+
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.nio.file.attribute.UserPrincipal;
 
-import jdk.net.ExtendedSocketOptions;
-import jdk.net.UnixDomainPrincipal;
+public final class NativeUnixSocketHelper {
 
-public class NativeUnixSocketHelper {
+    private NativeUnixSocketHelper() {}
 
     /**
      * Get the UID of peer credentials.

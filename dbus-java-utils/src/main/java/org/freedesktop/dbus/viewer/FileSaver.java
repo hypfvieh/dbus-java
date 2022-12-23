@@ -42,7 +42,6 @@ final class FileSaver implements Runnable {
         this.textFiles = _files;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void run() {
         saveFiles();
@@ -69,7 +68,8 @@ final class FileSaver implements Runnable {
                                 OVERWRITE, CANCEL
                         };
                     }
-                    int option = JOptionPane.showOptionDialog(parentComponent, "File exists: " + fileName, "Save", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, selectionValues, null);
+                    int option = JOptionPane.showOptionDialog(parentComponent,
+                            "File exists: " + fileName, "Save", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, selectionValues, null);
                     if (option == -1) {
                         break;
                     }
@@ -84,12 +84,13 @@ final class FileSaver implements Runnable {
                     try {
                         String contents = textFile.getContents();
                         writeFile(fileToSave, contents);
-                    } catch (final IOException ex) {
+                    } catch (IOException _ex) {
                         /* Can't access parent directory for saving */
-                        final String errorMessage = "Could not save " + fileName + ": " + ex.getLocalizedMessage();
+                        final String errorMessage = "Could not save " + fileName + ": " + _ex.getLocalizedMessage();
                         if (iterator.hasNext()) {
 
-                            int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                            int confirm = JOptionPane.showConfirmDialog(parentComponent,
+                                    errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
                             if (confirm != JOptionPane.OK_OPTION) {
                                 break;
                             }
@@ -103,7 +104,8 @@ final class FileSaver implements Runnable {
                 final String errorMessage = "Could not access parent directory for " + fileName;
                 if (iterator.hasNext()) {
 
-                    int confirm = JOptionPane.showConfirmDialog(parentComponent, errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                    int confirm = JOptionPane.showConfirmDialog(parentComponent,
+                            errorMessage + ".\n" + "Try saving other files?", "Save Failed", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
                     if (confirm != JOptionPane.OK_OPTION) {
                         break;
                     }

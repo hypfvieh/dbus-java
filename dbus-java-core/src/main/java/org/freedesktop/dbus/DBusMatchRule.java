@@ -1,12 +1,5 @@
 package org.freedesktop.dbus;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -17,6 +10,13 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.Util;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Defined a rule to match a message.<br>
@@ -48,10 +48,6 @@ public class DBusMatchRule {
     private final String                                          member;
     private final String                                          object;
     private final String                                          source;
-
-    public static Class<? extends DBusSignal> getCachedSignalType(String _type) {
-        return SIGNALTYPEMAP.get(_type);
-    }
 
     public DBusMatchRule(String _type, String _iface, String _member) {
         this(_type, _iface, _member, null);
@@ -134,6 +130,10 @@ public class DBusMatchRule {
 
     public DBusMatchRule(Class<? extends Object> _c) throws DBusException {
         this(_c, null, null);
+    }
+
+    public static Class<? extends DBusSignal> getCachedSignalType(String _type) {
+        return SIGNALTYPEMAP.get(_type);
     }
 
     void assertDBusInterface(String _str) throws DBusException {

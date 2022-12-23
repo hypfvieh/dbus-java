@@ -1,13 +1,13 @@
 package org.freedesktop.dbus.spi.message;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public class OutputStreamMessageWriter implements IMessageWriter {
 
@@ -31,7 +31,7 @@ public class OutputStreamMessageWriter implements IMessageWriter {
         }
 
         for (byte[] buf : _msg.getWireData()) {
-            if(logger.isTraceEnabled()) {
+            if (logger.isTraceEnabled()) {
                 logger.trace("{}", null == buf ? "(null)" : Hexdump.format(buf));
             }
             if (null == buf) {

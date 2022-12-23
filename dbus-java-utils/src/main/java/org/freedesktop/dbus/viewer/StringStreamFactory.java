@@ -10,13 +10,13 @@
 */
 package org.freedesktop.dbus.viewer;
 
+import org.freedesktop.dbus.utils.bin.PrintStreamFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.freedesktop.dbus.utils.bin.PrintStreamFactory;
 
 /**
  * A factory using a byte array input stream
@@ -30,13 +30,11 @@ final class StringStreamFactory extends PrintStreamFactory {
     Map<String, ByteArrayOutputStream> streamMap = new HashMap<>();
     // CHECKSTYLE:ON
 
-    /** {@inheritDoc} */
     @Override
     public void init(String _file, String _path) {
 
     }
 
-    /** {@inheritDoc} */
     @Override
     public PrintStream createPrintStream(final String _file) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

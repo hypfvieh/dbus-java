@@ -4,6 +4,7 @@ import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.annotations.Position;
 
 /** Just a typed container class */
+@SuppressWarnings({"checkstyle:visibilitymodifier"})
 public final class Pair<A, B> extends Tuple {
     @Position(0)
     public final A a;

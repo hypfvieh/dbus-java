@@ -1,15 +1,15 @@
 package org.freedesktop.dbus.connections;
 
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Defines an address to connect to DBus.
@@ -31,7 +31,7 @@ public class BusAddress {
      */
     @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
     public BusAddress(String _address) throws DBusException {
-        if (null == _address ||_address.isEmpty()) {
+        if (_address == null || _address.isEmpty()) {
             throw new DBusException("Bus address is blank");
         }
 
@@ -81,7 +81,7 @@ public class BusAddress {
      * @since 4.2.0 - 2022-07-18
      */
     public static BusAddress of(String _address) {
-        if (null == _address ||_address.isEmpty()) {
+        if (_address == null || _address.isEmpty()) {
             throw new InvalidBusAddressException("Bus address is blank");
         }
 

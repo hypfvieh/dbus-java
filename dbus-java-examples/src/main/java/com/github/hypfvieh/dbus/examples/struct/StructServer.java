@@ -26,7 +26,7 @@ public class StructServer implements IStructServer {
         System.out.println("server started");
 
         int i = 0;
-        while(!structServer.method1Done && !structServer.method2Done) {
+        while (!structServer.method1Done && !structServer.method2Done) {
             Thread.sleep(1000L);
             i++;
             if (i > 100) {
@@ -70,6 +70,5 @@ public class StructServer implements IStructServer {
 //            _ex.printStackTrace();
 //        }
     }
-
 
 }

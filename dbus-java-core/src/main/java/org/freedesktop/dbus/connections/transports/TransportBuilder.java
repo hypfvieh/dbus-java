@@ -1,16 +1,5 @@
 package org.freedesktop.dbus.connections.transports;
 
-import java.io.IOException;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
@@ -23,18 +12,36 @@ import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Builder to create transports of different types.
  *
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-17
  */
-public class TransportBuilder {
+public final class TransportBuilder {
 
     private static final Logger                          LOGGER      = LoggerFactory.getLogger(TransportBuilder.class);
     private static final Map<String, ITransportProvider> PROVIDERS   = getTransportProvider();
 
     private TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
+
+    private TransportBuilder(TransportConfig _config) throws DBusException {
+        transportConfigBuilder = new TransportConfigBuilder<>(() -> this);
+        if (_config != null) {
+            transportConfigBuilder.withConfig(_config);
+        }
+    }
 
     static Map<String, ITransportProvider> getTransportProvider() {
         Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
@@ -66,13 +73,6 @@ public class TransportBuilder {
             LOGGER.error("Could not initialize service provider.", _ex);
         }
         return providers;
-    }
-
-    private TransportBuilder(TransportConfig _config) throws DBusException {
-        transportConfigBuilder = new TransportConfigBuilder<>(() -> this);
-        if (_config != null) {
-            transportConfigBuilder.withConfig(_config);
-        }
     }
 
     /**

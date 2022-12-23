@@ -127,9 +127,9 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        String sb = "{" 
+        String sb = "{"
                 + Arrays.stream(entries).map(e -> e[0] + " => " + e[1])
-                    .collect(Collectors.joining(",")) 
+                    .collect(Collectors.joining(","))
                 + "}";
 
         return sb;
@@ -137,11 +137,11 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     class Entry implements Map.Entry<K, V>, Comparable<Entry> {
         private final int entry;
-    
+
         Entry(int _i) {
             this.entry = _i;
         }
-    
+
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object _o) {
@@ -153,29 +153,29 @@ public class DBusMap<K, V> implements Map<K, V> {
             }
             return this.entry == ((Entry) _o).entry;
         }
-    
+
         @Override
         @SuppressWarnings("unchecked")
         public K getKey() {
             return (K) entries[entry][0];
         }
-    
+
         @Override
         @SuppressWarnings("unchecked")
         public V getValue() {
             return (V) entries[entry][1];
         }
-    
+
         @Override
         public int hashCode() {
             return entries[entry][0].hashCode();
         }
-    
+
         @Override
         public V setValue(V _value) {
             throw new UnsupportedOperationException();
         }
-    
+
         @Override
         public int compareTo(Entry _e) {
             return entry - _e.entry;

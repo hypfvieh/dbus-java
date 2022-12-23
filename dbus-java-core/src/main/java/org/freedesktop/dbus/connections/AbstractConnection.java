@@ -1,32 +1,5 @@
 package org.freedesktop.dbus.connections;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.nio.ByteOrder;
-import java.nio.channels.ClosedByInterruptException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.DBusCallInfo;
 import org.freedesktop.dbus.DBusMatchRule;
@@ -59,28 +32,37 @@ import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.EOFException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.nio.ByteOrder;
+import java.nio.channels.ClosedByInterruptException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
 /**
  * Handles a connection to DBus.
  */
 public abstract class AbstractConnection implements Closeable {
-
-    private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
-    /**
-     * Connect timeout, used for TCP only.
-     *
-     */
-    @Deprecated
-    public static final int TCP_CONNECT_TIMEOUT     = 100000;
-
-    /**
-     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
-     * @deprecated is no longer in use
-     */
-    @Deprecated(since = "4.2.0 - 2022-08-04")
-    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
-
-    /** Lame method to setup endianness used on DBus messages */
-    private static byte              endianness             = getSystemEndianness();
 
     public static final boolean      FLOAT_SUPPORT          = null != System.getenv("DBUS_JAVA_FLOATS");
     public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
@@ -90,6 +72,25 @@ public abstract class AbstractConnection implements Closeable {
 
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
+
+    /**
+     * Connect timeout, used for TCP only.
+     * @deprecated no longer used
+     */
+    @Deprecated(forRemoval = true, since = "4.3.0 - 2022-12-23")
+    public static final int TCP_CONNECT_TIMEOUT     = 100000;
+
+    /**
+     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
+     * @deprecated is no longer in use
+     */
+    @Deprecated(since = "4.2.0 - 2022-08-04", forRemoval = true)
+    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
+
+    private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
+
+    /** Lame method to setup endianness used on DBus messages */
+    private static byte              endianness             = getSystemEndianness();
 
     private final Logger                                                          logger;
 
@@ -248,9 +249,9 @@ public abstract class AbstractConnection implements Closeable {
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
         Optional<Entry<String, ExportedObject>> foundInterface =
-        		getExportedObjects().entrySet().stream()
-        			.filter(e -> _interface.equals(e.getValue().getObject().get()))
-        			.findFirst();
+                getExportedObjects().entrySet().stream()
+                    .filter(e -> _interface.equals(e.getValue().getObject().get()))
+                    .findFirst();
         if (foundInterface.isPresent()) {
             return foundInterface.get().getKey();
         } else {
@@ -393,13 +394,13 @@ public abstract class AbstractConnection implements Closeable {
         }
 
         Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				sendMessageInternally(_message);
-			}
-    	};
+            @Override
+            public void run() {
+                sendMessageInternally(_message);
+            }
+        };
 
-    	senderService.execute(runnable);
+        senderService.execute(runnable);
     }
 
     /**
@@ -598,8 +599,8 @@ public abstract class AbstractConnection implements Closeable {
                 transport.close();
                 transport = null;
             }
-        } catch (IOException exIo) {
-            logger.debug("Exception while disconnecting transport.", exIo);
+        } catch (IOException _ex) {
+            logger.debug("Exception while disconnecting transport.", _ex);
         }
 
         // stop all the workers
@@ -639,7 +640,7 @@ public abstract class AbstractConnection implements Closeable {
     public <A> void callWithCallback(DBusInterface _object, String _m, CallbackHandler<A> _callback,
             Object... _parameters) {
         logger.trace("callWithCallback({}, {}, {})", _object, _m, _callback);
-        Class<?>[] types = createTypesArray( _parameters );
+        Class<?>[] types = createTypesArray(_parameters);
         RemoteObject ro = getImportedObjects().get(_object);
 
         try {
@@ -651,12 +652,12 @@ public abstract class AbstractConnection implements Closeable {
             }
             RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_CALLBACK,
                     _callback, _parameters);
-        } catch (DBusExecutionException exEe) {
-            logger.debug("", exEe);
-            throw exEe;
-        } catch (Exception e) {
-            logger.debug("", e);
-            throw new DBusExecutionException(e.getMessage());
+        } catch (DBusExecutionException _ex) {
+            logger.debug("", _ex);
+            throw _ex;
+        } catch (Exception _ex) {
+            logger.debug("", _ex);
+            throw new DBusExecutionException(_ex.getMessage());
         }
     }
 
@@ -672,7 +673,7 @@ public abstract class AbstractConnection implements Closeable {
      * @return A handle to the call.
      */
     public DBusAsyncReply<?> callMethodAsync(DBusInterface _object, String _method, Object... _parameters) {
-        Class<?>[] types = createTypesArray( _parameters );
+        Class<?>[] types = createTypesArray(_parameters);
         RemoteObject ro = getImportedObjects().get(_object);
 
         try {
@@ -684,12 +685,12 @@ public abstract class AbstractConnection implements Closeable {
             }
             return (DBusAsyncReply<?>) RemoteInvocationHandler.executeRemoteMethod(ro, me, this,
                     RemoteInvocationHandler.CALL_TYPE_ASYNC, null, _parameters);
-        } catch (DBusExecutionException exDee) {
-            logger.debug("", exDee);
-            throw exDee;
-        } catch (Exception e) {
-            logger.debug("", e);
-            throw new DBusExecutionException(e.getMessage());
+        } catch (DBusExecutionException _ex) {
+            logger.debug("", _ex);
+            throw _ex;
+        } catch (Exception _ex) {
+            logger.debug("", _ex);
+            throw new DBusExecutionException(_ex.getMessage());
         }
     }
 
@@ -716,8 +717,8 @@ public abstract class AbstractConnection implements Closeable {
     protected void handleException(Message _methodOrSignal, DBusExecutionException _exception) {
         try {
             sendMessage(new Error(_methodOrSignal, _exception));
-        } catch (DBusException ex) {
-            logger.warn("Exception caught while processing previous error.", ex);
+        } catch (DBusException _ex) {
+            logger.warn("Exception caught while processing previous error.", _ex);
         }
     }
 
@@ -794,7 +795,7 @@ public abstract class AbstractConnection implements Closeable {
             o = exportObject.getObject().get();
         }
 
-        if(ExportedObject.isExcluded(meth)) {
+        if (ExportedObject.isExcluded(meth)) {
             sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
                     "The method `%s.%s' is not exported.", _methodCall.getInterface(), _methodCall.getName()))));
             return;
@@ -817,10 +818,11 @@ public abstract class AbstractConnection implements Closeable {
                 try {
                     Type[] ts = me.getGenericParameterTypes();
                     _methodCall.setArgs(Marshalling.deSerializeParameters(_methodCall.getParameters(), ts, conn));
-                    logger.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), _methodCall.getParameters()), LoggingHelper.arraysDeepString(logger.isTraceEnabled(),ts));
-                } catch (Exception e) {
-                    logger.debug("", e);
-                    handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + e));
+                    logger.trace("Deserialised {} to types {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), _methodCall.getParameters()),
+                            LoggingHelper.arraysDeepString(logger.isTraceEnabled(), ts));
+                } catch (Exception _ex) {
+                    logger.debug("", _ex);
+                    handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
                     return;
                 }
 
@@ -837,9 +839,9 @@ public abstract class AbstractConnection implements Closeable {
                         });
 
                         result = me.invoke(ob, _methodCall.getParameters());
-                    } catch (InvocationTargetException ite) {
-                        logger.debug(ite.getMessage(), ite);
-                        throw ite.getCause();
+                    } catch (InvocationTargetException _ex) {
+                        logger.debug(_ex.getMessage(), _ex);
+                        throw _ex.getCause();
                     }
                     INFOMAP.remove(Thread.currentThread());
                     if (!noreply) {
@@ -861,14 +863,14 @@ public abstract class AbstractConnection implements Closeable {
                         }
                         conn.sendMessage(reply);
                     }
-                } catch (DBusExecutionException exDee) {
-                    logger.debug("", exDee);
-                    handleException(_methodCall, exDee);
-                } catch (Throwable e) {
-                    logger.debug("", e);
+                } catch (DBusExecutionException _ex) {
+                    logger.debug("", _ex);
+                    handleException(_methodCall, _ex);
+                } catch (Throwable _ex) {
+                    logger.debug("", _ex);
                     handleException(_methodCall,
                             new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                                    _methodCall.getInterface(), _methodCall.getName(), e.getMessage())));
+                                    _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
                 }
             }
         };
@@ -978,8 +980,8 @@ public abstract class AbstractConnection implements Closeable {
                             fcbh.handleError(_err.getException());
                             INFOMAP.remove(Thread.currentThread());
 
-                        } catch (Exception e) {
-                            logger.debug("Exception while running error callback.", e);
+                        } catch (Exception _ex) {
+                            logger.debug("Exception while running error callback.", _ex);
                         }
                     }
                 };
@@ -1019,8 +1021,8 @@ public abstract class AbstractConnection implements Closeable {
                 final CallbackHandler<Object> fcbh = cbh;
                 final DBusAsyncReply<?> fasr = asr;
                 if (fasr == null) {
-                	logger.debug("Cannot add runnable for method, given method callback was null");
-                	return;
+                    logger.debug("Cannot add runnable for method, given method callback was null");
+                    return;
                 }
                 logger.trace("Adding Runnable for method {} with callback handler {}", fcbh, fasr.getMethod());
                 Runnable r = new Runnable() {
@@ -1036,8 +1038,8 @@ public abstract class AbstractConnection implements Closeable {
                             fcbh.handle(convertRV);
                             INFOMAP.remove(Thread.currentThread());
 
-                        } catch (Exception e) {
-                            logger.debug("Exception while running callback.", e);
+                        } catch (Exception _ex) {
+                            logger.debug("Exception while running callback.", _ex);
                         }
                     }
                 };
@@ -1217,7 +1219,7 @@ public abstract class AbstractConnection implements Closeable {
      * @return Message.Endian.BIG or Message.Endian.LITTLE
      */
     public static byte getEndianness() {
-        return endianness; // TODO: would be nice to have this non-static!
+        return endianness; // TODO would be nice to have this non-static!
     }
 
     /**
@@ -1226,8 +1228,8 @@ public abstract class AbstractConnection implements Closeable {
      * @return LITTLE or BIG
      */
     public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
-                Message.Endian.BIG
+       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
+                ? Message.Endian.BIG
                 : Message.Endian.LITTLE;
     }
 

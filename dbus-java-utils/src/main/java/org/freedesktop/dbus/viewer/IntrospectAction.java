@@ -10,6 +10,8 @@
 */
 package org.freedesktop.dbus.viewer;
 
+import org.freedesktop.dbus.interfaces.Introspectable;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -27,8 +29,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.freedesktop.dbus.interfaces.Introspectable;
 
 @SuppressWarnings("serial")
 final class IntrospectAction extends AbstractAction implements ListSelectionListener {
@@ -102,12 +102,12 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                             }
                         });
 
-                    } catch (final Exception e) {
-                        e.printStackTrace();
+                    } catch (Exception _ex) {
+                        _ex.printStackTrace();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                JOptionPane.showMessageDialog(table, e.getMessage(), "Introspection Failed", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(table, _ex.getMessage(), "Introspection Failed", JOptionPane.ERROR_MESSAGE);
                             }
                         });
                     }

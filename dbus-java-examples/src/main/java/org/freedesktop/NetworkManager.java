@@ -1,8 +1,5 @@
 package org.freedesktop;
 
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -12,42 +9,13 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
+import java.util.List;
+import java.util.Map;
+
 @DBusInterfaceName("org.freedesktop.NetworkManager")
+@SuppressWarnings({"checkstyle:methodname", "checkstyle:hideutilityclassconstructor", "checkstyle:visibilitymodifier"})
 public interface NetworkManager extends DBusInterface, Properties {
-    class CheckPermissions extends DBusSignal {
-        public CheckPermissions(String _path) throws DBusException {
-            super(_path);
-        }
-    }
-
-    class StateChanged extends DBusSignal {
-        public final UInt32 state;
-
-        public StateChanged(String _path, UInt32 _state) throws DBusException {
-            super(_path, _state);
-            this.state = _state;
-        }
-    }
-
-    class DeviceAdded extends DBusSignal {
-        public final DBusInterface devicePath;
-
-        public DeviceAdded(String _path, DBusInterface _devicePath) throws DBusException {
-            super(_path, _devicePath);
-            this.devicePath = _devicePath;
-        }
-    }
-
-    class DeviceRemoved extends DBusSignal {
-        public final DBusInterface devicePath;
-
-        public DeviceRemoved(String _path, DBusInterface _devicePath) throws DBusException {
-            super(_path, _devicePath);
-            this.devicePath = _devicePath;
-        }
-    }
-
-   void Reload(UInt32 _flags);
+    void Reload(UInt32 _flags);
 
    List<DBusPath> GetDevices();
 
@@ -85,4 +53,37 @@ public interface NetworkManager extends DBusInterface, Properties {
    Map<CharSequence, UInt32> CheckpointRollback(DBusInterface _checkpoint);
 
    void CheckpointAdjustRollbackTimeout(DBusInterface _checkpoint, UInt32 _addTimeout);
+
+class CheckPermissions extends DBusSignal {
+    public CheckPermissions(String _path) throws DBusException {
+        super(_path);
+    }
+}
+
+class StateChanged extends DBusSignal {
+    public final UInt32 state;
+
+    public StateChanged(String _path, UInt32 _state) throws DBusException {
+        super(_path, _state);
+        this.state = _state;
+    }
+}
+
+class DeviceAdded extends DBusSignal {
+    public final DBusInterface devicePath;
+
+    public DeviceAdded(String _path, DBusInterface _devicePath) throws DBusException {
+        super(_path, _devicePath);
+        this.devicePath = _devicePath;
+    }
+}
+
+class DeviceRemoved extends DBusSignal {
+    public final DBusInterface devicePath;
+
+    public DeviceRemoved(String _path, DBusInterface _devicePath) throws DBusException {
+        super(_path, _devicePath);
+        this.devicePath = _devicePath;
+    }
+}
 }

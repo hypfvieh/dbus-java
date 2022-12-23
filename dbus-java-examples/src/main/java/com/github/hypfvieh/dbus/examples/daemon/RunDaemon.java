@@ -1,9 +1,5 @@
 package com.github.hypfvieh.dbus.examples.daemon;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Objects;
-
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -12,6 +8,10 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Sample on how to start the {@link EmbeddedDBusDaemon} with transport protocol selection.
@@ -81,14 +81,14 @@ public class RunDaemon {
                     // do something with the connection ;)
                 }
                 break;
-            } catch (DBusException dbe) {
+            } catch (DBusException _ex) {
                 if (i > 4) {
-                    throw dbe;
+                    throw _ex;
                 }
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new IOException("Interrupted. ", e);
+                } catch (InterruptedException _exIe) {
+                    throw new IOException("Interrupted. ", _exIe);
                 }
             }
         }

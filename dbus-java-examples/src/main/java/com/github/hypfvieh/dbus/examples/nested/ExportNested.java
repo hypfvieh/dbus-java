@@ -1,14 +1,13 @@
 package com.github.hypfvieh.dbus.examples.nested;
 
-import java.util.List;
-
-import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-
 import com.github.hypfvieh.dbus.examples.nested.data.MyInterface;
 import com.github.hypfvieh.dbus.examples.nested.data.MyInterfacePart;
 import com.github.hypfvieh.dbus.examples.nested.data.MyObject;
 import com.github.hypfvieh.dbus.examples.nested.data.MyObjectPart;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+
+import java.util.List;
 
 /**
  * Sample which demonstrates on how to export nested objects.
@@ -22,46 +21,49 @@ import com.github.hypfvieh.dbus.examples.nested.data.MyObjectPart;
  *
  * @since 4.1.0 - 2022-03-21
  */
-public class ExportNested {
-        public static void main(String[] _args) throws Exception {
-            try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
-                // create first object
-                MyObjectPart part1 = new MyObjectPart();
-                part1.setVal1("ABC");
-                part1.setVal2("123");
+public final class ExportNested {
 
-                // create second object
-                MyObjectPart part2 = new MyObjectPart();
-                part2.setVal1("DEF");
-                part2.setVal2("456");
+    private ExportNested() {}
 
-                // create parent which contains both created objects
-                MyObject myIface = new MyObject();
-                myIface.getParts().addAll(List.of(part1, part2));
+    public static void main(String[] _args) throws Exception {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
+            // create first object
+            MyObjectPart part1 = new MyObjectPart();
+            part1.setVal1("ABC");
+            part1.setVal2("123");
 
-                conn.requestBusName("com.acme");
-                // export everything to bus
-                conn.exportObject(part1);
-                conn.exportObject(part2);
-                conn.exportObject(myIface);
+            // create second object
+            MyObjectPart part2 = new MyObjectPart();
+            part2.setVal1("DEF");
+            part2.setVal2("456");
 
-                try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().build()) {
-                    // get the exported parent
-                    MyInterface myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
+            // create parent which contains both created objects
+            MyObject myIface = new MyObject();
+            myIface.getParts().addAll(List.of(part1, part2));
 
-                    // Print hello from 'parent' object
-                    System.out.println("> " + myObject.sayHello());
+            conn.requestBusName("com.acme");
+            // export everything to bus
+            conn.exportObject(part1);
+            conn.exportObject(part2);
+            conn.exportObject(myIface);
 
-                    // print all names used in child objects
-                    for(String part : myObject.getPartNames()) {
-                        System.out.println("  " + part);
-                    }
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().build()) {
+                // get the exported parent
+                MyInterface myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
 
-                    // print the child objects
-                    for(MyInterfacePart part : myObject.getParts()) {
-                        System.out.println("  " + part.getObjectPath() + " = " +  part.getVal1() + " / " + part.getVal2());
-                    }
+                // Print hello from 'parent' object
+                System.out.println("> " + myObject.sayHello());
+
+                // print all names used in child objects
+                for (String part : myObject.getPartNames()) {
+                    System.out.println("  " + part);
+                }
+
+                // print the child objects
+                for (MyInterfacePart part : myObject.getParts()) {
+                    System.out.println("  " + part.getObjectPath() + " = " +  part.getVal1() + " / " + part.getVal2());
                 }
             }
         }
+    }
 }

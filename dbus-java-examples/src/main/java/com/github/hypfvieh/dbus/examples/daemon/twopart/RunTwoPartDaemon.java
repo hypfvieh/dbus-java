@@ -1,10 +1,7 @@
 package com.github.hypfvieh.dbus.examples.daemon.twopart;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Objects;
-
+import com.github.hypfvieh.util.FileIoUtil;
+import com.github.hypfvieh.util.SystemUtil;
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -15,8 +12,10 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.hypfvieh.util.FileIoUtil;
-import com.github.hypfvieh.util.SystemUtil;
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Sample on Daemon.
@@ -26,7 +25,7 @@ import com.github.hypfvieh.util.SystemUtil;
 public class RunTwoPartDaemon {
     static final String EXPORT_NAME = RunTwoPartDaemon.class.getPackageName() + ".SomeTest";
 
-	/** Max wait time to wait for daemon to start. */
+    /** Max wait time to wait for daemon to start. */
     private static final long MAX_WAIT = Duration.ofSeconds(30).toMillis();
 
     private final Logger log;
@@ -87,9 +86,9 @@ public class RunTwoPartDaemon {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);
         for (int i = 0; i < 6; i++) {
-        	DBusConnection conn;
+            DBusConnection conn;
             try  {
-            	conn = DBusConnectionBuilder.forAddress(busAddress).build();
+                conn = DBusConnectionBuilder.forAddress(busAddress).build();
                 log.info("Connected to embedded DBus {}", busAddress);
 
                 conn.requestBusName(EXPORT_NAME);
@@ -100,17 +99,17 @@ public class RunTwoPartDaemon {
                 while (true) {
                     try {
                         Thread.sleep(500L);
-                    } catch (InterruptedException ex) {
+                    } catch (InterruptedException _ex) {
                     }
                 }
-            } catch (DBusException dbe) {
+            } catch (DBusException _ex) {
                 if (i > 4) {
-                    throw dbe;
+                    throw _ex;
                 }
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new IOException("Interrupted. ", e);
+                } catch (InterruptedException _exIe) {
+                    throw new IOException("Interrupted. ", _exIe);
                 }
             }
         }
@@ -139,19 +138,19 @@ public class RunTwoPartDaemon {
 
     public static class SomeExport implements IExport {
 
-		@Override
-		public String sayHello() {
-			return "Hello";
-		}
+        @Override
+        public String sayHello() {
+            return "Hello";
+        }
 
-		@Override
-		public String getObjectPath() {
-			return null;
-		}
+        @Override
+        public String getObjectPath() {
+            return null;
+        }
 
     }
 
     public interface IExport extends DBusInterface {
-    	String sayHello();
+        String sayHello();
     }
 }

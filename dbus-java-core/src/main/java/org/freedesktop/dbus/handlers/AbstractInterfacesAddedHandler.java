@@ -5,7 +5,6 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.ObjectManager;
 import org.freedesktop.dbus.interfaces.ObjectManager.InterfacesAdded;
 
-
 /**
 * Subclass this abstract class for creating a callback for InterfaceAdded signal provided by DBus ObjectManager.
 *
@@ -19,5 +18,4 @@ public abstract class AbstractInterfacesAddedHandler extends AbstractSignalHandl
         return ObjectManager.InterfacesAdded.class;
     }
 
-    
 }

@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.connections.transports;
 
+import org.freedesktop.dbus.connections.BusAddress;
+
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-
-import org.freedesktop.dbus.connections.BusAddress;
 
 public abstract class AbstractUnixTransport extends AbstractTransport {
 

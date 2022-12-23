@@ -18,16 +18,23 @@ import javax.swing.JTabbedPane;
 @SuppressWarnings("serial")
 class SaveAllAction extends TabbedSaveAction {
 
+    protected SaveAllAction(JTabbedPane _tabbedPane) {
+        super(_tabbedPane, "Save All...");
+    }
+
+    @Override
+    public Iterator<TextFile> iterator() {
+        return new TabIterator();
+    }
+
     private class TabIterator implements Iterator<TextFile> {
         private int i = 0;
 
-        /** {@inheritDoc} */
         @Override
         public boolean hasNext() {
             return i < tabbedPane.getTabCount();
         }
 
-        /** {@inheritDoc} */
         @Override
         public TextFile next() {
             if (hasNext()) {
@@ -38,22 +45,11 @@ class SaveAllAction extends TabbedSaveAction {
             throw new NoSuchElementException();
         }
 
-        /** {@inheritDoc} */
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
 
-    }
-
-    protected SaveAllAction(JTabbedPane _tabbedPane) {
-        super(_tabbedPane, "Save All...");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Iterator<TextFile> iterator() {
-        return new TabIterator();
     }
 
 }

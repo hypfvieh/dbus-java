@@ -5,13 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
-import java.util.Map;
-
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
+
+import java.io.File;
+import java.util.Map;
 
 class InterfaceCodeGeneratorTest {
 
@@ -31,21 +31,24 @@ class InterfaceCodeGeneratorTest {
 
     @Test
     void testCreateSelectedFirewallInterfaces() throws Exception {
-        InterfaceCodeGenerator ci2 = loadDBusXmlFile(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1");
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1");
         Map<File, String> analyze = ci2.analyze(true);
         assertEquals(9, analyze.size());
     }
 
     @Test
     void testCreateAllFirewallInterfaces() throws Exception {
-        InterfaceCodeGenerator ci2 = loadDBusXmlFile(new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "*");
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "*");
         Map<File, String> analyze = ci2.analyze(true);
         assertEquals(20, analyze.size());
     }
 
     @Test
     void testCreateNetworkManagerWirelessInterface() throws Exception {
-        InterfaceCodeGenerator ci2 = loadDBusXmlFile(new File("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml"),
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml"),
                 "/", "org.freedesktop.NetworkManager.Device.Wireless");
         Map<File, String> analyze = ci2.analyze(true);
 
@@ -61,7 +64,8 @@ class InterfaceCodeGeneratorTest {
 
     @Test
     void testCreateSampleStructArgs() throws Exception {
-        InterfaceCodeGenerator ci2 = loadDBusXmlFile(new File("src/test/resources/CreateInterface/sample_struct_args.xml"), "/", "org.example");
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/sample_struct_args.xml"), "/", "org.example");
         Map<File, String> analyze = ci2.analyze(true);
 
         assertEquals(2, analyze.size()); // class with method and struct class expected

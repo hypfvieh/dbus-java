@@ -1,13 +1,14 @@
 package org.freedesktop.dbus.transport.jnr;
 
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
-
 import jnr.unixsocket.Credentials;
 import jnr.unixsocket.UnixSocketOptions;
 
-public class JnrUnixSocketHelper {
+import java.io.IOException;
+import java.nio.channels.SocketChannel;
 
+public final class JnrUnixSocketHelper {
+
+    private JnrUnixSocketHelper() {}
 
     /**
      * Get the UID of peer credentials.

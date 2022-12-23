@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.utils.bin;
 
-import java.util.Iterator;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Iterator;
 
 class NodeListIterator implements Iterator<Node> {
     // CHECKSTYLE:OFF

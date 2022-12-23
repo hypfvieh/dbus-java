@@ -20,35 +20,6 @@ import javax.swing.event.ChangeListener;
 
 @SuppressWarnings("serial")
 class SaveFileAction extends TabbedSaveAction implements ChangeListener {
-    private class SelectedTabIterator implements Iterator<TextFile> {
-        // CHECKSTYLE:OFF
-        boolean iterated = false;
-        // CHECKSTYLE:ON
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean hasNext() {
-            return !iterated;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TextFile next() {
-            if (iterated) {
-                throw new NoSuchElementException("Already iterated");
-            }
-            iterated = true;
-            return getTextFile(tabbedPane.getSelectedIndex());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-    }
-
     SaveFileAction(JTabbedPane _tabbedPane) {
         super(_tabbedPane);
 
@@ -57,7 +28,6 @@ class SaveFileAction extends TabbedSaveAction implements ChangeListener {
         _tabbedPane.addChangeListener(this);
     }
 
-    /** {@inheritDoc} */
     @Override
     public void stateChanged(ChangeEvent _event) {
         enableAndSetName();
@@ -73,9 +43,34 @@ class SaveFileAction extends TabbedSaveAction implements ChangeListener {
         setEnabled(enabled);
     }
 
-    /** {@inheritDoc} */
     @Override
     public Iterator<TextFile> iterator() {
         return new SelectedTabIterator();
+    }
+
+    private class SelectedTabIterator implements Iterator<TextFile> {
+        // CHECKSTYLE:OFF
+        boolean iterated = false;
+        // CHECKSTYLE:ON
+
+        @Override
+        public boolean hasNext() {
+            return !iterated;
+        }
+
+        @Override
+        public TextFile next() {
+            if (iterated) {
+                throw new NoSuchElementException("Already iterated");
+            }
+            iterated = true;
+            return getTextFile(tabbedPane.getSelectedIndex());
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
     }
 }

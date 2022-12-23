@@ -1,7 +1,5 @@
 package org.freedesktop.dbus;
 
-import java.lang.reflect.Method;
-
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.NoReply;
@@ -12,6 +10,8 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * A handle to an asynchronous method call.
@@ -43,11 +43,11 @@ public class DBusAsyncReply<T> {
                     Object obj = RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);
 
                     rval = (T) obj;
-                } catch (DBusExecutionException exDee) {
-                    error = exDee;
-                } catch (DBusException dbe) {
-                    logger.debug("", dbe);
-                    error = new DBusExecutionException(dbe.getMessage());
+                } catch (DBusExecutionException _ex) {
+                    error = _ex;
+                } catch (DBusException _ex) {
+                    logger.debug("", _ex);
+                    error = new DBusExecutionException(_ex.getMessage());
                 }
             }
         }
@@ -55,7 +55,7 @@ public class DBusAsyncReply<T> {
 
     /**
     * Check if we've had a reply.
-    * @return True if we have a reply
+    * @return true if we have a reply
     */
     public boolean hasReply() {
         if (null != rval || null != error) {

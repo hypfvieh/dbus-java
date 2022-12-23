@@ -10,6 +10,22 @@
 */
 package org.freedesktop.dbus.viewer;
 
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.types.UInt32;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -32,22 +48,6 @@ import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
-import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.DBus;
-import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.types.UInt32;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * A viewer for DBus
@@ -98,7 +98,6 @@ public class DBusViewer {
             }
         });
     }
-
 
     /**
      * @param _args unused
@@ -218,7 +217,6 @@ public class DBusViewer {
         return model;
     }
 
-
     class ParsingContext {
         private final DBusConnection conn;
         private DocumentBuilder      builder;
@@ -275,8 +273,8 @@ public class DBusViewer {
                             } else {
                                 visitNode(_name, _path + '/' + nameNode.getNodeValue());
                             }
-                        } catch (DBusException ex) {
-                            ex.printStackTrace();
+                        } catch (DBusException _ex) {
+                            _ex.printStackTrace();
                         }
                     }
                 }

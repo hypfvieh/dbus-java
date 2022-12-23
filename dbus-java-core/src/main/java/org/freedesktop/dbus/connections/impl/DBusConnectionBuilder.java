@@ -2,8 +2,6 @@ package org.freedesktop.dbus.connections.impl;
 
 import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 
-import java.nio.ByteOrder;
-
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
@@ -14,13 +12,15 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
+import java.nio.ByteOrder;
+
 /**
  * Builder to create a new DBusConnection.
  *
  * @author hypfvieh
  * @version 4.1.0 - 2022-02-04
  */
-public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionBuilder, DBusConnection> {
+public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionBuilder, DBusConnection> {
 
     private final String        machineId;
     private boolean             registerSelf            = true;
@@ -215,8 +215,8 @@ public class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionB
      */
     @Deprecated(forRemoval = true, since = "4.2.0")
     public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
-                Message.Endian.BIG
+       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
+                ? Message.Endian.BIG
                 : Message.Endian.LITTLE;
     }
 }

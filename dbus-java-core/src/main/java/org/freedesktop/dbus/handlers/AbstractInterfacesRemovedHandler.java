@@ -5,7 +5,6 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.ObjectManager;
 import org.freedesktop.dbus.interfaces.ObjectManager.InterfacesRemoved;
 
-
 /**
 * Subclass this abstract class for creating a callback for InterfaceRemoved signal provided by DBus ObjectManager.
 *
@@ -15,9 +14,8 @@ import org.freedesktop.dbus.interfaces.ObjectManager.InterfacesRemoved;
 public abstract class AbstractInterfacesRemovedHandler extends AbstractSignalHandlerBase<ObjectManager.InterfacesRemoved> {
 
     @Override
-    public final Class<InterfacesRemoved> getImplementationClass() {        
+    public final Class<InterfacesRemoved> getImplementationClass() {
         return ObjectManager.InterfacesRemoved.class;
     }
 
-    
 }

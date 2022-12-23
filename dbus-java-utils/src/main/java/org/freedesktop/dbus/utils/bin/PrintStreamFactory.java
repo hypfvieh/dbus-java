@@ -14,7 +14,7 @@ public abstract class PrintStreamFactory {
      * @throws IOException may throw exception on failure
      */
     public PrintStream createPrintStream(String _path, String _tname) throws IOException {
-        final String file = _path + "/" + _tname + ".java";
+        String file = _path + "/" + _tname + ".java";
 
         return createPrintStream(file);
     }
@@ -24,6 +24,6 @@ public abstract class PrintStreamFactory {
      * @return PrintStream
      * @throws IOException may throw exception on failure
      */
-    public abstract PrintStream createPrintStream(final String _file) throws IOException;
+    public abstract PrintStream createPrintStream(String _file) throws IOException;
 
 }

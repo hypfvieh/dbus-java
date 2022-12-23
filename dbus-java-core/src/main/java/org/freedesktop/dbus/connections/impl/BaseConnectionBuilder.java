@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.connections.impl;
 
-import java.nio.ByteOrder;
-
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
@@ -14,6 +12,8 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.Message.Endian;
+
+import java.nio.ByteOrder;
 
 /**
  * Base class for connection builders containing commonly used options.
@@ -204,8 +204,8 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return LITTLE or BIG
      */
     public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
-                Message.Endian.BIG
+       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
+                ? Message.Endian.BIG
                 : Message.Endian.LITTLE;
     }
 }

@@ -1,11 +1,11 @@
 package com.github.hypfvieh.dbus.examples.pulseaudio;
 
-import java.io.File;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Properties;
+
+import java.io.File;
 
 /**
  * Sample code which connects to the pulse audio system server.
@@ -15,7 +15,9 @@ import org.freedesktop.dbus.interfaces.Properties;
  * @author hypfvieh
  *
  */
-public class PulseAudioDbus {
+public final class PulseAudioDbus {
+
+    private PulseAudioDbus() {}
 
     public static void main(String[] _args) throws DBusException {
         DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().build();

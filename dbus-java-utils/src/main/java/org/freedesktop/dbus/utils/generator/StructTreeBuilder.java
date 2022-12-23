@@ -1,13 +1,5 @@
 package org.freedesktop.dbus.utils.generator;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
@@ -16,6 +8,14 @@ import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Helper to create a DBus struct class.
@@ -175,7 +175,7 @@ public class StructTreeBuilder {
                 }
 
                 System.out.println("SubElements = " + tree.subType.size());
-                printTree(tree.subType, ++_indent);
+                printTree(tree.subType, _indent + 1);
             }
         }
     }
@@ -247,7 +247,7 @@ public class StructTreeBuilder {
         private final Class<?>         dataType;
         private final List<StructTree> subType = new ArrayList<>();
 
-        public StructTree(String _dataType) {
+        StructTree(String _dataType) {
             try {
                 dataType = Class.forName(_dataType);
             } catch (ClassNotFoundException _ex) {
@@ -267,7 +267,6 @@ public class StructTreeBuilder {
         public String toString() {
             return getClass().getSimpleName() + " [dataType=" + dataType + ", subType=" + subType + "]";
         }
-
 
     }
 }

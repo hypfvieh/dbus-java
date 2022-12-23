@@ -1,5 +1,9 @@
 package org.freedesktop.dbus.utils.generator;
 
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.bin.IdentifierMangler;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -12,9 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.utils.Util;
-
 /**
  * Helper to create Java class/interface files with proper formatting.
  *
@@ -22,62 +23,6 @@ import org.freedesktop.dbus.utils.Util;
  * @since v3.0.1 - 2018-12-22
  */
 public class ClassBuilderInfo {
-
-    /** Set of reserved words in Java. */
-    private static final Set<String> RESERVED = new HashSet<>();
-    static {
-        RESERVED.add("abstract");
-        RESERVED.add("assert");
-        RESERVED.add("boolean");
-        RESERVED.add("break");
-        RESERVED.add("byte");
-        RESERVED.add("case");
-        RESERVED.add("catch");
-        RESERVED.add("char");
-        RESERVED.add("class");
-        RESERVED.add("const");
-        RESERVED.add("continue");
-        RESERVED.add("default");
-        RESERVED.add("do");
-        RESERVED.add("double");
-        RESERVED.add("else");
-        RESERVED.add("enum");
-        RESERVED.add("extends");
-        RESERVED.add("final");
-        RESERVED.add("finally");
-        RESERVED.add("float");
-        RESERVED.add("for");
-        RESERVED.add("goto");
-        RESERVED.add("if");
-        RESERVED.add("implements");
-        RESERVED.add("import");
-        RESERVED.add("instanceof");
-        RESERVED.add("int");
-        RESERVED.add("interface");
-        RESERVED.add("long");
-        RESERVED.add("native");
-        RESERVED.add("new");
-        RESERVED.add("null");
-        RESERVED.add("package");
-        RESERVED.add("private");
-        RESERVED.add("protected");
-        RESERVED.add("public");
-        RESERVED.add("return");
-        RESERVED.add("short");
-        RESERVED.add("static");
-        RESERVED.add("strictfp");
-        RESERVED.add("super");
-        RESERVED.add("switch");
-        RESERVED.add("synchronized");
-        RESERVED.add("this");
-        RESERVED.add("throw");
-        RESERVED.add("throws");
-        RESERVED.add("transient");
-        RESERVED.add("try");
-        RESERVED.add("void");
-        RESERVED.add("volatile");
-        RESERVED.add("while");
-    }
 
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
@@ -232,9 +177,9 @@ public class ClassBuilderInfo {
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
         bgn += " " + getClassName();
         if (getExtendClass() != null) {
-            Set<String> imports = getImportsForType(getExtendClass());
-            getImports().addAll(imports);
-            allImports.addAll(imports);
+            Set<String> lImports = getImportsForType(getExtendClass());
+            getImports().addAll(lImports);
+            allImports.addAll(lImports);
             bgn += " extends " + getSimpleTypeClasses(getExtendClass());
         }
         if (!getImplementedInterfaces().isEmpty()) {
@@ -386,6 +331,15 @@ public class ClassBuilderInfo {
      */
     public String getFqcn() {
         return Util.isBlank(getPackageName()) ? getClassName() : getPackageName() + "." + getClassName();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [imports=" + imports + ", annotations=" + annotations + ", members=" + members
+                + ", implementedInterfaces=" + implementedInterfaces + ", methods=" + methods + ", innerClasses="
+                + innerClasses + ", constructors=" + constructors + ", className=" + className + ", packageName="
+                + packageName + ", dbusPackageName=" + dbusPackageName + ", classType=" + classType + ", extendClass="
+                + extendClass + "]";
     }
 
     /**
@@ -546,7 +500,7 @@ public class ClassBuilderInfo {
 
         public MemberOrArgument(String _name, String _type, boolean _finalMember) {
             // repair reserved words by adding 'Param' as appendix
-            name = RESERVED.contains(_name) ? _name + "param" : _name;
+            name = IdentifierMangler.isReservedWord(_name) ? _name + "param" : _name;
             type = _type;
             finalArg = _finalMember;
         }
@@ -615,18 +569,6 @@ public class ClassBuilderInfo {
                     + generics + ", annotations=" + annotations + "]";
         }
 
-
-    }
-
-
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " [imports=" + imports + ", annotations=" + annotations + ", members=" + members
-                + ", implementedInterfaces=" + implementedInterfaces + ", methods=" + methods + ", innerClasses="
-                + innerClasses + ", constructors=" + constructors + ", className=" + className + ", packageName="
-                + packageName + ", dbusPackageName=" + dbusPackageName + ", classType=" + classType + ", extendClass="
-                + extendClass + "]";
     }
 
     /**
@@ -665,7 +607,6 @@ public class ClassBuilderInfo {
             return getClass().getSimpleName() + " [arguments=" + arguments + ", superArguments=" + superArguments
                     + ", throwArguments=" + throwArguments + "]";
         }
-
 
     }
 

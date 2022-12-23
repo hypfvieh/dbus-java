@@ -9,6 +9,18 @@ import static org.freedesktop.dbus.connections.SASL.SaslCommand.ERROR;
 import static org.freedesktop.dbus.connections.SASL.SaslCommand.NEGOTIATE_UNIX_FD;
 import static org.freedesktop.dbus.connections.SASL.SaslCommand.REJECTED;
 
+import com.sun.security.auth.module.UnixSystem;
+import org.freedesktop.dbus.connections.config.SaslConfig;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.exceptions.AuthenticationException;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,20 +40,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.freedesktop.dbus.connections.config.SaslConfig;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
-import org.freedesktop.dbus.exceptions.AuthenticationException;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.LoggingHelper;
-import org.freedesktop.dbus.utils.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.security.auth.module.UnixSystem;
-
-
 public class SASL {
     public static final int    AUTH_NONE                   = 0;
     public static final int    AUTH_EXTERNAL               = 1;
@@ -55,15 +53,14 @@ public class SASL {
     public static final int    COOKIE_TIMEOUT              = 240;
     public static final String COOKIE_CONTEXT              = "org_freedesktop_java";
 
-    private static final Collator col = Collator.getInstance();
+    private static final Collator COL = Collator.getInstance();
     static {
-        col.setDecomposition(Collator.FULL_DECOMPOSITION);
-        col.setStrength(Collator.PRIMARY);
+        COL.setDecomposition(Collator.FULL_DECOMPOSITION);
+        COL.setStrength(Collator.PRIMARY);
     }
 
     private String challenge = "";
     private String cookie    = "";
-
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /** whether file descriptor passing is supported on the current connection. */
@@ -107,6 +104,7 @@ public class SASL {
         return lCookie;
     }
 
+    @SuppressWarnings("checkstyle:emptyblock")
     private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
         String homedir = System.getProperty("user.home");
         File keydir = new File(homedir + "/.dbus-keyrings/");
@@ -121,8 +119,8 @@ public class SASL {
 
         // acquire lock
         long start = System.currentTimeMillis();
-        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) { //NOPMD
 
+        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) { //NOPMD
         }
 
         // read old file
@@ -218,8 +216,6 @@ public class SASL {
         return new String(res);
     }
 
-
-
     public SASL.Command receive(SocketChannel _sock) throws IOException {
         StringBuffer sb = new StringBuffer();
         ByteBuffer buf = ByteBuffer.allocate(64);
@@ -252,9 +248,9 @@ public class SASL {
         logger.trace("received: {}", sb);
         try {
             return new Command(sb.toString());
-        } catch (Exception e) {
-            logger.error("Cannot create command.", e);
-            throw new AuthenticationException("Failed to authenticate.", e);
+        } catch (Exception _ex) {
+            logger.error("Cannot create command.", _ex);
+            throw new AuthenticationException("Failed to authenticate.", _ex);
         }
     }
 
@@ -283,12 +279,12 @@ public class SASL {
             }
             String context = reply[0];
             String id = reply[1];
-            String serverchallenge = reply[2];
+            final String serverchallenge = reply[2];
             MessageDigest md = null;
             try {
                 md = MessageDigest.getInstance("SHA");
-            } catch (NoSuchAlgorithmException nsae) {
-                logger.debug("", nsae);
+            } catch (NoSuchAlgorithmException _ex) {
+                logger.debug("", _ex);
                 return SaslResult.ERROR;
             }
             byte[] buf = new byte[8];
@@ -297,11 +293,11 @@ public class SASL {
             md.reset();
             long start = System.currentTimeMillis();
             String lCookie = null;
-            while (null == lCookie && (System.currentTimeMillis() - start) < LOCK_TIMEOUT) {
+            while (lCookie == null && (System.currentTimeMillis() - start) < LOCK_TIMEOUT) {
                 lCookie = findCookie(context, id);
             }
-            if (null == lCookie) {
-                logger.debug("Did not find a cookie in context {}  with ID {}",context, id);
+            if (lCookie == null) {
+                logger.debug("Did not find a cookie in context {}  with ID {}", context, id);
                 return SaslResult.ERROR;
             }
             String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
@@ -322,8 +318,8 @@ public class SASL {
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance("SHA");
-        } catch (NoSuchAlgorithmException nsae) {
-            logger.error("", nsae);
+        } catch (NoSuchAlgorithmException _ex) {
+            logger.error("", _ex);
             return SaslResult.ERROR;
         }
         switch (_auth) {
@@ -332,7 +328,7 @@ public class SASL {
                 case AUTH_ANON:
                     return SaslResult.OK;
                 case AUTH_EXTERNAL:
-                    if (0 == col.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == col.compare(_uid, _kernelUid))) {
+                    if (0 == COL.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == COL.compare(_uid, _kernelUid))) {
                         return SaslResult.OK;
                     } else {
                         return SaslResult.REJECT;
@@ -348,8 +344,8 @@ public class SASL {
                     cookie = stupidlyEncode(md.digest(buf));
                     try {
                         addCookie(context, "" + id, id / 1000, cookie);
-                    } catch (IOException ioe) {
-                        logger.debug("", ioe);
+                    } catch (IOException _ex) {
+                        logger.debug("", _ex);
                     }
 
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);
@@ -369,8 +365,8 @@ public class SASL {
                 String prehash = challenge + ":" + cchal + ":" + cookie;
                 byte[] buf = md.digest(prehash.getBytes());
                 String posthash = stupidlyEncode(buf);
-                logger.debug("Authenticating Hash; data={} remote-hash={} local-hash={}",prehash, hash, posthash);
-                if (0 == col.compare(posthash, hash)) {
+                logger.debug("Authenticating Hash; data={} remote-hash={} local-hash={}", prehash, hash, posthash);
+                if (0 == COL.compare(posthash, hash)) {
                     return SaslResult.OK;
                 } else {
                     return SaslResult.ERROR;
@@ -447,12 +443,7 @@ public class SASL {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
-                    // TODO: Howto do this for BSD?
-//                    if (FreeBSDHelper.isFreeBSD()) {
-//                        FreeBSDHelper.send_cred(_us);
-//                    } else {
                     _sock.write(ByteBuffer.wrap(new byte[] {0}));
-//                    }
                     send(_sock, AUTH);
                     state = SaslAuthState.WAIT_DATA;
                     break;
@@ -505,7 +496,7 @@ public class SASL {
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
                                 send(_sock, NEGOTIATE_UNIX_FD);
-                            }else{
+                            } else {
                                 state = SaslAuthState.FINISHED;
                                 send(_sock, BEGIN);
                             }
@@ -588,13 +579,6 @@ public class SASL {
                             state = SaslAuthState.WAIT_AUTH;
                         } else {
                             try {
-                                // TODO: how to solve this in freebsd?
-//                              if (FreeBSDHelper.isFreeBSD()) {
-//                                  long euid = FreeBSDHelper.recv_cred(_us);
-//                                  if (euid >= 0) {
-//                                      kernelUid = stupidlyEncode("" + euid);
-//                                  }
-//                              }
                                 int kuid = -1;
                                 if (_transport instanceof AbstractUnixTransport) {
                                     kuid = ((AbstractUnixTransport) _transport).getUid(_sock);
@@ -713,6 +697,10 @@ public class SASL {
         return state == SaslAuthState.FINISHED;
     }
 
+    public boolean isFileDescriptorSupported() {
+        return fileDescriptorSupported;
+    }
+
     /**
      * Handle reject of authentication.
      *
@@ -799,47 +787,47 @@ public class SASL {
         public Command(String _s) throws IOException {
             String[] ss = _s.split(" ");
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
-            if (0 == col.compare(ss[0], "OK")) {
+            if (0 == COL.compare(ss[0], "OK")) {
                 command = SaslCommand.OK;
                 data = ss[1];
-            } else if (0 == col.compare(ss[0], "AUTH")) {
+            } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;
                 if (ss.length > 1) {
-                    if (0 == col.compare(ss[1], "EXTERNAL")) {
+                    if (0 == COL.compare(ss[1], "EXTERNAL")) {
                         mechs = AUTH_EXTERNAL;
-                    } else if (0 == col.compare(ss[1], "DBUS_COOKIE_SHA1")) {
+                    } else if (0 == COL.compare(ss[1], "DBUS_COOKIE_SHA1")) {
                         mechs = AUTH_SHA;
-                    } else if (0 == col.compare(ss[1], "ANONYMOUS")) {
+                    } else if (0 == COL.compare(ss[1], "ANONYMOUS")) {
                         mechs = AUTH_ANON;
                     }
                 }
                 if (ss.length > 2) {
                     data = ss[2];
                 }
-            } else if (0 == col.compare(ss[0], "DATA")) {
+            } else if (0 == COL.compare(ss[0], "DATA")) {
                 command = DATA;
                 data = ss[1];
-            } else if (0 == col.compare(ss[0], "REJECTED")) {
+            } else if (0 == COL.compare(ss[0], "REJECTED")) {
                 command = REJECTED;
                 for (int i = 1; i < ss.length; i++) {
-                    if (0 == col.compare(ss[i], "EXTERNAL")) {
+                    if (0 == COL.compare(ss[i], "EXTERNAL")) {
                         mechs |= AUTH_EXTERNAL;
-                    } else if (0 == col.compare(ss[i], "DBUS_COOKIE_SHA1")) {
+                    } else if (0 == COL.compare(ss[i], "DBUS_COOKIE_SHA1")) {
                         mechs |= AUTH_SHA;
-                    } else if (0 == col.compare(ss[i], "ANONYMOUS")) {
+                    } else if (0 == COL.compare(ss[i], "ANONYMOUS")) {
                         mechs |= AUTH_ANON;
                     }
                 }
-            } else if (0 == col.compare(ss[0], "BEGIN")) {
+            } else if (0 == COL.compare(ss[0], "BEGIN")) {
                 command = BEGIN;
-            } else if (0 == col.compare(ss[0], "CANCEL")) {
+            } else if (0 == COL.compare(ss[0], "CANCEL")) {
                 command = CANCEL;
-            } else if (0 == col.compare(ss[0], "ERROR")) {
+            } else if (0 == COL.compare(ss[0], "ERROR")) {
                 command = ERROR;
                 data = ss[1];
-            } else if (0 == col.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
+            } else if (0 == COL.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
                 command = NEGOTIATE_UNIX_FD;
-            } else if (0 == col.compare(ss[0], "AGREE_UNIX_FD")) {
+            } else if (0 == COL.compare(ss[0], "AGREE_UNIX_FD")) {
                 command = AGREE_UNIX_FD;
             } else {
                 throw new IOException("Invalid Command " + ss[0]);
@@ -871,10 +859,6 @@ public class SASL {
         public String toString() {
             return "Command(" + command + ", " + mechs + ", " + data + ")";
         }
-    }
-
-    public boolean isFileDescriptorSupported() {
-        return fileDescriptorSupported;
     }
 
 }

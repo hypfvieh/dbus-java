@@ -1,11 +1,5 @@
 package com.github.hypfvieh.dbus.examples.networkmanager;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -15,6 +9,12 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Sample code which updates a connection's IPv4 method with the Update() method.
  *
@@ -22,9 +22,11 @@ import org.freedesktop.networkmanager.settings.Connection;
  * described at https://networkmanager.dev/docs/api/latest/ref-settings.html
  *
  * @author mattdibi
- *
  */
-public class NetworkManagerExample3 {
+public final class NetworkManagerExample3 {
+
+    private NetworkManagerExample3() {}
+
     public static void main(String[] _args) {
         if (_args.length < 2) {
             System.out.println("Usage: <uuid> <auto|static> [address prefix gateway]");
@@ -32,13 +34,13 @@ public class NetworkManagerExample3 {
         }
 
         String method = _args[1];
-        if (method == "static" && _args.length < 4) {
+        if ("static".equals(method) && _args.length < 4) {
             System.out.println("Usage: <uuid> <static> address prefix [gateway]");
             System.exit(1);
         }
 
         // Convert method to NM method
-        if (method.equals("static")) {
+        if ("static".equals(method)) {
             method = "manual";
         }
 
@@ -54,7 +56,7 @@ public class NetworkManagerExample3 {
                 Map<String, Map<String, Variant<?>>> connectionSettings = connection.GetSettings();
 
                 // Look for the requested connection UUID
-                if(!connectionSettings.get("connection").get("uuid").getValue().toString().equals(_args[0])) {
+                if (!connectionSettings.get("connection").get("uuid").getValue().toString().equals(_args[0])) {
                     continue;
                 }
 
@@ -76,7 +78,7 @@ public class NetworkManagerExample3 {
                 // Set the method and change properties
                 ipv4Map.put("method", new Variant<String>(method));
 
-                if(method.equals("manual")) {
+                if ("manual".equals(method)) {
                     // Add the static IP address, prefix and (optional) gateway
                     Map<String, Variant<?>> address = new HashMap<>();
                     address.put("address", new Variant<String>(_args[2]));
@@ -85,7 +87,7 @@ public class NetworkManagerExample3 {
                     List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
                     ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-                    if(_args.length == 5) {
+                    if (_args.length == 5) {
                         ipv4Map.put("gateway", new Variant<String>(_args[4]));
                     }
                 }

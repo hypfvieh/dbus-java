@@ -1,5 +1,12 @@
 package org.freedesktop.dbus.utils.generator;
 
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.types.DBusListType;
+import org.freedesktop.dbus.types.DBusMapType;
+import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.Util;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -13,20 +20,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.types.DBusListType;
-import org.freedesktop.dbus.types.DBusMapType;
-import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.Util;
-
 /**
  * Helper to convert DBus types and java types.
  *
  * @author hypfvieh
  * @since v3.0.1 - 2018-12-22
  */
-public class TypeConverter {
+public final class TypeConverter {
 
     private static final Map<String, String> CLASS_MAP = new HashMap<>();
     static {
@@ -36,6 +36,8 @@ public class TypeConverter {
         CLASS_MAP.put("java.util.Map", "Map");
         CLASS_MAP.put(Variant.class.getName(), "Variant<?>");
     }
+
+    private TypeConverter() {}
 
     /**
      * Converts a java class type to another type.
@@ -104,9 +106,9 @@ public class TypeConverter {
             return CLASS_MAP.get(_fqcn);
         }
 
-        if (clazzName.equals("CharSequence")) {
+        if ("CharSequence".equals(clazzName)) {
             return "String";
-        } else if (clazzName.equals("Variant")) {
+        } else if ("Variant".equals(clazzName)) {
             return "Variant<?>";
         }
 

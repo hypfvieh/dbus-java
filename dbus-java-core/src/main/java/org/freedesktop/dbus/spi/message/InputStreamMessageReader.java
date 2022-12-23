@@ -1,5 +1,12 @@
 package org.freedesktop.dbus.spi.message;
 
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -7,13 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Objects;
-
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.MessageProtocolVersionException;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class InputStreamMessageReader implements IMessageReader {
     private final Logger        logger = LoggerFactory.getLogger(getClass());
@@ -48,7 +48,7 @@ public class InputStreamMessageReader implements IMessageReader {
                 }
 
                 len[0] += rv;
-            } catch (final SocketTimeoutException exSt) {
+            } catch (SocketTimeoutException _ex) {
                 return null;
             }
         }
@@ -78,7 +78,7 @@ public class InputStreamMessageReader implements IMessageReader {
                 }
 
                 len[1] += rv;
-            } catch (final SocketTimeoutException exSt) {
+            } catch (SocketTimeoutException _ex) {
                 return null;
             }
         }
@@ -122,7 +122,7 @@ public class InputStreamMessageReader implements IMessageReader {
                 }
 
                 len[2] += rv;
-            } catch (final SocketTimeoutException exSt) {
+            } catch (SocketTimeoutException _ex) {
                 return null;
             }
         }
@@ -149,7 +149,7 @@ public class InputStreamMessageReader implements IMessageReader {
                 }
 
                 len[3] += rv;
-            } catch (SocketTimeoutException exSt) {
+            } catch (SocketTimeoutException _ex) {
                 return null;
             }
         }
@@ -168,8 +168,7 @@ public class InputStreamMessageReader implements IMessageReader {
             logger.warn("Exception while creating message.", _ex);
 
             throw _ex;
-        }
-        finally {
+        } finally {
             Arrays.fill(tbuf, (byte) 0x00);
             len[1] = 0;
             body = null;
