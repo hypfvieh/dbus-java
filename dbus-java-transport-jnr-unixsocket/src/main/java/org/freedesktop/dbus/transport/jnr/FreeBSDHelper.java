@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
  * @author grembo
  * @deprecated no longer used
  */
-@Deprecated(forRemoval = true, since = "4.3.0 - 2022-12-23")
+@Deprecated(forRemoval = true, since = "4.2.2 - 2022-12-23")
 public final class FreeBSDHelper {
     private static final CmsgCredLayout CMSG_CRED_LAYOUT = new CmsgCredLayout(jnr.ffi.Runtime.getSystemRuntime());
 

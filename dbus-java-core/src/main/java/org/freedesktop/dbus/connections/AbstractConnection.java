@@ -77,7 +77,7 @@ public abstract class AbstractConnection implements Closeable {
      * Connect timeout, used for TCP only.
      * @deprecated no longer used
      */
-    @Deprecated(forRemoval = true, since = "4.3.0 - 2022-12-23")
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2022-12-23")
     public static final int TCP_CONNECT_TIMEOUT     = 100000;
 
     /**
