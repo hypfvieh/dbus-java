@@ -327,7 +327,7 @@ public final class DBusConnection extends AbstractConnection {
                 ifcs.add(DBusInterface.class);
             }
 
-            RemoteObject ro = new RemoteObject(_source, _path, null, false);
+            RemoteObject ro = new RemoteObject(_source, _path, _type, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
                     ifcs.toArray(Class[]::new), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
