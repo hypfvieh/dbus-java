@@ -240,6 +240,47 @@ public abstract class AbstractConnection implements Closeable {
     public abstract String getMachineId();
 
     /**
+     * If given type is null, will try to find suitable types by examining the given ifaces.
+     * If a non-null type is given, returns the given type.
+     *
+     * @param <T> any DBusInterface compatible object
+     * @param _type type or null
+     * @param _ifaces interfaces to examining when type is null
+     *
+     * @return List
+     */
+    protected <T extends DBusInterface> List<Class<?>> findMatchingTypes(Class<T> _type, List<String> _ifaces) {
+        List<Class<?>> ifcs = new ArrayList<>();
+        if (_type == null) {
+            for (String iface : _ifaces) {
+
+                logger.debug("Trying interface {}", iface);
+                int j = 0;
+                while (j >= 0) {
+                    try {
+                        Class<?> ifclass = Class.forName(iface);
+                        if (!ifcs.contains(ifclass)) {
+                            ifcs.add(ifclass);
+                        }
+                        break;
+                    } catch (Exception _ex) {
+                        logger.trace("No class found for {}", iface, _ex);
+                    }
+                    j = iface.lastIndexOf('.');
+                    char[] cs = iface.toCharArray();
+                    if (j >= 0) {
+                        cs[j] = '$';
+                        iface = String.valueOf(cs);
+                    }
+                }
+            }
+        } else {
+            ifcs.add(_type);
+        }
+        return ifcs;
+    }
+
+    /**
      * Start reading and sending messages.
      */
     protected void listen() {

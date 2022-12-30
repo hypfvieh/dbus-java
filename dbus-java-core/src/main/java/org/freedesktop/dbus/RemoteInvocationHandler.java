@@ -38,6 +38,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         this.conn = _conn;
     }
 
+    public RemoteObject getRemote() {
+        return remote;
+    }
+
     @Override
     public Object invoke(Object _proxy, Method _method, Object[] _args) throws Throwable {
         if (_method.getName().equals("isRemote")) {

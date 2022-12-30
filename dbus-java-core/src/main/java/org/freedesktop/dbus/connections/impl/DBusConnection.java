@@ -274,9 +274,12 @@ public final class DBusConnection extends AbstractConnection {
      * @return DBusInterface compatible object
      *
      * @throws DBusException when something goes wrong
+     *
+     * @apiNote This method is only intended for internal use.
+     * Visibility may change in future release
      */
     @SuppressWarnings("unchecked")
-    protected <T extends DBusInterface> T dynamicProxy(String _source, String _path, Class<T> _type) throws DBusException {
+    public <T extends DBusInterface> T dynamicProxy(String _source, String _path, Class<T> _type) throws DBusException {
         logger.debug("Introspecting {} on {} for dynamic proxy creation", _path, _source);
         try {
             Introspectable intro = getRemoteObject(_source, _path, Introspectable.class);
@@ -294,33 +297,8 @@ public final class DBusConnection extends AbstractConnection {
                     return i;
                 })
                 .collect(Collectors.toList());
-            List<Class<?>> ifcs = new ArrayList<>();
-            if (_type == null) {
-                for (String iface : ifaces) {
 
-                    logger.debug("Trying interface {}", iface);
-                    int j = 0;
-                    while (j >= 0) {
-                        try {
-                            Class<?> ifclass = Class.forName(iface);
-                            if (!ifcs.contains(ifclass)) {
-                                ifcs.add(ifclass);
-                            }
-                            break;
-                        } catch (Exception _ex) {
-                            logger.trace("No class found for {}", iface, _ex);
-                        }
-                        j = iface.lastIndexOf('.');
-                        char[] cs = iface.toCharArray();
-                        if (j >= 0) {
-                            cs[j] = '$';
-                            iface = String.valueOf(cs);
-                        }
-                    }
-                }
-            } else {
-                ifcs.add(_type);
-            }
+            List<Class<?>> ifcs = findMatchingTypes(_type, ifaces);
 
             // interface could not be found, we guess that this exported object at least support DBusInterface
             if (ifcs.isEmpty()) {

@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -109,7 +108,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T dynamicProxy(String _path, Class<T> _type) throws DBusException {
+    <T extends DBusInterface> T dynamicProxy(String _path, Class<T> _type) throws DBusException {
         try {
             Introspectable intro = getRemoteObject(_path, Introspectable.class);
             String data = intro.Introspect();
@@ -120,34 +119,13 @@ public class DirectConnection extends AbstractConnection {
                 .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
                 .collect(Collectors.toList());
 
-            List<Class<? extends Object>> ifcs = new ArrayList<>();
-            if (_type == null) {
-                for (String iface : ifaces) {
-                    int j = 0;
-                    while (j >= 0) {
-                        try {
-                            ifcs.add(Class.forName(iface));
-                            break;
-                        } catch (Exception _ex) {
-                            logger.trace("No class found for {}", iface, _ex);
-                        }
-                        j = iface.lastIndexOf('.');
-                        char[] cs = iface.toCharArray();
-                        if (j >= 0) {
-                            cs[j] = '$';
-                            iface = String.valueOf(cs);
-                        }
-                    }
-                }
-            } else {
-                ifcs.add(_type);
-            }
+            List<Class<?>> ifcs = findMatchingTypes(_type, ifaces);
 
             if (ifcs.isEmpty()) {
                 throw new DBusException("Could not find an interface to cast to");
             }
 
-            RemoteObject ro = new RemoteObject(null, _path, null, false);
+            RemoteObject ro = new RemoteObject(null, _path, _type, false);
             DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(), ifcs.toArray(new Class[0]), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
             return (T) newi;
