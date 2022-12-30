@@ -54,7 +54,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed issues with code generator, creating tuple classes without proper imports and having issues creating nested structs (struct in struct) ([#195](https://github.com/hypfvieh/dbus-java/issues/195))
    - Updated dependencies
    - Applied checkstyle suggestions
-   - Fixed 'type' was not passed when creating dynamic proxy, [drivera73](https://github.com/drivera73) ([PR#198](https://github.com/hypfvieh/dbus-java/pull/198))
+   - Fixed 'type' was not passed when creating dynamic proxy, thanks to [drivera73](https://github.com/drivera73) ([PR#198](https://github.com/hypfvieh/dbus-java/pull/198))
    
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
