@@ -13,10 +13,11 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class InterfaceCreationTest extends AbstractBaseTest {
 
-	// @Test
+	@Test
 	public void testCorrectInterfaceCreation() throws Exception {
 		String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
 		BusAddress busAddress = TransportBuilder.createWithDynamicSession(protocolType).configure().build()
