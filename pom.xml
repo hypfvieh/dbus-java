@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>4.2.2-SNAPSHOT</version>
+    <version>${revision}</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/dbus-java</url>
@@ -14,6 +14,7 @@
     <description>DBus-Java library module parent</description>
 
     <properties>
+        <revision>4.2.2-SNAPSHOT</revision>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
