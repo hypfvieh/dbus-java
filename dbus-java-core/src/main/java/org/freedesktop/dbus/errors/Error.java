@@ -12,11 +12,13 @@ import org.freedesktop.dbus.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class Error extends Message {
 
+    private static final String DEFAULT_NULL_EXCEPTION_ERROR_MSG = "Unsupported NULL Exception";
     private static final Logger LOGGER = LoggerFactory.getLogger(Error.class);
 
     public Error() {
@@ -62,13 +65,15 @@ public class Error extends Message {
     }
 
     public Error(String _source, Message _m, Throwable _ex) throws DBusException {
-        this(_source, _m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(_ex.getClass().getName()).replaceAll("."),
-                _m.getSerial(), "s", _ex.getMessage());
+        this(_source, _m.getSource(),
+                AbstractConnection.DOLLAR_PATTERN.matcher(Optional.ofNullable(_ex).orElse(new IOException(DEFAULT_NULL_EXCEPTION_ERROR_MSG)).getClass().getName()).replaceAll("."),
+                _m.getSerial(), "s", _ex == null ? DEFAULT_NULL_EXCEPTION_ERROR_MSG : _ex.getMessage());
     }
 
     public Error(Message _m, Throwable _ex) throws DBusException {
-        this(_m.getSource(), AbstractConnection.DOLLAR_PATTERN.matcher(_ex.getClass().getName()).replaceAll("."),
-                _m.getSerial(), "s", _ex.getMessage());
+        this(_m.getSource(),
+                AbstractConnection.DOLLAR_PATTERN.matcher(Optional.ofNullable(_ex).orElse(new IOException(DEFAULT_NULL_EXCEPTION_ERROR_MSG)).getClass().getName()).replaceAll("."),
+                _m.getSerial(), "s", _ex == null ? DEFAULT_NULL_EXCEPTION_ERROR_MSG : _ex.getMessage());
     }
 
     @SuppressWarnings("unchecked")

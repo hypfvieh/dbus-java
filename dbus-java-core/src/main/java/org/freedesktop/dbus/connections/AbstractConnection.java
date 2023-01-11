@@ -612,9 +612,10 @@ public abstract class AbstractConnection implements Closeable {
 
         // stop potentially waiting method-calls
         logger.debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
+        Exception interrupt = _connectionError == null ? new IOException("Disconnecting") : _connectionError;
         for (MethodCall mthCall : getPendingCalls().values()) {
             try {
-                mthCall.setReply(new Error(mthCall, _connectionError));
+                mthCall.setReply(new Error(mthCall, interrupt));
             } catch (DBusException _ex) {
                 logger.debug("Cannot set method reply to error", _ex);
             }
@@ -653,6 +654,7 @@ public abstract class AbstractConnection implements Closeable {
      * Disconnect from the Bus.
      */
     public synchronized void disconnect() {
+        logger.debug("Disconnect called");
         internalDisconnect(null);
     }
 
