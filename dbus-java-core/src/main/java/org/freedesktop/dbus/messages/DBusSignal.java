@@ -295,9 +295,10 @@ public class DBusSignal extends Message {
         }
 
         public boolean matchesParameters(List<Class<?>> _wantedArgs) {
-            if (parameterTypes != null && _wantedArgs == null) {
+            if (parameterTypes == null || _wantedArgs == null) {
                 return false;
             }
+
             if (parameterTypes.size() != _wantedArgs.size()) {
                 return false;
             }
