@@ -5,6 +5,8 @@ import org.freedesktop.dbus.utils.Util;
 
 public class TcpBusAddress extends BusAddress {
 
+    private static final int DEFAULT_PORT = 22839;
+
     public TcpBusAddress(BusAddress _obj) {
         super(_obj);
     }
@@ -22,7 +24,7 @@ public class TcpBusAddress extends BusAddress {
     }
 
     public int getPort() {
-        return Util.isValidNetworkPort(getParameters().get("port"), true) ? Integer.parseInt(getParameters().get("port")) : null;
+        return Util.isValidNetworkPort(getParameters().get("port"), true) ? Integer.parseInt(getParameters().get("port")) : DEFAULT_PORT;
     }
 
 }
