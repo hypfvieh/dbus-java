@@ -1,5 +1,7 @@
 package org.freedesktop.dbus;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,13 +22,20 @@ public class MethodTuple {
     }
 
     @Override
-    public boolean equals(Object _o) {
-        return _o.getClass().equals(MethodTuple.class) && ((MethodTuple) _o).name.equals(this.name) && ((MethodTuple) _o).sig.equals(this.sig);
+    public int hashCode() {
+        return Objects.hash(name, sig);
     }
 
     @Override
-    public int hashCode() {
-        return name.hashCode() + sig.hashCode();
+    public boolean equals(Object _obj) {
+        if (this == _obj) {
+            return true;
+        }
+        if (!(_obj instanceof MethodTuple)) {
+            return false;
+        }
+        MethodTuple other = (MethodTuple) _obj;
+        return Objects.equals(name, other.name) && Objects.equals(sig, other.sig);
     }
 
     public Logger getLogger() {
