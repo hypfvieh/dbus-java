@@ -55,7 +55,10 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated dependencies
    - Applied checkstyle suggestions
    - Fixed 'type' was not passed when creating dynamic proxy, thanks to [drivera73](https://github.com/drivera73) ([PR#198](https://github.com/hypfvieh/dbus-java/pull/198))
-   
+   - Fixed some possible NullPointerExceptions ([#201](https://github.com/hypfvieh/dbus-java/issues/201), [#202](https://github.com/hypfvieh/dbus-java/issues/202), [#204](https://github.com/hypfvieh/dbus-java/issues/204))
+   - Improved encapsulation in BusAddress (and subclasses), deprecated `getParameter(String)` method ([#202](https://github.com/hypfvieh/dbus-java/issues/202))
+
+
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
    - Compare bus type names using US locale ([#185](https://github.com/hypfvieh/dbus-java/issues/185))
@@ -119,23 +122,4 @@ The library will remain open source and MIT licensed and can still be used, fork
       - dbus-java-utils: utilities which may help during development
    - Updated dependencies
 
-##### Changes in 3.3.1 (Released: 2021-10-23):
-   - Fixed some issues in InterfaceCodeGenerator related to signal constructors, thanks to [poeschel](https://github.com/poeschel) ([PR#146](https://github.com/hypfvieh/dbus-java/pull/146))
-   - Fixed some issues in InterfaceCodeGenerator related to usage of Tuples, thanks to [poeschel](https://github.com/poeschel) ([PR#147](https://github.com/hypfvieh/dbus-java/pull/147))
-   - Improved SASL authentication with domain sockets on OS X, thanks to [brett-smith](https://github.com/brett-smith) ([PR#148](https://github.com/hypfvieh/dbus-java/pull/148))
-   - Fixed some issues related to marshalling/unmarshalling of Tuples, thanks to [poeschel](https://github.com/poeschel) ([PR#149](https://github.com/hypfvieh/dbus-java/pull/149))
-   - Fixed various issues in Introspection generation introduced with [PR#143](https://github.com/hypfvieh/dbus-java/pull/143) and in marshalling caused by  [PR#149](https://github.com/hypfvieh/dbus-java/pull/149)
-   - Fixed issue with interupted status of thread got lost after a synchronous method call was interrupted [#150](https://github.com/hypfvieh/dbus-java/issues/150)
-   
-##### Changes in 3.3.0 (Released: 2021-03-17):
-  *CAUTION* - This version may contain breaking changes!!
-  - Removed usage of java-utils
-  - Moved Hexdump class from org.freedesktop to org.freedesktop.dbus.utils
-  - Moved DBus interface from org.freedesktop to org.freedesktop.dbus.interfaces
-  - Modulize dbus-java ([PR#125](https://github.com/hypfvieh/dbus-java/pull/125), thanks to [brett-smith](https://github.com/brett-smith))
-  - DBusConnection.getConnection(DBusBusType _bustype) will no longer throw RuntimeException but DBusConnectionException if something went wrong establishing DBus connection [#128](https://github.com/hypfvieh/dbus-java/issues/128)
-  - Support annotation to specify properties provided by an exported object (DBusProperty annotation) ([PR#131](https://github.com/hypfvieh/dbus-java/pull/131)/[#130](https://github.com/hypfvieh/dbus-java/issues/130)), thanks to [mk868](https://github.com/mk868)
-  - Added support for the new DBusProperty annotations in InterfaceCodeGenerator Util ([PR#132](https://github.com/hypfvieh/dbus-java/pull/132)), thanks to [mk868](https://github.com/mk868)
-  - License changed from LGPLv2 to MIT
-
-##### Older Changes: [See Wiki ChangeLog](https://github.com/hypfvieh/dbus-java/wiki/Changelog)
+##### Older Changes: [See Wiki ChangeLog 3x](https://github.com/hypfvieh/dbus-java/wiki/Changelog-3.x)
