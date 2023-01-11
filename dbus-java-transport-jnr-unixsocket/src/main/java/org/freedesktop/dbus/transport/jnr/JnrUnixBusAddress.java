@@ -15,19 +15,19 @@ public class JnrUnixBusAddress extends BusAddress implements IFileBasedBusAddres
     }
 
     public boolean hasPath() {
-        return getParameters().containsKey("path");
+        return hasParameter("path");
     }
 
     public String getAbstract() {
-        return getParameters().get("abstract");
+        return getParameterValue("abstract");
     }
 
     public boolean isAbstract() {
-        return getParameters().containsKey("abstract");
+        return hasParameter("abstract");
     }
 
     public String getPath() {
-        return getParameters().get("path");
+        return getParameterValue("path");
     }
 
     @Override

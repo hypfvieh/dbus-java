@@ -15,11 +15,11 @@ public class UnixBusAddress extends BusAddress implements IFileBasedBusAddress {
     }
 
     public boolean hasPath() {
-        return getParameters().containsKey("path");
+        return hasParameter("path");
     }
 
     public String getPath() {
-        return getParameters().get("path");
+        return getParameterValue("path");
     }
 
     @Override

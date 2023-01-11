@@ -215,11 +215,26 @@ public class BusAddress {
     }
 
     /**
+     * Checks if the given parameter is present.
+     *
+     * @param _parameter parameter to check
+     *
+     * @return true if parameter exists, false otherwise
+     * @since 4.2.2 - 2023-01-11
+     */
+    public boolean hasParameter(String _parameter) {
+        return parameters.containsKey(_parameter);
+    }
+
+    /**
      * Returns a read-only view of the parameters currently configured.
      *
      * @return Map, maybe empty
      * @since 4.2.0 - 2022-07-18
+     *
+     * @deprecated will be removed in future, use {@link #getParameterValue(String)} or {@link #hasParameter(String)}
      */
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-01-11")
     public Map<String, String> getParameters() {
         return Collections.unmodifiableMap(parameters);
     }
@@ -229,11 +244,28 @@ public class BusAddress {
      * <p>
      * When no value present, <code>null</code> is returned.
      *
-     * @return Map, maybe empty
+     * @param _parameter parameter to get value for
+     *
+     * @return String or <code>null</code>
      * @since 4.2.0 - 2022-07-19
      */
     public String getParameterValue(String _parameter) {
         return parameters.get(_parameter);
+    }
+
+    /**
+     * Returns a the value of the given parameter.
+     * <p>
+     * When no value present, the given default is returned.
+     *
+     * @param _parameter parameter to get value for
+     * @param _default default to return if parameter not set
+     *
+     * @return String or default
+     * @since 4.2.2 - 2023-01-11
+     */
+    public String getParameterValue(String _parameter, String _default) {
+        return parameters.getOrDefault(_parameter, _default);
     }
 
     /**

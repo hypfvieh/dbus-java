@@ -12,19 +12,19 @@ public class TcpBusAddress extends BusAddress {
     }
 
     public String getHost() {
-        return getParameters().get("host");
+        return getParameterValue("host");
     }
 
     public boolean hasHost() {
-        return getParameters().containsKey("host");
+        return hasParameter("host");
     }
 
     public boolean hasPort() {
-        return getParameters().containsKey("port");
+        return hasParameter("port");
     }
 
     public int getPort() {
-        return Util.isValidNetworkPort(getParameters().get("port"), true) ? Integer.parseInt(getParameters().get("port")) : DEFAULT_PORT;
+        return Util.isValidNetworkPort(getParameterValue("port"), true) ? Integer.parseInt(getParameterValue("port")) : DEFAULT_PORT;
     }
 
 }
