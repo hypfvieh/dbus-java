@@ -24,14 +24,15 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NetworkChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
@@ -41,23 +42,27 @@ import java.util.List;
 import java.util.Random;
 
 public class SASL {
-    public static final int    AUTH_NONE                   = 0;
-    public static final int    AUTH_EXTERNAL               = 1;
-    public static final int    AUTH_SHA                    = 2;
-    public static final int    AUTH_ANON                   = 4;
+    public static final int       AUTH_NONE                   = 0;
+    public static final int       AUTH_EXTERNAL               = 1;
+    public static final int       AUTH_SHA                    = 2;
+    public static final int       AUTH_ANON                   = 4;
 
-    public static final int    LOCK_TIMEOUT                = 1000;
-    public static final int    NEW_KEY_TIMEOUT_SECONDS     = 60 * 5;
-    public static final int    EXPIRE_KEYS_TIMEOUT_SECONDS = NEW_KEY_TIMEOUT_SECONDS + (60 * 2);
-    public static final int    MAX_TIME_TRAVEL_SECONDS     = 60 * 5;
-    public static final int    COOKIE_TIMEOUT              = 240;
-    public static final String COOKIE_CONTEXT              = "org_freedesktop_java";
+    public static final int       LOCK_TIMEOUT                = 1000;
+    public static final int       NEW_KEY_TIMEOUT_SECONDS     = 60 * 5;
+    public static final int       EXPIRE_KEYS_TIMEOUT_SECONDS = NEW_KEY_TIMEOUT_SECONDS + (60 * 2);
+    public static final int       MAX_TIME_TRAVEL_SECONDS     = 60 * 5;
+    public static final int       COOKIE_TIMEOUT              = 240;
+    public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
     private static final Collator COL = Collator.getInstance();
     static {
         COL.setDecomposition(Collator.FULL_DECOMPOSITION);
         COL.setStrength(Collator.PRIMARY);
     }
+
+    private static final String   SYSPROP_USER_HOME           = System.getProperty("user.home");
+
+    private static final File     DBUS_KEYRINGS_DIR           = new File(SYSPROP_USER_HOME, ".dbus-keyrings");
 
     private String challenge = "";
     private String cookie    = "";
@@ -86,68 +91,68 @@ public class SASL {
     }
 
     private String findCookie(String _context, String _id) throws IOException {
-        String homedir = System.getProperty("user.home");
-        File f = new File(homedir + "/.dbus-keyrings/" + _context);
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-        String s = null;
-        String lCookie = null;
-        long now = System.currentTimeMillis() / 1000;
-        while (null != (s = r.readLine())) {
-            String[] line = s.split(" ");
-            long timestamp = Long.parseLong(line[1]);
-            if (line[0].equals(_id) && !(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || now - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
-                lCookie = line[2];
-                break;
+        File f = new File(DBUS_KEYRINGS_DIR, _context);
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)))) {
+            String s = null;
+            String lCookie = null;
+            long now = System.currentTimeMillis() / 1000;
+            while (null != (s = r.readLine())) {
+                String[] line = s.split(" ");
+                long timestamp = Long.parseLong(line[1]);
+                if (line[0].equals(_id) && !(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || now - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
+                    lCookie = line[2];
+                    break;
+                }
             }
+            return lCookie;
         }
-        r.close();
-        return lCookie;
     }
 
     @SuppressWarnings("checkstyle:emptyblock")
     private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
-        String homedir = System.getProperty("user.home");
-        File keydir = new File(homedir + "/.dbus-keyrings/");
-        File cookiefile = new File(homedir + "/.dbus-keyrings/" + _context);
-        File lock = new File(homedir + "/.dbus-keyrings/" + _context + ".lock");
-        File temp = new File(homedir + "/.dbus-keyrings/" + _context + ".temp");
+        File cookiefile = new File(DBUS_KEYRINGS_DIR, _context);
+        File lock = new File(DBUS_KEYRINGS_DIR, _context + ".lock");
+        File temp = new File(DBUS_KEYRINGS_DIR, _context + ".temp");
 
         // ensure directory exists
-        if (!keydir.exists()) {
-            keydir.mkdirs();
+        if (!DBUS_KEYRINGS_DIR.exists()) {
+            DBUS_KEYRINGS_DIR.mkdirs();
         }
 
         // acquire lock
         long start = System.currentTimeMillis();
 
-        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) { //NOPMD
+        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) {
+            logger.trace("Lock file {} present, waiting", lock);
+            try {
+                Thread.sleep(50L);
+            } catch (InterruptedException _ex) {
+                logger.trace("Interrupted while waiting for lock file {}", lock);
+            }
         }
 
         // read old file
         List<String> lines = new ArrayList<>();
         if (cookiefile.exists()) {
-            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)));
-            String s = null;
-            while (null != (s = r.readLine())) {
-                String[] line = s.split(" ");
-                long time = Long.parseLong(line[1]);
-                // expire stale cookies
-                if ((_timestamp - time) < COOKIE_TIMEOUT) {
-                    lines.add(s);
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)))) {
+                String s = null;
+                while (null != (s = r.readLine())) {
+                    String[] line = s.split(" ");
+                    long time = Long.parseLong(line[1]);
+                    // expire stale cookies
+                    if ((_timestamp - time) < COOKIE_TIMEOUT) {
+                        lines.add(s);
+                    }
                 }
             }
-            r.close();
         }
 
         // add cookie
         lines.add(_id + " " + _timestamp + " " + _cookie);
 
         // write temp file
-        PrintWriter w = new PrintWriter(new FileOutputStream(temp));
-        for (String l : lines) {
-            w.println(l);
-        }
-        w.close();
+        Files.writeString(temp.toPath(), String.join(System.lineSeparator(), lines), Charset.defaultCharset(),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
         // atomically move to old file
         if (!temp.renameTo(cookiefile)) {
