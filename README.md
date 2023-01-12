@@ -57,7 +57,12 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed 'type' was not passed when creating dynamic proxy, thanks to [drivera73](https://github.com/drivera73) ([PR#198](https://github.com/hypfvieh/dbus-java/pull/198))
    - Fixed some possible NullPointerExceptions ([#201](https://github.com/hypfvieh/dbus-java/issues/201), [#202](https://github.com/hypfvieh/dbus-java/issues/202), [#204](https://github.com/hypfvieh/dbus-java/issues/204))
    - Improved encapsulation in BusAddress (and subclasses), deprecated `getParameter(String)` method ([#202](https://github.com/hypfvieh/dbus-java/issues/202))
-
+   - Fixed potentially leaking streams in `SASL` `addCookie()`/`findCookie()` methods ([#205](https://github.com/hypfvieh/dbus-java/issues/205))
+   - Replaced old school `PrintStream` file writing with `Files.write` ([#205](https://github.com/hypfvieh/dbus-java/issues/205))
+   - Replaced usages of calls to `System.currentMillis()` for locking and waiting due to possible issues when NTP changes time during lock/wait ([#206](https://github.com/hypfvieh/dbus-java/issues/206))
+   - Reduced duplicated code ([#206](https://github.com/hypfvieh/dbus-java/issues/206))
+   - Updated PMD rules / enabled build failing when PMD/Checkstyle rules are violated
+   - Replaced most usages of `System.out.print` and friends in unit tests (use a proper logger instead)
 
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
