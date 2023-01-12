@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.test.helper.twopart;
 
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartObject;
+import org.slf4j.LoggerFactory;
 
 public final class TwoPartTestClient {
 
@@ -21,7 +22,7 @@ public final class TwoPartTestClient {
 
         @Override
         public String getName() {
-            System.out.println("client name");
+            LoggerFactory.getLogger(getClass()).debug("client name");
             return toString();
         }
     }

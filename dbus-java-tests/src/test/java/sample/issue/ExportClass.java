@@ -3,6 +3,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -25,11 +26,11 @@ public class ExportClass implements DBusInterface {
             ExportClass ex = new ExportClass();
             conn.exportObject("/path", ex);
 
-            System.out.println("Exported object, waiting");
+            LoggerFactory.getLogger(ExportClass.class).debug("Exported object, waiting");
             Thread.sleep(5000);
 
             conn.unExportObject("/path");
-            System.out.println("Unexported object, waiting");
+            LoggerFactory.getLogger(ExportClass.class).debug("Unexported object, waiting");
 
             Thread.sleep(5000);
         }

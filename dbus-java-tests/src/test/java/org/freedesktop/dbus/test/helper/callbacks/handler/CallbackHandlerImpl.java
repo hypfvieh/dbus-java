@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.test.helper.SampleException;
+import org.slf4j.LoggerFactory;
 
 import java.text.Collator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +24,7 @@ public class CallbackHandlerImpl implements CallbackHandler<String> {
     public void handle(String _r) {
         testHandleCalls.incrementAndGet();
 
-        System.out.println("Handling callback: " + _r);
+        LoggerFactory.getLogger(getClass()).debug("Handling callback: " + _r);
         Collator col = Collator.getInstance();
         col.setDecomposition(Collator.FULL_DECOMPOSITION);
         col.setStrength(Collator.PRIMARY);
@@ -36,7 +37,7 @@ public class CallbackHandlerImpl implements CallbackHandler<String> {
     public void handleError(DBusExecutionException _e) {
         testErrorCalls.incrementAndGet();
 
-        System.out.println("Handling error callback: " + _e + " message = '" + _e.getMessage() + "'");
+        LoggerFactory.getLogger(getClass()).debug("Handling error callback: " + _e + " message = '" + _e.getMessage() + "'");
         if (!(_e instanceof SampleException)) {
             fail("Exception is of the wrong sort");
         }

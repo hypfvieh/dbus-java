@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     private final DBusConnection conn;
 
@@ -29,20 +29,19 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
     @Override
     public TwoPartObject getNew() {
         TwoPartObject o = new TwoPartTestObject();
-        System.out.println("export new");
+        logger.debug("export new");
         try {
             conn.exportObject("/12345", o);
         } catch (Exception _ex) {
-
             logger.debug("Caught exception: {}", _ex.getMessage());
         }
-        System.out.println("give new");
+        logger.debug("give new");
         return o;
     }
 
     @Override
     public void handle(TwoPartInterface.TwoPartSignal _s) {
-        System.out.println("Got: " + _s.o);
+        logger.debug("Got: " + _s.o);
     }
 
     public class TwoPartTestObject implements TwoPartObject {

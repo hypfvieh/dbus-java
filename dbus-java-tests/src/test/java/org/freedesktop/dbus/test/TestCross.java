@@ -60,12 +60,12 @@ public class TestCross extends AbstractDBusBaseTest {
 
             /* report results */
             for (String s : client.getPassed()) {
-                System.out.println(s + " pass");
+                logger.info(s + " pass");
             }
 
             for (Entry<String, List<String>> s : client.getFailed().entrySet()) {
                 for (String msg : s.getValue()) {
-                    System.out.println(s.getKey() + " failed: " + msg);
+                    logger.error(s.getKey() + " failed: " + msg);
                 }
             }
 
@@ -100,10 +100,10 @@ public class TestCross extends AbstractDBusBaseTest {
                     }
                 }
                 for (String s : cts.getDone()) {
-                    System.out.println(s + " ok");
+                    logger.info(s + " ok");
                 }
                 for (String s : cts.getNotdone()) {
-                    System.out.println("---> " + s + " untested");
+                    logger.warn("---> " + s + " untested");
                 }
                 conn.disconnect();
             } catch (DBusException | IOException _exDe) {

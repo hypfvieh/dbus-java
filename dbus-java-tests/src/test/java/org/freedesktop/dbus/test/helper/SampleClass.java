@@ -23,6 +23,8 @@ import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -34,7 +36,10 @@ import java.util.Map;
 
 @SuppressWarnings({"checkstyle:methodname"})
 public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties {
-    private final DBusConnection conn;
+
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final DBusConnection   conn;
 
     public SampleClass(DBusConnection _conn) {
         this.conn = _conn;
@@ -87,17 +92,17 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public void waitawhile() {
-        System.out.println("Sleeping.");
+        logger.debug("Sleeping.");
         try {
             Thread.sleep(1000);
         } catch (InterruptedException _ex) {
         }
-        System.out.println("Done sleeping.");
+        logger.debug("Done sleeping.");
     }
 
     @Override
     public <A> SampleTuple<String, List<Integer>, Boolean> show(A _in) {
-        System.out.println("Showing Stuff: " + _in.getClass() + "(" + _in + ")");
+        logger.debug("Showing Stuff: " + _in.getClass() + "(" + _in + ")");
         if (!(_in instanceof Integer) || ((Integer) _in).intValue() != 234) {
             fail("show received the wrong arguments");
         }
@@ -110,8 +115,8 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     @SuppressWarnings("unchecked")
     public <T> T dostuff(SampleStruct _foo) {
-        System.out.println("Doing Stuff " + _foo);
-        System.out.println(" -- (" + _foo.getStringValue().getClass() + ", " + _foo.getInt32Value().getClass() + ", " + _foo.getVariantValue().getClass() + ")");
+        logger.debug("Doing Stuff " + _foo);
+        logger.debug(" -- (" + _foo.getStringValue().getClass() + ", " + _foo.getInt32Value().getClass() + ", " + _foo.getVariantValue().getClass() + ")");
         if (!(_foo instanceof SampleStruct) || !(_foo.getStringValue() instanceof String)
                 || !(_foo.getInt32Value() instanceof UInt32) || !(_foo.getVariantValue() instanceof Variant)
                 || !"bar".equals(_foo.getStringValue()) || _foo.getInt32Value().intValue() != 52
@@ -136,23 +141,23 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     /** The method we are exporting to the Bus. */
     @Override
     public List<Integer> sampleArray(List<String> _ss, Integer[] _is, long[] _ls) {
-        System.out.println("Got an array:");
+        logger.debug("Got an array:");
         for (String s : _ss) {
-            System.out.println("--" + s);
+            logger.debug("--" + s);
         }
         if (_ss.size() != 5 || !"hi".equals(_ss.get(0)) || !"hello".equals(_ss.get(1)) || !"hej".equals(_ss.get(2)) || !"hey".equals(_ss.get(3)) || !"aloha".equals(_ss.get(4))) {
             fail("sampleArray, String array contents incorrect");
         }
-        System.out.println("Got an array:");
+        logger.debug("Got an array:");
         for (Integer i : _is) {
-            System.out.println("--" + i);
+            logger.debug("--" + i);
         }
         if (_is.length != 4 || _is[0].intValue() != 1 || _is[1].intValue() != 5 || _is[2].intValue() != 7 || _is[3].intValue() != 9) {
             fail("sampleArray, Integer array contents incorrect");
         }
-        System.out.println("Got an array:");
+        logger.debug("Got an array:");
         for (long l : _ls) {
-            System.out.println("--" + l);
+            logger.debug("--" + l);
         }
         if (_ls.length != 4 || _ls[0] != 2 || _ls[1] != 6 || _ls[2] != 8 || _ls[3] != 12) {
             fail("sampleArray, Integer array contents incorrect");
@@ -178,7 +183,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public boolean check() {
-        System.out.println("Being checked");
+        logger.debug("Being checked");
         return false;
     }
 
@@ -242,7 +247,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public SampleSerializable<String> testSerializable(byte _b, SampleSerializable<String> _s, int _i) {
-        System.out.println("Recieving TestSerializable: " + _s);
+        logger.debug("Recieving TestSerializable: " + _s);
         if (_b != 12 || _i != 13 || !(_s.getInt() == 1) || !(_s.getString().equals("woo"))
                 || !(_s.getList().size() == 3) || !(_s.getList().get(0) == 1)
                 || !(_s.getList().get(1) == 2) || !(_s.getList().get(2) == 3)) {
@@ -374,6 +379,6 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public void thisShouldBeIgnored() {
-        System.out.println("You should never see this message!");
+        logger.error("You should never see this message!");
     }
 }

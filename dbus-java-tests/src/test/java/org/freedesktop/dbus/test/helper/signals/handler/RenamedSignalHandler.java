@@ -15,6 +15,6 @@ public class RenamedSignalHandler extends SignalHandlerBase<TestRenamedSignal> {
     /** Handling a signal */
     @Override
     public void handleImpl(TestRenamedSignal _t) {
-        System.out.println("RenamedSignalHandler called");
+        logger.debug("RenamedSignalHandler called");
     }
 }

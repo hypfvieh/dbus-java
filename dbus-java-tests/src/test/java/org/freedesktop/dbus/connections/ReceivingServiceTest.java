@@ -35,7 +35,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int fails = service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi"));
+        int fails = service.execOrFail(ExecutorNames.SIGNAL, () -> logger.debug("hi"));
 
         assertEquals(0, fails, "No retry attempt expected");
     }
@@ -64,7 +64,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int fails = service.execSignalHandler(() -> System.out.println("hi"));
+        int fails = service.execSignalHandler(() -> logger.debug("hi"));
 
         assertEquals(5, fails, "5 retry attempts expected");
     }
@@ -83,7 +83,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int fails = service.execMethodCallHandler(() -> System.out.println("hi"));
+        int fails = service.execMethodCallHandler(() -> logger.debug("hi"));
 
         assertEquals(ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES, fails,
                 ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES + " retry attempts expected");
@@ -110,7 +110,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int fails = service.execMethodReturnHandler(() -> System.out.println("hi"));
+        int fails = service.execMethodReturnHandler(() -> logger.debug("hi"));
 
         assertEquals(ReceivingService.MAX_RETRIES, fails, ReceivingService.MAX_RETRIES + " retry attempts expected");
     }
@@ -129,7 +129,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int noExecName = service.execOrFail(null, () -> System.out.println("hi"));
+        int noExecName = service.execOrFail(null, () -> logger.debug("hi"));
         int noRunnable = service.execOrFail(ExecutorNames.METHODCALL, null);
         int nonOfAll = service.execOrFail(null, null);
 
@@ -164,7 +164,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        int fails = service.execErrorHandler(() -> System.out.println("hi"));
+        int fails = service.execErrorHandler(() -> logger.debug("hi"));
 
         assertEquals(0, fails, "0 retry attempts expected");
         assertFalse(handlerWasCalled.get(), "Handler should not have been called");
@@ -185,7 +185,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         };
 
         IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
-                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> logger.debug("hi")));
         assertEquals("No executor found for " + ExecutorNames.SIGNAL, ex.getMessage());
     }
 
@@ -206,14 +206,14 @@ class ReceivingServiceTest extends AbstractBaseTest {
         };
 
         IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
-                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> logger.debug("hi")));
         assertEquals("Receiving service already closed", ex.getMessage());
 
         exec.shutdown = false;
         exec.terminated = true;
 
         IllegalThreadPoolStateException ex2 = assertThrows(IllegalThreadPoolStateException.class,
-                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> logger.debug("hi")));
         assertEquals("Receiving service already closed", ex2.getMessage());
     }
 
@@ -234,7 +234,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         service.shutdownNow();
 
         IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
-                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> logger.debug("hi")));
         assertEquals("Receiving service already closed", ex.getMessage());
 
     }

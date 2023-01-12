@@ -32,7 +32,7 @@ public class TestDisconnectStuff extends AbstractDBusBaseTest {
             Thread.sleep(1000L);
             serverConnection.disconnect();
             Thread.sleep(1000L);
-            System.out.println("getName() suceeded and returned: " + tri.getName());
+            logger.warn("getName() suceeded and returned: " + tri.getName());
             fail("Should not succeed when disconnected");
         });
 

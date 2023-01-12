@@ -12,6 +12,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 public class SignalNameTest extends AbstractBaseTest {
 
@@ -50,7 +51,7 @@ public class SignalNameTest extends AbstractBaseTest {
                 connection.addSigHandler(CustomService.CustomSignal.class, new DBusSigHandler<CustomService.CustomSignal>() {
                     @Override
                     public void handle(CustomService.CustomSignal _s) {
-                        System.out.printf("Received signal: %s%n", _s.data);
+                        logger.debug("Received signal: {}", _s.data);
                     }
                 });
 
@@ -82,7 +83,7 @@ public class SignalNameTest extends AbstractBaseTest {
     public static class MyCustomImpl implements CustomService {
         @Override
         public void nothing() {
-            System.out.println("Just doing nothing");
+            LoggerFactory.getLogger(getClass()).debug("Just doing nothing");
         }
 
         @Override

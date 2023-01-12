@@ -24,19 +24,19 @@ public class TestTwoPart extends AbstractDBusBaseTest {
         }
 
         try {
-            System.out.println("get conn");
+            logger.debug("get conn");
             DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
 
-            System.out.println("get remote");
+            logger.debug("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
 
             assertNotNull(remote);
 
-            System.out.println("get object");
+            logger.debug("get object");
             TwoPartObject o = remote.getNew();
             assertNotNull(o);
 
-            System.out.println("get name");
+            logger.debug("get name");
             assertEquals("give name", o.getName());
 
             TwoPartTestObject tpto = new TwoPartTestObject();

@@ -2,6 +2,7 @@ package org.freedesktop.dbus.test.helper.signals.handler;
 
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.slf4j.LoggerFactory;
 
 public class GenericSignalHandler implements DBusSigHandler<DBusSignal> {
 
@@ -14,7 +15,7 @@ public class GenericSignalHandler implements DBusSigHandler<DBusSignal> {
     @Override
     public void handle(DBusSignal _s) {
         testRuns++;
-        System.out.println("GenericSignalHandler called");
+        LoggerFactory.getLogger(getClass()).debug("GenericSignalHandler called");
     }
 
     public int getActualTestRuns() {

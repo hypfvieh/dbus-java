@@ -9,6 +9,8 @@ import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
 import org.freedesktop.dbus.types.UInt16;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -18,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 public class P2pTestServer implements SampleRemoteInterface {
+
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public int[][] teststructstruct(SampleStruct3 _in) {
         List<List<Integer>> lli = _in.getInnerListOfLists();
@@ -50,7 +55,7 @@ public class P2pTestServer implements SampleRemoteInterface {
 
     @Override
     public String getName() {
-        System.out.println("getName called");
+        logger.debug("getName called");
         return "Peer2Peer Server";
     }
 
@@ -61,7 +66,7 @@ public class P2pTestServer implements SampleRemoteInterface {
 
     @Override
     public void throwme() throws SampleException {
-        System.out.println("throwme called");
+        logger.debug("throwme called");
         throw new SampleException("BOO");
     }
 
@@ -114,7 +119,7 @@ public class P2pTestServer implements SampleRemoteInterface {
 
     @Override
     public float testfloat(float[] _f) {
-        System.out.println("got float: " + Arrays.toString(_f));
+        logger.debug("got float: " + Arrays.toString(_f));
         return _f[0];
     }
 
@@ -126,13 +131,13 @@ public class P2pTestServer implements SampleRemoteInterface {
         w.flush();
         w.close();
         try (DirectConnection dc = DirectConnectionBuilder.forAddress(address + ",listen=true").build()) {
-            System.out.println("Connected");
+            LoggerFactory.getLogger(P2pTestServer.class).debug("Connected");
             dc.exportObject("/Test", new P2pTestServer());
         }
     }
 
     @Override
     public void thisShouldBeIgnored() {
-        System.out.println("You should never see this message!");
+        logger.error("You should never see this message!");
     }
 }

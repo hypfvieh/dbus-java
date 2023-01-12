@@ -14,6 +14,6 @@ public class EmptySignalHandler extends AbstractSignalHandler<TestEmptySignal> {
     /** Handling a signal */
     @Override
     public void handleImpl(TestEmptySignal _t) {
-        System.out.println("EmptySignalHandler called");
+        logger.debug("EmptySignalHandler called");
     }
 }

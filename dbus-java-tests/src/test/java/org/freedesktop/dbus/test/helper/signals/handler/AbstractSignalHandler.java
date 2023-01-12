@@ -3,6 +3,8 @@ package org.freedesktop.dbus.test.helper.signals.handler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.opentest4j.AssertionFailedError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +20,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
     //CHECKSTYLE:OFF
     protected AssertionFailedError assertionError;
+    protected transient Logger logger = LoggerFactory.getLogger(getClass());
     //CHECKSTYLE:ON
 
     public AbstractSignalHandler(int _expectedRuns) {
@@ -34,7 +37,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
         setFailed(getExpectedRuns() > getActualTestRuns(), "Signal received to often.");
 
-        System.out.println(getClass().getSimpleName() + " running");
+        logger.debug(getClass().getSimpleName() + " running");
 
         handleImpl(_s);
     }

@@ -19,12 +19,12 @@ public class ArraySignalHandler extends AbstractSignalHandler<SampleSignals.Test
         try {
             setFailed(_t.getListOfStruct().size() != 1, "Incorrect TestArraySignal array length: should be 1, actually " + _t.getListOfStruct().size());
 
-            System.out.println("Got a test array signal with Parameters: ");
+            logger.debug("Got a test array signal with Parameters: ");
             for (String str : _t.getListOfStruct().get(0).getValueList()) {
-                System.out.println("--" + str);
+                logger.debug("--{}", str);
             }
-            System.out.println(_t.getListOfStruct().get(0).getVariantValue().getType());
-            System.out.println(_t.getListOfStruct().get(0).getVariantValue().getValue());
+            logger.debug("{}", _t.getListOfStruct().get(0).getVariantValue().getType());
+            logger.debug("{}", _t.getListOfStruct().get(0).getVariantValue().getValue());
 
             boolean b = !(_t.getListOfStruct().get(0).getVariantValue().getValue() instanceof UInt64) || 567L != ((UInt64) _t.getListOfStruct().get(0).getVariantValue().getValue()).longValue()
                     || _t.getListOfStruct().get(0).getValueList().size() != 5 || !"hi".equals(_t.getListOfStruct().get(0).getValueList().get(0))
