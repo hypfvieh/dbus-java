@@ -122,16 +122,7 @@ public class SASL {
         }
 
         // acquire lock
-        TimeMeasure tm = new TimeMeasure();
-
-        while (!lock.createNewFile() && LOCK_TIMEOUT > tm.getElapsed()) {
-            logger.trace("Lock file {} present, waiting", lock);
-            try {
-                Thread.sleep(50L);
-            } catch (InterruptedException _ex) {
-                logger.trace("Interrupted while waiting for lock file {}", lock);
-            }
-        }
+        Util.waitFor("Lock file " + lock, () -> lock.createNewFile(), LOCK_TIMEOUT, 50);
 
         // read old file
         List<String> lines = new ArrayList<>();

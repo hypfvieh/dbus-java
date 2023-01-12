@@ -30,7 +30,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -607,16 +606,18 @@ public final class Util {
      * This method will call the provided supplier every _sleepTime milliseconds to check
      * if the supplier returns true.<br>
      * If supplier returns true, method will return.
-     * If no true value is present after the defined _timeoutMs a {@link IllegalStateException} is thrown.
+     * If no value is present after the defined _timeoutMs a {@link IllegalStateException} is thrown.
      *
      * @param _lockName name for the lock (used in exception text and logging)
      * @param _wait supplier to wait for
      * @param _timeoutMs timeout in milliseconds when wait will fail
      * @param _sleepTime sleep time between each retries
      *
-     * @throws IllegalStateException when timeout is reached
+     * @param <T> exception type which might be thrown
+     *
+     * @throws T when timeout is reached
      */
-    public static void waitFor(String _lockName, Supplier<Boolean> _wait, long _timeoutMs, long _sleepTime) throws IllegalStateException {
+    public static <T extends Throwable> void waitFor(String _lockName, IThrowingSupplier<Boolean, T> _wait, long _timeoutMs, long _sleepTime) throws T {
         long waited = 0;
 
         while (!_wait.get()) {
