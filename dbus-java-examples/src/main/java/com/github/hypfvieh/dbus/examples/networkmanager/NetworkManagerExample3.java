@@ -51,7 +51,7 @@ public final class NetworkManagerExample3 {
 
             for (DBusInterface connectionIf : settings.ListConnections()) {
                 Connection connection = dbusConn.getRemoteObject("org.freedesktop.NetworkManager",
-                        connectionIf.getObjectPath().toString(), Connection.class);
+                        connectionIf.getObjectPath(), Connection.class);
 
                 Map<String, Map<String, Variant<?>>> connectionSettings = connection.GetSettings();
 

@@ -76,7 +76,7 @@ public class DBusDaemon extends Thread implements Closeable {
             new DBusDaemonSenderThread();
     private final AtomicBoolean                                                 run             =
             new AtomicBoolean(false);
-    private AtomicInteger                                                       nextUnique      = new AtomicInteger(0);
+    private final AtomicInteger                                                 nextUnique      = new AtomicInteger(0);
 
     public DBusDaemon() {
         setName(getClass().getSimpleName() + "-Thread");

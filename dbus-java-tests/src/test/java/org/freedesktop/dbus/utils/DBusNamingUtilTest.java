@@ -15,13 +15,13 @@ import java.lang.reflect.Method;
 class DBusNamingUtilTest {
 
     @Test
-    void getInterfaceNameTest() {
+    void testGetInterfaceName() {
         assertEquals("org.freedesktop.dbus.utils.DBusNamingUtilTest.Foo", DBusNamingUtil.getInterfaceName(Foo.class));
         assertEquals("com.example.Bar", DBusNamingUtil.getInterfaceName(Bar.class));
     }
 
     @Test
-    void getMethodNameTest() throws NoSuchMethodException {
+    void testGetMethodName() throws NoSuchMethodException {
         Method method1 = InterfaceWithMethodsAndSignals.class.getMethod("method1");
         assertEquals("method1", DBusNamingUtil.getMethodName(method1));
         Method method2 = InterfaceWithMethodsAndSignals.class.getMethod("method2");
@@ -29,7 +29,7 @@ class DBusNamingUtilTest {
     }
 
     @Test
-    void getSignalNameTest() {
+    void testGetSignalName() {
         Class<? extends DBusSignal> signal1 = InterfaceWithMethodsAndSignals.Signal1.class;
         assertEquals("Signal1", DBusNamingUtil.getSignalName(signal1));
         Class<? extends DBusSignal> signal2 = InterfaceWithMethodsAndSignals.Signal2.class;
@@ -37,7 +37,7 @@ class DBusNamingUtilTest {
     }
 
     @Test
-    void getAnnotationNameTest() {
+    void testGetAnnotationName() {
         assertEquals("org.freedesktop.DBus.Deprecated", DBusNamingUtil.getAnnotationName(DeprecatedOnDBus.class));
     }
 

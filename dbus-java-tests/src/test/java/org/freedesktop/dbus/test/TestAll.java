@@ -203,13 +203,13 @@ public class TestAll extends AbstractDBusBaseTest {
         assertTrue(psh.getActualTestRuns() == 1, "PathSignalHandler should have been called");
         assertTrue(osh.getActualTestRuns() == 1, "ObjectSignalHandler should have been called");
 
-        assertDoesNotThrow(() -> sigh.getAssertionError());
-        assertDoesNotThrow(() -> esh.getAssertionError());
-        assertDoesNotThrow(() -> rsh.getAssertionError());
-        assertDoesNotThrow(() -> ash.getAssertionError());
-        assertDoesNotThrow(() -> ensh.getAssertionError());
-        assertDoesNotThrow(() -> psh.getAssertionError());
-        assertDoesNotThrow(() -> osh.getAssertionError());
+        assertDoesNotThrow(() -> sigh.throwAssertionError());
+        assertDoesNotThrow(() -> esh.throwAssertionError());
+        assertDoesNotThrow(() -> rsh.throwAssertionError());
+        assertDoesNotThrow(() -> ash.throwAssertionError());
+        assertDoesNotThrow(() -> ensh.throwAssertionError());
+        assertDoesNotThrow(() -> psh.throwAssertionError());
+        assertDoesNotThrow(() -> osh.throwAssertionError());
 
         /** Remove sig handler */
         clientconn.removeSigHandler(SampleSignals.TestSignal.class, sigh);

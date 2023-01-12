@@ -19,46 +19,37 @@ public class ProfilerInstance implements Profiler {
 
     @Override
     public void array(int[] _v) {
-        return;
     }
 
     @Override
     public void stringarray(String[] _v) {
-        return;
     }
 
     @Override
     public void map(Map<String, String> _m) {
-        return;
     }
 
     @Override
     public void list(List<String> _l) {
-        return;
     }
 
     @Override
     public void bytes(byte[] _b) {
-        return;
     }
 
     @Override
     public void struct(ProfileStruct _ps) {
-        return;
     }
 
     @Override
     public void string(String _s) {
-        return;
     }
 
     @Override
     public void NoReply() {
-        return;
     }
 
     @Override
     public void Pong() {
-        return;
     }
 }

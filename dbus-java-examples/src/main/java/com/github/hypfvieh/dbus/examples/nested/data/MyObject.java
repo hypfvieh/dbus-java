@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class MyObject implements MyInterface {
 
-    private List<MyInterfacePart> parts = new ArrayList<>();
+    private final List<MyInterfacePart> parts = new ArrayList<>();
 
     @Override
     public String sayHello() {

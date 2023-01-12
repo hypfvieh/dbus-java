@@ -4,9 +4,13 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartInterface;
 import org.freedesktop.dbus.test.helper.interfaces.TwoPartObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPartInterface.TwoPartSignal> {
-    private DBusConnection conn;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final DBusConnection conn;
 
     public TwoPartTestServer(DBusConnection _conn) {
         this.conn = _conn;
@@ -29,6 +33,8 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
         try {
             conn.exportObject("/12345", o);
         } catch (Exception _ex) {
+
+            logger.debug("Caught exception: {}", _ex.getMessage());
         }
         System.out.println("give new");
         return o;

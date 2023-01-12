@@ -68,7 +68,7 @@ public class ExportNestedTest extends AbstractDBusBaseTest {
 
     public static class MyObject implements MyInterface {
 
-        private List<MyInterfacePart> parts = new ArrayList<>();
+        private final List<MyInterfacePart> parts = new ArrayList<>();
 
         @Override
         public String sayHello() {
@@ -80,6 +80,7 @@ public class ExportNestedTest extends AbstractDBusBaseTest {
             return parts;
         }
 
+        @Override
         public String getObjectPath() {
             return "/com/acme/MyObject";
         }
@@ -121,6 +122,7 @@ public class ExportNestedTest extends AbstractDBusBaseTest {
             this.val2 = _val2;
         }
 
+        @Override
         public String getObjectPath() {
             return "/com/acme/MyPart" + val1;
         }

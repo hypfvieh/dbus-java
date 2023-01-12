@@ -47,10 +47,10 @@ public class TestDisconnectCallback extends AbstractDBusBaseTest {
     }
 
     static class TestCallback implements IDisconnectCallback {
-        private AtomicInteger clientDisconnectCounter = new AtomicInteger(0);
-        private Map<Integer, Integer> expectedCounter = new HashMap<>();
-        private AtomicInteger disconnectErrorCounter = new AtomicInteger(0);
-        private AtomicInteger exceptionTerminateCounter = new AtomicInteger(0);
+        private final AtomicInteger clientDisconnectCounter = new AtomicInteger(0);
+        private final Map<Integer, Integer> expectedCounter = new HashMap<>();
+        private final AtomicInteger disconnectErrorCounter = new AtomicInteger(0);
+        private final AtomicInteger exceptionTerminateCounter = new AtomicInteger(0);
 
         @Override
         public void clientDisconnect() {

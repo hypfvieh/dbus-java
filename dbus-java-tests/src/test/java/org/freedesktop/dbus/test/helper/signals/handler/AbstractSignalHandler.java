@@ -51,7 +51,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
         return expectedRuns;
     }
 
-    public void getAssertionError() {
+    public void throwAssertionError() {
         if (assertionError != null) {
             throw assertionError;
         }

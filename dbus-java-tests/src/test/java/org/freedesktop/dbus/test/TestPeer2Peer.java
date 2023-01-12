@@ -30,14 +30,15 @@ public class TestPeer2Peer extends AbstractBaseTest {
             Thread.sleep(500L);
             LoggerFactory.getLogger(getClass()).info("Client: Connected");
             SampleRemoteInterface tri = (SampleRemoteInterface) dc.getRemoteObject("/Test");
-            System.out.println(tri.getName());
-            System.out.println(tri.testfloat(new float[] {
+            logger.debug("{}", tri.getName());
+            logger.debug("{}", tri.testfloat(new float[] {
                     17.093f, -23f, 0.0f, 31.42f
             }));
 
             try {
                 tri.throwme();
             } catch (SampleException _ex) {
+                logger.debug("Caught exception: {}", _ex.getMessage());
             }
 
             Peer peer = dc.getRemoteObject("/Test", Peer.class);

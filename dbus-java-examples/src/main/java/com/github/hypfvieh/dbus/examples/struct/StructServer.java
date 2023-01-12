@@ -1,8 +1,11 @@
 package com.github.hypfvieh.dbus.examples.struct;
 
+import org.freedesktop.dbus.StructHelper;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.types.Variant;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Sample on how to use structs wrapped in Variant or not wrapped at all.
@@ -57,18 +60,17 @@ public class StructServer implements IStructServer {
 
     @Override
     public void setStructFromVariant(Variant<?> _variant) {
-//        try {
-//            // SampleStruct newInstance = StructHelper.createStruct(argTypes, _variant.getValue(), SampleStruct.class);
-//
-//            // System.out.println("The variant struct says: " + newInstance.getAnInt() + " is " +
-//            // newInstance.getaString());
-//            method2Done = true;
-//
-//        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-//                | InvocationTargetException | NoSuchMethodException | SecurityException _ex) {
-//            // TODO Auto-generated catch block
-//            _ex.printStackTrace();
-//        }
+        try {
+            SampleStruct newInstance = StructHelper.createStructFromVariant(_variant, SampleStruct.class);
+
+            System.out.println("The variant struct says: " + newInstance.getAnInt() + " is "
+                    + newInstance.getaString());
+            method2Done = true;
+
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException _ex) {
+            _ex.printStackTrace();
+        }
     }
 
 }

@@ -335,7 +335,7 @@ public final class Profile {
 
         @Override
         public void handle(Profiler.ProfileSignal _s) {
-            if (0 == (count++ % Profile.SIGNAL_INNER)) {
+            if (0 == count++ % Profile.SIGNAL_INNER) {
                 System.out.print("-");
             }
         }

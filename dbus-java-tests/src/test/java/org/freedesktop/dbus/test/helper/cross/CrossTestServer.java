@@ -23,10 +23,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class CrossTestServer implements SamplesInterface, SingleSample, DBusSigHandler<Binding.SampleClient.Trigger> {
-    private DBusConnection conn;
-    private volatile boolean                run     = true;
-    private Set<String>    done    = new TreeSet<>();
-    private Set<String>    notdone = new TreeSet<>();
+    private final DBusConnection conn;
+
+    private volatile boolean     run     = true;
+    private Set<String>          done    = new TreeSet<>();
+    private Set<String>          notdone = new TreeSet<>();
     {
         notdone.add("org.freedesktop.DBus.Binding.Tests.Identity");
         notdone.add("org.freedesktop.DBus.Binding.Tests.IdentityByte");
@@ -294,7 +295,7 @@ public class CrossTestServer implements SamplesInterface, SingleSample, DBusSigH
         notdone.remove("org.freedesktop.DBus.Binding.SingleTests.Sum");
         int sum = 0;
         for (byte b : _a) {
-            sum += (b < 0 ? b + 256 : b);
+            sum += b < 0 ? b + 256 : b;
         }
         return new UInt32(sum % (UInt32.MAX_VALUE + 1));
     }

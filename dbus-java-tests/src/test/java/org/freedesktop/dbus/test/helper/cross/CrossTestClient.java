@@ -35,9 +35,9 @@ import java.util.TreeSet;
 
 public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Binding.SampleSignals.Triggered> {
 
-    private static final Logger              LOGGER = LoggerFactory.getLogger(CrossTestClient.class);
+    private static final Logger            LOGGER = LoggerFactory.getLogger(CrossTestClient.class);
 
-    private DBusConnection                   conn;
+    private final DBusConnection           conn;
     //CHECKSTYLE:OFF
     public final Set<String>               passed = new TreeSet<>();
     public final Map<String, List<String>> failed = new HashMap<>();
@@ -79,7 +79,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
     @Override
     public void Response(UInt16 _a, double _b) {
         failed.remove("org.freedesktop.DBus.Binding.TestClient.Response");
-        if (_a.equals(new UInt16(15)) && (_b == 12.5)) {
+        if (_a.equals(new UInt16(15)) && _b == 12.5) {
             pass("org.freedesktop.DBus.Binding.TestClient.Response");
         } else {
             fail("org.freedesktop.DBus.Binding.TestClient.Response", "Incorrect parameters; expected 15, 12.5 got " + _a + ", " + _b);
@@ -153,7 +153,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
                     fail(_iface.getName() + "." + _method, msg);
                 }
             } else {
-                if (o == _rv || (o != null && o.equals(_rv))) {
+                if (o == _rv || o != null && o.equals(_rv)) {
                     pass(_iface.getName() + "." + _method);
                 } else {
                     fail(_iface.getName() + "." + _method, msg);
@@ -202,6 +202,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         }
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public static <T> boolean setCompareLists(List<T> _a, List<T> _b) {
         if (_a.size() != _b.size()) {
             return false;
@@ -413,7 +414,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
 
         int[] is = new int[0];
         test(SamplesInterface.class, _tests, "Sum", 0L, is);
-        int len = (r.nextInt() % 100) + 15;
+        int len = r.nextInt() % 100 + 15;
         len = (len < 0 ? -len : len) + 15;
         is = new int[len];
         long result = 0;
@@ -425,18 +426,18 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
 
         byte[] bs = new byte[0];
         test(Binding.SingleSample.class, _singletests, "Sum", new UInt32(0), bs);
-        len = (r.nextInt() % 100);
+        len = r.nextInt() % 100;
         len = (len < 0 ? -len : len) + 15;
         bs = new byte[len];
         int res = 0;
         for (i = 0; i < len; i++) {
             bs[i] = (byte) r.nextInt();
-            res += (bs[i] < 0 ? bs[i] + 256 : bs[i]);
+            res += bs[i] < 0 ? bs[i] + 256 : bs[i];
         }
         test(Binding.SingleSample.class, _singletests, "Sum", new UInt32(res % (UInt32.MAX_VALUE + 1)), bs);
 
         test(SamplesInterface.class, _tests, "DeStruct",
-                new org.freedesktop.dbus.test.helper.interfaces.Binding.Triplet<>("hi", new UInt32(12),
+                new Binding.Triplet<>("hi", new UInt32(12),
                         Short.valueOf((short) 99)), new CrossSampleStruct("hi", new UInt32(12),
                                 Short.valueOf((short) 99)));
 
@@ -487,7 +488,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         Object array = Array.newInstance(_arrayType, 0);
         test(_iface, _proxy, _method, array, array);
         Random r = new Random();
-        int l = (r.nextInt() % 100);
+        int l = r.nextInt() % 100;
         array = Array.newInstance(_arrayType, (l < 0 ? -l : l) + 15);
         if (null != _content) {
             Arrays.fill((Object[]) array, _content);

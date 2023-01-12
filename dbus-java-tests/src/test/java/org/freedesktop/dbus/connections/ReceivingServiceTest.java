@@ -29,6 +29,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -46,6 +47,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
     void testRetryHandlerCalled5Times() {
         IThreadPoolRetryHandler handler = new IThreadPoolRetryHandler() {
             private int count = 0;
+
             @Override
             public boolean handle(ExecutorNames _executor, Exception _ex) {
                 count++;
@@ -56,6 +58,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -74,6 +77,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -81,7 +85,8 @@ class ReceivingServiceTest extends AbstractBaseTest {
 
         int fails = service.execMethodCallHandler(() -> System.out.println("hi"));
 
-        assertEquals(ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES, fails, ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES + " retry attempts expected");
+        assertEquals(ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES, fails,
+                ReceivingServiceConfigBuilder.DEFAULT_HANDLER_RETRIES + " retry attempts expected");
     }
 
     /**
@@ -99,6 +104,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -117,6 +123,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -149,6 +156,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 NoOpExecutorService noOpExecutorService = new NoOpExecutorService();
                 noOpExecutorService.throwException = false;
@@ -170,12 +178,14 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return null;
             }
         };
 
-        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class, () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
         assertEquals("No executor found for " + ExecutorNames.SIGNAL, ex.getMessage());
     }
 
@@ -189,18 +199,21 @@ class ReceivingServiceTest extends AbstractBaseTest {
         exec.shutdown = true;
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return exec;
             }
         };
 
-        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class, () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
         assertEquals("Receiving service already closed", ex.getMessage());
 
         exec.shutdown = false;
         exec.terminated = true;
 
-        IllegalThreadPoolStateException ex2 = assertThrows(IllegalThreadPoolStateException.class, () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+        IllegalThreadPoolStateException ex2 = assertThrows(IllegalThreadPoolStateException.class,
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
         assertEquals("Receiving service already closed", ex2.getMessage());
     }
 
@@ -212,6 +225,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService(build) {
+            @Override
             ExecutorService getExecutor(ExecutorNames _executor) {
                 return new NoOpExecutorService();
             }
@@ -219,7 +233,8 @@ class ReceivingServiceTest extends AbstractBaseTest {
 
         service.shutdownNow();
 
-        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class, () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
+        IllegalThreadPoolStateException ex = assertThrows(IllegalThreadPoolStateException.class,
+                () -> service.execOrFail(ExecutorNames.SIGNAL, () -> System.out.println("hi")));
         assertEquals("Receiving service already closed", ex.getMessage());
 
     }

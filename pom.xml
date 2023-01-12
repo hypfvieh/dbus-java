@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <junit5.minor.version>9.1</junit5.minor.version>
-        <pmd.version>6.52.0</pmd.version>
+        <pmd.version>6.53.0</pmd.version>
         <logback.version>1.4.5</logback.version>
         <slf4j.version>2.0.6</slf4j.version>
         <jnr-unixsocket.version>0.38.19</jnr-unixsocket.version>
@@ -238,6 +238,13 @@
                         </dependency>
                     </dependencies>
                     <configuration>
+                        <skip>false</skip>
+                        <failOnViolation>true</failOnViolation>
+                        <printFailingErrors>true</printFailingErrors>
+                        <includeTests>true</includeTests>
+                        <failurePriority>4</failurePriority>
+                        <!-- minimum number of tokens that need to be duplicated before it causes a violation: -->
+                        <minimumTokens>100</minimumTokens>
                         <rulesets>
                             <ruleset>${parentDir}/src/main/resources/pmd_rules.xml</ruleset>
                         </rulesets>
@@ -251,7 +258,7 @@
                     <version>3.2.0</version>
                     <configuration>
                         <skip>false</skip>
-                        <failOnViolation>false</failOnViolation>
+                        <failOnViolation>true</failOnViolation>
                         <configLocation>${parentDir}/src/main/resources/checkstyle_rules.xml</configLocation>
                         <excludes>*.jpg,*.jpeg,*.gif,*.png,*.db,*.csv</excludes>
                         <consoleOutput>true</consoleOutput>

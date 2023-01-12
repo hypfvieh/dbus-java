@@ -10,8 +10,8 @@ public interface TwoPartInterface extends DBusInterface {
     class TwoPartSignal extends DBusSignal {
         public final TwoPartObject o;
 
-        public TwoPartSignal(String path, TwoPartObject _o) throws DBusException {
-            super(path, _o);
+        public TwoPartSignal(String _path, TwoPartObject _o) throws DBusException {
+            super(_path, _o);
             this.o = _o;
         }
     }

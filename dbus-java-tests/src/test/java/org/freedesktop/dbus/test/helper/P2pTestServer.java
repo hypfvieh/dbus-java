@@ -67,7 +67,7 @@ public class P2pTestServer implements SampleRemoteInterface {
 
     @Override
     public void waitawhile() {
-        return;
+        // nothing to do
     }
 
     @Override

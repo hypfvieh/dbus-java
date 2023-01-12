@@ -234,7 +234,7 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
     private static final class ArgumentObj<T> {
         private final BiFunction<ISampleCollectionInterface, T, String> function;
         private final Function<String, T> factoryEmpty;
-        private Function<String, T> factoryNonEmpty;
+        private final Function<String, T> factoryNonEmpty;
 
         ArgumentObj(BiFunction<ISampleCollectionInterface, T, String> _function, Function<String, T> _factoryEmpty,
                 Function<String, T> _factoryNonEmpty) {

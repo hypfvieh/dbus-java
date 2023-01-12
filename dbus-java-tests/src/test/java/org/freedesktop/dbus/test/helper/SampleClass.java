@@ -34,7 +34,7 @@ import java.util.Map;
 
 @SuppressWarnings({"checkstyle:methodname"})
 public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties {
-    private DBusConnection conn;
+    private final DBusConnection conn;
 
     public SampleClass(DBusConnection _conn) {
         this.conn = _conn;
