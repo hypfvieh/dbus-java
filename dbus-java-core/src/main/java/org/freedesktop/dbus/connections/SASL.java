@@ -17,6 +17,7 @@ import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.TimeMeasure;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class SASL {
@@ -87,7 +89,6 @@ public class SASL {
      */
     public SASL(boolean _hasFileDescriptorSupport) {
         hasFileDescriptorSupport = _hasFileDescriptorSupport;
-
     }
 
     private String findCookie(String _context, String _id) throws IOException {
@@ -95,11 +96,12 @@ public class SASL {
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)))) {
             String s = null;
             String lCookie = null;
-            long now = System.currentTimeMillis() / 1000;
+
+            TimeMeasure tm = new TimeMeasure();
             while (null != (s = r.readLine())) {
                 String[] line = s.split(" ");
                 long timestamp = Long.parseLong(line[1]);
-                if (line[0].equals(_id) && !(timestamp < 0 || (now + MAX_TIME_TRAVEL_SECONDS) < timestamp || now - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
+                if (line[0].equals(_id) && !(timestamp < 0 || (tm.getElapsedSeconds() + MAX_TIME_TRAVEL_SECONDS) < timestamp || tm.getElapsedSeconds() - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
                     lCookie = line[2];
                     break;
                 }
@@ -120,9 +122,9 @@ public class SASL {
         }
 
         // acquire lock
-        long start = System.currentTimeMillis();
+        TimeMeasure tm = new TimeMeasure();
 
-        while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) {
+        while (!lock.createNewFile() && LOCK_TIMEOUT > tm.getElapsed()) {
             logger.trace("Lock file {} present, waiting", lock);
             try {
                 Thread.sleep(50L);
@@ -282,9 +284,11 @@ public class SASL {
                 logger.debug("Reply is not length 3");
                 return SaslResult.ERROR;
             }
+
             String context = reply[0];
             String id = reply[1];
             final String serverchallenge = reply[2];
+
             MessageDigest md = null;
             try {
                 md = MessageDigest.getInstance("SHA");
@@ -292,19 +296,28 @@ public class SASL {
                 logger.debug("", _ex);
                 return SaslResult.ERROR;
             }
+
             byte[] buf = new byte[8];
-            Message.marshallintBig(System.currentTimeMillis(), buf, 0, 8);
+
+            // ensure we get a (more or less unique) positive long
+            long seed = Optional.of(System.nanoTime()).map(t -> t < 0 ? t * -1 : t).get();
+
+            Message.marshallintBig(seed, buf, 0, 8);
             String clientchallenge = stupidlyEncode(md.digest(buf));
             md.reset();
-            long start = System.currentTimeMillis();
+
+            TimeMeasure tm = new TimeMeasure();
             String lCookie = null;
-            while (lCookie == null && (System.currentTimeMillis() - start) < LOCK_TIMEOUT) {
+
+            while (lCookie == null && tm.getElapsed() < LOCK_TIMEOUT) {
                 lCookie = findCookie(context, id);
             }
+
             if (lCookie == null) {
                 logger.debug("Did not find a cookie in context {}  with ID {}", context, id);
                 return SaslResult.ERROR;
             }
+
             String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
             buf = md.digest(response.getBytes());
 

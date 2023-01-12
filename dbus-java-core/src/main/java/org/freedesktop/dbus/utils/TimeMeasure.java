@@ -2,6 +2,7 @@ package org.freedesktop.dbus.utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -11,7 +12,7 @@ import java.util.TimeZone;
  */
 public class TimeMeasure {
 
-    /** Start time in milliseconds. */
+    /** Start time in nanoseconds. */
     private volatile long startTm;
 
     /** Formatter used for {@link #toString()} */
@@ -39,11 +40,11 @@ public class TimeMeasure {
     }
 
     /**
-     * Resets the start time to current time in milliseconds.
+     * Resets the start time.
      * @return the object
      */
     public final TimeMeasure reset() {
-        this.startTm = System.currentTimeMillis();
+        this.startTm = System.nanoTime();
         return this;
     }
 
@@ -60,7 +61,15 @@ public class TimeMeasure {
      * @return elapsed time in ms
      */
     public long getElapsed() {
-        return System.currentTimeMillis() - startTm;
+        return Duration.ofNanos(System.nanoTime() - startTm).toMillis();
+    }
+
+    /**
+     * Returns the elapsed time in seconds.
+     * @return elapsed time in seconds
+     */
+    public long getElapsedSeconds() {
+        return Duration.ofNanos(System.nanoTime() - startTm).toSeconds();
     }
 
     /**

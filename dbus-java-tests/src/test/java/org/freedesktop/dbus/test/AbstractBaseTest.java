@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
+import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,23 +65,7 @@ public class AbstractBaseTest extends Assertions {
         }
     }
 
-    protected void waitForDaemon(EmbeddedDBusDaemon _daemon) {
-        long sleepMs = 500;
-        long waited = 0;
-
-        do {
-            if (waited >= MAX_WAIT) {
-                throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + MAX_WAIT + " ms");
-            }
-
-            try {
-                Thread.sleep(sleepMs);
-            } catch (InterruptedException _ex) {
-                break;
-            }
-
-            waited += sleepMs;
-            logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
-        } while (!_daemon.isRunning());
+    protected static void waitForDaemon(EmbeddedDBusDaemon _daemon) {
+        Util.waitFor("EmbeddedDBusDaemon", _daemon::isRunning, MAX_WAIT, 500);
     }
 }

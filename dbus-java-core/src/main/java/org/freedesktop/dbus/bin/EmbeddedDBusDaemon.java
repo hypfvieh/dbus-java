@@ -6,6 +6,7 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,22 +102,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      */
     public void startInBackgroundAndWait(long _maxWaitMillis) {
         startInBackground();
-        long sleepMs = 100;
-        long waited = 0;
-
-        while (!isRunning()) {
-            if (waited >= _maxWaitMillis) {
-                throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + _maxWaitMillis + " ms");
-            }
-            try {
-                Thread.sleep(sleepMs);
-            } catch (InterruptedException _ex) {
-                LOGGER.debug("Interrupted while waiting for DBus daemon to start");
-                break;
-            }
-            waited += sleepMs;
-            LOGGER.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, _maxWaitMillis);
-        }
+        Util.waitFor("EmbeddedDbusDaemon", this::isRunning, _maxWaitMillis, 100);
     }
 
     /**

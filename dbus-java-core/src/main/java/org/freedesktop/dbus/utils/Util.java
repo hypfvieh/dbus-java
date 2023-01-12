@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -597,6 +598,39 @@ public final class Util {
             } catch (Exception _ex) {
                 LOGGER.error("Could not set file permissions of {} to {}", _path, _fileUnixPermissions, _ex);
             }
+        }
+    }
+
+    /**
+     * Waits for the provided supplier to return true or throws an exception.
+     * <p>
+     * This method will call the provided supplier every _sleepTime milliseconds to check
+     * if the supplier returns true.<br>
+     * If supplier returns true, method will return.
+     * If no true value is present after the defined _timeoutMs a {@link IllegalStateException} is thrown.
+     *
+     * @param _lockName name for the lock (used in exception text and logging)
+     * @param _wait supplier to wait for
+     * @param _timeoutMs timeout in milliseconds when wait will fail
+     * @param _sleepTime sleep time between each retries
+     *
+     * @throws IllegalStateException when timeout is reached
+     */
+    public static void waitFor(String _lockName, Supplier<Boolean> _wait, long _timeoutMs, long _sleepTime) throws IllegalStateException {
+        long waited = 0;
+
+        while (!_wait.get()) {
+            if (waited >= _timeoutMs) {
+                throw new IllegalStateException(_lockName + " not available in the specified time of " + _timeoutMs + " ms");
+            }
+            try {
+                Thread.sleep(_sleepTime);
+            } catch (InterruptedException _ex) {
+                LOGGER.debug("Interrupted while waiting for {}", _lockName);
+                break;
+            }
+            waited += _sleepTime;
+            LOGGER.debug("Waiting for {} to be available: {} of {} ms waited", _lockName, waited, _timeoutMs);
         }
     }
 }

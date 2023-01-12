@@ -6,6 +6,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,24 +51,7 @@ public class RunDaemon {
             daemon.startInBackground();
             log.info("Started embedded bus on address {}", listenBusAddress);
 
-            long sleepMs = 200;
-            long waited = 0;
-
-            while (!daemon.isRunning()) {
-                if (waited >= MAX_WAIT) {
-                    throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + MAX_WAIT + " ms");
-                }
-
-                try {
-                    Thread.sleep(sleepMs);
-                } catch (InterruptedException _ex) {
-                    break;
-                }
-
-                waited += sleepMs;
-                log.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, MAX_WAIT);
-            }
-
+            Util.waitFor("EmbeddedDbusDaemon", daemon::isRunning, MAX_WAIT, 200);
         }
     }
 

@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Duration;
 
 /**
  * Base test which will start a embedded DBus daemon if no UNIX transport is found.
@@ -59,18 +58,7 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
                 System.setProperty(AddressBuilder.DBUS_SESSION_BUS_ADDRESS, addrStr);
             }
 
-            long maxWait = Duration.ofSeconds(30).toMillis();
-            long sleepMs = 500;
-            long waited = 0;
-
-            while (!edbus.isRunning()) {
-                if (waited >= maxWait) {
-                    throw new RuntimeException("EmbeddedDbusDaemon not started in the specified time of " + maxWait + " ms");
-                }
-                Thread.sleep(sleepMs);
-                waited += sleepMs;
-                logger.debug("Waiting for embedded daemon to start: {} of {} ms waited", waited, maxWait);
-            }
+            waitForDaemon(edbus);
         }
     }
 
