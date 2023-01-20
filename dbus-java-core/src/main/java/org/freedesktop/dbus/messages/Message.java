@@ -1478,7 +1478,7 @@ public class Message {
                 if (hIdx == HeaderField.SIGNATURE) {
                     newHeader.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, object));
                 } else {
-                    newHeader.add(new Object[] { hIdx, object });
+                    newHeader.add(new Object[] {hIdx, object});
                 }
             }
 

@@ -63,6 +63,9 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Reduced duplicated code ([#206](https://github.com/hypfvieh/dbus-java/issues/206))
    - Updated PMD rules / enabled build failing when PMD/Checkstyle rules are violated
    - Replaced most usages of `System.out.print` and friends in unit tests (use a proper logger instead)
+   - Improved logging (changed usage of LoggingHelper, added a better deepToString)
+   - Support DBUS_TEST_HOME_DIR system property
+   - Fixed issue with broken MethodReturn messages when running as server ([#207](https://github.com/hypfvieh/dbus-java/issues/207))
 
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 

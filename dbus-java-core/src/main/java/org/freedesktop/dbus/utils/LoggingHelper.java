@@ -54,7 +54,7 @@ public final class LoggingHelper {
                 result.add("(null)");
             } else if (object.getClass().isArray()) {
                 result.add(arraysVeryDeepStringRecursive((Object[]) object).toString());
-            } else if (object instanceof Collection<?>){
+            } else if (object instanceof Collection<?>) {
                 Collection<?> c = (Collection<?>) object;
                 result.add(arraysVeryDeepStringRecursive(c.toArray()).toString());
             } else {
