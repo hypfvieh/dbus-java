@@ -236,7 +236,8 @@ public class DBusSignal extends Message {
                 System.arraycopy(args, 0, params, 1, args.length);
                 s = con.newInstance(params);
             }
-            s.getHeaders().putAll(getHeaders());
+
+            s.setHeader(getHeader());
             s.setWiredata(getWireData());
             s.setByteCounter(getWireData().length);
             return s;

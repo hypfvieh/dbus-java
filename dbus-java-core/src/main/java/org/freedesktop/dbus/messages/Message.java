@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * Superclass of all messages which are sent over the Bus. This class deals with all the marshalling to/from the wire
@@ -66,7 +67,7 @@ public class Message {
     //CHECKSTYLE:ON
 
     private final List<FileDescriptor> filedescriptors = new ArrayList<>();
-    private final Map<Byte, Object>    headers         = new HashMap<>();
+    private final Object[]             headers         = new Object[HeaderField.MAX_FIELDS];
 
     private byte[][]                   wiredata        = new byte[BUFFERINCREMENT][];
     private long                       bytecounter     = 0;
@@ -123,38 +124,87 @@ public class Message {
      */
     @SuppressWarnings("unchecked")
     void populate(byte[] _msg, byte[] _headers, byte[] _body, List<FileDescriptor> _descriptors) throws DBusException {
-        big = _msg[0] == Endian.BIG;
-        type = _msg[1];
-        flags = _msg[2];
-        protover = _msg[3];
-        wiredata[0] = _msg;
-        wiredata[1] = _headers;
-        wiredata[2] = _body;
-        body = _body;
+
+        // create a copy of the given arrays to be sure that the content is not changed outside
+
+        byte[] msgBuf = new byte[_msg.length];
+        System.arraycopy(_msg, 0, msgBuf, 0, _msg.length);
+
+        byte[] headerBuf = new byte[_headers.length];
+        System.arraycopy(_headers, 0, headerBuf, 0, _headers.length);
+
+        byte[] bodyBuf = new byte[_body.length];
+        System.arraycopy(_body, 0, bodyBuf, 0, _body.length);
+
+        big = msgBuf[0] == Endian.BIG;
+        type = msgBuf[1];
+        flags = msgBuf[2];
+        protover = msgBuf[3];
+        wiredata[0] = msgBuf;
+        wiredata[1] = headerBuf;
+        wiredata[2] = bodyBuf;
+        body = bodyBuf;
         bufferuse = 3;
-        bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 4)[0]).longValue();
-        serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, _msg, 8)[0]).longValue();
-        bytecounter = _msg.length + _headers.length + _body.length;
+        bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 4)[0]).longValue();
+        serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue();
+        bytecounter = msgBuf.length + headerBuf.length + bodyBuf.length;
 
         filedescriptors.clear();
         if (_descriptors != null) {
             filedescriptors.addAll(_descriptors);
         }
 
-        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Message header: {}", Hexdump.toAscii(_headers)));
+        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Message header: {}", Hexdump.toAscii(headerBuf)));
 
-        Object[] hs = extractHeader(_headers);
+        Object[] hs = extractHeader(headerBuf);
 
-        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Extracted objects: {}", LoggingHelper.arraysDeepString(logger.isTraceEnabled(), hs)));
+        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Extracted objects: {}", LoggingHelper.arraysVeryDeepString(hs)));
 
-        for (Object o : (List<Object>) hs[0]) {
+        List<Object> list = (List<Object>) hs[0];
+        for (Object o : list) {
             Object[] objArr = (Object[]) o;
-            this.headers.put((Byte) objArr[0], objArr[1]);
+            byte idx = (byte) objArr[0];
+            this.headers[idx] = objArr[1];
         }
     }
 
+    /**
+     * @deprecated use getHeader().
+     * This method did return a map containing message header.
+     * It allows changing the map, but changes did not result in changing the
+     * actual message header. Therefore using a map was removed and an object array is
+     * used instead. Changes to that array (content) will be result in a changed
+     * header in the message.
+     *
+     * @return map of header
+     */
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-01-19")
     protected Map<Byte, Object> getHeaders() {
+        Map<Byte, Object> headerMap = new HashMap<>();
+        for (byte i = 0; i < headers.length; i++) {
+            headerMap.put(i, headers[i]);
+        }
+        return headerMap;
+    }
+
+    protected Object[] getHeader() {
         return headers;
+    }
+
+    /**
+     * Set header content.
+     * <code>null</code> value is ignored.
+     *
+     * @param _header header to set
+     */
+    protected void setHeader(Object[] _header) {
+        if (_header == null) {
+            return;
+        }
+        if (_header.length > headers.length) {
+            throw new IllegalArgumentException("Given header is larger (" + _header.length + ") than allowed header size: " + headers.length);
+        }
+        System.arraycopy(_header, 0, headers, 0, _header.length);
     }
 
     protected long getByteCounter() {
@@ -175,6 +225,14 @@ public class Message {
 
     protected void setWiredata(byte[][] _wiredata) {
         wiredata = _wiredata;
+    }
+
+    byte getProtover() {
+        return protover;
+    }
+
+    long getBodylen() {
+        return bodylen;
     }
 
     /**
@@ -410,14 +468,14 @@ public class Message {
         sb.append(' ');
         sb.append('{');
         sb.append(' ');
-        if (headers.isEmpty()) {
+        if (headers.length == 0) {
             sb.append('}');
         } else {
-            for (Map.Entry<Byte, Object> entry : headers.entrySet()) {
-                sb.append(getHeaderFieldName(entry.getKey()));
+            for (int i = 0; i < headers.length; i++) {
+                sb.append(getHeaderFieldName((byte) i));
                 sb.append('=');
                 sb.append('>');
-                sb.append(entry.getValue());
+                sb.append(headers[i]);
                 sb.append(',');
                 sb.append(' ');
             }
@@ -474,7 +532,7 @@ public class Message {
      * @return The value of the field or null if unset.
      */
     public Object getHeader(byte _type) {
-        return headers.get(_type);
+        return headers.length == 0 || headers.length < _type ? null : headers[_type];
     }
 
     /**
@@ -816,7 +874,8 @@ public class Message {
      * @throws DBusException on error
      */
     public void append(String _sig, Object... _data) throws DBusException {
-        logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysDeepString(logger.isDebugEnabled(), _data));
+        LoggingHelper.logIf(logger.isDebugEnabled(), () -> logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysVeryDeepString(_data)));
+
         byte[] sigb = _sig.getBytes();
         int j = 0;
         for (int i = 0; i < sigb.length; i++) {
@@ -875,17 +934,22 @@ public class Message {
         // correct the offsets before extracting values
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
 
+        Object result = null;
         if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.ARRAY) {
-            return extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::readHeaderVariants);
+            result = extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::readHeaderVariants);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.BYTE) {
-            return extractByte(_dataBuf, _offsets);
+            result = extractByte(_dataBuf, _offsets);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.VARIANT) {
-            return extractVariant(_dataBuf, _offsets, (sig, obj) -> obj);
+            result = extractVariant(_dataBuf, _offsets, (sig, obj) -> obj);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.STRUCT1) {
-            return extractStruct(_signatureBuf, _dataBuf, _offsets, this::readHeaderVariants);
+            result = extractStruct(_signatureBuf, _dataBuf, _offsets, this::readHeaderVariants);
         } else {
             throw new MessageFormatException("Unsupported data type in header: " + _signatureBuf[_offsets[OFFSET_SIG]]);
         }
+
+        logger.trace("Extracted header signature type '{}' to: '{}'", (char) _signatureBuf[_offsets[OFFSET_SIG]], result);
+
+        return result;
     }
 
     /**
@@ -1273,7 +1337,7 @@ public class Message {
      * @return string
      */
     public String getSource() {
-        return (String) headers.get(HeaderField.SENDER);
+        return (String) getHeader(HeaderField.SENDER);
     }
 
     /**
@@ -1282,7 +1346,7 @@ public class Message {
      * @return string
      */
     public String getDestination() {
-        return (String) headers.get(HeaderField.DESTINATION);
+        return (String) getHeader(HeaderField.DESTINATION);
     }
 
     /**
@@ -1291,7 +1355,7 @@ public class Message {
      * @return string
      */
     public String getInterface() {
-        return (String) headers.get(HeaderField.INTERFACE);
+        return (String) getHeader(HeaderField.INTERFACE);
     }
 
     /**
@@ -1300,7 +1364,7 @@ public class Message {
      * @return string
      */
     public String getPath() {
-        Object o = headers.get(HeaderField.PATH);
+        Object o = getHeader(HeaderField.PATH);
         if (null == o) {
             return null;
         }
@@ -1314,9 +1378,9 @@ public class Message {
      */
     public String getName() {
         if (this instanceof org.freedesktop.dbus.errors.Error) {
-            return (String) headers.get(HeaderField.ERROR_NAME);
+            return (String) getHeader(HeaderField.ERROR_NAME);
         } else {
-            return (String) headers.get(HeaderField.MEMBER);
+            return (String) getHeader(HeaderField.MEMBER);
         }
     }
 
@@ -1326,7 +1390,7 @@ public class Message {
      * @return string
      */
     public String getSig() {
-        return (String) headers.get(HeaderField.SIGNATURE);
+        return (String) getHeader(HeaderField.SIGNATURE);
     }
 
     /**
@@ -1353,7 +1417,7 @@ public class Message {
      * @return The reply serial, or 0 if it is not a reply.
      */
     public long getReplySerial() {
-        Number l = (Number) headers.get(HeaderField.REPLY_SERIAL);
+        Number l = (Number) getHeader(HeaderField.REPLY_SERIAL);
         if (null == l) {
             return 0;
         }
@@ -1368,7 +1432,7 @@ public class Message {
      */
     public Object[] getParameters() throws DBusException {
         if (null == args && null != body) {
-            String sig = (String) headers.get(HeaderField.SIGNATURE);
+            String sig = getSig();
             if (null != sig && 0 != body.length) {
                 args = extract(sig, body, 0);
             } else {
@@ -1390,24 +1454,71 @@ public class Message {
      */
     public void setSource(String _source) throws DBusException {
         if (null != body) {
+            logger.trace("Setting source");
+
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("WireData before: {}", dumpWireData()));
+
             wiredata = new byte[BUFFERINCREMENT][];
             bufferuse = 0;
             bytecounter = 0;
             preallocate(12);
             append("yyyyuu", big ? Endian.BIG : Endian.LITTLE, type, flags, protover, bodylen, serial);
-            headers.put(HeaderField.SENDER, _source);
-            Object[][] newhead = new Object[headers.size()][];
-            int i = 0;
-            for (Byte b : headers.keySet()) {
-                newhead[i] = new Object[2];
-                newhead[i][0] = b;
-                newhead[i][1] = headers.get(b);
-                i++;
+            headers[HeaderField.SENDER] = _source;
+
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("WireData first append: {}", dumpWireData()));
+
+            List<Object[]> newHeader = new ArrayList<>(headers.length);
+
+            for (int hIdx = 0; hIdx < headers.length; hIdx++) {
+                Object object = headers[hIdx];
+
+                if (object == null) {
+                    continue;
+                }
+                if (hIdx == HeaderField.SIGNATURE) {
+                    newHeader.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, object));
+                } else {
+                    newHeader.add(new Object[] { hIdx, object });
+                }
             }
-            append("a(yv)", (Object) newhead);
+
+            append("a(yv)", newHeader);
+
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
+                logger.trace("New header: {}", LoggingHelper.arraysVeryDeepString(newHeader.toArray()));
+                logger.trace("WireData after: {}", dumpWireData());
+            });
+
             pad((byte) 8);
             appendBytes(body);
         }
+    }
+
+    /**
+     * Dumps the current content of {@link #wiredata} to String.
+     *
+     * @return String, maybe empty
+     * @since v4.2.2 - 2023-01-20
+     */
+    String dumpWireData() {
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        for (int i = 0; i < wiredata.length; i++) {
+            byte[] arr = wiredata[i];
+            if (arr != null) {
+                String prefix = "Wiredata[" + i + "]";
+                String format = Hexdump.format(arr, 80);
+                String[] split = format.split("\n");
+                sb.append(prefix).append(": ").append(split[0]).append(System.lineSeparator());
+                if (split.length > 1) {
+                    sb.append(Arrays.stream(split)
+                            .skip(1)
+                            .map(s -> String.format("%s: %80s", prefix, s))
+                            .collect(Collectors.joining(System.lineSeparator())));
+                    sb.append(System.lineSeparator());
+                }
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -1427,13 +1538,13 @@ public class Message {
      * Will automatically add the values to the current instances header map.
      *
      * @param _header header type (one of {@link HeaderField})
-     * @param _argType arguement type (one of {@link ArgumentType})
+     * @param _argType argument type (one of {@link ArgumentType})
      * @param _value value
      *
      * @return Object array
      */
     protected Object[] createHeaderArgs(byte _header, String _argType, Object _value) {
-        getHeaders().put(_header, _value);
+        getHeader()[_header] =  _value;
         return new Object[] {
                 _header, new Object[] {
                         _argType, _value
@@ -1525,6 +1636,8 @@ public class Message {
 
     /** Defines constants for each valid header field type. */
     public interface HeaderField {
+        int MAX_FIELDS    = 10;
+
         byte PATH         = 1;
         byte INTERFACE    = 2;
         byte MEMBER       = 3;
