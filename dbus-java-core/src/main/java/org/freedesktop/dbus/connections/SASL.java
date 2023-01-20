@@ -57,6 +57,8 @@ public class SASL {
     public static final int       COOKIE_TIMEOUT              = 240;
     public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
+    private static final int      MAX_READ_BYTES              = 64;
+
     private static final Collator COL = Collator.getInstance();
     static {
         COL.setDecomposition(Collator.FULL_DECOMPOSITION);
@@ -228,11 +230,14 @@ public class SASL {
 
     public SASL.Command receive(SocketChannel _sock) throws IOException {
         StringBuffer sb = new StringBuffer();
-        ByteBuffer buf = ByteBuffer.allocate(64);
+        ByteBuffer buf = ByteBuffer.allocate(1); // only read one byte at a time to avoid reading to much (which would break the next message)
 
         boolean runLoop = true;
+        int bytesRead = 0;
         while (runLoop) {
+
             int read = _sock.read(buf);
+            bytesRead += read;
             buf.position(0);
             if (read == -1) {
                 throw new IOException("Stream unexpectedly short (broken pipe)");
@@ -240,19 +245,20 @@ public class SASL {
 
             for (int i = buf.position(); i < read; i++) {
                 byte c = buf.get();
-                switch (c) {
-                    case 0:
-                    case '\r':
-                        continue;
-                    case '\n':
-                        runLoop = false;
-                        break;
-                    default:
-                        sb.append((char) c);
-                    }
+                if (c == 0 || c == '\r') {
+                    continue;
+                } else if (c == '\n') {
+                    runLoop = false;
+                    break;
+                } else {
+                    sb.append((char) c);
+                }
             }
             buf.clear();
 
+            if (bytesRead > MAX_READ_BYTES) { // safe-guard to stop reading if no \n found
+                break;
+            }
         }
 
         logger.trace("received: {}", sb);
