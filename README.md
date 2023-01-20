@@ -66,6 +66,9 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Improved logging (changed usage of LoggingHelper, added a better deepToString)
    - Support DBUS_TEST_HOME_DIR system property
    - Fixed issue with broken MethodReturn messages when running as server ([#207](https://github.com/hypfvieh/dbus-java/issues/207))
+   - Changed SASL to read responses bytewise to prevent reading to much (and break the following message)
+   - Added option to change authentication mode used in DBusDaemon (--auth-mode/-m)
+   - Improved handling of broken connections in DBusDaemon
 
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
