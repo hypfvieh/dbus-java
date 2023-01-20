@@ -59,6 +59,8 @@ public class TcpTransport extends AbstractTransport {
 
             getLogger().trace("Setting timeout to {} on Socket", timeout);
             socket.socket().connect(socketAddress, timeout);
+            getLogger().debug("Connected to {} using local port {}", getAddress().getHost(),
+                    getAddress().getPort(), socket.socket().getLocalPort());
         }
 
         return socket;
