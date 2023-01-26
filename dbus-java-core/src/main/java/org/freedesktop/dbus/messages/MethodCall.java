@@ -28,8 +28,9 @@ public class MethodCall extends MethodBase {
         if (null == _member || null == _path) {
             throw new MessageFormatException("Must specify destination, path and function name to MethodCalls.");
         }
-        getHeaders().put(Message.HeaderField.PATH, _path);
-        getHeaders().put(Message.HeaderField.MEMBER, _member);
+        Object[] header = getHeader();
+        header[Message.HeaderField.PATH] = _path;
+        header[Message.HeaderField.MEMBER] = _member;
 
         List<Object> hargs = new ArrayList<>();
 

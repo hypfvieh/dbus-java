@@ -5,6 +5,7 @@ import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,9 +33,13 @@ public class FallbackContainer {
         String[] pathel = _path.split("/");
         for (Map.Entry<String[], ExportedObject> entry : fallbacks.entrySet()) {
             String[] fbpath = entry.getKey();
-            logger.trace("Trying fallback path {} to match {}",
-                    LoggingHelper.arraysDeepString(logger.isTraceEnabled(), fbpath),
-                    LoggingHelper.arraysDeepString(logger.isTraceEnabled(), pathel));
+
+            LoggingHelper.logIf(logger.isTraceEnabled(), () ->
+                logger.trace("Trying fallback path {} to match {}",
+                        Arrays.deepToString(fbpath),
+                        Arrays.deepToString(pathel))
+            );
+
             int i;
             for (i = 0; i < pathel.length && i < fbpath.length; i++) {
                 if (!pathel[i].equals(fbpath[i])) {

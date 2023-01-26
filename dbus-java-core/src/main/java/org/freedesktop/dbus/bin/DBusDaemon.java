@@ -3,6 +3,7 @@ package org.freedesktop.dbus.bin;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
@@ -37,6 +38,7 @@ import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -259,6 +261,7 @@ public class DBusDaemon extends Thread implements Closeable {
     public static void syntax() {
         System.out.println("Syntax: DBusDaemon [--version] [-v] [--help] [-h] [--listen address] "
                 + "[-l address] [--print-address] [-r] [--pidfile file] [-p file] [--addressfile file] "
+                + "[--auth-mode AUTH_ANONYMOUS|AUTH_COOKIE|AUTH_EXTERNAL] [-m AUTH_ANONYMOUS|AUTH_COOKIE|AUTH_EXTERNAL]"
                 + "[-a file] [--unix] [-u] [--tcp] [-t] ");
         System.exit(1);
     }
@@ -279,10 +282,10 @@ public class DBusDaemon extends Thread implements Closeable {
         String addr = null;
         String pidfile = null;
         String addrfile = null;
+        String authModeStr = null;
         boolean printaddress = false;
         boolean unix = true;
         boolean tcp = false;
-
         // parse options
         try {
             for (int i = 0; i < _args.length; i++) {
@@ -304,6 +307,8 @@ public class DBusDaemon extends Thread implements Closeable {
                 } else if ("--tcp".equals(_args[i]) || "-t".equals(_args[i])) {
                     tcp = true;
                     unix = false;
+                } else if ("--auth-mode".equals(_args[i]) || "-m".equals(_args[i])) {
+                    authModeStr = _args[++i];
                 } else {
                     syntax();
                 }
@@ -326,6 +331,15 @@ public class DBusDaemon extends Thread implements Closeable {
             System.out.println(addr);
         }
 
+        SaslAuthMode saslAuthMode = null;
+        if (authModeStr != null) {
+            String selectedMode = authModeStr;
+            saslAuthMode = Arrays.stream(SaslAuthMode.values())
+                    .filter(e -> e.name().toLowerCase().matches(selectedMode.toLowerCase()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Auth mode '" + selectedMode + "' unsupported"));
+        }
+
         // print address to file
         if (null != addrfile) {
             saveFile(addr, addrfile);
@@ -339,6 +353,7 @@ public class DBusDaemon extends Thread implements Closeable {
         // start the daemon
         LOGGER.info("Binding to {}", addr);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(address)) {
+            daemon.setSaslAuthMode(saslAuthMode);
             daemon.startInForeground();
         }
 
@@ -782,12 +797,17 @@ public class DBusDaemon extends Thread implements Closeable {
                     if (pollFirst != null) {
                         ConnectionStruct connectionStruct = pollFirst.second.get();
                         if (connectionStruct != null) {
-                            logger.debug("<outqueue> Got message {} for {}", pollFirst.first, connectionStruct.unique);
+                            if (connectionStruct.socketChannel.isConnected()) {
+                                logger.debug("<outqueue> Got message {} for {}", pollFirst.first, connectionStruct.unique);
 
-                            try {
-                                connectionStruct.outputWriter.writeMessage(pollFirst.first);
-                            } catch (IOException _ex) {
-                                logger.debug("", _ex);
+                                try {
+                                    connectionStruct.outputWriter.writeMessage(pollFirst.first);
+                                } catch (IOException _ex) {
+                                    logger.debug("Disconnecting client due to previous exception", _ex);
+                                    removeConnection(connectionStruct);
+                                }
+                            } else {
+                                logger.warn("Connection to {} broken", pollFirst.first.getDestination());
                                 removeConnection(connectionStruct);
                             }
 

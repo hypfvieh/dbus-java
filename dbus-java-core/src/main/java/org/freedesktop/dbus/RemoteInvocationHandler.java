@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 
 public class RemoteInvocationHandler implements InvocationHandler {
     public static final int CALL_TYPE_SYNC     = 0;
@@ -101,7 +102,9 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } else {
             try {
-                LOGGER.trace("Converting return parameters from {} to type {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), rp), _m.getGenericReturnType());
+                LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Converting return parameters from {} to type {}",
+                        Arrays.deepToString(_rp), _m.getGenericReturnType()));
+
                 rp = Marshalling.deSerializeParameters(rp, new Type[] {
                         _m.getGenericReturnType()
                 }, _conn);

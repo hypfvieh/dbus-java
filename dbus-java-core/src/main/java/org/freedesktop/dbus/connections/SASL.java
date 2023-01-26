@@ -10,6 +10,7 @@ import static org.freedesktop.dbus.connections.SASL.SaslCommand.NEGOTIATE_UNIX_F
 import static org.freedesktop.dbus.connections.SASL.SaslCommand.REJECTED;
 
 import com.sun.security.auth.module.UnixSystem;
+import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
@@ -56,6 +57,8 @@ public class SASL {
     public static final int       COOKIE_TIMEOUT              = 240;
     public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
+    private static final int      MAX_READ_BYTES              = 64;
+
     private static final Collator COL = Collator.getInstance();
     static {
         COL.setDecomposition(Collator.FULL_DECOMPOSITION);
@@ -63,6 +66,7 @@ public class SASL {
     }
 
     private static final String   SYSPROP_USER_HOME           = System.getProperty("user.home");
+    private static final String   DBUS_TEST_HOME_DIR          = System.getProperty(DBusSysProps.SYSPROP_DBUS_TEST_HOME_DIR);
 
     private static final File     DBUS_KEYRINGS_DIR           = new File(SYSPROP_USER_HOME, ".dbus-keyrings");
 
@@ -92,7 +96,12 @@ public class SASL {
     }
 
     private String findCookie(String _context, String _id) throws IOException {
-        File f = new File(DBUS_KEYRINGS_DIR, _context);
+        File keyringDir = DBUS_KEYRINGS_DIR;
+        if (!Util.isBlank(DBUS_TEST_HOME_DIR)) {
+            keyringDir = new File(DBUS_TEST_HOME_DIR);
+        }
+
+        File f = new File(keyringDir, _context);
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)))) {
             String s = null;
             String lCookie = null;
@@ -112,13 +121,18 @@ public class SASL {
 
     @SuppressWarnings("checkstyle:emptyblock")
     private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
-        File cookiefile = new File(DBUS_KEYRINGS_DIR, _context);
-        File lock = new File(DBUS_KEYRINGS_DIR, _context + ".lock");
-        File temp = new File(DBUS_KEYRINGS_DIR, _context + ".temp");
+        File keyringDir = DBUS_KEYRINGS_DIR;
+        if (!Util.isBlank(DBUS_TEST_HOME_DIR)) {
+            keyringDir = new File(DBUS_TEST_HOME_DIR);
+        }
+
+        File cookiefile = new File(keyringDir, _context);
+        File lock = new File(keyringDir, _context + ".lock");
+        File temp = new File(keyringDir, _context + ".temp");
 
         // ensure directory exists
-        if (!DBUS_KEYRINGS_DIR.exists()) {
-            DBUS_KEYRINGS_DIR.mkdirs();
+        if (!keyringDir.exists()) {
+            keyringDir.mkdirs();
         }
 
         // acquire lock
@@ -216,11 +230,14 @@ public class SASL {
 
     public SASL.Command receive(SocketChannel _sock) throws IOException {
         StringBuffer sb = new StringBuffer();
-        ByteBuffer buf = ByteBuffer.allocate(64);
+        ByteBuffer buf = ByteBuffer.allocate(1); // only read one byte at a time to avoid reading to much (which would break the next message)
 
         boolean runLoop = true;
+        int bytesRead = 0;
         while (runLoop) {
+
             int read = _sock.read(buf);
+            bytesRead += read;
             buf.position(0);
             if (read == -1) {
                 throw new IOException("Stream unexpectedly short (broken pipe)");
@@ -228,19 +245,20 @@ public class SASL {
 
             for (int i = buf.position(); i < read; i++) {
                 byte c = buf.get();
-                switch (c) {
-                    case 0:
-                    case '\r':
-                        continue;
-                    case '\n':
-                        runLoop = false;
-                        break;
-                    default:
-                        sb.append((char) c);
-                    }
+                if (c == 0 || c == '\r') {
+                    continue;
+                } else if (c == '\n') {
+                    runLoop = false;
+                    break;
+                } else {
+                    sb.append((char) c);
+                }
             }
             buf.clear();
 
+            if (bytesRead > MAX_READ_BYTES) { // safe-guard to stop reading if no \n found
+                break;
+            }
         }
 
         logger.trace("received: {}", sb);

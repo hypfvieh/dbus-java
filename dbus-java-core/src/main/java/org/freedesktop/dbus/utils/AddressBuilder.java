@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 
@@ -9,13 +10,21 @@ import java.util.List;
 import java.util.Properties;
 
 public final class AddressBuilder {
+    /**
+     * @deprecated Constant has been moved to {@link DBusSysProps}.
+     */
+    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
     public static final String  DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
+    /**
+     * @deprecated Constant has been moved to {@link DBusSysProps}.
+     */
+    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
     public static final String  DEFAULT_SYSTEM_BUS_ADDRESS     = "unix:path=/var/run/dbus/system_bus_socket";
+    /**
+     * @deprecated Constant has been moved to {@link DBusSysProps}.
+     */
+    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
     public static final String  DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
-
-    private static final String DBUS_MACHINE_ID_SYS_VAR        = "DBUS_MACHINE_ID_LOCATION";
-
-    private static final String DBUS_SESSION_BUS_ADDRESS_MACOS = "DBUS_LAUNCHD_SESSION_BUS_SOCKET";
 
     private AddressBuilder() {}
 
@@ -25,9 +34,9 @@ public final class AddressBuilder {
      * @return String
      */
     public static BusAddress getSystemConnection() {
-        String bus = System.getenv(DBUS_SYSTEM_BUS_ADDRESS);
+        String bus = System.getenv(DBusSysProps.DBUS_SYSTEM_BUS_ADDRESS);
         if (bus == null) {
-            bus = DEFAULT_SYSTEM_BUS_ADDRESS;
+            bus = DBusSysProps.DEFAULT_SYSTEM_BUS_ADDRESS;
         }
         return BusAddress.of(bus);
     }
@@ -45,15 +54,15 @@ public final class AddressBuilder {
     public static BusAddress getSessionConnection(String _dbusMachineIdFile) {
 
         // try to read session address from running process instance properties first
-        String s = System.getProperty(DBUS_SESSION_BUS_ADDRESS);
+        String s = System.getProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS);
 
         // no session address in process properties, try to get it from environment
         if (s == null) {
             // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
             if (Util.isMacOs()) {
-                s = "unix:path=" + System.getenv(DBUS_SESSION_BUS_ADDRESS_MACOS);
+                s = "unix:path=" + System.getenv(DBusSysProps.DBUS_SESSION_BUS_ADDRESS_MACOS);
             } else { // all others (linux)
-                s = System.getenv(DBUS_SESSION_BUS_ADDRESS);
+                s = System.getenv(DBusSysProps.DBUS_SESSION_BUS_ADDRESS);
             }
         }
 
@@ -83,7 +92,7 @@ public final class AddressBuilder {
             if (readProperties == null) {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address: Unable to read " + addressfile);
             }
-            String sessionAddress = readProperties.getProperty(DBUS_SESSION_BUS_ADDRESS);
+            String sessionAddress = readProperties.getProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS);
 
             if (Util.isEmpty(sessionAddress)) {
                 throw new AddressResolvingException("Cannot Resolve Session Bus Address: No session information found in " + addressfile);
@@ -132,7 +141,7 @@ public final class AddressBuilder {
      * @return File with machine-id
      */
     private static File determineMachineIdFile(String _dbusMachineIdFile) {
-        List<String> locationPriorityList = Arrays.asList(System.getenv(DBUS_MACHINE_ID_SYS_VAR), _dbusMachineIdFile,
+        List<String> locationPriorityList = Arrays.asList(System.getenv(DBusSysProps.DBUS_MACHINE_ID_SYS_VAR), _dbusMachineIdFile,
                 "/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
         return locationPriorityList.stream()
                 .filter(s -> s != null)

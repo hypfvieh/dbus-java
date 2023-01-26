@@ -32,7 +32,7 @@ public class OutputStreamMessageWriter implements IMessageWriter {
 
         for (byte[] buf : _msg.getWireData()) {
             if (logger.isTraceEnabled()) {
-                logger.trace("{}", null == buf ? "(null)" : Hexdump.format(buf));
+                logger.trace("{}", null == buf ? "(buffer was null)" : Hexdump.format(buf));
             }
             if (null == buf) {
                 break;

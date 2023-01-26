@@ -436,7 +436,7 @@ public final class Marshalling {
             if (null == parameters[i]) {
                 continue;
             }
-            LOGGER.trace("Converting {} from {} to {}", i, parameters[i], types[i]);
+            LOGGER.trace("Converting {} from '{}' to {}", i, parameters[i], types[i]);
 
             if (parameters[i] instanceof DBusSerializable) {
                 for (Method m : parameters[i].getClass().getDeclaredMethods()) {
@@ -470,7 +470,10 @@ public final class Marshalling {
                 System.arraycopy(parameters, i + 1, exparams, i + newparams.length, parameters.length - i - 1);
                 parameters = exparams;
 
-                LOGGER.trace("New params: {}, new types: {}", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), parameters), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), types));
+                LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> {
+                    LOGGER.trace("New params: {}, new types: {}", Arrays.deepToString(exparams), Arrays.deepToString(expand));
+                });
+
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
@@ -484,12 +487,13 @@ public final class Marshalling {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnection _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type.getClass());
+        LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type);
 
         Object parameter = _parameter;
         // its a wrapped variant, unwrap it
         if (_type instanceof TypeVariable && parameter instanceof Variant) {
             parameter = ((Variant<?>) parameter).getValue();
+            LOGGER.trace("Type is variant, unwrapping to {}", parameter);
         }
 
         // Turn a signature into a Type[]
@@ -501,6 +505,7 @@ public final class Marshalling {
 
         // its an object path, get/create the proxy
         if (parameter instanceof ObjectPath) {
+            LOGGER.trace("Parameter is ObjectPath");
             if (_type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) _type)) {
                 parameter = _conn.getExportedObject(((ObjectPath) parameter).getSource(), ((ObjectPath) parameter).getPath(), (Class<DBusInterface>) _type);
             } else {
@@ -510,6 +515,7 @@ public final class Marshalling {
 
         // its an enum, parse either as the string name or the ordinal
         if (parameter instanceof String && _type instanceof Class && Enum.class.isAssignableFrom((Class<?>) _type)) {
+            LOGGER.trace("Type seems to be an enum");
             parameter = Enum.valueOf((Class<Enum>) _type, (String) parameter);
         }
 
@@ -544,11 +550,13 @@ public final class Marshalling {
 
         // recurse over arrays
         if (parameter instanceof Object[]) {
+            LOGGER.trace("Parameter is object array");
             Type[] ts = new Type[((Object[]) parameter).length];
             Arrays.fill(ts, parameter.getClass().getComponentType());
             parameter = deSerializeParameters((Object[]) parameter, ts, _conn);
         }
         if (parameter instanceof List) {
+            LOGGER.trace("Parameter is List");
             Type type2;
             if (_type instanceof ParameterizedType) {
                 type2 = ((ParameterizedType) _type).getActualTypeArguments()[0];
@@ -567,6 +575,7 @@ public final class Marshalling {
         // correct floats if appropriate
         if ((_type.equals(Float.class) || _type.equals(Float.TYPE)) && !(parameter instanceof Float)) {
             parameter = ((Number) parameter).floatValue();
+            LOGGER.trace("Parameter is float of value: {}", parameter);
         }
 
         // make sure arrays are in the correct format
@@ -634,7 +643,7 @@ public final class Marshalling {
 
     @SuppressWarnings("unchecked")
     public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {} ", LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _parameters), LoggingHelper.arraysDeepString(LOGGER.isTraceEnabled(), _types));
+        LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
 
         if (null == _parameters) {
             return null;
