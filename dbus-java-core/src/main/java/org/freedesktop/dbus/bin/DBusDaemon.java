@@ -183,7 +183,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    private void logMessage(String _logStr, Message _m, String _connUniqueId) {
+    private static void logMessage(String _logStr, Message _m, String _connUniqueId) {
         Object logMsg = _m;
         if (_m != null && Introspectable.class.getName().equals(_m.getInterface()) && !LOGGER.isTraceEnabled()) {
             logMsg = "<Introspection data only visible in loglevel trace>";
@@ -738,7 +738,6 @@ public class DBusDaemon extends Thread implements Closeable {
                     } else {
                         LOGGER.debug("Polling interrupted");
                     }
-                    terminate();
                 }
             }
 
@@ -821,7 +820,6 @@ public class DBusDaemon extends Thread implements Closeable {
                     }
                 } catch (InterruptedException _ex) {
                     logger.debug("Got interrupted", _ex);
-                    terminate();
                 }
             }
         }

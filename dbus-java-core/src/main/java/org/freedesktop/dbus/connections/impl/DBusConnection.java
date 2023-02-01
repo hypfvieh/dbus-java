@@ -255,7 +255,7 @@ public final class DBusConnection extends AbstractConnection {
             try {
                 busnames.add(dbus.Hello());
             } catch (DBusExecutionException _ex) {
-                logger.debug("", _ex);
+                logger.debug("Error while doing 'Hello' handshake", _ex);
                 throw new DBusException(_ex.getMessage());
             }
         }

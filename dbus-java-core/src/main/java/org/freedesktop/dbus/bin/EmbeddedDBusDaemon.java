@@ -27,7 +27,7 @@ public class EmbeddedDBusDaemon implements Closeable {
 
     private final BusAddress address;
 
-    private DBusDaemon daemonThread;
+    private DBusDaemon daemon;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private SaslAuthMode saslAuthMode;
@@ -53,9 +53,9 @@ public class EmbeddedDBusDaemon implements Closeable {
     @Override
     public void close() throws IOException {
         closed.set(true);
-        if (daemonThread != null) {
-            daemonThread.close();
-            daemonThread = null;
+        if (daemon != null) {
+            daemon.close();
+            daemon = null;
         }
     }
 
@@ -65,8 +65,8 @@ public class EmbeddedDBusDaemon implements Closeable {
      * This is a blocking operation.
      */
     public void startInForeground() {
-        daemonThread = new DBusDaemon();
-        daemonThread.start();
+        daemon = new DBusDaemon();
+        daemon.start();
 
         try {
             startListening();
@@ -112,7 +112,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      * @return true if running, false otherwise
      */
     public synchronized boolean isRunning() {
-        return daemonThread != null && daemonThread.isRunning();
+        return daemon != null && daemon.isRunning();
     }
 
     /**
@@ -195,10 +195,10 @@ public class EmbeddedDBusDaemon implements Closeable {
                 .withAutoConnect(false)
                 .back()
                 .build()) {
-            while (daemonThread.isRunning()) {
+            while (daemon.isRunning()) {
                 try {
                     SocketChannel s = transport.connect();
-                    daemonThread.addSock(s);
+                    daemon.addSock(s);
                 } catch (AuthenticationException _ex) {
                     LOGGER.error("Authentication failed", _ex);
                 } catch (SocketClosedException _ex) {
