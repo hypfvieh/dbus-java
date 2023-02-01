@@ -24,6 +24,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -427,6 +428,29 @@ public final class Util {
     }
 
     /**
+     * Checks if any of the 'needle' values are found in 'haystack'.
+     *
+     * @param <T> type
+     * @param _haystack collection to check
+     * @param _needles values to find
+     *
+     * @return true if any value found, false if any parameter null or no matching value found
+     */
+    public static <T> boolean collectionContainsAny(Collection<T> _haystack, Collection<T> _needles) {
+        if (_haystack == null || _needles == null) {
+            return false;
+        }
+
+        for (T t : _needles) {
+            if (_haystack.contains(t)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Determines the current logged on user.
      * @return logged on user
      */
@@ -617,11 +641,28 @@ public final class Util {
      *
      * @throws T when timeout is reached
      */
+    @SuppressWarnings("unchecked")
     public static <T extends Throwable> void waitFor(String _lockName, IThrowingSupplier<Boolean, T> _wait, long _timeoutMs, long _sleepTime) throws T {
         long waited = 0;
 
-        while (!_wait.get()) {
+        boolean wait = false;
+        T lastEx = null;
+        do {
+
+            try {
+                lastEx = null;
+                // supplier may throw, if so assume that we should still wait and retry
+                wait = _wait.get();
+            } catch (Throwable _ex) {
+                lastEx = (T) _ex;
+                wait = false;
+            }
+
             if (waited >= _timeoutMs) {
+                if (lastEx != null) { // we have a timeout and last retry has thrown a exception
+                    throw lastEx;
+                }
+                // we have a timeout and no exception happened before
                 throw new IllegalStateException(_lockName + " not available in the specified time of " + _timeoutMs + " ms");
             }
             try {
@@ -632,6 +673,6 @@ public final class Util {
             }
             waited += _sleepTime;
             LOGGER.debug("Waiting for {} to be available: {} of {} ms waited", _lockName, waited, _timeoutMs);
-        }
+        } while (!wait);
     }
 }
