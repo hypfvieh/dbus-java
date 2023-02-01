@@ -1,12 +1,12 @@
 package org.freedesktop.dbus.bin;
 
+import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
-import org.freedesktop.dbus.utils.AddressBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
             if (busAddress.isBusType("TCP")) {
                 String addrStr  = busAddress.removeParameter("listen").toString();
-                System.setProperty(AddressBuilder.DBUS_SESSION_BUS_ADDRESS, addrStr);
+                System.setProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS, addrStr);
             }
 
             // start the daemon in background to not block the test
