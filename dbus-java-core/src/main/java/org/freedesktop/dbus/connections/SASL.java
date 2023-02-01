@@ -15,6 +15,7 @@ import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
+import org.freedesktop.dbus.exceptions.SocketClosedException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
@@ -34,7 +35,9 @@ import java.nio.channels.NetworkChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
@@ -43,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 public class SASL {
     public static final int       AUTH_NONE                   = 0;
@@ -69,6 +73,10 @@ public class SASL {
     private static final String   DBUS_TEST_HOME_DIR          = System.getProperty(DBusSysProps.SYSPROP_DBUS_TEST_HOME_DIR);
 
     private static final File     DBUS_KEYRINGS_DIR           = new File(SYSPROP_USER_HOME, ".dbus-keyrings");
+
+    private static final Set<PosixFilePermission> BAD_FILE_PERMISSIONS =
+            Set.of(PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE,
+                    PosixFilePermission.OTHERS_EXECUTE, PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE);
 
     private String challenge = "";
     private String cookie    = "";
@@ -132,7 +140,21 @@ public class SASL {
 
         // ensure directory exists
         if (!keyringDir.exists()) {
-            keyringDir.mkdirs();
+            // directory did not exist, if we can create it, set proper permissions
+            if (keyringDir.mkdirs()) {
+                if (!Util.isWindows()) {
+                    Util.setFilePermissions(keyringDir.toPath(), null, null, Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE));
+                }
+            } else {
+                throw new AuthenticationException("Unable to create keyring directory " + keyringDir);
+            }
+        } else { // directory already exists
+            if (!Util.isWindows()) { // verify permissions
+                Set<PosixFilePermission> currentPermissions = Files.getPosixFilePermissions(keyringDir.toPath(), LinkOption.NOFOLLOW_LINKS);
+                if (Util.collectionContainsAny(currentPermissions, BAD_FILE_PERMISSIONS)) {
+                    throw new AuthenticationException("Cannot authenticate using cookies: Permissions of directory " + lock + " should be 0600");
+                }
+            }
         }
 
         // acquire lock
@@ -240,7 +262,7 @@ public class SASL {
             bytesRead += read;
             buf.position(0);
             if (read == -1) {
-                throw new IOException("Stream unexpectedly short (broken pipe)");
+                throw new SocketClosedException("Stream unexpectedly short (broken pipe)");
             }
 
             for (int i = buf.position(); i < read; i++) {
@@ -372,7 +394,8 @@ public class SASL {
                     try {
                         addCookie(context, "" + id, id / 1000, cookie);
                     } catch (IOException _ex) {
-                        logger.debug("", _ex);
+                        logger.debug("Error authenticating using cookie", _ex);
+                        return SaslResult.ERROR;
                     }
 
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);

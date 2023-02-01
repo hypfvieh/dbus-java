@@ -733,7 +733,11 @@ public class DBusDaemon extends Thread implements Closeable {
                         }
                     }
                 } catch (InterruptedException _ex) {
-                    LOGGER.debug("", _ex);
+                    if (LOGGER.isTraceEnabled()) {
+                        LOGGER.trace("Polling interrupted", _ex);
+                    } else {
+                        LOGGER.debug("Polling interrupted");
+                    }
                     terminate();
                 }
             }
@@ -816,10 +820,9 @@ public class DBusDaemon extends Thread implements Closeable {
                         }
                     }
                 } catch (InterruptedException _ex) {
-                    logger.debug("", _ex);
+                    logger.debug("Got interrupted", _ex);
                     terminate();
                 }
-
             }
         }
 

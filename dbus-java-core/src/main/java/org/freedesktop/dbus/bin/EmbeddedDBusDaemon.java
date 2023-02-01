@@ -6,6 +6,7 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.SocketClosedException;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,7 +200,9 @@ public class EmbeddedDBusDaemon implements Closeable {
                     SocketChannel s = transport.connect();
                     daemonThread.addSock(s);
                 } catch (AuthenticationException _ex) {
-                    LOGGER.error("Authentication failed");
+                    LOGGER.error("Authentication failed", _ex);
+                } catch (SocketClosedException _ex) {
+                    LOGGER.debug("Connection closed", _ex);
                 }
             }
         }
