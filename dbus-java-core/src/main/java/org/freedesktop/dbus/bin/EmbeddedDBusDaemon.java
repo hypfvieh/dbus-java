@@ -4,6 +4,7 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
+import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.SocketClosedException;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,6 +30,8 @@ public class EmbeddedDBusDaemon implements Closeable {
     private DBusDaemon daemon;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final AtomicBoolean connectionReady = new AtomicBoolean(false);
+
     private SaslAuthMode saslAuthMode;
 
     private String unixSocketFileOwner;
@@ -51,8 +53,9 @@ public class EmbeddedDBusDaemon implements Closeable {
      * Shutdown the running DBusDaemon instance.
      */
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         closed.set(true);
+        connectionReady.set(false);
         if (daemon != null) {
             daemon.close();
             daemon = null;
@@ -65,9 +68,6 @@ public class EmbeddedDBusDaemon implements Closeable {
      * This is a blocking operation.
      */
     public void startInForeground() {
-        daemon = new DBusDaemon();
-        daemon.start();
-
         try {
             startListening();
         } catch (IOException | DBusException _ex) {
@@ -112,7 +112,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      * @return true if running, false otherwise
      */
     public synchronized boolean isRunning() {
-        return daemon != null && daemon.isRunning();
+        return connectionReady.get() && daemon != null && daemon.isRunning();
     }
 
     /**
@@ -174,6 +174,11 @@ public class EmbeddedDBusDaemon implements Closeable {
         unixSocketFilePermissions = _permissions;
     }
 
+    private synchronized void setDaemonAndStart(AbstractTransport _transport) {
+        daemon = new DBusDaemon(_transport);
+        daemon.start();
+    }
+
     /**
      * Start listening for incoming connections.
      * <p>
@@ -187,6 +192,7 @@ public class EmbeddedDBusDaemon implements Closeable {
             throw new IllegalArgumentException("Unknown or unsupported address type: " + address.getType());
         }
 
+        LOGGER.debug("About to initialize transport on: {}", address);
         try (AbstractTransport transport = TransportBuilder.create(address).configure()
                 .withSaslAuthMode(getSaslAuthMode())
                 .withUnixSocketFileOwner(unixSocketFileOwner)
@@ -195,16 +201,24 @@ public class EmbeddedDBusDaemon implements Closeable {
                 .withAutoConnect(false)
                 .back()
                 .build()) {
-            while (daemon.isRunning()) {
+
+            setDaemonAndStart(transport);
+
+            // use tail-controlled loop so we at least try to get a client connection once
+            do {
                 try {
-                    SocketChannel s = transport.connect();
+                    LOGGER.debug("Begin listening to: {}", transport);
+                    connectionReady.set(true);
+                    TransportConnection s = transport.listen();
                     daemon.addSock(s);
                 } catch (AuthenticationException _ex) {
                     LOGGER.error("Authentication failed", _ex);
                 } catch (SocketClosedException _ex) {
                     LOGGER.debug("Connection closed", _ex);
                 }
-            }
+
+            } while (daemon.isRunning());
+
         }
     }
 }

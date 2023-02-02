@@ -5,6 +5,7 @@ import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.spi.message.IMessageReader;
 import org.freedesktop.dbus.spi.message.IMessageWriter;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,9 +39,7 @@ public abstract class AbstractTransport implements Closeable {
     private final Logger                         logger    = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;
 
-    private IMessageReader                       inputReader;
-    private IMessageWriter                       outputWriter;
-
+    private TransportConnection                  transportConnection;
     private boolean                              fileDescriptorSupported;
 
     private final SaslConfig                     saslConfig;
@@ -48,7 +48,7 @@ public abstract class AbstractTransport implements Closeable {
     private Consumer<AbstractTransport>          preConnectCallback;
 
     protected AbstractTransport(BusAddress _address) {
-        address = _address;
+        address = Objects.requireNonNull(_address, "BusAddress required");
         saslConfig = new SaslConfig();
 
         if (_address.isListeningSocket()) {
@@ -70,8 +70,8 @@ public abstract class AbstractTransport implements Closeable {
         if (!fileDescriptorSupported && Message.ArgumentType.FILEDESCRIPTOR == _msg.getType()) {
             throw new IllegalArgumentException("File descriptors are not supported!");
         }
-        if (outputWriter != null && !outputWriter.isClosed()) {
-            outputWriter.writeMessage(_msg);
+        if (transportConnection.getWriter() != null && !transportConnection.getWriter().isClosed()) {
+            transportConnection.getWriter().writeMessage(_msg);
         } else {
             throw new IOException("OutputWriter already closed or null");
         }
@@ -85,8 +85,8 @@ public abstract class AbstractTransport implements Closeable {
      * @throws DBusException when message could not be converted to a DBus message
      */
     public Message readMessage() throws IOException, DBusException {
-        if (inputReader != null && !inputReader.isClosed()) {
-            return inputReader.readMessage();
+        if (transportConnection.getReader() != null && !transportConnection.getReader().isClosed()) {
+            return transportConnection.getReader().readMessage();
         }
         throw new IOException("InputReader already closed or null");
     }
@@ -96,8 +96,9 @@ public abstract class AbstractTransport implements Closeable {
      * @return boolean
      */
     public synchronized boolean isConnected() {
-        return outputWriter != null && !outputWriter.isClosed()
-                && inputReader != null && !inputReader.isClosed();
+        return transportConnection != null
+                && transportConnection.getWriter() != null && !transportConnection.getWriter().isClosed()
+                && transportConnection.getReader() != null && !transportConnection.getReader().isClosed();
     }
 
     /**
@@ -130,13 +131,34 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException if connection fails
      */
     public final SocketChannel connect() throws IOException {
+        if (getAddress().isListeningSocket()) {
+            throw new InvalidBusAddressException("Cannot connect when using listening address (try use listen() instead)");
+        }
+        transportConnection = internalConnect();
+        return transportConnection.getChannel();
+    }
+
+    /**
+     * Establish starts listening on created transport.
+     *
+     * @return {@link SocketChannel}
+     * @throws IOException if connection fails
+     */
+    public final TransportConnection listen() throws IOException {
+        if (!getAddress().isListeningSocket()) {
+            throw new InvalidBusAddressException("Cannot listen on client connection address (try use connect() instead)");
+        }
+        transportConnection = internalConnect();
+        return transportConnection;
+    }
+
+    private TransportConnection internalConnect() throws IOException {
         if (preConnectCallback != null) {
             preConnectCallback.accept(this);
         }
         SocketChannel channel = connectImpl();
         authenticate(channel);
-        setInputOutput(channel);
-        return channel;
+        return createInputOutput(channel);
     }
 
     /**
@@ -176,16 +198,19 @@ public abstract class AbstractTransport implements Closeable {
      * The default implementation does not support file descriptor passing!
      *
      * @param _socket socket to use
+     * @return TransportConnection with configured socket channel, reader and writer
      */
-    private void setInputOutput(SocketChannel _socket) {
+    private TransportConnection createInputOutput(SocketChannel _socket) {
+        IMessageReader reader = null;
+        IMessageWriter writer = null;
         try {
             for (ISocketProvider provider : spiLoader) {
                 logger.debug("Found ISocketProvider {}", provider);
 
                 provider.setFileDescriptorSupport(hasFileDescriptorSupport() && fileDescriptorSupported);
-                inputReader = provider.createReader(_socket);
-                outputWriter = provider.createWriter(_socket);
-                if (inputReader != null && outputWriter != null) {
+                reader = provider.createReader(_socket);
+                writer = provider.createWriter(_socket);
+                if (reader != null && writer != null) {
                     logger.debug("Using ISocketProvider {}", provider);
                     break;
                 }
@@ -196,13 +221,14 @@ public abstract class AbstractTransport implements Closeable {
             logger.error("Could not initialize alternative message reader/writer", _ex);
         }
 
-        if (inputReader == null || outputWriter == null) {
+        if (reader == null || writer == null) {
             logger.debug("No alternative ISocketProvider found, using built-in implementation");
-            inputReader = new InputStreamMessageReader(_socket);
-            outputWriter = new OutputStreamMessageWriter(_socket);
+            reader = new InputStreamMessageReader(_socket);
+            writer = new OutputStreamMessageWriter(_socket);
             fileDescriptorSupported = false; // internal implementation does not support file descriptors even if server allows it
         }
 
+        return new TransportConnection(_socket, writer, reader);
     }
 
     /**
@@ -275,19 +301,29 @@ public abstract class AbstractTransport implements Closeable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [id=" + transportId + ", address=" + address + "]";
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append(" [id=")
+                .append(transportId)
+                .append(", ");
+
+        if (transportConnection != null) {
+            sb.append("connectionId=")
+                    .append(transportConnection.getId())
+                    .append(", ");
+        }
+
+        sb.append("address=")
+                .append(address)
+                .append("]");
+
+        return sb.toString();
     }
 
     @Override
     public void close() throws IOException {
-        if (inputReader != null) {
-            inputReader.close();
-            inputReader = null;
-        }
-
-        if (outputWriter != null) {
-            outputWriter.close();
-            outputWriter = null;
+        if (transportConnection != null) {
+            transportConnection.close();
+            transportConnection = null;
         }
     }
 

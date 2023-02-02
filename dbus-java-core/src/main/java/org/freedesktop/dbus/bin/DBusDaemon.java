@@ -2,8 +2,10 @@ package org.freedesktop.dbus.bin;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
+import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
@@ -18,8 +20,6 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
-import org.freedesktop.dbus.spi.message.InputStreamMessageReader;
-import org.freedesktop.dbus.spi.message.OutputStreamMessageWriter;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
@@ -34,13 +34,13 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A replacement DBusDaemon
  */
 public class DBusDaemon extends Thread implements Closeable {
-    public static final int                                          QUEUE_POLL_WAIT = 500;
+    public static final int                                                     QUEUE_POLL_WAIT = 500;
 
     private static final Logger                                                 LOGGER          =
             LoggerFactory.getLogger(DBusDaemon.class);
@@ -63,25 +63,27 @@ public class DBusDaemon extends Thread implements Closeable {
     private final Map<ConnectionStruct, DBusDaemonReaderThread>                 conns           =
             new ConcurrentHashMap<>();
     private final Map<String, ConnectionStruct>                                 names           =
-            Collections.synchronizedMap(new HashMap<>());
+            Collections.synchronizedMap(new HashMap<>()); // required because of "null" key
 
     private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> outqueue       =
             new LinkedBlockingDeque<>();
     private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> inqueue        =
             new LinkedBlockingDeque<>();
-    private final BlockingDeque<Pair<Message, WeakReference<ConnectionStruct>>> localqueue     =
-            new LinkedBlockingDeque<>();
 
     private final List<ConnectionStruct>                                        sigrecips       = new ArrayList<>();
     private final DBusServer                                                    dbusServer      = new DBusServer();
+
     private final DBusDaemonSenderThread                                        sender          =
             new DBusDaemonSenderThread();
     private final AtomicBoolean                                                 run             =
             new AtomicBoolean(false);
     private final AtomicInteger                                                 nextUnique      = new AtomicInteger(0);
 
-    public DBusDaemon() {
+    private final AbstractTransport                                             transport;
+
+    public DBusDaemon(AbstractTransport _transport) {
         setName(getClass().getSimpleName() + "-Thread");
+        transport = _transport;
         names.put("org.freedesktop.DBus", null);
     }
 
@@ -114,16 +116,9 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     @Override
-    public synchronized void start() {
-        super.start();
-
-        dbusServer.start();
-        sender.start();
-    }
-
-    @Override
     public void run() {
         run.set(true);
+        sender.start();
 
         while (isRunning()) {
             try {
@@ -140,14 +135,15 @@ public class DBusDaemon extends Thread implements Closeable {
                         try {
                             if (null != connectionStruct.unique) {
                                 m.setSource(connectionStruct.unique);
+                                LOGGER.trace("Updated source to {}", connectionStruct.unique);
                             }
                         } catch (DBusException _ex) {
-                            LOGGER.debug("", _ex);
+                            LOGGER.debug("Error setting source", _ex);
                             send(connectionStruct, new Error("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
 
                         if ("org.freedesktop.DBus".equals(m.getDestination())) {
-                            localqueue.add(new Pair<>(m, new WeakReference<>(connectionStruct)));
+                            dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
                             if (m instanceof DBusSignal) {
                                 List<ConnectionStruct> l;
@@ -174,8 +170,9 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
 
             } catch (DBusException _ex) {
-                LOGGER.debug("", _ex);
+                LOGGER.debug("Error processing connection", _ex);
             } catch (InterruptedException _ex) {
+                LOGGER.debug("Interrupted");
                 close();
                 interrupt();
             }
@@ -197,15 +194,29 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public synchronized boolean isRunning() {
-        return run.get() && isAlive();
+        return run.get();
     }
 
     @Override
     public void close() {
         run.set(false);
+        if (!conns.isEmpty()) {
+            // disconnect all remaining connection
+            Set<ConnectionStruct> connections = new HashSet<>(conns.keySet());
+            for (ConnectionStruct c : connections) {
+                removeConnection(c);
+            }
+        }
         sender.terminate();
-        dbusServer.terminate();
-        interrupt();
+        if (transport != null && transport.isConnected()) {
+            LOGGER.debug("Terminating transport {}", transport);
+            try {
+                // shutdown listener
+                transport.close();
+            } catch (IOException _ex) {
+                LOGGER.debug("Error closing transport", _ex);
+            }
+        }
     }
 
     private void removeConnection(ConnectionStruct _c) {
@@ -215,14 +226,14 @@ public class DBusDaemon extends Thread implements Closeable {
             if (conns.containsKey(_c)) {
                 DBusDaemonReaderThread r = conns.get(_c);
                 exists = true;
-                r.stopRunning();
+                r.terminate();
                 conns.remove(_c);
             }
         }
         if (exists) {
             try {
-                if (null != _c.socketChannel) {
-                    _c.socketChannel.close();
+                if (null != _c.connection) {
+                    _c.connection.close();
                 }
             } catch (IOException _exIo) {
                 LOGGER.trace("Error while closing socketchannel", _exIo);
@@ -248,14 +259,13 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    void addSock(SocketChannel _sock) throws IOException {
+    void addSock(TransportConnection _s) throws IOException {
         LOGGER.debug("New Client");
 
-        ConnectionStruct c = new ConnectionStruct(_sock);
+        ConnectionStruct c = new ConnectionStruct(_s);
         DBusDaemonReaderThread r = new DBusDaemonReaderThread(c);
         conns.put(c, r);
         r.start();
-
     }
 
     public static void syntax() {
@@ -388,15 +398,11 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public static class ConnectionStruct {
-        private final InputStreamMessageReader  inputReader;
-        private final OutputStreamMessageWriter outputWriter;
-        private final SocketChannel             socketChannel;
+        private final TransportConnection       connection;
         private String                          unique;
 
-        ConnectionStruct(SocketChannel _sock) throws IOException {
-            socketChannel = _sock;
-            inputReader = new InputStreamMessageReader(socketChannel);
-            outputWriter = new OutputStreamMessageWriter(socketChannel);
+        ConnectionStruct(TransportConnection _c) throws IOException {
+            connection = _c;
         }
 
         @Override
@@ -405,14 +411,12 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer extends Thread implements DBus, Introspectable, Peer {
+    public class DBusServer implements DBus, Introspectable, Peer {
 
         private final String machineId;
         private ConnectionStruct connStruct;
-        private volatile AtomicBoolean running = new AtomicBoolean(true);
 
         public DBusServer() {
-            setName("DBusServer");
             String ascii;
             try {
                 ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
@@ -711,44 +715,6 @@ public class DBusDaemon extends Thread implements Closeable {
         }
 
         @Override
-        public void run() {
-
-            while (isRunning() && running.get()) {
-                // block on outqueue
-                try {
-                    Pair<Message, WeakReference<ConnectionStruct>> pollFirst = localqueue.take();
-                    if (pollFirst != null) {
-                        ConnectionStruct connectionStruct = pollFirst.second.get();
-                        if (connectionStruct != null) {
-                            LOGGER.trace("<localqueue> Got message {} from {}", pollFirst.first, connectionStruct);
-
-                            try {
-                                handleMessage(connectionStruct, pollFirst.first);
-                            } catch (DBusException _ex) {
-                                LOGGER.debug("", _ex);
-                            }
-                        } else if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info("Discarding {} connection reaped", pollFirst.first);
-
-                        }
-                    }
-                } catch (InterruptedException _ex) {
-                    if (LOGGER.isTraceEnabled()) {
-                        LOGGER.trace("Polling interrupted", _ex);
-                    } else {
-                        LOGGER.debug("Polling interrupted");
-                    }
-                }
-            }
-
-        }
-
-        public void terminate() {
-            running.set(false);
-            interrupt();
-        }
-
-        @Override
         public String[] ListActivatableNames() {
             return null;
         }
@@ -782,14 +748,16 @@ public class DBusDaemon extends Thread implements Closeable {
 
     public class DBusDaemonSenderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
-        private volatile AtomicBoolean running = new AtomicBoolean(true);
+        private final AtomicBoolean running = new AtomicBoolean(false); // switch running status when thread begins
 
         public DBusDaemonSenderThread() {
-            setName(getClass().getSimpleName());
+            setName(getClass().getSimpleName().replace('$', '-'));
         }
 
         @Override
         public void run() {
+            logger.debug(">>>> Sender thread started <<<<");
+            running.set(true);
             while (isRunning() && running.get()) {
 
                 logger.trace("Acquiring lock on outqueue and blocking for data");
@@ -800,11 +768,11 @@ public class DBusDaemon extends Thread implements Closeable {
                     if (pollFirst != null) {
                         ConnectionStruct connectionStruct = pollFirst.second.get();
                         if (connectionStruct != null) {
-                            if (connectionStruct.socketChannel.isConnected()) {
+                            if (connectionStruct.connection.getChannel().isConnected()) {
                                 logger.debug("<outqueue> Got message {} for {}", pollFirst.first, connectionStruct.unique);
 
                                 try {
-                                    connectionStruct.outputWriter.writeMessage(pollFirst.first);
+                                    connectionStruct.connection.getWriter().writeMessage(pollFirst.first);
                                 } catch (IOException _ex) {
                                     logger.debug("Disconnecting client due to previous exception", _ex);
                                     removeConnection(connectionStruct);
@@ -822,6 +790,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     logger.debug("Got interrupted", _ex);
                 }
             }
+            logger.debug(">>>> Sender Thread terminated <<<<");
         }
 
         public synchronized void terminate() {
@@ -831,9 +800,10 @@ public class DBusDaemon extends Thread implements Closeable {
     }
 
     public class DBusDaemonReaderThread extends Thread {
+        private final Logger logger = LoggerFactory.getLogger(getClass());
         private ConnectionStruct                      conn;
         private final WeakReference<ConnectionStruct> weakconn;
-        private volatile boolean                      lrun = true;
+        private final AtomicBoolean running = new AtomicBoolean(false);
 
         public DBusDaemonReaderThread(ConnectionStruct _conn) {
             this.conn = _conn;
@@ -841,18 +811,19 @@ public class DBusDaemon extends Thread implements Closeable {
             setName(getClass().getSimpleName());
         }
 
-        public void stopRunning() {
-            lrun = false;
+        public void terminate() {
+            running.set(false);
         }
 
         @Override
         public void run() {
-
-            while (isRunning() && lrun) {
+            logger.debug(">>>> Reader Thread started <<<<");
+            running.set(true);
+            while (isRunning() && running.get()) {
 
                 Message m = null;
                 try {
-                    m = conn.inputReader.readMessage();
+                    m = conn.connection.getReader().readMessage();
                 } catch (IOException _ex) {
                     LOGGER.debug("", _ex);
                     removeConnection(conn);
@@ -870,7 +841,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
             conn = null;
-
+            logger.debug(">>>> Reader Thread terminated <<<<");
         }
     }
 

@@ -308,7 +308,7 @@ public final class TransportBuilder {
         if (provider == null) {
             throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
         } else {
-            LOGGER.info("Using transport {} to connect to {}", provider.getTransportName(), config.getBusAddress());
+            LOGGER.info("Using transport {} for address {}", provider.getTransportName(), config.getBusAddress());
         }
 
         try {
@@ -332,7 +332,11 @@ public final class TransportBuilder {
         transport.setPreConnectCallback(config.getPreConnectCallback());
 
         if (config.isAutoConnect()) {
-            transport.connect();
+            if (config.isListening()) {
+                transport.listen();
+            } else {
+                transport.connect();
+            }
         }
         return transport;
     }
