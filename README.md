@@ -69,6 +69,11 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Changed SASL to read responses bytewise to prevent reading to much (and break the following message)
    - Added option to change authentication mode used in DBusDaemon (--auth-mode/-m)
    - Improved handling of broken connections in DBusDaemon
+   - Fixed leaking threads in DBusDaemon
+   - Fixed `EmbeddedDBusDaemon.startInBackgroundAndWait(long)` did not properly wait for the sender thread to be started ([#208](https://github.com/hypfvieh/dbus-java/issues/208))
+   - Fixed DBusDaemon never used `MessageWriter`/`MessageReader` provided on classpath (always used the default implementation)
+   - Some refactorings in DBusDaemon/EmbeddedDBusDaemon
+   - Improved `AbstractTransport` to support listener connections properly (you have to use `listen()` method now, this allows proper usage of detected `MessageReader`/`MessageWriter` implementation)
 
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
