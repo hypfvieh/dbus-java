@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -28,6 +29,8 @@ import java.util.function.Consumer;
  * @since v3.2.0 - 2019-02-08
  */
 public abstract class AbstractTransport implements Closeable {
+
+    private static final AtomicLong TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
     private final ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
 
@@ -39,7 +42,8 @@ public abstract class AbstractTransport implements Closeable {
 
     private boolean                              fileDescriptorSupported;
 
-    private final SaslConfig saslConfig;
+    private final SaslConfig                     saslConfig;
+    private final long                           transportId = TRANSPORT_ID_GENERATOR.incrementAndGet();
 
     private Consumer<AbstractTransport>          preConnectCallback;
 
@@ -267,6 +271,11 @@ public abstract class AbstractTransport implements Closeable {
     @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected void setSaslAuthMode(int _mode) {
         getSaslConfig().setAuthMode(_mode);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [id=" + transportId + ", address=" + address + "]";
     }
 
     @Override

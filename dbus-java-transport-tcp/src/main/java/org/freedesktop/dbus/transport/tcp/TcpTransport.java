@@ -68,7 +68,7 @@ public class TcpTransport extends AbstractTransport {
 
     @Override
     public void close() throws IOException {
-        getLogger().debug("Disconnecting Transport");
+        getLogger().debug("Disconnecting Transport: {}", this);
 
         super.close();
 
