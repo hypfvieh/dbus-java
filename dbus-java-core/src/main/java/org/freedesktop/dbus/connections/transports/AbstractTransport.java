@@ -125,9 +125,13 @@ public abstract class AbstractTransport implements Closeable {
     protected abstract SocketChannel connectImpl() throws IOException;
 
     /**
-     * Establish connection on created transport.
+     * Establish connection on created transport.<br>
+     * <p>
+     * This method can only be used for <b>non-listening</b> connections.<br>
+     * Trying to use this with listening addresses will throw an {@link InvalidBusAddressException}.
+     * </p>
      *
-     * @return {@link SocketChannel}
+     * @return {@link SocketChannel} of the created connection
      * @throws IOException if connection fails
      */
     public final SocketChannel connect() throws IOException {
@@ -139,9 +143,17 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Establish starts listening on created transport.
+     * Start listening on created transport.<br>
+     * <p>
+     * This method can only be used for <b>listening</b> connections.<br>
+     * Trying to use this with non-listening addresses will throw an {@link InvalidBusAddressException}.
+     * </p>
+     * <p>
+     * Will return the {@link TransportConnection} as soon as a client connects.<br>
+     * Therefore this method should be called in a loop to accept multiple clients
+     * </p>
      *
-     * @return {@link SocketChannel}
+     * @return {@link TransportConnection} containing created {@link SocketChannel} and {@link IMessageReader}/{@link IMessageWriter}
      * @throws IOException if connection fails
      */
     public final TransportConnection listen() throws IOException {
