@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ public class Message {
     /** Steps to increment the buffer array. */
     private static final int           BUFFERINCREMENT = 20;
 
-    private static long                globalserial    = 0;
+    private static final AtomicLong    GLOBAL_SERIAL    = new AtomicLong(0);
 
     //CHECKSTYLE:OFF
     protected final Logger             logger          = LoggerFactory.getLogger(getClass());
@@ -97,11 +98,9 @@ public class Message {
     protected Message(byte _endian, byte _type, byte _flags) throws DBusException {
         this();
         big = Endian.BIG == _endian;
-        synchronized (Message.class) {
-            serial = ++globalserial;
-        }
+        setSerial(GLOBAL_SERIAL.incrementAndGet());
 
-        logger.debug("Creating message with serial {}", serial);
+        logger.debug("Creating message with serial {}", getSerial());
 
         type = _type;
         flags = _flags;
@@ -146,7 +145,7 @@ public class Message {
         body = bodyBuf;
         bufferuse = 3;
         bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 4)[0]).longValue();
-        serial = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue();
+        setSerial(((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue());
         bytecounter = msgBuf.length + headerBuf.length + bodyBuf.length;
 
         filedescriptors.clear();
@@ -215,7 +214,7 @@ public class Message {
         bytecounter = _bytecounter;
     }
 
-    protected void setSerial(long _serial) {
+    protected synchronized void setSerial(long _serial) {
         serial = _serial;
     }
 
@@ -463,7 +462,7 @@ public class Message {
         sb.append('(');
         sb.append(flags);
         sb.append(',');
-        sb.append(serial);
+        sb.append(getSerial());
         sb.append(')');
         sb.append(' ');
         sb.append('{');
@@ -1462,7 +1461,7 @@ public class Message {
             bufferuse = 0;
             bytecounter = 0;
             preallocate(12);
-            append("yyyyuu", big ? Endian.BIG : Endian.LITTLE, type, flags, protover, bodylen, serial);
+            append("yyyyuu", big ? Endian.BIG : Endian.LITTLE, type, flags, protover, bodylen, getSerial());
             headers[HeaderField.SENDER] = _source;
 
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("WireData first append: {}", dumpWireData()));
