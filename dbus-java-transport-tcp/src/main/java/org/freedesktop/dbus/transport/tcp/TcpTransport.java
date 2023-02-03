@@ -2,6 +2,7 @@ package org.freedesktop.dbus.transport.tcp;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 
 import java.io.IOException;
@@ -22,8 +23,8 @@ public class TcpTransport extends AbstractTransport {
     private SocketChannel       socket;
     private ServerSocketChannel serverSocket;
 
-    TcpTransport(BusAddress _address, int _timeout) {
-        super(_address);
+    TcpTransport(BusAddress _address, int _timeout, TransportConfig _config) {
+        super(_address, _config);
         timeout = _timeout;
         getSaslConfig().setAuthMode(SASL.AUTH_SHA);
     }

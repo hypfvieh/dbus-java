@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.transports;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.SaslConfig;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
@@ -42,22 +43,21 @@ public abstract class AbstractTransport implements Closeable {
     private TransportConnection                  transportConnection;
     private boolean                              fileDescriptorSupported;
 
-    private final SaslConfig                     saslConfig;
     private final long                           transportId = TRANSPORT_ID_GENERATOR.incrementAndGet();
 
-    private Consumer<AbstractTransport>          preConnectCallback;
+    private final TransportConfig                config;
 
-    protected AbstractTransport(BusAddress _address) {
+    protected AbstractTransport(BusAddress _address, TransportConfig _config) {
         address = Objects.requireNonNull(_address, "BusAddress required");
-        saslConfig = new SaslConfig();
+        config = Objects.requireNonNull(_config, "Config required");
 
         if (_address.isListeningSocket()) {
-            saslConfig.setMode(SASL.SaslMode.SERVER);
+            config.getSaslConfig().setMode(SASL.SaslMode.SERVER);
         } else {
-            saslConfig.setMode(SASL.SaslMode.CLIENT);
+            config.getSaslConfig().setMode(SASL.SaslMode.CLIENT);
         }
-        saslConfig.setAuthMode(SASL.AUTH_NONE);
-        saslConfig.setGuid(address.getGuid());
+        config.getSaslConfig().setGuid(address.getGuid());
+        config.getSaslConfig().setFileDescriptorSupport(hasFileDescriptorSupport());
     }
 
     /**
@@ -165,8 +165,8 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     private TransportConnection internalConnect() throws IOException {
-        if (preConnectCallback != null) {
-            preConnectCallback.accept(this);
+        if (config.getPreConnectCallback() != null) {
+            config.getPreConnectCallback().accept(this);
         }
         SocketChannel channel = connectImpl();
         authenticate(channel);
@@ -182,7 +182,7 @@ public abstract class AbstractTransport implements Closeable {
      * @since 4.2.0 - 2022-07-20
      */
     public void setPreConnectCallback(Consumer<AbstractTransport> _run) {
-        preConnectCallback = _run;
+        config.setPreConnectCallback(_run);
     }
 
     /**
@@ -192,9 +192,9 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException on any error
      */
     private void authenticate(SocketChannel _sock) throws IOException {
-        SASL sasl = new SASL(hasFileDescriptorSupport());
+        SASL sasl = new SASL(config.getSaslConfig());
         try {
-            if (!sasl.auth(saslConfig, _sock, this)) {
+            if (!sasl.auth(_sock, this)) {
                 throw new AuthenticationException("Failed to authenticate");
             }
         } catch (IOException _ex) {
@@ -267,7 +267,7 @@ public abstract class AbstractTransport implements Closeable {
      * @return SaslConfig, never null
      */
     protected SaslConfig getSaslConfig() {
-        return saslConfig;
+        return config.getSaslConfig();
     }
 
     /**

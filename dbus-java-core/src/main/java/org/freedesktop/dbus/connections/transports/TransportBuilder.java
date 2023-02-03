@@ -313,8 +313,10 @@ public final class TransportBuilder {
 
         try {
             transport = provider.createTransport(myBusAddress, config);
-            if (config.getAuthMode() != null) {
-                transport.getSaslConfig().setAuthMode(config.getAuthMode().getAuthMode());
+            Objects.requireNonNull(transport, "Transport required"); // in case the factory returns null, we cannot continue
+
+            if (config.getSaslConfig().getAuthMode() > 0) {
+                transport.getSaslConfig().setAuthMode(config.getSaslConfig().getAuthMode());
             }
         } catch (TransportConfigurationException _ex) {
             LOGGER.error("Could not initialize transport", _ex);
@@ -328,7 +330,6 @@ public final class TransportBuilder {
             ((IFileBasedBusAddress) myBusAddress).updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
         }
 
-        transport.getSaslConfig().setSaslUid(config.getSaslUid());
         transport.setPreConnectCallback(config.getPreConnectCallback());
 
         if (config.isAutoConnect()) {

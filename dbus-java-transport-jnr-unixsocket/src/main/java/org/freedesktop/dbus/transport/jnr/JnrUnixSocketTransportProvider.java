@@ -22,7 +22,7 @@ public class JnrUnixSocketTransportProvider implements ITransportProvider {
         } else {
             address = new JnrUnixBusAddress(_address);
         }
-        return new UnixSocketTransport(address);
+        return new UnixSocketTransport(address, _config);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.transport.jre;
 
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
@@ -32,8 +33,8 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
     private SocketChannel                 socket;
     private ServerSocketChannel           serverSocket;
 
-    NativeUnixSocketTransport(UnixBusAddress _address) throws TransportConfigurationException {
-        super(_address);
+    NativeUnixSocketTransport(UnixBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
+        super(_address, _config);
 
         if (_address.hasPath()) {
             unixSocketAddress = UnixDomainSocketAddress.of(_address.getPath());

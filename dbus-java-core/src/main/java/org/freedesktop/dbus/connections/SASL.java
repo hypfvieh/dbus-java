@@ -44,6 +44,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -83,24 +84,28 @@ public class SASL {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /** whether file descriptor passing is supported on the current connection. */
-    private final boolean hasFileDescriptorSupport;
     private boolean fileDescriptorSupported;
+    private final SaslConfig saslConfig;
 
     /**
      * Create a new SASL auth handler.
      * Defaults to disable file descriptor passing.
+     *
+     * @deprecated should not be used as SASL configuration is not provided
      */
+    @Deprecated(since = "4.2.2 - 2023-02-03", forRemoval = true)
     public SASL() {
-        this(false);
+        this(SaslConfig.create());
     }
 
     /**
      * Create a new SASL auth handler.
      *
      * @param _hasFileDescriptorSupport true to support file descriptor passing (usually only works with UNIX_SOCKET).
+     * @param _saslConfig SASL configuration
      */
-    public SASL(boolean _hasFileDescriptorSupport) {
-        hasFileDescriptorSupport = _hasFileDescriptorSupport;
+    public SASL(SaslConfig _saslConfig) {
+        saslConfig = Objects.requireNonNull(_saslConfig, "Sasl Configuration required");
     }
 
     private String findCookie(String _context, String _id) throws IOException {
@@ -152,7 +157,11 @@ public class SASL {
             if (!Util.isWindows()) { // verify permissions
                 Set<PosixFilePermission> currentPermissions = Files.getPosixFilePermissions(keyringDir.toPath(), LinkOption.NOFOLLOW_LINKS);
                 if (Util.collectionContainsAny(currentPermissions, BAD_FILE_PERMISSIONS)) {
-                    throw new AuthenticationException("Cannot authenticate using cookies: Permissions of directory " + lock + " should be 0600");
+                    if (saslConfig.isStrictCookiePermissions()) {
+                        throw new AuthenticationException("Cannot authenticate using cookies: Permissions of directory " + lock + " should be 0700");
+                    } else {
+                        logger.warn("DBus keyring directory {} should have permissions 0700", lock);
+                    }
                 }
             }
         }
@@ -394,7 +403,7 @@ public class SASL {
                     try {
                         addCookie(context, "" + id, id / 1000, cookie);
                     } catch (IOException _ex) {
-                        logger.debug("Error authenticating using cookie", _ex);
+                        logger.error("Error authenticating using cookie", _ex);
                         return SaslResult.ERROR;
                     }
 
@@ -473,11 +482,11 @@ public class SASL {
      * @return true if the auth was successful and false if it failed.
      * @throws IOException on failure
      */
-    public boolean auth(SaslConfig _config, SocketChannel _sock, AbstractTransport _transport) throws IOException {
+    public boolean auth(SocketChannel _sock, AbstractTransport _transport) throws IOException {
         String luid = null;
         String kernelUid = null;
 
-        long uid = _config.getSaslUid().orElse(getUserId());
+        long uid = saslConfig.getSaslUid().orElse(getUserId());
         luid = stupidlyEncode("" + uid);
 
         SASL.Command c;
@@ -487,9 +496,9 @@ public class SASL {
 
         while (state != SaslAuthState.FINISHED && state != SaslAuthState.FAILED) {
 
-            logger.trace("Mode: {} AUTH state: {}", _config.getMode(), state);
+            logger.trace("Mode: {} AUTH state: {}", saslConfig.getMode(), state);
 
-            switch (_config.getMode()) {
+            switch (saslConfig.getMode()) {
             case CLIENT:
                 switch (state) {
                 case INITIAL_STATE:
@@ -541,7 +550,7 @@ public class SASL {
                             logger.trace("Authenticated");
                             state = SaslAuthState.AUTHENTICATED;
 
-                            if (hasFileDescriptorSupport) {
+                            if (saslConfig.isFileDescriptorSupport()) {
                                 state = SaslAuthState.WAIT_DATA;
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
@@ -552,7 +561,7 @@ public class SASL {
                             }
                             break;
                         case AGREE_UNIX_FD:
-                            if (hasFileDescriptorSupport) {
+                            if (saslConfig.isFileDescriptorSupport()) {
                                 state = SaslAuthState.FINISHED;
                                 logger.trace("File descriptors supported by server");
                                 fileDescriptorSupported = true;
@@ -654,19 +663,19 @@ public class SASL {
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
                                     case OK:
-                                        send(_sock, SaslCommand.OK, _config.getGuid());
+                                        send(_sock, SaslCommand.OK, saslConfig.getGuid());
                                         state = SaslAuthState.WAIT_BEGIN;
                                         current = 0;
                                         break;
                                     case REJECT:
                                     default:
-                                        send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
+                                        send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                                         current = 0;
                                         break;
                                 }
                                 break;
                             case ERROR:
-                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
+                                send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                                 break;
                             case BEGIN:
                                 state = SaslAuthState.FAILED;
@@ -686,20 +695,20 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
-                                send(_sock, SaslCommand.OK, _config.getGuid());
+                                send(_sock, SaslCommand.OK, saslConfig.getGuid());
                                 state = SaslAuthState.WAIT_BEGIN;
                                 current = 0;
                                 break;
                             case REJECT:
                             default:
-                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
+                                send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                                 current = 0;
                                 break;
                             }
                         break;
                         case ERROR:
                         case CANCEL:
-                            send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
+                            send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                             state = SaslAuthState.WAIT_AUTH;
                         break;
                         case BEGIN:
@@ -715,7 +724,7 @@ public class SASL {
                         switch (c.getCommand()) {
                             case ERROR:
                             case CANCEL:
-                                send(_sock, REJECTED, convertAuthTypes(_config.getAuthMode()));
+                                send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                                 state = SaslAuthState.WAIT_AUTH;
                             break;
                             case BEGIN:
@@ -723,7 +732,7 @@ public class SASL {
                             break;
                             case NEGOTIATE_UNIX_FD:
                                 logger.debug("File descriptor negotiation requested");
-                                if (!hasFileDescriptorSupport) {
+                                if (!saslConfig.isFileDescriptorSupport()) {
                                     send(_sock, ERROR);
                                 } else {
                                     send(_sock, AGREE_UNIX_FD);

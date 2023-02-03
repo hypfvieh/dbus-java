@@ -6,7 +6,6 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -15,8 +14,11 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
 
     private TransportConfig   config = new TransportConfig();
 
+    private final SaslConfigBuilder<R> saslConfigBuilder;
+
     public TransportConfigBuilder(Supplier<R> _sup) {
         connectionBuilder = _sup;
+        saslConfigBuilder = new SaslConfigBuilder<>(config.getSaslConfig(), () -> this);
     }
 
     /**
@@ -106,10 +108,22 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * @param _authMode authmode to use, if null is given, default mode will be used
      *
      * @return this
+     * @deprecated use {@link #configureSasl()} instead
      */
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-02-03")
     public X withSaslAuthMode(SaslAuthMode _authMode) {
-        config.setAuthMode(_authMode);
+        configureSasl().withAuthMode(_authMode);
         return self();
+    }
+
+    /**
+     * Switch to the {@link SaslConfigBuilder} to configure the SASL authentication mechanism.<br>
+     * Use {@link SaslConfigBuilder#back()} to return to this builder when finished.
+     *
+     * @return SaslConfigBuilder
+     */
+    public SaslConfigBuilder<R> configureSasl() {
+        return saslConfigBuilder;
     }
 
     /**
@@ -151,9 +165,11 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * @param _saslUid UID to set, if a negative long is given the default is used
      *
      * @return this
+     * @deprecated use {@link #configureSasl()} instead
      */
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-02-03")
     public X withSaslUid(long _saslUid) {
-        config.setSaslUid(_saslUid < 0 ? OptionalLong.empty() : OptionalLong.of(_saslUid));
+        configureSasl().withSaslUid(_saslUid);
         return self();
     }
 

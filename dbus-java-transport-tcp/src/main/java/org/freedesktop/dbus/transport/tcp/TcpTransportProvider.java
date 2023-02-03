@@ -30,7 +30,7 @@ public class TcpTransportProvider implements ITransportProvider {
 
         int timeout = _config.getTimeout();
 
-        return new TcpTransport(address, timeout);
+        return new TcpTransport(address, timeout, _config);
     }
 
     @Override

@@ -6,6 +6,7 @@ import jnr.unixsocket.UnixSocketAddress;
 import jnr.unixsocket.UnixSocketChannel;
 import jnr.unixsocket.UnixSocketOptions;
 import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.utils.Util;
@@ -25,8 +26,8 @@ public class UnixSocketTransport extends AbstractUnixTransport {
     private UnixSocketChannel       socket;
     private UnixServerSocketChannel serverSocket;
 
-    UnixSocketTransport(JnrUnixBusAddress _address) throws TransportConfigurationException {
-        super(_address);
+    UnixSocketTransport(JnrUnixBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
+        super(_address, _config);
 
         if (_address.isAbstract()) {
             unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());

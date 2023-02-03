@@ -22,7 +22,7 @@ public class NativeTransportProvider implements ITransportProvider {
         } else {
             address = (UnixBusAddress) _address;
         }
-        return new NativeUnixSocketTransport(address);
+        return new NativeUnixSocketTransport(address, _config);
     }
 
     @Override

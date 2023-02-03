@@ -194,11 +194,11 @@ public class EmbeddedDBusDaemon implements Closeable {
 
         LOGGER.debug("About to initialize transport on: {}", address);
         try (AbstractTransport transport = TransportBuilder.create(address).configure()
-                .withSaslAuthMode(getSaslAuthMode())
                 .withUnixSocketFileOwner(unixSocketFileOwner)
                 .withUnixSocketFileGroup(unixSocketFileGroup)
                 .withUnixSocketFilePermissions(unixSocketFilePermissions)
                 .withAutoConnect(false)
+                .configureSasl().withAuthMode(getSaslAuthMode()).back()
                 .back()
                 .build()) {
 
