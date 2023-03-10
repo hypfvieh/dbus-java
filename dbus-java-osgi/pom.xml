@@ -24,10 +24,10 @@
     </properties>
 
     <build>
-        <sourceDirectory>${basedir}/../dbus-java/src/main/java</sourceDirectory>
+        <sourceDirectory>${basedir}/../dbus-java-core/src/main/java</sourceDirectory>
         <resources>
             <resource>
-                <directory>${basedir}/../dbus-java/src/main/resources</directory>
+                <directory>${basedir}/../dbus-java-core/src/main/resources</directory>
             </resource>
         </resources>
         <plugins>
