@@ -78,6 +78,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Some refactorings in DBusDaemon/EmbeddedDBusDaemon
    - Improved `AbstractTransport` to support listener connections properly (you have to use `listen()` method now, this allows proper usage of detected `MessageReader`/`MessageWriter` implementation)
    - New option in TransportBuilder to enforce Dbus-Keyring directory permissions (like adviced in DBus Spec). The default is not to check permissions, so the behavior is the same as before (dbus-java didn't care about permissions before)
+   - Fixed OSGi packaging
 
 ##### Changes in 4.2.1 (2022-09-08):
    - Updated dependencies 
