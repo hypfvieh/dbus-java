@@ -46,7 +46,10 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
-##### Changes in 4.2.2 (not released yet):
+##### Changes in 4.3.1 (not released yet):
+   - Nothing yet
+
+##### Changes in 4.3.0 (2023-03-10):
 
    - Fixed thread priority settings were never passed to thread factory, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#190](https://github.com/hypfvieh/dbus-java/issues/190))
    - Fixed possible NullPointer dereference in ReceivingService, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#191](https://github.com/hypfvieh/dbus-java/issues/191))

@@ -16,9 +16,9 @@ import java.util.List;
  * the org.freedesktop.login1.User interface.
  * </p>
  * <p>
- * The returned properties are defined as array of struct. 
+ * The returned properties are defined as array of struct.
  * Sadly, Java is not capable of transforming the array of struct to proper classes
- * due to type erasure. 
+ * due to type erasure.
  * </p>
  * <p>
  * The {@link Properties} interface will return a Variant&lt;?&gt; when {@link Properties#Get(String, String)}
@@ -34,27 +34,28 @@ import java.util.List;
  * The only way to deal with that is to stick to Object[] and use the values of it directly.
  * As the return type is defined as dbus type '{so}', we know that the struct is of type
  * String and DBusPath. This means: Object[0] = String, Object[1] = DBusPath.
- * </p> 
- *  
+ * </p>
+ *
  * @author hypfvieh
  * @since 2023-02-27
- *
  */
-public class PrintUserSessions {
-    public static void main(String[] args) throws IOException, DBusException {
+public final class PrintUserSessions {
+    private PrintUserSessions() {}
+
+    public static void main(String[] _args) throws IOException, DBusException {
         try (DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().build()) {
-            
+
             // fetch properties
             Properties properties = sessionConnection.getRemoteObject("org.freedesktop.login1", "/org/freedesktop/login1/user/_1000", Properties.class);
-            
-            // get the 'Sessions', which returns a complex type 
+
+            // get the 'Sessions', which returns a complex type
             List<Object[]> sessions = properties.Get("org.freedesktop.login1.User", "Sessions");
-            
+
             // print all sessions
             for (Object[] us : sessions) {
                 System.out.println(us[0] + " --> " + us[1]);
             }
         }
     }
-    
+
 }
