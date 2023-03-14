@@ -34,7 +34,24 @@ uses the old java.io socket API.
 With dbus-java 4.x, java.nio is used for all transports and therefore required changes on the SPI.
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
 
-#### Who uses dbus-java?
+### How to use file descriptors?
+DBus-Java does not support file descriptors out of the box.
+When trying to use file descriptors you may see weird NullPointerExceptions thrown in Message class when using dbus-java 3.x.
+In dbus-java 4.x you should see error messages indicating that file descriptors are not supported.
+
+File descriptors were not implemented because they require a custom pre-compiled library written in C (therefore architecture and OS depended) and will
+only work when using dbus-java in combination with dbus-java-transport-jnr-unixsocket.
+
+To add file-descriptor support:
+
+ - (dbus-java 4.x only): Add dbus-java-transport-jnr-unixsocket dependency to your project
+ - (dbus-java 4.x only): Remove dbus-java-transport-native-unixsocket if you have used it before
+ - Add dependency [com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd) to your classpath
+ 
+When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x and 1.x if you use dbus-java 3.x.
+DBus-java will automatically detect dbus-java-nativefd and will then provide access to file descriptors.
+
+### Who uses dbus-java?
 See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
 
 ### Sponsorship
