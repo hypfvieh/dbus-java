@@ -74,7 +74,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <phase>verify</phase>
+			<phase>test-compile</phase> <!-- fail before we do testing -->
                     </execution>
                 </executions>
             </plugin>
