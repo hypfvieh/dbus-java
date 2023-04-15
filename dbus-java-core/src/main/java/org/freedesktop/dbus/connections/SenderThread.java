@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * @deprecated no longer in use
+ */
+@Deprecated(forRemoval = true, since = "4.3.1")
 public class SenderThread extends Thread {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
