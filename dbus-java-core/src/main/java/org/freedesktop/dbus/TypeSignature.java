@@ -4,6 +4,10 @@ import org.freedesktop.dbus.exceptions.DBusException;
 
 import java.lang.reflect.Type;
 
+/**
+ * @deprecated not used
+ */
+@Deprecated(forRemoval = true, since = "4.3.1")
 public class TypeSignature {
     // CHECKSTYLE:OFF
     String sig;
