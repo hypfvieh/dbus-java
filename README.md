@@ -7,48 +7,50 @@
 
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 11+. 
 
-### Important information when updating from dbus-java 3.x.x and earlier
+### Important information when updating from dbus-java 4.x.x and earlier
 
-The new major is no drop-in replacement for 2.7.x or 3.x.x version!
-It requires code changes and at least **Java 11**.
+The new major is no drop-in replacement for earlier versions!
+It requires code changes and at least **Java 17**.
 
-Main difference is the separation of dbus-java functions (now called dbus-java-core) and the transports.
+When migrating from 4.x to 5.x you have to fix/replace all usages of deprecated method calls and class usages.
+Everything deprecated in a previous major version (4.x/3.x) and marked "forRemoval" is gone in 5.x.
+
+When migrating from 3.x, the main difference is the separation of dbus-java into multi module project.
+The base artifact is dbus-java-core and requires at least one additional transport artifact.
 A transport provides the code to connect to DBus daemon on various ways (e.g. unix socket or TCP).
 
-When updating to 4.x you have to add at least one transport to your project.
 If you add a unix socket transport, you have to choose between jnr-unixsocket and native-unixsocket.
-The later will require **Java 16+**, while jnr-unixsockets will work with Java 11 but will pull-in jnr-posix and friends to your project.
+The jnr implementation will pull in jnr-unixsocket, jnr-posix etc. to your project.
+It will also provide support for abstract unixsockets and is required if you want to use file descriptor passing.
+If you need file descriptors as well you also have to add a proper implementation for that (see below).  
 
-The native-unixsockets will work almost like the jnr-unixsockets except it does not support abstract unixsockets.
-If you don't know what abstract unixsockets are, you'll probably don't need it and you can use native-unixsockets when using proper Java version.
-
-If you use ```TransportFactory``` directly, you have to replace it with ```TransportBuilder```.
+If you don't know what abstract unixsockets are and you don't need file descriptors you'll probably you can use native-unixsockets.
 
 ### Note to SPI providers
-If you have used the SPI to extend the MessageReader/Writer of dbus-java, you have to update your code.
-Old providers will not work with dbus-java 4.x because of changed SPI interfaces (sorry!).
+If you have used the SPI to extend the MessageReader/Writer of dbus-java before dbus-java 4.x, you have to update your code.
+Old providers will not work with dbus-java 4.x/5.x because of changed SPI interfaces (sorry!).
 
 The changes were required due to the support of native-unixsocket which is using java.nio, while the old dbus-java code
 uses the old java.io socket API.
 
-With dbus-java 4.x, java.nio is used for all transports and therefore required changes on the SPI.
+With dbus-java 4.x (and 5.x as well), java.nio is used for all transports and therefore required changes on the SPI.
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
 
 ### How to use file descriptors?
 DBus-Java does not support file descriptors out of the box.
 When trying to use file descriptors you may see weird NullPointerExceptions thrown in Message class when using dbus-java 3.x.
-In dbus-java 4.x you should see error messages indicating that file descriptors are not supported.
+In dbus-java 4.x/5.x you should see error messages indicating that file descriptors are not supported.
 
 File descriptors were not implemented because they require a custom pre-compiled library written in C (therefore architecture and OS depended) and will
 only work when using dbus-java in combination with dbus-java-transport-jnr-unixsocket.
 
 To add file-descriptor support:
 
- - (dbus-java 4.x only): Add dbus-java-transport-jnr-unixsocket dependency to your project
- - (dbus-java 4.x only): Remove dbus-java-transport-native-unixsocket if you have used it before
+ - Add dbus-java-transport-jnr-unixsocket dependency to your project
+ - Remove dbus-java-transport-native-unixsocket if you have used it before
  - Add dependency [com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd) to your classpath
  
-When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x and 1.x if you use dbus-java 3.x.
+When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x/5.x and 1.x if you use dbus-java 3.x.
 DBus-java will automatically detect dbus-java-nativefd and will then provide access to file descriptors.
 
 ### Who uses dbus-java?
@@ -65,6 +67,8 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 ##### Changes in 5.0.0 (not released yet):
    - Removed all classes and methods marked as deprecated in 4.x
+   - Updated dependencies and maven plugins
+   - Updated minimum required Java version to 17
 
 ##### Changes in 4.3.1 (not released yet):
    - Nothing yet
