@@ -1,21 +1,10 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.ArrayFrob;
-import org.freedesktop.dbus.Container;
-import org.freedesktop.dbus.DBusMap;
-import org.freedesktop.dbus.FileDescriptor;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.MarshallingException;
-import org.freedesktop.dbus.exceptions.MessageFormatException;
-import org.freedesktop.dbus.exceptions.UnknownTypeCodeException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.types.UInt16;
-import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.types.UInt64;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
@@ -25,11 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -165,25 +150,6 @@ public class Message {
             byte idx = (byte) objArr[0];
             this.headers[idx] = objArr[1];
         }
-    }
-
-    /**
-     * @deprecated use getHeader().
-     * This method did return a map containing message header.
-     * It allows changing the map, but changes did not result in changing the
-     * actual message header. Therefore using a map was removed and an object array is
-     * used instead. Changes to that array (content) will be result in a changed
-     * header in the message.
-     *
-     * @return map of header
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-01-19")
-    protected Map<Byte, Object> getHeaders() {
-        Map<Byte, Object> headerMap = new HashMap<>();
-        for (byte i = 0; i < headers.length; i++) {
-            headerMap.put(i, headers[i]);
-        }
-        return headerMap;
     }
 
     protected Object[] getHeader() {

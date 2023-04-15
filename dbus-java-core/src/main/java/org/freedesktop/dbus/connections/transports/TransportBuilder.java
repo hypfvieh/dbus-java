@@ -1,26 +1,16 @@
 package org.freedesktop.dbus.connections.transports;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.TransportConfigurationException;
-import org.freedesktop.dbus.exceptions.TransportRegistrationException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -140,144 +130,6 @@ public final class TransportBuilder {
             throw new DBusException("Could not create dynamic session for transport type '" + _transportType + "'");
         }
         return create(dynSession);
-    }
-
-    /**
-     * Set the connection timeout (usually only used for TCP based transports).
-     * <p>
-     * default: {@link AbstractConnection#TCP_CONNECT_TIMEOUT}
-     *
-     * @param _timeout timeout, if &lt; 0 default timeout of {@link AbstractConnection#TCP_CONNECT_TIMEOUT} will be used
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withTimeout(int _timeout) {
-        configure().withTimeout(_timeout);
-        return this;
-    }
-
-    /**
-     * Toggle the created transport to be a listening (server) or initiating (client) connection.
-     * <p>
-     * Default is a client connection.
-     *
-     * @param _listen true to create a listening transport (e.g. for server usage)
-     *
-     * @return this
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-05-23")
-    public TransportBuilder isListening(boolean _listen) { //NOPMD
-        return listening(_listen);
-    }
-
-    /**
-     * Toggle the created transport to be a listening (server) or initiating (client) connection.
-     * <p>
-     * Default is a client connection.
-     *
-     * @param _listen true to create a listening transport (e.g. for server usage)
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder listening(boolean _listen) {
-        configure().withListening(_listen);
-        return this;
-    }
-
-    /**
-     * Instantly connect to DBus when {@link #build()} is called.
-     * <p>
-     * default: true
-     *
-     * @param _connect boolean
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withAutoConnect(boolean _connect) {
-        configure().withAutoConnect(_connect);
-        return this;
-    }
-
-    /**
-     * Set a different SASL authentication mode.
-     * <p>
-     * Usually when a unixsocket based transport is used, {@link SaslAuthMode#AUTH_EXTERNAL} will be used.
-     * For TCP based transport {@link SaslAuthMode#AUTH_COOKIE} will be used.
-     * <p>
-     *
-     * @param _authMode authmode to use, if null is given, default mode will be used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withSaslAuthMode(SaslAuthMode _authMode) {
-        configure().withSaslAuthMode(_authMode);
-        return this;
-    }
-
-    /**
-     * The owner of the socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * Default is the user of the running JVM process.<br><br>
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the owner
-     * of the file. Otherwise the file owner will not be changed!
-     *
-     * @param _user user to set, if null is given JVM process user is used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFileOwner(String _user) {
-        configure().withUnixSocketFileOwner(_user);
-        return this;
-    }
-
-    /**
-     * The group of the socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * Default is the group of the running JVM process.<br><br>
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the group
-     * of the file. Otherwise the file group will not be changed!
-     *
-     * @param _group group to set, if null is given JVM process group is used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFileGroup(String _group) {
-        configure().withUnixSocketFileGroup(_group);
-        return this;
-    }
-
-    /**
-     * The permissions which will be set on socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * This method does nothing when used on windows systems.
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the permissions
-     * of the file. Otherwise the file permissions will not be changed!
-     *
-     * @param _permissions permissions to set, if null is given default permissions will be used
-     *
-     * @return this
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFilePermissions(PosixFilePermission... _permissions) {
-        configure().withUnixSocketFilePermissions(_permissions);
-        return this;
     }
 
     /**

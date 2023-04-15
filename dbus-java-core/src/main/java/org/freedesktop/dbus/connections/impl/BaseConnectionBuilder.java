@@ -1,13 +1,7 @@
 package org.freedesktop.dbus.connections.impl;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.IDisconnectCallback;
-import org.freedesktop.dbus.connections.ReceivingService;
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
-import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
-import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
+import org.freedesktop.dbus.connections.*;
+import org.freedesktop.dbus.connections.config.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
@@ -95,68 +89,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      */
     public TransportConfigBuilder<?, R> transportConfig() {
         return transportConfigBuilder;
-    }
-
-    /**
-     * Set the size of the thread-pool used to handle signals from the bus.
-     * Caution: Using thread-pool size &gt; 1 may cause signals to be handled out-of-order
-     * <p>
-     * Default: 1
-     *
-     * @param _threads int &gt;= 1
-     * @return this
-     * @deprecated use receivingThreadConfig().withSignalThreadCount(_threads)
-     */
-    @Deprecated(since = "4.2.0", forRemoval = true)
-    public R withSignalThreadCount(int _threads) {
-        receivingThreadConfig().withSignalThreadCount(_threads);
-        return self();
-    }
-
-    /**
-     * Set the size of the thread-pool used to handle error messages received on the bus.
-     * <p>
-     * Default: 1
-     *
-     * @param _threads int &gt;= 1
-     * @return this
-     * @deprecated use receivingThreadConfig().withErrorHandlerThreadCount(_threads)
-     */
-    @Deprecated(since = "4.2.0", forRemoval = true)
-    public R withErrorHandlerThreadCount(int _threads) {
-        receivingThreadConfig().withErrorHandlerThreadCount(_threads);
-        return self();
-    }
-
-    /**
-     * Set the size of the thread-pool used to handle methods calls previously sent to the bus.
-     * The thread pool size has to be &gt; 1 to handle recursive calls.
-     * <p>
-     * Default: 4
-     *
-     * @param _threads int &gt;= 1
-     * @return this
-     * @deprecated use receivingThreadConfig().withMethodCallThreadCount(_threads)
-     */
-    @Deprecated(since = "4.2.0", forRemoval = true)
-    public R withMethodCallThreadCount(int _threads) {
-        receivingThreadConfig().withMethodCallThreadCount(_threads);
-        return self();
-    }
-
-    /**
-     * Set the size of the thread-pool used to handle method return values received on the bus.
-     * <p>
-     * Default: 1
-     *
-     * @param _threads int &gt;= 1
-     * @return this
-     * @deprecated use receivingThreadConfig().withMethodReturnThreadCount(_threads)
-     */
-    @Deprecated(since = "4.2.0", forRemoval = true)
-    public R withMethodReturnThreadCount(int _threads) {
-        receivingThreadConfig().withMethodReturnThreadCount(_threads);
-        return self();
     }
 
     /**

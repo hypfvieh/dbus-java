@@ -1,12 +1,6 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -14,49 +8,21 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalDBusException;
-import org.freedesktop.dbus.exceptions.NotConnected;
-import org.freedesktop.dbus.interfaces.CallbackHandler;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.messages.MethodReturn;
-import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.interfaces.*;
+import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.io.*;
+import java.lang.reflect.*;
 import java.nio.ByteOrder;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 /**
@@ -72,20 +38,6 @@ public abstract class AbstractConnection implements Closeable {
 
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
-
-    /**
-     * Connect timeout, used for TCP only.
-     * @deprecated no longer used
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2022-12-23")
-    public static final int TCP_CONNECT_TIMEOUT     = 100000;
-
-    /**
-     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
-     * @deprecated is no longer in use
-     */
-    @Deprecated(since = "4.2.0 - 2022-08-04", forRemoval = true)
-    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
 
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
 
@@ -310,24 +262,11 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Change the number of worker threads to receive method calls and handle signals. Default is 4 threads
-     *
-     * @param _newPoolSize
-     *            The new number of worker Threads to use.
-     * @deprecated does nothing as threading has been changed significantly
-     */
-    @Deprecated(forRemoval = true, since = "4.1.0")
-    public void changeThreadCount(byte _newPoolSize) {
-
-    }
-
-    /**
      * If set to true the bus will not hold a strong reference to exported objects. If they go out of scope they will
      * automatically be unexported from the bus. The default is to hold a strong reference, which means objects must be
      * explicitly unexported before they will be garbage collected.
      *
-     * @param _weakreferences
-     *            reference
+     * @param _weakreferences reference
      */
     public void setWeakReferences(boolean _weakreferences) {
         this.weakreferences = _weakreferences;

@@ -2,7 +2,6 @@ package org.freedesktop.dbus.connections.config;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
@@ -99,24 +98,6 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
     }
 
     /**
-     * Set a different SASL authentication mode.
-     * <p>
-     * Usually when a unixsocket based transport is used, {@link SaslAuthMode#AUTH_EXTERNAL} will be used.
-     * For TCP based transport {@link SaslAuthMode#AUTH_COOKIE} will be used.
-     * <p>
-     *
-     * @param _authMode authmode to use, if null is given, default mode will be used
-     *
-     * @return this
-     * @deprecated use {@link #configureSasl()} instead
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-02-03")
-    public X withSaslAuthMode(SaslAuthMode _authMode) {
-        configureSasl().withAuthMode(_authMode);
-        return self();
-    }
-
-    /**
      * Switch to the {@link SaslConfigBuilder} to configure the SASL authentication mechanism.<br>
      * Use {@link SaslConfigBuilder#back()} to return to this builder when finished.
      *
@@ -154,22 +135,6 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
         if (_timeout >= 0) {
             config.setTimeout(_timeout);
         }
-        return self();
-    }
-
-    /**
-     * Set to UID to present during SASL authentication.
-     * <p>
-     * Default is the user of the running JVM process on Unix-like operating systems. On Windows, the default is zero.<br><br>
-     *
-     * @param _saslUid UID to set, if a negative long is given the default is used
-     *
-     * @return this
-     * @deprecated use {@link #configureSasl()} instead
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-02-03")
-    public X withSaslUid(long _saslUid) {
-        configureSasl().withSaslUid(_saslUid);
         return self();
     }
 

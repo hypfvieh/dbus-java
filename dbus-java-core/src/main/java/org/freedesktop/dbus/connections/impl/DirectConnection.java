@@ -3,17 +3,12 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.utils.Hexdump;
@@ -26,9 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -42,43 +35,12 @@ public class DirectConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String machineId;
 
-    /**
-     * Create a direct connection to another application.
-     * @param _address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
-     * @throws DBusException on error
-     * @deprecated use {@link DirectConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public DirectConnection(String _address) throws DBusException {
-        this(_address, AbstractConnection.TCP_CONNECT_TIMEOUT);
-    }
-
-    /**
-    * Create a direct connection to another application.
-    * @param _address The address to connect to. This is a standard D-Bus address, except that the additional parameter 'listen=true' should be added in the application which is creating the socket.
-    * @param _timeout the timeout set for the underlying socket. 0 will block forever on the underlying socket.
-    * @throws DBusException on error
-    * @deprecated use {@link DirectConnectionBuilder}
-    */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public DirectConnection(String _address, int _timeout) throws DBusException {
-        this(createTransportConfig(_address, _timeout), null);
-    }
-
     DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_transportCfg, _rsCfg);
         machineId = createMachineId();
         if (!getAddress().isServer()) {
             super.listen();
         }
-    }
-
-    @Deprecated(since = "4.2.0", forRemoval = true)
-    static TransportConfig createTransportConfig(String _address, int _timeout) {
-        TransportConfig cfg = new TransportConfig();
-        cfg.setBusAddress(BusAddress.of(_address));
-        cfg.getAdditionalConfig().put("TIMEOUT", _timeout);
-        return cfg;
     }
 
     /**

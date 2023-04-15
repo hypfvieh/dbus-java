@@ -63,6 +63,9 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
+##### Changes in 5.0.0 (not released yet):
+   - Removed all classes and methods marked as deprecated in 4.x
+
 ##### Changes in 4.3.1 (not released yet):
    - Nothing yet
 

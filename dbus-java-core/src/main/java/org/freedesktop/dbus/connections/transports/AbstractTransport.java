@@ -4,24 +4,16 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.exceptions.AuthenticationException;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.spi.message.IMessageReader;
-import org.freedesktop.dbus.spi.message.IMessageWriter;
-import org.freedesktop.dbus.spi.message.ISocketProvider;
-import org.freedesktop.dbus.spi.message.InputStreamMessageReader;
-import org.freedesktop.dbus.spi.message.OutputStreamMessageWriter;
+import org.freedesktop.dbus.spi.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -107,15 +99,6 @@ public abstract class AbstractTransport implements Closeable {
      * @return true to allow FD passing, false otherwise
      */
     protected abstract boolean hasFileDescriptorSupport();
-
-    /**
-     * Return true if the transport supports 'abstract' sockets.
-     * @return true if abstract sockets supported, false otherwise
-     *
-     * @deprecated Is no longer used and will be removed
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
-    protected abstract boolean isAbstractAllowed();
 
     /**
      * Abstract method implemented by concrete sub classes to establish a connection
@@ -268,47 +251,6 @@ public abstract class AbstractTransport implements Closeable {
      */
     protected SaslConfig getSaslConfig() {
         return config.getSaslConfig();
-    }
-
-    /**
-     * Set the SASL authentication mode.
-     *
-     * @deprecated please use {@link #getSaslConfig()}.getAuthMode() instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected int getSaslAuthMode() {
-        return getSaslConfig().getAuthMode();
-    }
-
-    /**
-     * Set the SASL authentication mode.
-     *
-     * @deprecated please use {@link #getSaslConfig()}.getMode() instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected SASL.SaslMode getSaslMode() {
-        return getSaslConfig().getMode();
-    }
-    /**
-     * Set the SASL mode (server or client).
-     *
-     * @param _saslMode mode to set
-     * @deprecated please use {@link #getSaslConfig()}.setMode(int) instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected void setSaslMode(SASL.SaslMode _saslMode) {
-        getSaslConfig().setMode(_saslMode);
-    }
-
-    /**
-     * Set the SASL authentication mode.
-     *
-     * @param _mode mode to set
-     * @deprecated please use {@link #getSaslConfig()}.setSaslAuthMode(int) instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected void setSaslAuthMode(int _mode) {
-        getSaslConfig().setAuthMode(_mode);
     }
 
     @Override
