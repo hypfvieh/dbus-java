@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.nio.ByteOrder;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -42,7 +42,7 @@ public abstract class AbstractConnection implements Closeable {
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
 
     /** Lame method to setup endianness used on DBus messages */
-    private static byte              endianness             = getSystemEndianness();
+    private static byte                                                           endianness           = BaseConnectionBuilder.getSystemEndianness();
 
     private final Logger                                                          logger;
 
@@ -1207,17 +1207,6 @@ public abstract class AbstractConnection implements Closeable {
      */
     public static byte getEndianness() {
         return endianness; // TODO would be nice to have this non-static!
-    }
-
-    /**
-     * Get the default system endianness.
-     *
-     * @return LITTLE or BIG
-     */
-    public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
-                ? Message.Endian.BIG
-                : Message.Endian.LITTLE;
     }
 
     /**

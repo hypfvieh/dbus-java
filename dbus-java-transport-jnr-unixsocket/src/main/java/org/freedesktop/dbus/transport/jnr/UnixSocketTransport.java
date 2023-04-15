@@ -1,10 +1,7 @@
 package org.freedesktop.dbus.transport.jnr;
 
 import jnr.posix.util.Platform;
-import jnr.unixsocket.UnixServerSocketChannel;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-import jnr.unixsocket.UnixSocketOptions;
+import jnr.unixsocket.*;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
@@ -86,12 +83,6 @@ public class UnixSocketTransport extends AbstractUnixTransport {
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
         }
-    }
-
-    @Deprecated
-    @Override
-    protected boolean isAbstractAllowed() {
-        return true;
     }
 
     @Override

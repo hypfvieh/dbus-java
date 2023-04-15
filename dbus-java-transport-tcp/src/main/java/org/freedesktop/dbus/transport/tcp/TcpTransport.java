@@ -82,10 +82,5 @@ public class TcpTransport extends AbstractTransport {
         }
     }
 
-    @Deprecated
-    @Override
-    protected boolean isAbstractAllowed() {
-        return false;
-    }
 }
 

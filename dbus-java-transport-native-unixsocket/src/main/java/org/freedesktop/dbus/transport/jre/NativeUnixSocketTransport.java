@@ -87,12 +87,6 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         }
     }
 
-    @Deprecated
-    @Override
-    public boolean isAbstractAllowed() {
-        return false;
-    }
-
     @Override
     public int getUid(SocketChannel _sock) throws IOException {
         return NativeUnixSocketHelper.getUid(_sock);
