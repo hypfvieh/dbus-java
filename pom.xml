@@ -15,6 +15,8 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <junit5.minor.version>9.2</junit5.minor.version>
