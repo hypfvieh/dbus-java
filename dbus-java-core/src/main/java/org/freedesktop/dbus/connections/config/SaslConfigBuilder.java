@@ -53,7 +53,7 @@ public final class SaslConfigBuilder<R> {
      * Setup the user ID to use for authentication when using unix sockets.<br>
      * Will default to the user ID of the user running the current process.
      *
-     * @param _guid guid to use
+     * @param _saslUid uid to use
      * @return this
      */
     public SaslConfigBuilder<R> withSaslUid(Long _saslUid) {

@@ -84,7 +84,6 @@ public class SaslConfig {
      * Enable/disable checking of file permissions of the cookie files (used for DBUS_COOKIE_SHA1).<br>
      * Cookie permission check will only be used on Linux/Unix like OSes.
      *
-     * @return boolean
      * @since v4.2.2 - 2023-02-03
      */
     public void setStrictCookiePermissions(boolean _strictCookiePermissions) {
@@ -104,7 +103,6 @@ public class SaslConfig {
     /**
      * Enable/disable support of file descriptor passing.
      *
-     * @return boolean
      * @since v4.2.2 - 2023-02-03
      */
     public void setFileDescriptorSupport(boolean _fileDescriptorSupport) {

@@ -101,7 +101,6 @@ public class SASL {
     /**
      * Create a new SASL auth handler.
      *
-     * @param _hasFileDescriptorSupport true to support file descriptor passing (usually only works with UNIX_SOCKET).
      * @param _saslConfig SASL configuration
      */
     public SASL(SaslConfig _saslConfig) {
@@ -475,7 +474,6 @@ public class SASL {
      * Mode selects whether to run as a SASL server or client.
      * Types is a bitmask of the available auth types.
      *
-     * @param _config sasl configuration parameters
      * @param _sock socket channel
      * @param _transport transport
      *
