@@ -4,9 +4,7 @@ import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.NoReply;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Message;
@@ -16,11 +14,7 @@ import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.Arrays;
 
 public class RemoteInvocationHandler implements InvocationHandler {
@@ -115,28 +109,28 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         switch (rp.length) {
-        case 0:
-            if (null == c || Void.TYPE.equals(c)) {
-                return null;
-            } else {
-                throw new DBusException("Wrong return type (got void, expected a value)");
-            }
-        case 1:
-            return rp[0];
-        default:
+            case 0:
+                if (null == c || Void.TYPE.equals(c)) {
+                    return null;
+                } else {
+                    throw new DBusException("Wrong return type (got void, expected a value)");
+                }
+            case 1:
+                return rp[0];
+            default:
 
-            // check we are meant to return multiple values
-            if (!Tuple.class.isAssignableFrom(c)) {
-                throw new DBusException("Wrong return type (not expecting Tuple)");
-            }
+                // check we are meant to return multiple values
+                if (!Tuple.class.isAssignableFrom(c)) {
+                    throw new DBusException("Wrong return type (not expecting Tuple)");
+                }
 
-            Constructor<? extends Object> cons = c.getConstructors()[0];
-            try {
-                return cons.newInstance(rp);
-            } catch (Exception _ex) {
-                LOGGER.debug("", _ex);
-                throw new DBusException(_ex.getMessage());
-            }
+                Constructor<? extends Object> cons = c.getConstructors()[0];
+                try {
+                    return cons.newInstance(rp);
+                } catch (Exception _ex) {
+                    LOGGER.debug("", _ex);
+                    throw new DBusException(_ex.getMessage());
+                }
         }
     }
 

@@ -226,15 +226,12 @@ public final class DBusConnection extends AbstractConnection {
             logger.debug("", _exDb);
             throw new DBusException(_exDb);
         }
-        switch (rv.intValue()) {
-            case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-            case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
-                throw new DBusException("Failed to register bus name");
-            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-            case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-            default:
-                break;
+
+        if (rv.intValue() == DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE
+            || rv.intValue() == DBus.DBUS_REQUEST_NAME_REPLY_EXISTS) {
+            throw new DBusException("Failed to register bus name");
         }
+
         synchronized (this.busnames) {
             this.busnames.add(_busname);
         }

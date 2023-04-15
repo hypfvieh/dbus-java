@@ -1548,28 +1548,18 @@ public class Message {
      * @return string
      */
     public static String getHeaderFieldName(byte _field) {
-        switch (_field) {
-        case HeaderField.PATH:
-            return "Path";
-        case HeaderField.INTERFACE:
-            return "Interface";
-        case HeaderField.MEMBER:
-            return "Member";
-        case HeaderField.ERROR_NAME:
-            return "Error Name";
-        case HeaderField.REPLY_SERIAL:
-            return "Reply Serial";
-        case HeaderField.DESTINATION:
-            return "Destination";
-        case HeaderField.SENDER:
-            return "Sender";
-        case HeaderField.SIGNATURE:
-            return "Signature";
-        case HeaderField.UNIX_FDS:
-            return "Unix FD";
-        default:
-            return "Invalid";
-        }
+        return switch (_field) {
+            case HeaderField.PATH -> "Path";
+            case HeaderField.INTERFACE -> "Interface";
+            case HeaderField.MEMBER -> "Member";
+            case HeaderField.ERROR_NAME -> "Error Name";
+            case HeaderField.REPLY_SERIAL -> "Reply Serial";
+            case HeaderField.DESTINATION -> "Destination";
+            case HeaderField.SENDER -> "Sender";
+            case HeaderField.SIGNATURE -> "Signature";
+            case HeaderField.UNIX_FDS -> "Unix FD";
+            default -> "Invalid";
+        };
     }
 
     /**
