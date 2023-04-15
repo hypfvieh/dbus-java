@@ -1,62 +1,28 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalDBusException;
-import org.freedesktop.dbus.exceptions.NotConnected;
-import org.freedesktop.dbus.interfaces.CallbackHandler;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.messages.MethodReturn;
-import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.interfaces.*;
+import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.nio.ByteOrder;
+import java.io.*;
+import java.lang.reflect.*;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 /**
@@ -1274,11 +1240,11 @@ public abstract class AbstractConnection implements Closeable {
      * Get the default system endianness.
      *
      * @return LITTLE or BIG
+     * @deprecated use {@link BaseConnectionBuilder#getSystemEndianness()} instead
      */
+    @Deprecated(forRemoval = true, since = "4.3.1")
     public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
-                ? Message.Endian.BIG
-                : Message.Endian.LITTLE;
+        return BaseConnectionBuilder.getSystemEndianness();
     }
 
     /**
