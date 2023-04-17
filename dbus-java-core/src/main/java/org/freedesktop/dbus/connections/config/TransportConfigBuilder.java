@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections.config;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.messages.Message.Endian;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
@@ -217,10 +218,23 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
     }
 
     /**
+     * Set the endianess for the connection Default is based on system endianess.
+     *
+     * @param _endianess {@link Endian#BIG} or {@value Endian#LITTLE}
+     * @return this
+     */
+    public X withEndianess(byte _endianess) {
+        if (_endianess == Endian.BIG || _endianess == Endian.LITTLE) {
+            config.setEndianess(_endianess);
+        }
+        return self();
+    }
+
+    /**
      * Return to the previous builder.
      * <p>
-     * This allows you to return from the this builder to the builder which
-     * started this builder so you can continue using the previous builder.
+     * This allows you to return from the this builder to the builder which started this builder so you can continue
+     * using the previous builder.
      * </p>
      *
      * @return previous builder, maybe null

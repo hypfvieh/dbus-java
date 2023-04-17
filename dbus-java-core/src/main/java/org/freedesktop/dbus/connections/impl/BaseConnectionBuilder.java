@@ -5,7 +5,6 @@ import org.freedesktop.dbus.connections.config.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.Message.Endian;
 
 import java.nio.ByteOrder;
 
@@ -22,7 +21,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
     private final Class<R>                         returnType;
 
     private boolean                                weakReference = false;
-    private byte                                   endianess     = getSystemEndianness();
 
     private IDisconnectCallback                    disconnectCallback;
 
@@ -67,10 +65,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
         return weakReference;
     }
 
-    protected byte getEndianess() {
-        return endianess;
-    }
-
     protected IDisconnectCallback getDisconnectCallback() {
         return disconnectCallback;
     }
@@ -89,20 +83,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      */
     public TransportConfigBuilder<?, R> transportConfig() {
         return transportConfigBuilder;
-    }
-
-    /**
-     * Set the endianess for the connection
-     * Default is based on system endianess.
-     *
-     * @param _endianess {@link Endian#BIG} or {@value Endian#LITTLE}
-     * @return this
-     */
-    public R withEndianess(byte _endianess) {
-        if (_endianess == Endian.BIG || _endianess == Endian.LITTLE) {
-            endianess = _endianess;
-        }
-        return self();
     }
 
     /**

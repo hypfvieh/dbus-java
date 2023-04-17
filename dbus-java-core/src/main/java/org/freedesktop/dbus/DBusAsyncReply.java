@@ -1,13 +1,11 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.NoReply;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.messages.*;
+import org.freedesktop.dbus.messages.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

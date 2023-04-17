@@ -199,7 +199,6 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
 
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
-        DBusConnection.setEndianness(getEndianess());
         c.connect(registerSelf);
         return c;
     }

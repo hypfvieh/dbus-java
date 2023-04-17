@@ -2,11 +2,11 @@ package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.NoReply;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
@@ -160,10 +160,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         try {
             String name = DBusNamingUtil.getMethodName(_m);
             if (null == _ro.getInterface()) {
-                call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), null, name, flags, sig, args);
+                call = _conn.getMessageFactory().createMethodCall(null, _ro.getBusName(), _ro.getObjectPath(), null, name, flags, sig, args);
             } else {
                 String iface = DBusNamingUtil.getInterfaceName(_ro.getInterface());
-                call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), iface, name, flags, sig, args);
+                call = _conn.getMessageFactory().createMethodCall(null, _ro.getBusName(), _ro.getObjectPath(), iface, name, flags, sig, args);
             }
         } catch (DBusException _ex) {
             LOGGER.debug("Failed to construct outgoing method call.", _ex);

@@ -72,6 +72,8 @@ public class Message {
     private byte[]                     pabuf;
     private int                        bufferuse       = 0;
 
+    private boolean                    endianWasSet;
+
     /**
      * Create a message; only to be called by sub-classes.
      *
@@ -90,6 +92,7 @@ public class Message {
         type = _type;
         flags = _flags;
         preallocate(4);
+        endianWasSet = _endian != (byte) 0;
         append("yyyy", _endian, _type, _flags, Message.PROTOCOL);
     }
 
@@ -97,6 +100,20 @@ public class Message {
      * Create a blank message. Only to be used when calling populate.
      */
     protected Message() {
+    }
+
+    public void updateEndianess(byte _endianess) {
+        if (endianWasSet) {
+            return;
+        }
+
+        if (wiredata[0] != null) {
+            wiredata[0][0] = _endianess;
+        } else {
+            wiredata[0] = new byte[] {_endianess, 0, 0, 0};
+        }
+
+        endianWasSet = true;
     }
 
     /**
@@ -119,6 +136,8 @@ public class Message {
 
         byte[] bodyBuf = new byte[_body.length];
         System.arraycopy(_body, 0, bodyBuf, 0, _body.length);
+
+        endianWasSet = true;
 
         big = msgBuf[0] == Endian.BIG;
         type = msgBuf[1];
@@ -1342,7 +1361,7 @@ public class Message {
      * @return string
      */
     public String getName() {
-        if (this instanceof org.freedesktop.dbus.errors.Error) {
+        if (this instanceof Error) {
             return (String) getHeader(HeaderField.ERROR_NAME);
         } else {
             return (String) getHeader(HeaderField.MEMBER);
@@ -1495,7 +1514,7 @@ public class Message {
     }
 
     public byte getEndianess() {
-        return big ? Endian.BIG : Endian.LITTLE;
+        return endianWasSet ? big ? Endian.BIG : Endian.LITTLE : 0;
     }
 
     /**

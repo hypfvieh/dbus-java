@@ -42,7 +42,6 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
         DirectConnection c = new DirectConnection(transportCfg, rsCfg);
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
-        DirectConnection.setEndianness(getEndianess());
         return c;
     }
 

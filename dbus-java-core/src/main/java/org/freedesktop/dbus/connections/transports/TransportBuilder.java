@@ -183,7 +183,6 @@ public final class TransportBuilder {
         }
 
         transport.setPreConnectCallback(config.getPreConnectCallback());
-
         if (config.isAutoConnect()) {
             if (config.isListening()) {
                 transport.listen();

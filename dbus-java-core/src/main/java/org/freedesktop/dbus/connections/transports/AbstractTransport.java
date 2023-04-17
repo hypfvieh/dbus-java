@@ -6,6 +6,7 @@ import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
 import org.freedesktop.dbus.spi.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,7 +224,7 @@ public abstract class AbstractTransport implements Closeable {
             fileDescriptorSupported = false; // internal implementation does not support file descriptors even if server allows it
         }
 
-        return new TransportConnection(_socket, writer, reader);
+        return new TransportConnection(new MessageFactory(config.getEndianess()), _socket, writer, reader);
     }
 
     /**
@@ -251,6 +252,15 @@ public abstract class AbstractTransport implements Closeable {
      */
     protected SaslConfig getSaslConfig() {
         return config.getSaslConfig();
+    }
+
+    /**
+     * Returns the current transport connection.
+     *
+     * @return TransportConnection, null if not connected yet
+     */
+    public TransportConnection getTransportConnection() {
+        return transportConnection;
     }
 
     @Override
