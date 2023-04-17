@@ -374,11 +374,6 @@ public abstract class AbstractConnection implements Closeable {
             throw new NotConnected("Cannot send message: Not connected");
         }
 
-        // update endianess if signal was created manually
-        if (_message instanceof DBusSignal && _message.getEndianess() == (byte) 0) {
-            _message.updateEndianess(getMessageFactory().getEndianess());
-        }
-
         Runnable runnable = () -> sendMessageInternally(_message);
 
         senderService.execute(runnable);
@@ -1050,13 +1045,18 @@ public abstract class AbstractConnection implements Closeable {
             if (!isConnected()) {
                 throw new NotConnected("Disconnected");
             }
-            if (_message instanceof DBusSignal) {
-                ((DBusSignal) _message).appendbody(this);
+            if (_message instanceof DBusSignal ds) {
+                // update endianess if signal was created manually
+                if (_message.getEndianess() == (byte) 0) {
+                    _message.updateEndianess(getMessageFactory().getEndianess());
+                }
+
+                ds.appendbody(this);
             }
 
-            if (_message instanceof MethodCall && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
+            if (_message instanceof MethodCall mc && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
                 synchronized (getPendingCalls()) {
-                    getPendingCalls().put(_message.getSerial(), (MethodCall) _message);
+                    getPendingCalls().put(_message.getSerial(), mc);
                 }
             }
 
@@ -1065,16 +1065,16 @@ public abstract class AbstractConnection implements Closeable {
         } catch (Exception _ex) {
             logger.trace("Exception while sending message.", _ex);
 
-            if (_message instanceof MethodCall && _ex instanceof DBusExecutionException) {
+            if (_message instanceof MethodCall mc && _ex instanceof DBusExecutionException) {
                 try {
-                    ((MethodCall) _message).setReply(getMessageFactory().createError(_message, _ex));
+                    mc.setReply(getMessageFactory().createError(_message, _ex));
                 } catch (DBusException _exDe) {
                     logger.trace("Could not set message reply", _exDe);
                 }
-            } else if (_message instanceof MethodCall) {
+            } else if (_message instanceof MethodCall mc) {
                 try {
                     logger.info("Setting reply to {} as an error", _message);
-                    ((MethodCall) _message).setReply(
+                    mc.setReply(
                         getMessageFactory().createError(_message, new DBusExecutionException("Message Failed to Send: " + _ex.getMessage())));
                 } catch (DBusException _exDe) {
                     logger.trace("Could not set message reply", _exDe);
@@ -1086,9 +1086,9 @@ public abstract class AbstractConnection implements Closeable {
                     logger.debug("Error writing method return to transport", _exIo);
                 }
             }
-            if (_ex instanceof IOException) {
+            if (_ex instanceof IOException ioe) {
                 logger.debug("Fatal IOException while sending message, disconnecting", _ex);
-                internalDisconnect((IOException) _ex);
+                internalDisconnect(ioe);
             }
         }
     }

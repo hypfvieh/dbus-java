@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.messages;
 
+import static org.freedesktop.dbus.messages.Message.ArgumentType.*;
+
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.*;
@@ -20,8 +22,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
- * Superclass of all messages which are sent over the Bus. This class deals with all the marshalling to/from the wire
- * format.
+ * Superclass of all messages which are sent over the Bus.<br>
+ * This class deals with all the marshalling to/from the wire format.
  */
 public class Message {
     public static final int  MAXIMUM_ARRAY_LENGTH   = 67108864;
@@ -313,57 +315,8 @@ public class Message {
      *
      * @return long
      */
-    public long demarshallint(byte[] _buf, int _ofs, int _width) {
+    protected long demarshallint(byte[] _buf, int _ofs, int _width) {
         return big ? demarshallintBig(_buf, _ofs, _width) : demarshallintLittle(_buf, _ofs, _width);
-    }
-
-    /**
-     * Demarshalls an integer of a given width from a buffer.
-     *
-     * @param _buf The buffer to demarshall from.
-     * @param _ofs The offset to demarshall from.
-     * @param _endian The endianness to use in demarshalling.
-     * @param _width The byte-width of the int.
-     *
-     * @return long
-     */
-    public static long demarshallint(byte[] _buf, int _ofs, byte _endian, int _width) {
-        return _endian == Endian.BIG ? demarshallintBig(_buf, _ofs, _width) : demarshallintLittle(_buf, _ofs, _width);
-    }
-
-    /**
-     * Demarshalls an integer of a given width from a buffer using big-endian format.
-     *
-     * @param _buf The buffer to demarshall from.
-     * @param _ofs The offset to demarshall from.
-     * @param _width The byte-width of the int.
-     * @return long
-     */
-    public static long demarshallintBig(byte[] _buf, int _ofs, int _width) {
-        long l = 0;
-        for (int i = 0; i < _width; i++) {
-            l <<= 8;
-            l |= _buf[_ofs + i] & 0xFF;
-        }
-        return l;
-    }
-
-    /**
-     * Demarshalls an integer of a given width from a buffer using little-endian format.
-     *
-     * @param _buf The buffer to demarshall from.
-     * @param _ofs The offset to demarshall from.
-     * @param _width The byte-width of the int.
-     *
-     * @return long
-     */
-    public static long demarshallintLittle(byte[] _buf, int _ofs, int _width) {
-        long l = 0;
-        for (int i = _width - 1; i >= 0; i--) {
-            l <<= 8;
-            l |= _buf[_ofs + i] & 0xFF;
-        }
-        return l;
     }
 
     /**
@@ -372,7 +325,7 @@ public class Message {
      * @param _l The integer to marshall.
      * @param _width The byte-width of the int.
      */
-    public void appendint(long _l, int _width) {
+    protected void appendint(long _l, int _width) {
         byte[] buf = new byte[_width];
         marshallint(_l, buf, 0, _width);
         appendBytes(buf);
@@ -386,7 +339,7 @@ public class Message {
      * @param _ofs The offset to marshall to.
      * @param _width The byte-width of the int.
      */
-    public void marshallint(long _l, byte[] _buf, int _ofs, int _width) {
+    protected void marshallint(long _l, byte[] _buf, int _ofs, int _width) {
         if (big) {
             marshallintBig(_l, _buf, _ofs, _width);
         } else {
@@ -395,38 +348,6 @@ public class Message {
 
         LoggingHelper.logIf(logger.isTraceEnabled(),
                 () -> logger.trace("Marshalled int {} to {}", _l, Hexdump.toHex(_buf, _ofs, _width, true)));
-    }
-
-    /**
-     * Marshalls an integer of a given width into a buffer using big-endian format.
-     *
-     * @param _l The integer to marshall.
-     * @param _buf The buffer to marshall to.
-     * @param _ofs The offset to marshall to.
-     * @param _width The byte-width of the int.
-     */
-    public static void marshallintBig(long _l, byte[] _buf, int _ofs, int _width) {
-        long l = _l;
-        for (int i = _width - 1; i >= 0; i--) {
-            _buf[i + _ofs] = (byte) (l & 0xFF);
-            l >>= 8;
-        }
-    }
-
-    /**
-     * Marshalls an integer of a given width into a buffer using little-endian format.
-     *
-     * @param _l The integer to marshall.
-     * @param _buf The buffer to demarshall to.
-     * @param _ofs The offset to demarshall to.
-     * @param _width The byte-width of the int.
-     */
-    public static void marshallintLittle(long _l, byte[] _buf, int _ofs, int _width) {
-        long l = _l;
-        for (int i = 0; i < _width; i++) {
-            _buf[i + _ofs] = (byte) (l & 0xFF);
-            l >>= 8;
-        }
     }
 
     public byte[][] getWireData() {
@@ -515,8 +436,51 @@ public class Message {
      * @param _type The field to return.
      * @return The value of the field or null if unset.
      */
-    public Object getHeader(byte _type) {
+    protected Object getHeader(byte _type) {
         return headers.length == 0 || headers.length < _type ? null : headers[_type];
+    }
+
+    /**
+     * Pad the message to the proper alignment for the given type.
+     *
+     * @param _type type
+     */
+    protected void pad(byte _type) {
+        logger.trace("padding for {}", (char) _type);
+        int a = getAlignment(_type);
+        logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
+        int b = (int) ((bytecounter - preallocated) % a);
+        if (0 == b) {
+            return;
+        }
+        a = a - b;
+        if (preallocated > 0) {
+            paofs += a;
+            preallocated -= a;
+        } else {
+            appendBytes(padding[a]);
+        }
+        logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
+
+    }
+
+    /**
+     * Append a series of values to the message.
+     *
+     * @param _sig The signature(s) of the value(s).
+     * @param _data The value(s).
+     *
+     * @throws DBusException on error
+     */
+    protected void append(String _sig, Object... _data) throws DBusException {
+        LoggingHelper.logIf(logger.isDebugEnabled(), () -> logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysVeryDeepString(_data)));
+
+        byte[] sigb = _sig.getBytes();
+        int j = 0;
+        for (int i = 0; i < sigb.length; i++) {
+            logger.trace("Appending item: {} {} {}", i, (char) sigb[i], j);
+            i = appendOne(sigb, i, _data[j++]);
+        }
     }
 
     /**
@@ -538,27 +502,27 @@ public class Message {
             // pad to the alignment of this type.
             pad(_sigb[i]);
             switch (_sigb[i]) {
-            case ArgumentType.BYTE:
+                case BYTE:
                 appendByte(((Number) _data).byteValue());
                 break;
-            case ArgumentType.BOOLEAN:
+            case BOOLEAN:
                 appendint(((Boolean) _data).booleanValue() ? 1 : 0, 4);
                 break;
-            case ArgumentType.DOUBLE:
+            case DOUBLE:
                 long l = Double.doubleToLongBits(((Number) _data).doubleValue());
                 appendint(l, 8);
                 break;
-            case ArgumentType.FLOAT:
+            case FLOAT:
                 int rf = Float.floatToIntBits(((Number) _data).floatValue());
                 appendint(rf, 4);
                 break;
-            case ArgumentType.UINT32:
+            case UINT32:
                 appendint(((Number) _data).longValue(), 4);
                 break;
-            case ArgumentType.INT64:
+            case INT64:
                 appendint(((Number) _data).longValue(), 8);
                 break;
-            case ArgumentType.UINT64:
+            case UINT64:
                 if (big) {
                     appendint(((UInt64) _data).top(), 4);
                     appendint(((UInt64) _data).bottom(), 4);
@@ -567,22 +531,22 @@ public class Message {
                     appendint(((UInt64) _data).top(), 4);
                 }
                 break;
-            case ArgumentType.INT32:
+            case INT32:
                 appendint(((Number) _data).intValue(), 4);
                 break;
-            case ArgumentType.UINT16:
+            case UINT16:
                 appendint(((Number) _data).intValue(), 2);
                 break;
-            case ArgumentType.INT16:
+            case INT16:
                 appendint(((Number) _data).shortValue(), 2);
                 break;
-            case ArgumentType.FILEDESCRIPTOR:
+            case FILEDESCRIPTOR:
                 filedescriptors.add((FileDescriptor) _data);
                 appendint(filedescriptors.size() - 1, 4);
                 logger.debug("Just inserted {} as filedescriptor", filedescriptors.size() - 1);
                 break;
-            case ArgumentType.STRING:
-            case ArgumentType.OBJECT_PATH:
+            case STRING:
+            case OBJECT_PATH:
 
                 String payload;
                 // if the given data is an object, not a ObjectPath itself
@@ -607,7 +571,7 @@ public class Message {
                 appendBytes(padding[1]);
                 // pad(ArgumentType.STRING);? do we need this?
                 break;
-            case ArgumentType.SIGNATURE:
+            case SIGNATURE:
                 // Signatures are marshalled as a byte with the length,
                 // followed by the String, followed by a null byte.
                 // Signatures are generally short, so preallocate the array
@@ -623,7 +587,7 @@ public class Message {
                 appendBytes(pbytes);
                 appendByte((byte) 0);
                 break;
-            case ArgumentType.ARRAY:
+            case ARRAY:
                 // Arrays are given as a UInt32 for the length in bytes,
                 // padding to the element alignment, then elements in
                 // order. The length is the length from the end of the
@@ -643,24 +607,24 @@ public class Message {
                     int algn = getAlignment(_sigb[i]);
                     int len = Array.getLength(_data);
                     switch (_sigb[i]) {
-                    case ArgumentType.BYTE:
+                        case BYTE:
                         primbuf = (byte[]) _data;
                         break;
-                    case ArgumentType.INT16:
-                    case ArgumentType.INT32:
-                    case ArgumentType.INT64:
+                    case INT16:
+                    case INT32:
+                    case INT64:
                         primbuf = new byte[len * algn];
                         for (int j = 0, k = 0; j < len; j++, k += algn) {
                             marshallint(Array.getLong(_data, j), primbuf, k, algn);
                         }
                         break;
-                    case ArgumentType.BOOLEAN:
+                    case BOOLEAN:
                         primbuf = new byte[len * algn];
                         for (int j = 0, k = 0; j < len; j++, k += algn) {
                             marshallint(Array.getBoolean(_data, j) ? 1 : 0, primbuf, k, algn);
                         }
                         break;
-                    case ArgumentType.DOUBLE:
+                    case DOUBLE:
                         primbuf = new byte[len * algn];
                         if (_data instanceof float[]) {
                             for (int j = 0, k = 0; j < len; j++, k += algn) {
@@ -672,7 +636,7 @@ public class Message {
                             }
                         }
                         break;
-                    case ArgumentType.FLOAT:
+                    case FLOAT:
                         primbuf = new byte[len * algn];
                         for (int j = 0, k = 0; j < len; j++, k += algn) {
                             marshallint(Float.floatToRawIntBits(((float[]) _data)[j]), primbuf, k, algn);
@@ -719,7 +683,7 @@ public class Message {
                 logger.trace("start: {} end: {} length: {}", c, bytecounter, bytecounter - c);
                 marshallint(bytecounter - c, alen, 0, 4);
                 break;
-            case ArgumentType.STRUCT1:
+            case STRUCT1:
                 // Structs are aligned to 8 bytes
                 // and simply contain each element marshalled in order
                 Object[] contents;
@@ -730,11 +694,11 @@ public class Message {
                 }
                 ensureBuffers(contents.length * 4);
                 int j = 0;
-                for (i++; _sigb[i] != ArgumentType.STRUCT2; i++) {
+                for (i++; _sigb[i] != STRUCT2; i++) {
                     i = appendOne(_sigb, i, contents[j++]);
                 }
                 break;
-            case ArgumentType.DICT_ENTRY1:
+            case DICT_ENTRY1:
                 // Dict entries are the same as structs.
                 if (_data instanceof Map.Entry) {
                     i++;
@@ -745,30 +709,30 @@ public class Message {
                 } else {
                     contents = (Object[]) _data;
                     j = 0;
-                    for (i++; _sigb[i] != ArgumentType.DICT_ENTRY2; i++) {
+                    for (i++; _sigb[i] != DICT_ENTRY2; i++) {
                         i = appendOne(_sigb, i, contents[j++]);
                     }
                 }
                 break;
-            case ArgumentType.VARIANT:
+            case VARIANT:
                 // Variants are marshalled as a signature
                 // followed by the value.
                 if (_data instanceof Variant) {
                     Variant<?> var = (Variant<?>) _data;
                     appendOne(new byte[] {
-                            ArgumentType.SIGNATURE
+                        SIGNATURE
                     }, 0, var.getSig());
                     appendOne(var.getSig().getBytes(), 0, var.getValue());
                 } else if (_data instanceof Object[]) {
                     contents = (Object[]) _data;
                     appendOne(new byte[] {
-                            ArgumentType.SIGNATURE
+                        SIGNATURE
                     }, 0, contents[0]);
                     appendOne(((String) contents[0]).getBytes(), 0, contents[1]);
                 } else {
                     String sig = Marshalling.getDBusType(_data.getClass())[0];
                     appendOne(new byte[] {
-                            ArgumentType.SIGNATURE
+                        SIGNATURE
                     }, 0, sig);
                     appendOne(sig.getBytes(), 0, _data);
                 }
@@ -784,98 +748,13 @@ public class Message {
     }
 
     /**
-     * Pad the message to the proper alignment for the given type.
-     *
-     * @param _type type
-     */
-    public void pad(byte _type) {
-        logger.trace("padding for {}", (char) _type);
-        int a = getAlignment(_type);
-        logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
-        int b = (int) ((bytecounter - preallocated) % a);
-        if (0 == b) {
-            return;
-        }
-        a = a - b;
-        if (preallocated > 0) {
-            paofs += a;
-            preallocated -= a;
-        } else {
-            appendBytes(padding[a]);
-        }
-        logger.trace("{} {} {} {}", preallocated, paofs, bytecounter, a);
-
-    }
-
-    /**
-     * Return the alignment for a given type.
-     *
-     * @param _type type
-     * @return int
-     */
-    public static int getAlignment(byte _type) {
-        switch (_type) {
-        case 2:
-        case ArgumentType.INT16:
-        case ArgumentType.UINT16:
-            return 2;
-        case 4:
-        case ArgumentType.BOOLEAN:
-        case ArgumentType.FLOAT:
-        case ArgumentType.INT32:
-        case ArgumentType.UINT32:
-        case ArgumentType.FILEDESCRIPTOR:
-        case ArgumentType.STRING:
-        case ArgumentType.OBJECT_PATH:
-        case ArgumentType.ARRAY:
-            return 4;
-        case 8:
-        case ArgumentType.INT64:
-        case ArgumentType.UINT64:
-        case ArgumentType.DOUBLE:
-        case ArgumentType.STRUCT:
-        case ArgumentType.DICT_ENTRY:
-        case ArgumentType.STRUCT1:
-        case ArgumentType.DICT_ENTRY1:
-        case ArgumentType.STRUCT2:
-        case ArgumentType.DICT_ENTRY2:
-            return 8;
-        case 1:
-        case ArgumentType.BYTE:
-        case ArgumentType.SIGNATURE:
-        case ArgumentType.VARIANT:
-        default:
-            return 1;
-        }
-    }
-
-    /**
-     * Append a series of values to the message.
-     *
-     * @param _sig The signature(s) of the value(s).
-     * @param _data The value(s).
-     *
-     * @throws DBusException on error
-     */
-    public void append(String _sig, Object... _data) throws DBusException {
-        LoggingHelper.logIf(logger.isDebugEnabled(), () -> logger.debug("Appending sig: {} data: {}", _sig, LoggingHelper.arraysVeryDeepString(_data)));
-
-        byte[] sigb = _sig.getBytes();
-        int j = 0;
-        for (int i = 0; i < sigb.length; i++) {
-            logger.trace("Appending item: {} {} {}", i, (char) sigb[i], j);
-            i = appendOne(sigb, i, _data[j++]);
-        }
-    }
-
-    /**
      * Align a counter to the given type.
      *
      * @param _current The current counter.
      * @param _type The type to align to.
      * @return The new, aligned, counter.
      */
-    public int align(int _current, byte _type) {
+    protected int align(int _current, byte _type) {
         logger.trace("aligning to {}", (char) _type);
         int a = getAlignment(_type);
         if (0 == _current % a) {
@@ -919,13 +798,13 @@ public class Message {
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
 
         Object result = null;
-        if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.ARRAY) {
+        if (_signatureBuf[_offsets[OFFSET_SIG]] == ARRAY) {
             result = extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::readHeaderVariants);
-        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.BYTE) {
+        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == BYTE) {
             result = extractByte(_dataBuf, _offsets);
-        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.VARIANT) {
+        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == VARIANT) {
             result = extractVariant(_dataBuf, _offsets, (sig, obj) -> obj);
-        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == ArgumentType.STRUCT1) {
+        } else if (_signatureBuf[_offsets[OFFSET_SIG]] == STRUCT1) {
             result = extractStruct(_signatureBuf, _dataBuf, _offsets, this::readHeaderVariants);
         } else {
             throw new MessageFormatException("Unsupported data type in header: " + _signatureBuf[_offsets[OFFSET_SIG]]);
@@ -955,30 +834,30 @@ public class Message {
         Object rv = null;
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
         switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
-            case ArgumentType.BYTE:
+            case BYTE:
                 rv = extractByte(_dataBuf, _offsets);
                 break;
-            case ArgumentType.UINT32:
+            case UINT32:
                 rv = new UInt32(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
                 _offsets[OFFSET_DATA] += 4;
                 break;
-            case ArgumentType.INT32:
+            case INT32:
                 rv = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
                 break;
-            case ArgumentType.INT16:
+            case INT16:
                 rv = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2);
                 _offsets[OFFSET_DATA] += 2;
                 break;
-            case ArgumentType.UINT16:
+            case UINT16:
                 rv = new UInt16((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 2));
                 _offsets[OFFSET_DATA] += 2;
                 break;
-            case ArgumentType.INT64:
+            case INT64:
                 rv = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
                 _offsets[OFFSET_DATA] += 8;
                 break;
-            case ArgumentType.UINT64:
+            case UINT64:
                 long top;
                 long bottom;
                 if (big) {
@@ -993,28 +872,28 @@ public class Message {
                 rv = new UInt64(top, bottom);
                 _offsets[OFFSET_DATA] += 4;
                 break;
-            case ArgumentType.DOUBLE:
+            case DOUBLE:
                 long l = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 8);
                 _offsets[OFFSET_DATA] += 8;
                 rv = Double.longBitsToDouble(l);
                 break;
-            case ArgumentType.FLOAT:
+            case FLOAT:
                 int rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
                 rv = Float.intBitsToFloat(rf);
                 break;
-            case ArgumentType.BOOLEAN:
+            case BOOLEAN:
                 rf = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
                 rv = (1 == rf) ? Boolean.TRUE : Boolean.FALSE;
                 break;
-            case ArgumentType.ARRAY:
+            case ARRAY:
                 rv = extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::extractOne);
                 break;
-            case ArgumentType.STRUCT1:
+            case STRUCT1:
                 rv = extractStruct(_signatureBuf, _dataBuf, _offsets, this::extractOne);
                 break;
-            case ArgumentType.DICT_ENTRY1:
+            case DICT_ENTRY1:
                 Object[] decontents = new Object[2];
 
                 LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
@@ -1030,14 +909,14 @@ public class Message {
                 _offsets[OFFSET_SIG]++;
                 rv = decontents;
                 break;
-            case ArgumentType.VARIANT:
+            case VARIANT:
                 rv = extractVariant(_dataBuf, _offsets, (sig, obj) -> new Variant<>(obj, sig));
                 break;
-            case ArgumentType.FILEDESCRIPTOR:
+            case FILEDESCRIPTOR:
                 rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
                 _offsets[OFFSET_DATA] += 4;
                 break;
-            case ArgumentType.STRING:
+            case STRING:
                 int length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
                 try {
@@ -1048,13 +927,13 @@ public class Message {
                 }
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
-            case ArgumentType.OBJECT_PATH:
+            case OBJECT_PATH:
                 length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
                 rv = new ObjectPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
-            case ArgumentType.SIGNATURE:
+            case SIGNATURE:
                 length = _dataBuf[_offsets[OFFSET_DATA]++] & 0xFF;
                 rv = new String(_dataBuf, _offsets[OFFSET_DATA], length);
                 _offsets[OFFSET_DATA] += length + 1;
@@ -1103,7 +982,7 @@ public class Message {
     private Object extractStruct(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractMethod _extractMethod) throws DBusException {
         Object rv;
         List<Object> contents = new ArrayList<>();
-        while (_signatureBuf[++_offsets[OFFSET_SIG]] != ArgumentType.STRUCT2) {
+        while (_signatureBuf[++_offsets[OFFSET_SIG]] != STRUCT2) {
             contents.add(_extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, true));
         }
         rv = contents.toArray();
@@ -1192,48 +1071,48 @@ public class Message {
             throws DBusException {
         Object rv;
         switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
-            case ArgumentType.BYTE:
+            case BYTE:
                 rv = new byte[_length];
                 System.arraycopy(_dataBuf, _offsets[OFFSET_DATA], rv, 0, _length);
                 _offsets[OFFSET_DATA] += _size;
                 break;
-            case ArgumentType.INT16:
+            case INT16:
                 rv = new short[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((short[]) rv)[j] = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
                 }
                 break;
-            case ArgumentType.INT32:
+            case INT32:
                 rv = new int[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((int[]) rv)[j] = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
                 }
                 break;
-            case ArgumentType.INT64:
+            case INT64:
                 rv = new long[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((long[]) rv)[j] = demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
                 }
                 break;
-            case ArgumentType.BOOLEAN:
+            case BOOLEAN:
                 rv = new boolean[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((boolean[]) rv)[j] = 1 == demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
                 }
                 break;
-            case ArgumentType.FLOAT:
+            case FLOAT:
                 rv = new float[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((float[]) rv)[j] = Float.intBitsToFloat((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
                 }
                 break;
-            case ArgumentType.DOUBLE:
+            case DOUBLE:
                 rv = new double[_length];
                 for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
                     ((double[]) rv)[j] = Double.longBitsToDouble(demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
                 }
                 break;
-            case ArgumentType.DICT_ENTRY1:
+            case DICT_ENTRY1:
                 int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
                 long end = _offsets[OFFSET_DATA] + _size;
                 List<Object[]> entries = new ArrayList<>();
@@ -1282,7 +1161,7 @@ public class Message {
      *
      * @throws DBusException on error
      */
-    public Object[] extract(String _signature, byte[] _dataBuf, int _offsets) throws DBusException {
+    protected Object[] extract(String _signature, byte[] _dataBuf, int _offsets) throws DBusException {
         return extract(_signature, _dataBuf, new int[] {
                 0, _offsets
         });
@@ -1300,7 +1179,7 @@ public class Message {
      *
      * @throws DBusException on error
      */
-    public Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets) throws DBusException {
+    protected Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets) throws DBusException {
         return extract(_signature, _dataBuf, _offsets, this::extractOne);
     }
 
@@ -1558,6 +1437,103 @@ public class Message {
         logger.trace("Appended body, type: {} start: {} end: {} size: {}", _sig, c, getByteCounter(), getByteCounter() - c);
         marshallint(getByteCounter() - c, blen, 0, 4);
         logger.trace("marshalled size ({}): {}", blen, Hexdump.format(blen));
+    }
+
+    /**
+     * Demarshalls an integer of a given width from a buffer.
+     *
+     * @param _buf The buffer to demarshall from.
+     * @param _ofs The offset to demarshall from.
+     * @param _endian The endianness to use in demarshalling.
+     * @param _width The byte-width of the int.
+     *
+     * @return long
+     */
+    public static long demarshallint(byte[] _buf, int _ofs, byte _endian, int _width) {
+        return _endian == Endian.BIG ? demarshallintBig(_buf, _ofs, _width) : demarshallintLittle(_buf, _ofs, _width);
+    }
+
+    /**
+     * Demarshalls an integer of a given width from a buffer using big-endian format.
+     *
+     * @param _buf The buffer to demarshall from.
+     * @param _ofs The offset to demarshall from.
+     * @param _width The byte-width of the int.
+     * @return long
+     */
+    public static long demarshallintBig(byte[] _buf, int _ofs, int _width) {
+        long l = 0;
+        for (int i = 0; i < _width; i++) {
+            l <<= 8;
+            l |= _buf[_ofs + i] & 0xFF;
+        }
+        return l;
+    }
+
+    /**
+     * Demarshalls an integer of a given width from a buffer using little-endian format.
+     *
+     * @param _buf The buffer to demarshall from.
+     * @param _ofs The offset to demarshall from.
+     * @param _width The byte-width of the int.
+     *
+     * @return long
+     */
+    public static long demarshallintLittle(byte[] _buf, int _ofs, int _width) {
+        long l = 0;
+        for (int i = _width - 1; i >= 0; i--) {
+            l <<= 8;
+            l |= _buf[_ofs + i] & 0xFF;
+        }
+        return l;
+    }
+
+    /**
+     * Marshalls an integer of a given width into a buffer using big-endian format.
+     *
+     * @param _l The integer to marshall.
+     * @param _buf The buffer to marshall to.
+     * @param _ofs The offset to marshall to.
+     * @param _width The byte-width of the int.
+     */
+    public static void marshallintBig(long _l, byte[] _buf, int _ofs, int _width) {
+        long l = _l;
+        for (int i = _width - 1; i >= 0; i--) {
+            _buf[i + _ofs] = (byte) (l & 0xFF);
+            l >>= 8;
+        }
+    }
+
+    /**
+     * Marshalls an integer of a given width into a buffer using little-endian format.
+     *
+     * @param _l The integer to marshall.
+     * @param _buf The buffer to demarshall to.
+     * @param _ofs The offset to demarshall to.
+     * @param _width The byte-width of the int.
+     */
+    public static void marshallintLittle(long _l, byte[] _buf, int _ofs, int _width) {
+        long l = _l;
+        for (int i = 0; i < _width; i++) {
+            _buf[i + _ofs] = (byte) (l & 0xFF);
+            l >>= 8;
+        }
+    }
+
+    /**
+     * Return the alignment for a given type.
+     *
+     * @param _type type
+     * @return int
+     */
+    public static int getAlignment(byte _type) {
+        return switch (_type) {
+            case 2, INT16, UINT16 -> 2;
+            case 4, BOOLEAN, FLOAT, INT32, UINT32, FILEDESCRIPTOR, STRING, OBJECT_PATH, ARRAY -> 4;
+            case 8, INT64, UINT64, DOUBLE, STRUCT, DICT_ENTRY, STRUCT1, DICT_ENTRY1, STRUCT2, DICT_ENTRY2 -> 8;
+            case 1, BYTE, SIGNATURE, VARIANT -> 1;
+            default -> 1;
+        };
     }
 
     /**
