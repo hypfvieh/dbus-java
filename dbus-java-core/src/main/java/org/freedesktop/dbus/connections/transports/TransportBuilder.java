@@ -178,8 +178,8 @@ public final class TransportBuilder {
             throw new DBusException("Unknown address type " + myBusAddress.getType() + " or no transport provider found for bus type " + myBusAddress.getBusType());
         }
 
-        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress) {
-            ((IFileBasedBusAddress) myBusAddress).updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
+        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress fbba) {
+            fbba.updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
         }
 
         transport.setPreConnectCallback(config.getPreConnectCallback());

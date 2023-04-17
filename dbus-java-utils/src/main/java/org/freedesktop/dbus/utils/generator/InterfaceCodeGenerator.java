@@ -15,27 +15,15 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.XmlUtil;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMethod;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -126,9 +114,8 @@ public class InterfaceCodeGenerator {
     static List<Element> convertToElementList(NodeList _nodeList) {
         List<Element> elemList = new ArrayList<>();
         for (int i = 0; i < _nodeList.getLength(); i++) {
-            if (_nodeList.item(i) instanceof Element) {
-                Element elem = (Element) _nodeList.item(i);
-                elemList.add(elem);
+            if (_nodeList.item(i) instanceof Element elm) {
+                elemList.add(elm);
             }
         }
         return elemList;

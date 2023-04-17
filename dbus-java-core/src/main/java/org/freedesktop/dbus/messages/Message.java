@@ -402,22 +402,22 @@ public class Message {
             for (Object o : largs) {
                 if (o == null) {
                     sb.append("null");
-                } else if (o instanceof Object[]) {
-                    sb.append(Arrays.deepToString((Object[]) o));
-                } else if (o instanceof byte[]) {
-                    sb.append(Arrays.toString((byte[]) o));
-                } else if (o instanceof int[]) {
-                    sb.append(Arrays.toString((int[]) o));
-                } else if (o instanceof short[]) {
-                    sb.append(Arrays.toString((short[]) o));
-                } else if (o instanceof long[]) {
-                    sb.append(Arrays.toString((long[]) o));
-                } else if (o instanceof boolean[]) {
-                    sb.append(Arrays.toString((boolean[]) o));
-                } else if (o instanceof double[]) {
-                    sb.append(Arrays.toString((double[]) o));
-                } else if (o instanceof float[]) {
-                    sb.append(Arrays.toString((float[]) o));
+                } else if (o instanceof Object[] oa) {
+                    sb.append(Arrays.deepToString(oa));
+                } else if (o instanceof byte[] ba) {
+                    sb.append(Arrays.toString(ba));
+                } else if (o instanceof int[] ia) {
+                    sb.append(Arrays.toString(ia));
+                } else if (o instanceof short[] sa) {
+                    sb.append(Arrays.toString(sa));
+                } else if (o instanceof long[] la) {
+                    sb.append(Arrays.toString(la));
+                } else if (o instanceof boolean[] ba) {
+                    sb.append(Arrays.toString(ba));
+                } else if (o instanceof double[] da) {
+                    sb.append(Arrays.toString(da));
+                } else if (o instanceof float[] fa) {
+                    sb.append(Arrays.toString(fa));
                 } else {
                     sb.append(o);
                 }
@@ -492,7 +492,6 @@ public class Message {
      * @param _data The value to marshall.
      * @return The offset into the signature of the end of this value's type.
      */
-    @SuppressWarnings("unchecked")
     private int appendOne(byte[] _sigb, int _sigofs, Object _data) throws DBusException {
         try {
             int i = _sigofs;
@@ -550,8 +549,8 @@ public class Message {
 
                 String payload;
                 // if the given data is an object, not a ObjectPath itself
-                if (_data instanceof DBusInterface) {
-                    payload = ((DBusInterface) _data).getObjectPath();
+                if (_data instanceof DBusInterface di) {
+                    payload = di.getObjectPath();
                 } else {
                     // Strings are marshalled as a UInt32 with the length,
                     // followed by the String, followed by a null byte.
@@ -576,8 +575,8 @@ public class Message {
                 // followed by the String, followed by a null byte.
                 // Signatures are generally short, so preallocate the array
                 // for the string, length and null byte.
-                if (_data instanceof Type[]) {
-                    payload = Marshalling.getDBusType((Type[]) _data);
+                if (_data instanceof Type[] ta) {
+                    payload = Marshalling.getDBusType(ta);
                 } else {
                     payload = (String) _data;
                 }
@@ -592,8 +591,8 @@ public class Message {
                 // padding to the element alignment, then elements in
                 // order. The length is the length from the end of the
                 // initial padding to the end of the last element.
-                if (logger.isTraceEnabled() && _data instanceof Object[]) {
-                    logger.trace("Appending array: {}", Arrays.deepToString((Object[]) _data));
+                if (logger.isTraceEnabled() && _data instanceof Object[] oa) {
+                    logger.trace("Appending array: {}", Arrays.deepToString(oa));
                 }
 
                 byte[] alen = new byte[4];
@@ -626,9 +625,9 @@ public class Message {
                         break;
                     case DOUBLE:
                         primbuf = new byte[len * algn];
-                        if (_data instanceof float[]) {
+                        if (_data instanceof float[] fa) {
                             for (int j = 0, k = 0; j < len; j++, k += algn) {
-                                marshallint(Double.doubleToRawLongBits(((float[]) _data)[j]), primbuf, k, algn);
+                                marshallint(Double.doubleToRawLongBits(fa[j]), primbuf, k, algn);
                             }
                         } else {
                             for (int j = 0, k = 0; j < len; j++, k += algn) {
@@ -646,8 +645,8 @@ public class Message {
                         throw new MarshallingException("Primitive array being sent as non-primitive array.");
                     }
                     appendBytes(primbuf);
-                } else if (_data instanceof List) {
-                    Object[] contents = ((List<?>) _data).toArray();
+                } else if (_data instanceof List<?> lst) {
+                    Object[] contents = lst.toArray();
                     int diff = i;
                     ensureBuffers(contents.length * 4);
                     for (Object o : contents) {
@@ -657,11 +656,10 @@ public class Message {
                         diff = EmptyCollectionHelper.determineSignatureOffsetArray(_sigb, diff);
                     }
                     i = diff;
-                } else if (_data instanceof Map) {
+                } else if (_data instanceof Map<?, ?> map) {
                     int diff = i;
-                    Map<Object, Object> map = (Map<Object, Object>) _data;
                     ensureBuffers(map.size() * 6);
-                    for (Map.Entry<Object, Object> o : map.entrySet()) {
+                    for (Map.Entry<?, ?> o : map.entrySet()) {
                         diff = appendOne(_sigb, i, o);
                     }
                     if (map.isEmpty()) {
@@ -687,8 +685,8 @@ public class Message {
                 // Structs are aligned to 8 bytes
                 // and simply contain each element marshalled in order
                 Object[] contents;
-                if (_data instanceof Container) {
-                    contents = ((Container) _data).getParameters();
+                if (_data instanceof Container cont) {
+                    contents = cont.getParameters();
                 } else {
                     contents = (Object[]) _data;
                 }
@@ -700,11 +698,11 @@ public class Message {
                 break;
             case DICT_ENTRY1:
                 // Dict entries are the same as structs.
-                if (_data instanceof Map.Entry) {
+                if (_data instanceof Map.Entry<?, ?> entry) {
                     i++;
-                    i = appendOne(_sigb, i, ((Map.Entry<?, ?>) _data).getKey());
+                    i = appendOne(_sigb, i, entry.getKey());
                     i++;
-                    i = appendOne(_sigb, i, ((Map.Entry<?, ?>) _data).getValue());
+                    i = appendOne(_sigb, i, entry.getValue());
                     i++;
                 } else {
                     contents = (Object[]) _data;
@@ -717,18 +715,16 @@ public class Message {
             case VARIANT:
                 // Variants are marshalled as a signature
                 // followed by the value.
-                if (_data instanceof Variant) {
-                    Variant<?> var = (Variant<?>) _data;
+                if (_data instanceof Variant<?> variant) {
                     appendOne(new byte[] {
                         SIGNATURE
-                    }, 0, var.getSig());
-                    appendOne(var.getSig().getBytes(), 0, var.getValue());
-                } else if (_data instanceof Object[]) {
-                    contents = (Object[]) _data;
+                    }, 0, variant.getSig());
+                    appendOne(variant.getSig().getBytes(), 0, variant.getValue());
+                } else if (_data instanceof Object[] oa) {
                     appendOne(new byte[] {
                         SIGNATURE
-                    }, 0, contents[0]);
-                    appendOne(((String) contents[0]).getBytes(), 0, contents[1]);
+                    }, 0, oa[0]);
+                    appendOne(((String) oa[0]).getBytes(), 0, oa[1]);
                 } else {
                     String sig = Marshalling.getDBusType(_data.getClass())[0];
                     appendOne(new byte[] {
@@ -943,8 +939,8 @@ public class Message {
         }
 
         if (logger.isTraceEnabled()) {
-            if (rv instanceof Object[]) {
-                logger.trace("Extracted: {} (now at {})", Arrays.deepToString((Object[]) rv), _offsets[OFFSET_DATA]);
+            if (rv instanceof Object[] oa) {
+                logger.trace("Extracted: {} (now at {})", Arrays.deepToString(oa), _offsets[OFFSET_DATA]);
             } else {
                 logger.trace("Extracted: {} (now at {})", rv, _offsets[OFFSET_DATA]);
             }

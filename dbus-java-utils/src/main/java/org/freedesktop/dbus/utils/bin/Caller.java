@@ -41,9 +41,9 @@ public final class Caller {
                 Type[] ts = lts.toArray(new Type[0]);
                 Object[] os = new Object[_args.length - 5];
                 for (int i = 5; i < _args.length; i++) {
-                    if (ts[i - 5] instanceof Class) {
+                    if (ts[i - 5] instanceof Class<?> clz) {
                         try {
-                            Constructor<?> c = ((Class<?>) ts[i - 5]).getConstructor(String.class);
+                            Constructor<?> c = clz.getConstructor(String.class);
                             os[i - 5] = c.newInstance(_args[i]);
                         } catch (Exception _ex) {
                             os[i - 5] = _args[i];
@@ -59,8 +59,8 @@ public final class Caller {
             do {
                 m = conn.readMessage();
             } while (serial != m.getReplySerial());
-            if (m instanceof Error) {
-                ((Error) m).throwException();
+            if (m instanceof Error err) {
+                err.throwException();
             } else {
                 Object[] os = m.getParameters();
                 System.out.println(Arrays.deepToString(os));

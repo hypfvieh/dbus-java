@@ -68,10 +68,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         } else if (_method.getName().equals("wait")) {
             if (0 == _args.length) {
                 remote.wait();
-            } else if (1 == _args.length && _args[0] instanceof Long) {
-                remote.wait((Long) _args[0]);
-            } else if (2 == _args.length && _args[0] instanceof Long && _args[1] instanceof Integer) {
-                remote.wait((Long) _args[0], (Integer) _args[1]);
+            } else if (1 == _args.length && _args[0] instanceof Long l) {
+                remote.wait(l);
+            } else if (2 == _args.length && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
+                remote.wait(l, i);
             }
             if (_args.length <= 2) {
                 return null;
@@ -196,8 +196,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
             throw new NoReply("No reply within specified time");
         }
 
-        if (reply instanceof Error) {
-            ((Error) reply).throwException();
+        if (reply instanceof Error err) {
+            err.throwException();
         }
 
         try {

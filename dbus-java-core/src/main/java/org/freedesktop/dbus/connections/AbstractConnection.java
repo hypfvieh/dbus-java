@@ -104,8 +104,8 @@ public abstract class AbstractConnection implements Closeable {
                 .orElse(null);
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
-            if (_ex instanceof IOException) {
-                internalDisconnect((IOException) _ex);
+            if (_ex instanceof IOException ioe) {
+                internalDisconnect(ioe);
             }
             throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }

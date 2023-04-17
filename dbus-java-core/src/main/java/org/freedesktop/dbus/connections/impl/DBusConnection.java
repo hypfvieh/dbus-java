@@ -811,9 +811,9 @@ public final class DBusConnection extends AbstractConnection {
     private class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
-             if (_signal instanceof DBus.NameAcquired) {
+            if (_signal instanceof DBus.NameAcquired na) {
                 synchronized (busnames) {
-                    busnames.add(((DBus.NameAcquired) _signal).name);
+                    busnames.add(na.name);
                 }
             }
         }

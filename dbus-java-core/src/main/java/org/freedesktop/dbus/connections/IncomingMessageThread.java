@@ -53,8 +53,8 @@ public class IncomingMessageThread extends Thread {
                     logger.error("FatalException in connection thread", _ex);
                     if (connection.isConnected()) {
                         terminate = true;
-                        if (_ex.getCause() instanceof IOException) {
-                            connection.internalDisconnect((IOException) _ex.getCause());
+                        if (_ex.getCause() instanceof IOException ioe) {
+                            connection.internalDisconnect(ioe);
                         } else {
                             connection.internalDisconnect(null);
                         }

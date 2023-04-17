@@ -34,8 +34,8 @@ public class DBusAsyncReply<T> {
     private synchronized void checkReply() {
         if (mc.hasReply()) {
             Message m = mc.getReply();
-            if (m instanceof Error) {
-                error = ((Error) m).getException();
+            if (m instanceof Error err) {
+                error = err.getException();
             } else if (m instanceof MethodReturn) {
                 try {
                     Object obj = RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);

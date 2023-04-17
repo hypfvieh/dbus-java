@@ -573,8 +573,8 @@ public class SASL {
                         } else {
                             try {
                                 int kuid = -1;
-                                if (_transport instanceof AbstractUnixTransport) {
-                                    kuid = ((AbstractUnixTransport) _transport).getUid(_sock);
+                                if (_transport instanceof AbstractUnixTransport aut) {
+                                    kuid = aut.getUid(_sock);
                                 }
                                 if (kuid >= 0) {
                                     kernelUid = stupidlyEncode("" + kuid);
