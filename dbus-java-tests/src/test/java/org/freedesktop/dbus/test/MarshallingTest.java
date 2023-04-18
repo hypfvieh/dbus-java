@@ -1,16 +1,11 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
-import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MessageFactory;
+import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.test.helper.structs.MarkTuple;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
@@ -19,15 +14,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MarshallingTest extends AbstractBaseTest {
 
@@ -148,32 +137,7 @@ public class MarshallingTest extends AbstractBaseTest {
          }
     }
 
-    @SuppressWarnings({"checkstyle:methodname", "checkstyle:visibilitymodifier"})
-    public static class SomeData extends Struct {
-        @Position(0)
-        public DBusPath objectPath;
-        @Position(1)
-        public Map<String, Variant<?>> properties;
-
-        public SomeData(DBusPath _objectPath, Map<String, Variant<?>> _properties) {
-            this.objectPath = _objectPath;
-            this.properties = _properties;
-        }
-
-        DBusPath getObjectPath() {
-            return objectPath;
-        }
-        void setObjectPath(DBusPath _objectPath) {
-            objectPath = _objectPath;
-        }
-        Map<String, Variant<?>> getProperties() {
-            return properties;
-        }
-        void setProperties(Map<String, Variant<?>> _properties) {
-            properties = _properties;
-        }
-
-    }
+    public record SomeData(@Position(0) DBusPath objectPath, @Position(1) Map<String, Variant<?>> properties) {}
 
     @SuppressWarnings("checkstyle:methodname")
     public interface Installer extends DBusInterface {
