@@ -4,24 +4,16 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.exceptions.AuthenticationException;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.spi.message.IMessageReader;
-import org.freedesktop.dbus.spi.message.IMessageWriter;
-import org.freedesktop.dbus.spi.message.ISocketProvider;
-import org.freedesktop.dbus.spi.message.InputStreamMessageReader;
-import org.freedesktop.dbus.spi.message.OutputStreamMessageWriter;
+import org.freedesktop.dbus.spi.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -35,7 +27,7 @@ public abstract class AbstractTransport implements Closeable {
 
     private static final AtomicLong TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
-    private final ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
+    private final ServiceLoader<ISocketProvider> spiLoader              = ServiceLoader.load(ISocketProvider.class, AbstractTransport.class.getClassLoader());
 
     private final Logger                         logger    = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;
