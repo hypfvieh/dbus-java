@@ -71,7 +71,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated minimum required Java version to 17
 
 ##### Changes in 4.3.1 (not released yet):
-   - Nothing yet
+   - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))
 
 ##### Changes in 4.3.0 (2023-03-10):
 

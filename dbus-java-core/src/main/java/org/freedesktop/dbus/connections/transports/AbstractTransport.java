@@ -28,7 +28,7 @@ public abstract class AbstractTransport implements Closeable {
 
     private static final AtomicLong TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
-    private final ServiceLoader<ISocketProvider> spiLoader = ServiceLoader.load(ISocketProvider.class);
+    private final ServiceLoader<ISocketProvider> spiLoader              = ServiceLoader.load(ISocketProvider.class, AbstractTransport.class.getClassLoader());
 
     private final Logger                         logger    = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;

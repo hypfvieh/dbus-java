@@ -5,12 +5,10 @@ import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
-import java.util.ServiceLoader;
-
 import javax.xml.transform.TransformerConfigurationException;
 
 /**
- * Interface used by {@link ServiceLoader} to provide a transport used by DBus.
+ * Interface used by {@link java.util.ServiceLoader ServiceLoader} to provide a transport used by DBus.
  *
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-05

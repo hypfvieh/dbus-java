@@ -36,7 +36,7 @@ public final class TransportBuilder {
     static Map<String, ITransportProvider> getTransportProvider() {
         Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
         try {
-            ServiceLoader<ITransportProvider> spiLoader = ServiceLoader.load(ITransportProvider.class);
+            ServiceLoader<ITransportProvider> spiLoader = ServiceLoader.load(ITransportProvider.class, TransportBuilder.class.getClassLoader());
             for (ITransportProvider provider : spiLoader) {
                 String providerBusType = provider.getSupportedBusType();
                 if (providerBusType == null) { // invalid transport, ignore
