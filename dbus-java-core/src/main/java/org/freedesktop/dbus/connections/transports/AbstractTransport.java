@@ -135,6 +135,15 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
+     * True if this transport connection is a listening (server) connection.
+     *
+     * @return boolean
+     */
+    public final boolean isListening() {
+        return getAddress().isListeningSocket();
+    }
+
+    /**
      * Start listening on created transport.<br>
      * <p>
      * This method can only be used for <b>listening</b> connections.<br>
@@ -145,7 +154,8 @@ public abstract class AbstractTransport implements Closeable {
      * Therefore this method should be called in a loop to accept multiple clients
      * </p>
      *
-     * @return {@link TransportConnection} containing created {@link SocketChannel} and {@link IMessageReader}/{@link IMessageWriter}
+     * @return {@link TransportConnection} containing created {@link SocketChannel} and
+     *         {@link IMessageReader}/{@link IMessageWriter}
      * @throws IOException if connection fails
      */
     public final TransportConnection listen() throws IOException {

@@ -1192,6 +1192,26 @@ public abstract class AbstractConnection implements Closeable {
         return transport != null && transport.isConnected();
     }
 
+    /**
+     * Connects the underlying transport if it is not already connected.
+     * <p>
+     * Will work for both, client and server (listening) connections.
+     * </p>
+     *
+     * @return true if connection established or already connected, false otherwise
+     * @throws IOException when connection was not already established and creating the connnection failed
+     */
+    public boolean connect() throws IOException {
+        if (!transport.isConnected()) {
+            if (transport.isListening()) {
+                return transport.listen() != null;
+            } else {
+                return transport.connect() != null;
+            }
+        }
+        return false;
+    }
+
     protected Queue<Error> getPendingErrorQueue() {
         return pendingErrorQueue;
     }
