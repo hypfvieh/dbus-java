@@ -3,13 +3,15 @@ package org.freedesktop.dbus.connections;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.transports.*;
+import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.*;
-import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
@@ -37,7 +39,24 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
 
+    /**
+     * Connect timeout, used for TCP only.
+     * @deprecated no longer used
+     */
+    @Deprecated(forRemoval = true, since = "4.2.2 - 2022-12-23")
+    public static final int TCP_CONNECT_TIMEOUT     = 100000;
+
+    /**
+     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
+     * @deprecated is no longer in use
+     */
+    @Deprecated(since = "4.2.0 - 2022-08-04", forRemoval = true)
+    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
+
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
+
+    /** Lame method to setup endianness used on DBus messages */
+    private static byte              endianness             = getSystemEndianness();
 
     private final Logger                                                          logger;
 
@@ -810,6 +829,8 @@ public abstract class AbstractConnection implements Closeable {
                 INFOMAP.put(Thread.currentThread(), info);
                 Object result;
                 try {
+                    Type[] ts = me.getGenericParameterTypes();
+                    _methodCall.setArgs(Marshalling.deSerializeParameters(_methodCall.getParameters(), ts, conn));
                     LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
                         try {
                             logger.trace("Invoking Method: {} on {} with parameters {}", me, ob, Arrays.deepToString(_methodCall.getParameters()));
@@ -1157,6 +1178,26 @@ public abstract class AbstractConnection implements Closeable {
 
     public boolean isConnected() {
         return transport != null && transport.isConnected();
+    }
+
+    /**
+     * Connects the underlying transport if it is not already connected.
+     * <p>
+     * Will work for both, client and server (listening) connections.
+     * </p>
+     *
+     * @return true if connection established or already connected, false otherwise
+     * @throws IOException when connection was not already established and creating the connnection failed
+     */
+    public boolean connect() throws IOException {
+        if (!transport.isConnected()) {
+            if (transport.isListening()) {
+                return transport.listen() != null;
+            } else {
+                return transport.connect() != null;
+            }
+        }
+        return false;
     }
 
     public MessageFactory getMessageFactory() {
