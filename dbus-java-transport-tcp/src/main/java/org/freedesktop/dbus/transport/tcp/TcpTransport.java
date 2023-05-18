@@ -40,7 +40,32 @@ public class TcpTransport extends AbstractTransport {
     }
 
     /**
-     * Connect to DBus using TCP.
+     * Listen for new connections using TCP.
+     *
+     * @throws IOException on error
+     */
+    @Override
+    protected SocketChannel listenImpl() throws IOException {
+        if (!getAddress().isListeningSocket()) {
+            throw new IOException("Cannot listen on client connections (use connectImpl() instead)");
+        }
+
+        if (serverSocket == null || !serverSocket.isOpen()) {
+            InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
+            serverSocket = ServerSocketChannel.open();
+            serverSocket.configureBlocking(true);
+            getLogger().debug("Binding to {} using local port {}", getAddress().getHost(),
+                getAddress().getPort(), getAddress().getPort());
+
+            serverSocket.bind(socketAddress);
+        }
+        socket = serverSocket.accept();
+        return socket;
+    }
+
+    /**
+     * Connect to DBus using TCP.#
+     *
      * @throws IOException on error
      */
     @Override
@@ -48,21 +73,16 @@ public class TcpTransport extends AbstractTransport {
 
         InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
         if (getAddress().isListeningSocket()) {
-            if (serverSocket == null || !serverSocket.isOpen()) {
-                serverSocket = ServerSocketChannel.open();
-                serverSocket.configureBlocking(true);
-                serverSocket.bind(socketAddress);
-            }
-            socket = serverSocket.accept();
-        } else {
-            socket = SocketChannel.open();
-            socket.configureBlocking(true);
-
-            getLogger().trace("Setting timeout to {} on Socket", timeout);
-            socket.socket().connect(socketAddress, timeout);
-            getLogger().debug("Connected to {} using local port {}", getAddress().getHost(),
-                    getAddress().getPort(), socket.socket().getLocalPort());
+            throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
         }
+
+        socket = SocketChannel.open();
+        socket.configureBlocking(true);
+
+        getLogger().trace("Setting timeout to {} on Socket", timeout);
+        socket.socket().connect(socketAddress, timeout);
+        getLogger().debug("Connected to {} using local port {}", getAddress().getHost(),
+            getAddress().getPort(), socket.socket().getLocalPort());
 
         return socket;
     }

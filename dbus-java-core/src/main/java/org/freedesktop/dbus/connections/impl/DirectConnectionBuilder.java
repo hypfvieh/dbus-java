@@ -24,7 +24,8 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
      * @return this
      */
     public static DirectConnectionBuilder forAddress(String _address) {
-        DirectConnectionBuilder instance = new DirectConnectionBuilder(BusAddress.of(_address));
+        BusAddress busAddress = BusAddress.of(_address);
+        DirectConnectionBuilder instance = new DirectConnectionBuilder(busAddress);
         return instance;
     }
 
@@ -42,6 +43,7 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
         DirectConnection c = new DirectConnection(transportCfg, rsCfg);
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
+
         return c;
     }
 

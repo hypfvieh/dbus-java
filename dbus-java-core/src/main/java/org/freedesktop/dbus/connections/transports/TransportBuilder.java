@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -142,11 +143,22 @@ public final class TransportBuilder {
 
     /**
      * Create the transport with the previously provided configuration.
+     * <p>
+     * If autoconnect is enabled and this is a client connection, the connection will be established automatically.
+     * Establishing the connection will be retried several times to allow connection in concurrent setups. The max retry
+     * attempts are calculated by using the configured connection timeout (default: 10000 millis) divided by 500. The
+     * minimum of retries is 1.
+     * </p>
+     * <p>
+     * Without autoconnect, the connection will not be started and has to be started by calling <code>connect()</code>
+     * on the connection instance. In that case there are no automatic reconnection attempts.
+     * </p>
      *
      * @return {@link AbstractTransport} instance
      *
      * @throws DBusException when creating transport fails
-     * @throws IOException when autoconnect is true and connection to DBus failed
+     * @throws IOException when autoconnect is true, connection is not a listening connection and connection to DBus
+     *             failed
      */
     public AbstractTransport build() throws DBusException, IOException {
         BusAddress myBusAddress = getAddress();
@@ -183,12 +195,30 @@ public final class TransportBuilder {
         }
 
         transport.setPreConnectCallback(config.getPreConnectCallback());
-        if (config.isAutoConnect()) {
-            if (config.isListening()) {
-                transport.listen();
-            } else {
-                transport.connect();
-            }
+
+        if (config.isAutoConnect() && !config.isListening()) {
+            SocketChannel c = null;
+            // support multiple retries so concurrent server/client connection may work out of the box
+            int max = Math.max(500, config.getTimeout()) / 500;
+            int cnt = 0;
+            do {
+                try {
+                    cnt++;
+                    c = transport.connect();
+                } catch (IOException _ex) { // jnr uses IOException when socket address not found, native unix sockets
+                                            // use ConnectException
+                    LOGGER.debug("Connection to {} failed, reconnect attempt {} of {}", getAddress(), cnt, max);
+                    if (cnt >= max) {
+                        throw _ex;
+                    }
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException _ex1) {}
+
+                }
+            } while (c == null);
+            LOGGER.debug("Connection to {} established after {} of {} attempts", getAddress(), cnt, max);
         }
         return transport;
     }

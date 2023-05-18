@@ -1,9 +1,11 @@
-[![Maven Build/Test JDK 17](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml) [![Maven Build/Test JDK 11](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk11.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk11.yml)
+[![Maven Build/Test JDK 17](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml)
+[![Maven Build/Test JDK 21](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml)
+
 # dbus-java
- - Legacy 3.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
- - Javadoc 3.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java)
- - Current 4.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
- - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
+ - Legacy 4.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg?version=4)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg?version=4)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
+ - Current 5.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Javadoc 5.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
 
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 11+. 
 
@@ -35,6 +37,21 @@ uses the old java.io socket API.
 
 With dbus-java 4.x (and 5.x as well), java.nio is used for all transports and therefore required changes on the SPI.
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
+
+### Note for custom transports
+If you previously used a custom transport you have to update your code when switching to dbus-java 5.x.
+The `AbstractTransport` base class has been changed and now provides two different methods to separate client and listening
+(server) connections.
+
+The `connectImpl()` was previously existing and will now only be called for client side connections.
+The new method `listenImpl()` is used for server connections and has been added in dbus-java 5.x.
+
+The reason to provide separate methods was to allow bootstrapping server connections before accepting connections.
+In the old implementation `accept()` was usually called in `connectImpl()` and therefore blocked the method until
+a client was connected. This blocked setting up the server side before the first client was connecting.
+
+This forced the user to use some random sleep times to wait for the server setup after first client connects.
+With the separation no more sleep waits are required.
 
 ### How to use file descriptors?
 DBus-Java does not support file descriptors out of the box.
@@ -69,6 +86,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Removed all classes and methods marked as deprecated in 4.x
    - Updated dependencies and maven plugins
    - Updated minimum required Java version to 17
+   - Improved handling of listening connections to allow proper bootstrapping the connection before actually starting accepting new connections (thanks to [brett-smith](https://github.com/brett-smith) ([#213](https://github.com/hypfvieh/dbus-java/issues/213)))
 
 ##### Changes in 4.3.1 (not released yet):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))

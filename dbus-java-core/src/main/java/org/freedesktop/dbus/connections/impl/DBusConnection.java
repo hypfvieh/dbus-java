@@ -71,15 +71,18 @@ public final class DBusConnection extends AbstractConnection {
     }
 
     /**
-     * Connect to bus and register if asked.
-     * Should only be called by Builder.
+     * Connect to bus and register if asked. Should only be called by Builder.
      *
      * @param _registerSelf true to register
-     * @throws DBusException if registering fails
+     * @throws DBusException if registering or connection fails
      */
     void connect(boolean _registerSelf) throws DBusException {
         // start listening for calls
-        listen();
+        try {
+            listen();
+        } catch (IOException _ex) {
+            throw new DBusException(_ex);
+        }
 
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();

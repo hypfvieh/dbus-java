@@ -87,7 +87,11 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
     /**
      * Instantly connect to DBus when {@link #build()} is called.
      * <p>
+     * This option will be ignored when this is a listening (server) socket.
+     * </p>
+     * <p>
      * default: true
+     * </p>
      *
      * @param _connect boolean
      *

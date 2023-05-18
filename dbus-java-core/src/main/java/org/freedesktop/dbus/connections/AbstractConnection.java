@@ -3,7 +3,8 @@ package org.freedesktop.dbus.connections;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.transports.*;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.*;
@@ -37,20 +38,6 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
 
-    /**
-     * Connect timeout, used for TCP only.
-     * @deprecated no longer used
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2022-12-23")
-    public static final int TCP_CONNECT_TIMEOUT     = 100000;
-
-    /**
-     * System property name containing the DBUS TCP SESSION address used by dbus-java DBusDaemon in TCP mode.
-     * @deprecated is no longer in use
-     */
-    @Deprecated(since = "4.2.0 - 2022-08-04", forRemoval = true)
-    public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
-
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
 
     private final Logger                                                          logger;
@@ -73,7 +60,7 @@ public abstract class AbstractConnection implements Closeable {
     private final IncomingMessageThread                                           readerThread;
     private final ExecutorService                                                 senderService;
     private final ReceivingService                                                receivingService;
-    private final TransportBuilder                                                transportBuilder;
+    private final BusAddress                                                      busAddress;
 
     private final MessageFactory                                                  messageFactory;
 
@@ -100,22 +87,30 @@ public abstract class AbstractConnection implements Closeable {
 
         pendingErrorQueue = new ConcurrentLinkedQueue<>();
 
-        receivingService = new ReceivingService(_rsCfg);
+        TransportBuilder transportBuilder = TransportBuilder.create(_transportConfig);
+        busAddress = transportBuilder.getAddress();
+
+        String senderThreadName = "DBus Sender Thread-";
+        String rcvSvcName = "";
+        if (logger.isDebugEnabled()) {
+            senderThreadName = "DBus Sender Thread: " + busAddress.isListeningSocket() + ", ";
+            rcvSvcName = "RcvSvc: " + busAddress.isListeningSocket() + " ";
+        }
+
+        receivingService = new ReceivingService(rcvSvcName, _rsCfg);
         senderService =
-                Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
+            Executors.newFixedThreadPool(1, new NameableThreadFactory(senderThreadName, false));
 
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
 
-        transportBuilder = TransportBuilder.create(_transportConfig);
-        readerThread = new IncomingMessageThread(this, transportBuilder.getAddress());
+        readerThread = new IncomingMessageThread(this, busAddress);
 
         try {
             transport = transportBuilder.build();
             messageFactory = Optional.ofNullable(transport)
-                .map(AbstractTransport::getTransportConnection)
-                .map(TransportConnection::getMessageFactory)
-                .orElse(null);
+                .map(AbstractTransport::getMessageFactory)
+                .orElseThrow();
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
             if (_ex instanceof IOException ioe) {
@@ -248,9 +243,11 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Start reading and sending messages.
+     * Start reading and messages.
+     *
+     * @throws IOException when listening fails
      */
-    protected void listen() {
+    protected void listen() throws IOException {
         readerThread.start();
     }
 
@@ -1076,6 +1073,7 @@ public abstract class AbstractConnection implements Closeable {
                 }
             }
 
+            logger.trace("Writing message to connection {}: {}", transport, _message);
             transport.writeMessage(_message);
 
         } catch (Exception _ex) {
@@ -1120,7 +1118,8 @@ public abstract class AbstractConnection implements Closeable {
             if (_exIo instanceof EOFException || _exIo instanceof ClosedByInterruptException) {
                 disconnectCallback.ifPresent(cb -> cb.clientDisconnect());
                 if (disconnecting // when we are already disconnecting, ignore further errors
-                        || transportBuilder.getAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which is no error
+                    || busAddress.isListeningSocket()) { // when we are listener, a client may disconnect any time which
+                                                         // is no error
                     return null;
                 }
             }
@@ -1168,11 +1167,25 @@ public abstract class AbstractConnection implements Closeable {
      * @return new {@link BusAddress} object
      */
     public BusAddress getAddress() {
-        return transportBuilder.getAddress();
+        return busAddress;
     }
 
+    /**
+     * Whether the transport is connected.
+     *
+     * @return true if connected
+     */
     public boolean isConnected() {
         return transport != null && transport.isConnected();
+    }
+
+    /**
+     * The currently configured transport.
+     *
+     * @return AbstractTransport
+     */
+    protected AbstractTransport getTransport() {
+        return transport;
     }
 
     /**
@@ -1244,7 +1257,7 @@ public abstract class AbstractConnection implements Closeable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[address=" + transportBuilder.getAddress() + "]";
+        return getClass().getSimpleName() + "[address=" + busAddress + "]";
     }
 
 }

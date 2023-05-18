@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class TestPeer2Peer extends AbstractBaseTest {
 
@@ -24,12 +25,13 @@ public class TestPeer2Peer extends AbstractBaseTest {
     public void testP2p() throws InterruptedException {
         P2pServer p2pServer = new P2pServer();
         p2pServer.start();
-        Thread.sleep(1000L);
 
+        // p2pServer.lock.await();
         try (DirectConnection dc = DirectConnectionBuilder.forAddress(CONNECTION_ADDRESS).build()) {
-            Thread.sleep(500L);
-            LoggerFactory.getLogger(getClass()).info("Client: Connected");
+            LoggerFactory.getLogger(getClass()).info("Client: Connected: {}", dc);
+
             SampleRemoteInterface tri = (SampleRemoteInterface) dc.getRemoteObject("/Test");
+
             logger.debug("{}", tri.getName());
             logger.debug("{}", tri.testfloat(new float[] {
                     17.093f, -23f, 0.0f, 31.42f
@@ -53,12 +55,17 @@ public class TestPeer2Peer extends AbstractBaseTest {
             LoggerFactory.getLogger(getClass()).info("Client: Disconnected");
             finished = true;
         } catch (IOException | DBusException _ex) {
-            _ex.printStackTrace();
-            fail("Exception in client");
+            fail("Exception in client", _ex);
         }
     }
 
     private class P2pServer extends Thread {
+
+        private final CountDownLatch lock = new CountDownLatch(1);
+
+        P2pServer() {
+            setName("P2pServerThread");
+        }
 
         @Override
         public void run() {
@@ -67,14 +74,14 @@ public class TestPeer2Peer extends AbstractBaseTest {
                 LoggerFactory.getLogger(getClass()).info("Server: Export created");
 
                 LoggerFactory.getLogger(getClass()).info("Server: Listening");
+                lock.countDown();
                 dc.listen();
 
                 while (!finished) {
                     Thread.sleep(500L);
                 }
             } catch (IOException | DBusException | InterruptedException  _ex) {
-                _ex.printStackTrace();
-                fail("Exception in server");
+                fail("Exception in server", _ex);
             }
         }
 

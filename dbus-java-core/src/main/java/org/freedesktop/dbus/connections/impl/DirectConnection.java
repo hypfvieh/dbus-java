@@ -16,6 +16,7 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -39,19 +40,28 @@ public class DirectConnection extends AbstractConnection {
         super(_transportCfg, _rsCfg);
         machineId = createMachineId();
         if (!getAddress().isServer()) {
-            super.listen();
+            try {
+                listen();
+            } catch (IOException _ex) {
+                throw new DBusException(_ex);
+            }
         }
     }
 
     /**
      * Use this method when running on server side.
+     * <p>
      * Call will block.
+     * </p>
+     *
+     * @throws IOException when connection fails
      */
     @Override
-    public void listen() {
+    public void listen() throws IOException {
         if (getAddress().isServer()) {
-            super.listen();
+            getTransport().listen();
         }
+        super.listen();
     }
 
     private String createMachineId() {
