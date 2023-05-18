@@ -3,15 +3,13 @@ package org.freedesktop.dbus.connections;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.errors.Error;
+import org.freedesktop.dbus.connections.transports.*;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.*;
+import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
@@ -54,9 +52,6 @@ public abstract class AbstractConnection implements Closeable {
     public static final String TCP_ADDRESS_PROPERTY = "DBUS_TCP_SESSION";
 
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
-
-    /** Lame method to setup endianness used on DBus messages */
-    private static byte              endianness             = getSystemEndianness();
 
     private final Logger                                                          logger;
 
