@@ -9,6 +9,8 @@ import org.freedesktop.dbus.test.helper.twopart.TwoPartTestClient.TwoPartTestObj
 import org.freedesktop.dbus.test.helper.twopart.TwoPartTestServer;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 public class TestTwoPart extends AbstractDBusBaseTest {
 
     private volatile boolean testDone = false;
@@ -23,9 +25,8 @@ public class TestTwoPart extends AbstractDBusBaseTest {
             Thread.sleep(1500L);
         }
 
-        try {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
             logger.debug("get conn");
-            DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
 
             logger.debug("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
@@ -51,7 +52,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
             if (conn != null) {
                 conn.disconnect();
             }
-        } catch (DBusException _ex) {
+        } catch (IOException | DBusException _ex) {
             _ex.printStackTrace();
             fail("Exception in client");
         }
@@ -66,9 +67,8 @@ public class TestTwoPart extends AbstractDBusBaseTest {
 
         @Override
         public void run() {
-            DBusConnection conn;
-            try {
-                conn = DBusConnectionBuilder.forSessionBus().build();
+            try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
+
                 conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
                 TwoPartTestServer server = new TwoPartTestServer(conn);
                 conn.exportObject("/", server);
@@ -80,7 +80,7 @@ public class TestTwoPart extends AbstractDBusBaseTest {
                     } catch (InterruptedException _ex) {
                     }
                 }
-            } catch (DBusException _ex) {
+            } catch (IOException | DBusException _ex) {
                 logger.error("Exception while running TwoPartServer", _ex);
                 throw new RuntimeException("Exception in server");
             }

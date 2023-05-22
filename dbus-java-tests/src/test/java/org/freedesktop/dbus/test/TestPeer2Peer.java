@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 public class TestPeer2Peer extends AbstractBaseTest {
 
@@ -26,7 +25,6 @@ public class TestPeer2Peer extends AbstractBaseTest {
         P2pServer p2pServer = new P2pServer();
         p2pServer.start();
 
-        // p2pServer.lock.await();
         try (DirectConnection dc = DirectConnectionBuilder.forAddress(CONNECTION_ADDRESS).build()) {
             LoggerFactory.getLogger(getClass()).info("Client: Connected: {}", dc);
 
@@ -61,8 +59,6 @@ public class TestPeer2Peer extends AbstractBaseTest {
 
     private class P2pServer extends Thread {
 
-        private final CountDownLatch lock = new CountDownLatch(1);
-
         P2pServer() {
             setName("P2pServerThread");
         }
@@ -74,7 +70,6 @@ public class TestPeer2Peer extends AbstractBaseTest {
                 LoggerFactory.getLogger(getClass()).info("Server: Export created");
 
                 LoggerFactory.getLogger(getClass()).info("Server: Listening");
-                lock.countDown();
                 dc.listen();
 
                 while (!finished) {

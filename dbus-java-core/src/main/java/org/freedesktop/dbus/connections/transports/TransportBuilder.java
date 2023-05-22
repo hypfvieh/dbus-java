@@ -214,7 +214,10 @@ public final class TransportBuilder {
 
                     try {
                         Thread.sleep(500);
-                    } catch (InterruptedException _ex1) {}
+                    } catch (InterruptedException _ex1) {
+                        LOGGER.debug("Interrupted while waiting for connection retry for address {}", getAddress());
+                        Thread.currentThread().interrupt();
+                    }
 
                 }
             } while (c == null);

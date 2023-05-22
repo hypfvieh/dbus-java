@@ -7,6 +7,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.test.AbstractDBusBaseTest;
 import org.freedesktop.dbus.test.collections.empty.structs.*;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
+import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -50,8 +51,10 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
         try {
             LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
             serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+            Util.waitFor(getShortTestMethodName() + "Server", () -> serverconn.isConnected(), 5000, 100);
             clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
-            Thread.sleep(500L);
+            Util.waitFor(getShortTestMethodName() + "Client", () -> clientconn.isConnected(), 5000, 100);
+
             serverconn.setWeakReferences(true);
             clientconn.setWeakReferences(true);
 
