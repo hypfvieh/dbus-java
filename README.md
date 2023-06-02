@@ -67,6 +67,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))
    - Added missing `connect()` method to `AbstractTransport` to allow connecting the underlying transport manually, thanks to [brett-smith](https://github.com/brett-smith) ([#212](https://github.com/hypfvieh/dbus-java/issues/212))
    - Fixed issue with SASL DATA command when no actual data is sent, thanks to [Prototik](https://github.com/Prototik) ([#214](https://github.com/hypfvieh/dbus-java/issues/214))
+   - Fixed SASL AUTH did not read enough data when COOKIE was used, thanks to [Prototik](https://github.com/Prototik) ([#215](https://github.com/hypfvieh/dbus-java/issues/215))
 
 ##### Changes in 4.3.0 (2023-03-10):
 

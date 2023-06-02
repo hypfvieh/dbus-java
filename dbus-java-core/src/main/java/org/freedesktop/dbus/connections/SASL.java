@@ -40,7 +40,8 @@ public class SASL {
     public static final int       COOKIE_TIMEOUT              = 240;
     public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
-    private static final int      MAX_READ_BYTES              = 64;
+    // stop reading when reaching ~1MByte of data
+    private static final int      MAX_READ_BYTES              = 1024 * 1024;
 
     private static final Collator COL = Collator.getInstance();
     static {
