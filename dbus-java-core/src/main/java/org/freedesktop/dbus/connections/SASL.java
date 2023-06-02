@@ -799,7 +799,8 @@ public class SASL {
                 }
             } else if (0 == COL.compare(ss[0], "DATA")) {
                 command = DATA;
-                data = ss[1];
+                // ss[1] might be non-existing or empty (e.g. AUTH ANON)
+                data = ss.length < 2 ? null : ss[1];
             } else if (0 == COL.compare(ss[0], "REJECTED")) {
                 command = REJECTED;
                 for (int i = 1; i < ss.length; i++) {
