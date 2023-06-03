@@ -40,7 +40,8 @@ public class SASL {
     public static final int       COOKIE_TIMEOUT              = 240;
     public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
-    private static final int      MAX_READ_BYTES              = 64;
+    // stop reading when reaching ~1MByte of data
+    private static final int      MAX_READ_BYTES              = 1024 * 1024;
 
     private static final Collator COL = Collator.getInstance();
     static {
@@ -81,15 +82,23 @@ public class SASL {
         }
 
         File f = new File(keyringDir, _context);
+        long currentTime = System.currentTimeMillis() / 1000;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f)))) {
             String s = null;
             String lCookie = null;
 
-            TimeMeasure tm = new TimeMeasure();
             while (null != (s = r.readLine())) {
                 String[] line = s.split(" ");
-                long timestamp = Long.parseLong(line[1]);
-                if (line[0].equals(_id) && !(timestamp < 0 || (tm.getElapsedSeconds() + MAX_TIME_TRAVEL_SECONDS) < timestamp || tm.getElapsedSeconds() - EXPIRE_KEYS_TIMEOUT_SECONDS > timestamp)) {
+                if (line.length != 3) {
+                    continue;
+                }
+                long timestamp;
+                try {
+                    timestamp = Long.parseLong(line[1]);
+                } catch (NumberFormatException _ex) {
+                    continue;
+                }
+                if (line[0].equals(_id) && timestamp >= 0 && currentTime >= timestamp - MAX_TIME_TRAVEL_SECONDS && currentTime < timestamp + EXPIRE_KEYS_TIMEOUT_SECONDS) {
                     lCookie = line[2];
                     break;
                 }
@@ -309,6 +318,10 @@ public class SASL {
             response = stupidlyEncode(buf);
             _c.setResponse(stupidlyEncode(clientchallenge + " " + response));
             return SaslResult.OK;
+        case AUTH_ANON:
+            // Pong back DATA if server wants it for anonymous auth
+            _c.setResponse(_c.getData() == null ? "" : _c.getData());
+            return SaslResult.OK;
         default:
             logger.debug("Not DBUS_COOKIE_SHA1 authtype.");
             return SaslResult.ERROR;
@@ -353,7 +366,7 @@ public class SASL {
                     logger.debug("Sending challenge: {} {} {}", context, id, challenge);
 
                     _c.setResponse(stupidlyEncode(context + ' ' + id + ' ' + challenge));
-                    return SaslResult.OK;
+                    return SaslResult.CONTINUE;
                 default:
                     return SaslResult.ERROR;
                 }
@@ -482,7 +495,6 @@ public class SASL {
                             break;
                         case OK:
                             logger.trace("Authenticated");
-                            state = SaslAuthState.AUTHENTICATED;
 
                             if (saslConfig.isFileDescriptorSupport()) {
                                 state = SaslAuthState.WAIT_DATA;
@@ -512,7 +524,7 @@ public class SASL {
                     switch (c.getCommand()) {
                     case OK:
                         send(_sock, BEGIN);
-                        state = SaslAuthState.AUTHENTICATED;
+                        state = SaslAuthState.FINISHED;
                         break;
                     case ERROR:
                     case DATA:
@@ -754,7 +766,6 @@ public class SASL {
         WAIT_REJECT,
         WAIT_AUTH,
         WAIT_BEGIN,
-        AUTHENTICATED,
         NEGOTIATE_UNIX_FD,
         FINISHED,
         FAILED;
