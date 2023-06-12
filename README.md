@@ -69,7 +69,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed issue with SASL DATA command when no actual data is sent, thanks to [Prototik](https://github.com/Prototik) ([#214](https://github.com/hypfvieh/dbus-java/issues/214))
    - Fixed SASL AUTH did not read enough data when COOKIE was used, thanks to [Prototik](https://github.com/Prototik) ([#215](https://github.com/hypfvieh/dbus-java/issues/215))
    - Fixed several other issues when using SASL anonymous authentication, thanks to [Prototik](https://github.com/Prototik) ([PR#216](https://github.com/hypfvieh/dbus-java/pull/216))
-
+   - Updated documentation ([#218](https://github.com/hypfvieh/dbus-java/issues/218))
 ##### Changes in 4.3.0 (2023-03-10):
 
    - Fixed thread priority settings were never passed to thread factory, thanks to [DaveJarvis](https://github.com/DaveJarvis) ([#190](https://github.com/hypfvieh/dbus-java/issues/190))
