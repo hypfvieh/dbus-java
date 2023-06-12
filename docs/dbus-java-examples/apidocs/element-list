@@ -6,6 +6,8 @@ com.github.hypfvieh.dbus.examples.networkmanager
 com.github.hypfvieh.dbus.examples.pulseaudio
 com.github.hypfvieh.dbus.examples.signal
 com.github.hypfvieh.dbus.examples.struct
+com.github.hypfvieh.dbus.examples.systemd
 org.freedesktop
 org.freedesktop.networkmanager
 org.freedesktop.networkmanager.device
+org.freedesktop.networkmanager.settings
