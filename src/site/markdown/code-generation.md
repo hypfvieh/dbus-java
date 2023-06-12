@@ -32,7 +32,7 @@ Therefore it is recommended to run the code generator using Maven or your develo
         mvn exec:java \
           -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
           -Dexec.executable="java" \
-          -Dexec.args="%classpath --system --outputDir /tmp/classes org.bluez /org/bluez"	
+          -Dexec.args="--system --outputDir /tmp/classes org.bluez /org/bluez"	
           
  * You may replace  `org.bluez` and `/org/bluez` with the busname and object path of the DBus service 
  you want to generate java classes for.
@@ -42,6 +42,6 @@ Therefore it is recommended to run the code generator using Maven or your develo
         mvn exec:java \
           -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
           -Dexec.executable="java" \
-          -Dexec.args="%classpath --inputFile /tmp/org.freedesktop.UDisks2.xml --outputDir /tmp/classes ' '"
+          -Dexec.args="--inputFile /tmp/org.freedesktop.UDisks2.xml --outputDir /tmp/classes ' '"
 
 In both cases the generated classes/interfaces will be written to the provided output directory.
