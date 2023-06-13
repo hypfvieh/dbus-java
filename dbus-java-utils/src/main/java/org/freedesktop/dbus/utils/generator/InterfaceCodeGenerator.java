@@ -15,27 +15,15 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.XmlUtil;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassMethod;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -59,7 +47,10 @@ public class InterfaceCodeGenerator {
 
     private final String                 introspectionData;
 
-    public InterfaceCodeGenerator(String _introspectionData, String _objectPath, String _busName) {
+    private final boolean                disableFilter;
+
+    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName) {
+        disableFilter = _disableFilter;
         introspectionData = _introspectionData;
         nodeName = _objectPath;
         busName = Util.isBlank(_busName) ? "*" : _busName;
@@ -97,10 +88,14 @@ public class InterfaceCodeGenerator {
 
         Map<File, String> filesAndContents = new LinkedHashMap<>();
 
-        boolean noBusnameGiven = "*".equals(busName);
+        boolean noBusnameGiven = "*".equals(busName) || disableFilter;
 
         for (Element ife : interfaceElements) {
             String nameAttrib = ife.getAttribute("name");
+            if (disableFilter && ("org.freedesktop.DBus.Introspectable".equals(nameAttrib)
+                || "org.freedesktop.DBus.Properties".equals(nameAttrib))) {
+                continue; // do not create DBus classes (they are part of dbus-java)
+            }
             if (!noBusnameGiven && !nameAttrib.startsWith(busName)) { // busname was set, and current element does not match -> skip
                 logger.info("Skipping: {} - does not match given busName: {}", nameAttrib, busName);
                 continue;
@@ -497,6 +492,7 @@ public class InterfaceCodeGenerator {
         boolean ignoreDtd = true;
         String objectPath = null;
         String inputFile = null;
+        boolean noFilter = false;
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
@@ -509,6 +505,8 @@ public class InterfaceCodeGenerator {
             } else if ("--help".equals(p) || "-h".equals(p)) {
                 printHelp();
                 System.exit(0);
+            } else if ("--all".equals(p) || "-a".equals(p)) {
+                noFilter = true;
             } else if ("--version".equals(p) || "-v".equals(p)) {
                 version();
                 System.exit(0);
@@ -580,13 +578,16 @@ public class InterfaceCodeGenerator {
             System.exit(1);
         }
 
-        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, objectPath, busName);
+        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath, busName);
         try {
 
             Map<File, String> analyze = ci2.analyze(ignoreDtd);
             if (analyze == null) {
                 logger.error("Unable to create interface files");
                 return;
+            }
+            if (analyze.isEmpty()) {
+                logger.warn("No files to create!");
             }
             writeToFile(outputDir, analyze);
             logger.info("Interface creation finished");
@@ -607,6 +608,7 @@ public class InterfaceCodeGenerator {
         System.out.println("        --session          | -s           Use SESSION DBus");
         System.out.println("        --outputDir <Dir>  | -o <Dir>     Use <Dir> as output directory for all generated files");
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
+        System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
         System.out.println("");
         System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
         System.out.println("        --version                        Show version information");
