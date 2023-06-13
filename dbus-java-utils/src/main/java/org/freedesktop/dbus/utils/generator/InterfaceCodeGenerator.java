@@ -289,7 +289,7 @@ public class InterfaceCodeGenerator {
                 }
 
                 if (Util.isBlank(argName)) {
-                    argName = "arg" + unknownArgNameCnt;
+                    argName = "_arg" + unknownArgNameCnt;
                     unknownArgNameCnt++;
                 } else {
                     argName = Util.snakeToCamelCase(argName);
@@ -556,22 +556,18 @@ public class InterfaceCodeGenerator {
             }
             introspectionData = Util.readFileToString(file);
         } else if (!Util.isBlank(busName)) {
-            try {
-                logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
+            logger.info("Introspecting: { Interface: {}, Busname: {} }", objectPath, busName);
 
-                DBusConnection conn = DBusConnectionBuilder.forType(busType).build();
-
+            try (DBusConnection conn = DBusConnectionBuilder.forType(busType).build()) {
                 Introspectable in = conn.getRemoteObject(busName, objectPath, Introspectable.class);
                 introspectionData = in.Introspect();
                 if (Util.isBlank(introspectionData)) {
                     logger.error("Failed to get introspection data");
                     System.exit(1);
                 }
-                conn.disconnect();
-            } catch (DBusExecutionException | DBusException _ex) {
+            } catch (DBusExecutionException | DBusException | IOException _ex) {
                 logger.error("Failure in DBus Communications. ", _ex);
                 System.exit(1);
-
             }
         } else {
             logger.error("Busname missing!");
