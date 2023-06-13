@@ -19,7 +19,7 @@ class InterfaceCodeGeneratorTest {
         if (!StringUtils.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
 
-            InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(introspectionData, _objectPath, _busName);
+            InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName);
             return ci2;
         } else {
             fail("No valid busName given");

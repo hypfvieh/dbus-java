@@ -6,12 +6,7 @@ import org.freedesktop.dbus.utils.bin.IdentifierMangler;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -127,7 +122,7 @@ public class ClassBuilderInfo {
      */
     public String createClassFileContent() {
         List<String> result = createClassFileContent(false, new LinkedHashSet<>());
-        return String.join(System.lineSeparator(), result);
+        return String.join(System.lineSeparator(), result) + System.lineSeparator();
     }
 
     /**
