@@ -5,7 +5,9 @@ import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 
 import java.util.Map;
@@ -49,6 +51,20 @@ public interface Player extends DBusInterface {
     void SetPosition(DBusPath _arg0, long _arg1);
 
     interface PropertyMetadataType extends TypeRef<Map<String, Variant<?>>> {
+
+    }
+
+    class Seeked extends DBusSignal {
+        private final long timeInUs;
+
+        public Seeked(String _path, long _timeInUs) throws DBusException {
+            super(_path);
+            timeInUs = _timeInUs;
+        }
+
+        public long getTimeInUs() {
+            return timeInUs;
+        }
 
     }
 }

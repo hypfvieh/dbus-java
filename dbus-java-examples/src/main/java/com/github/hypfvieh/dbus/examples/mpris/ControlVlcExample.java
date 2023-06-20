@@ -3,7 +3,9 @@ package com.github.hypfvieh.dbus.examples.mpris;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.mpris.mediaplayer2.Player;
+import org.mpris.mediaplayer2.Player.Seeked;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +27,7 @@ public final class ControlVlcExample {
     private ControlVlcExample() {
     }
 
-    public static void main(String[] _args) throws DBusException {
+    public static void main(String[] _args) throws DBusException, InterruptedException {
 
         if (_args.length == 0) {
             System.err.println("Media file required as first argument");
@@ -40,6 +42,7 @@ public final class ControlVlcExample {
         }
 
         try (DBusConnection dbusConn = DBusConnectionBuilder.forSessionBus().build()) {
+            dbusConn.addSigHandler(Seeked.class, new SeekHandler());
             Player player = dbusConn.getRemoteObject("org.mpris.MediaPlayer2.vlc", "/org/mpris/MediaPlayer2",
                 Player.class);
             String fileUri = mediaFile.normalize().toUri().toString();
@@ -55,8 +58,18 @@ public final class ControlVlcExample {
             long seekTime = TimeUnit.MICROSECONDS.convert(5L, TimeUnit.SECONDS);
 
             player.Seek(seekTime);
+            Thread.sleep(500L); // wait a bit to receive the "Seeked" signal
         } catch (IOException _ex) {
             _ex.printStackTrace();
         }
+    }
+
+    public static class SeekHandler implements DBusSigHandler<Seeked> {
+
+        @Override
+        public void handle(Seeked _signal) {
+            System.out.println("Got seeked signal with position: " + _signal.getTimeInUs());
+        }
+
     }
 }
