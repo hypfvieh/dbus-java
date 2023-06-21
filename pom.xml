@@ -19,6 +19,12 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
+        <maven.javadoc.skip>false</maven.javadoc.skip>
+        <check.skip-javadoc>false</check.skip-javadoc>
+
+        <check.skip-checkstyle>false</check.skip-checkstyle>
+        <check.skip-pmd>false</check.skip-pmd>
+        
         <junit5.minor.version>9.2</junit5.minor.version>
         <pmd.version>6.55.0</pmd.version>
         <checkstyle.version>10.9.3</checkstyle.version>
@@ -95,6 +101,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.5.0</version>
                     <configuration>
+                        <skip>${check.skip-javadoc}</skip>
                         <doclint>none</doclint>
                         <!--  required because multi-release artifact will fuck up javadoc generation -->
                         <failOnError>false</failOnError>
@@ -240,7 +247,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-                        <skip>false</skip>
+                        <skip>${check.skip-pmd}</skip>
                         <failOnViolation>true</failOnViolation>
                         <printFailingErrors>true</printFailingErrors>
                         <includeTests>true</includeTests>
@@ -259,7 +266,7 @@
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>3.2.1</version>
                     <configuration>
-                        <skip>false</skip>
+                        <skip>${check.skip-checkstyle}</skip>
                         <failOnViolation>true</failOnViolation>
                         <configLocation>${parentDir}/src/main/resources/checkstyle_rules.xml</configLocation>
                         <excludes>*.jpg,*.jpeg,*.gif,*.png,*.db,*.csv</excludes>
@@ -555,5 +562,27 @@
                 <module>dbus-java-transport-native-unixsocket</module>
             </modules>            
         </profile>
+        <profile>
+            <id>fast</id>
+            <!-- Profile to skip time-consuming steps but not tests. -->
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <!-- skip _compiling_ the tests -->
+                <maven.test.skip>true</maven.test.skip>
+                <!-- skip the tests -->
+                <skipTests>true</skipTests>
+
+                <!-- skip Javadoc generation -->
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <check.skip-javadoc>true</check.skip-javadoc>
+
+                <!-- skip time-consuming static code analysis -->
+                <check.skip-checkstyle>true</check.skip-checkstyle>
+                <check.skip-pmd>true</check.skip-pmd>
+            </properties>
+        </profile>
+        
     </profiles>
 </project>
