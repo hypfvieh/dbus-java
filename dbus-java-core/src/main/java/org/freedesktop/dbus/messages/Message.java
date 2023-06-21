@@ -151,7 +151,13 @@ public class Message {
         body = bodyBuf;
         bufferuse = 3;
         bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 4)[0]).longValue();
-        setSerial(((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue());
+
+        long extractedSerial = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue();
+
+        logger.debug("Received message of type {} with serial {}", type, extractedSerial);
+
+        setSerial(extractedSerial);
+
         bytecounter = msgBuf.length + headerBuf.length + bodyBuf.length;
 
         filedescriptors.clear();

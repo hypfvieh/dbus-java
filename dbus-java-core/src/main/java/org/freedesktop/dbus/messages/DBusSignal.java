@@ -65,13 +65,12 @@ public class DBusSignal extends Message {
             setArgs(_args);
         }
 
-        setSerial(getSerial() + 1);
         padAndMarshall(hargs, getSerial(), _sig, _args);
         bodydone = true;
     }
 
     /**
-     * Create a new signal. This contructor MUST be called by all sub classes.
+     * Create a new signal. This constructor MUST be called by all sub classes.
      *
      * @param _objectPath The path to the object this is emitted from.
      * @param _args The parameters of the signal.
@@ -140,9 +139,7 @@ public class DBusSignal extends Message {
 
         blen = new byte[4];
         appendBytes(blen);
-        long newSerial = getSerial() + 1;
-        setSerial(newSerial);
-        append("ua(yv)", newSerial, hargs.toArray());
+        append("ua(yv)", getSerial(), hargs.toArray());
         pad((byte) 8);
     }
 
@@ -179,6 +176,14 @@ public class DBusSignal extends Message {
         return c;
     }
 
+    /**
+     * Called to create signal objects for object handlers.
+     *
+     * @param _conn connection on which the signal was received
+     * @return DBusSignal or null
+     *
+     * @throws DBusException when reading signal fails
+     */
     public DBusSignal createReal(AbstractConnection _conn) throws DBusException {
         String intname = INT_NAMES.get(getInterface());
         String signame = SIGNAL_NAMES.get(getName());

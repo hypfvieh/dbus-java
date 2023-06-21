@@ -13,7 +13,6 @@ import java.io.IOException;
 
 public class TestTwoPart extends AbstractDBusBaseTest {
 
-    private volatile boolean testDone = false;
     private volatile boolean serverReady = false;
 
     @Test
@@ -26,7 +25,6 @@ public class TestTwoPart extends AbstractDBusBaseTest {
         }
 
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
-            logger.debug("get conn");
 
             logger.debug("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
@@ -42,23 +40,31 @@ public class TestTwoPart extends AbstractDBusBaseTest {
 
             TwoPartTestObject tpto = new TwoPartTestObject();
             conn.exportObject("/TestObject", tpto);
-            conn.sendMessage(new TwoPartInterface.TwoPartSignal("/FromObject", tpto));
+
+            TwoPartInterface.TwoPartSignal message = new TwoPartInterface.TwoPartSignal("/FromObject", tpto);
+            long signalSerial = message.getSerial();
+            conn.sendMessage(message);
 
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException _ex) {
             }
 
-            if (conn != null) {
-                conn.disconnect();
-            }
-        } catch (IOException | DBusException _ex) {
-            _ex.printStackTrace();
-            fail("Exception in client");
+            // when a signal is received, a new signal object is created
+            // this will take the next available global serial even this message
+            // is never transmitted on the bus.
+            // Therefore it is expected that the serial stored before is one step lower than the
+            // serial received in the handler
+            signalSerial++;
+            assertEquals(signalSerial, twoPartServer.receivedSignalSerial, "Expected signal serial to be the same");
+        } catch (DBusException | IOException _ex) {
+            fail("Exception in client", _ex);
         }
     }
 
     private class TwoPartServer extends Thread {
+
+        private long receivedSignalSerial;
 
         TwoPartServer() {
             super("TwoPartServerThread");
@@ -74,13 +80,17 @@ public class TestTwoPart extends AbstractDBusBaseTest {
                 conn.exportObject("/", server);
                 conn.addSigHandler(TwoPartInterface.TwoPartSignal.class, server);
                 serverReady = true;
-                while (!testDone) {
+                do {
                     try {
-                        Thread.sleep(500L);
+                        Thread.sleep(200L);
                     } catch (InterruptedException _ex) {
                     }
-                }
-            } catch (IOException | DBusException _ex) {
+                } while (server.getSignalSerial() == 0);
+
+                // the serial number of the signal we received
+                // the signal was created before and should have the same serial
+                receivedSignalSerial = server.getSignalSerial();
+            } catch (DBusException | IOException _ex) {
                 logger.error("Exception while running TwoPartServer", _ex);
                 throw new RuntimeException("Exception in server");
             }

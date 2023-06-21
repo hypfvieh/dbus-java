@@ -12,6 +12,8 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
 
     private final DBusConnection conn;
 
+    private long signalSerial;
+
     public TwoPartTestServer(DBusConnection _conn) {
         this.conn = _conn;
     }
@@ -42,6 +44,14 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
     @Override
     public void handle(TwoPartInterface.TwoPartSignal _s) {
         logger.debug("Got: " + _s.o);
+        if (signalSerial != 0) {
+            logger.error("Serial already set!!!!");
+        }
+        signalSerial = _s.getSerial();
+    }
+
+    public long getSignalSerial() {
+        return signalSerial;
     }
 
     public class TwoPartTestObject implements TwoPartObject {
@@ -59,6 +69,12 @@ public class TwoPartTestServer implements TwoPartInterface, DBusSigHandler<TwoPa
         public String getName() {
             return "give name";
         }
+
+        @Override
+        public String toString() {
+            return getClass().getName() + " [getName=" + getName() + "]";
+        }
+
     }
 
 }
