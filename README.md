@@ -71,6 +71,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed several other issues when using SASL anonymous authentication, thanks to [Prototik](https://github.com/Prototik) ([PR#216](https://github.com/hypfvieh/dbus-java/pull/216))
    - Updated documentation ([#218](https://github.com/hypfvieh/dbus-java/issues/218))
    - Fixed possible issue with used serial numbers in messages because signals may manually incremented the serial without updating global serial ([#220](https://github.com/hypfvieh/dbus-java/issues/220))
+   - Updated module-info exports, thanks to [brett-smith](https://github.com/brett-smith) ([#221](https://github.com/hypfvieh/dbus-java/issues/221))
 
 ##### Changes in 4.3.0 (2023-03-10):
 

@@ -1,5 +1,4 @@
 module org.freedesktop.dbus.transport.jre {
-    requires jdk.security.auth;
     requires jdk.net;
 
     requires org.freedesktop.dbus;

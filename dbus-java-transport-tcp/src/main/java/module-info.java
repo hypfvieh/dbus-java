@@ -1,6 +1,4 @@
 module org.freedesktop.dbus.transport.tcp {
-    // requires jdk.security.auth;
-    requires jdk.net;
 
     requires org.freedesktop.dbus;
 

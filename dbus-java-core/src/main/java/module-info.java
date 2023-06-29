@@ -2,6 +2,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus;
     exports org.freedesktop.dbus.bin;
     exports org.freedesktop.dbus.annotations;
+    exports org.freedesktop.dbus.config;
     exports org.freedesktop.dbus.connections;
     exports org.freedesktop.dbus.connections.config;
     exports org.freedesktop.dbus.connections.impl;
@@ -16,8 +17,6 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.types;
     exports org.freedesktop.dbus.utils;
 
-    requires java.datatransfer;
-    requires java.desktop;
     requires jdk.security.auth;
 
     requires transitive java.xml;
