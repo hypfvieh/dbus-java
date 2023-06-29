@@ -2,52 +2,31 @@ package org.freedesktop.dbus.bin;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.connections.transports.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
-import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
-import org.freedesktop.dbus.interfaces.FatalException;
-import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.interfaces.Peer;
-import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -208,7 +187,7 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
         sender.terminate();
-        if (transport != null && transport.isConnected()) {
+        if (transport != null) {
             LOGGER.debug("Terminating transport {}", transport);
             try {
                 // shutdown listener
@@ -217,6 +196,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 LOGGER.debug("Error closing transport", _ex);
             }
         }
+        interrupt();
     }
 
     private void removeConnection(ConnectionStruct _c) {

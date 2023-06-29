@@ -79,5 +79,10 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             daemon.close();
             assertEquals(null, exception.get()); // assertEquals() gives a better error message
         }
+
+        long dbusDaemonThreadCnt = Thread.getAllStackTraces().keySet().stream()
+            .filter(e -> e.getName().startsWith(DBusDaemon.class.getSimpleName()))
+            .count();
+        assertEquals(0, dbusDaemonThreadCnt, "All dbus daemon threads should have been terminated");
     }
 }

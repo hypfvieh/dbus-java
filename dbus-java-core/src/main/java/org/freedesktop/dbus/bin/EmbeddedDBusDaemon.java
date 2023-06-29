@@ -1,13 +1,9 @@
 package org.freedesktop.dbus.bin;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.connections.transports.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
-import org.freedesktop.dbus.connections.transports.TransportConnection;
-import org.freedesktop.dbus.exceptions.AuthenticationException;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.SocketClosedException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +54,11 @@ public class EmbeddedDBusDaemon implements Closeable {
         connectionReady.set(false);
         if (daemon != null) {
             daemon.close();
+            try {
+                daemon.join(5000L);
+            } catch (InterruptedException _ex) {
+                LOGGER.debug("Interrupted while waiting for daemon thread to terminate");
+            }
             daemon = null;
         }
     }
