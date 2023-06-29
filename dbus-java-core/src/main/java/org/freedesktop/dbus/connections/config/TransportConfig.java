@@ -1,16 +1,12 @@
 package org.freedesktop.dbus.connections.config;
 
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.utils.Util;
 
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -34,6 +30,8 @@ public final class TransportConfig {
     private String                      fileOwner;
     /** group to set on socket file if this is a server transport (null to do nothing). */
     private String                      fileGroup;
+
+    private byte                        endianess        = BaseConnectionBuilder.getSystemEndianness();
 
     /**
      * Unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if
@@ -137,6 +135,14 @@ public final class TransportConfig {
 
     public SaslConfig getSaslConfig() {
         return saslConfig;
+    }
+
+    public byte getEndianess() {
+        return endianess;
+    }
+
+    public void setEndianess(byte _endianess) {
+        endianess = _endianess;
     }
 
     /**

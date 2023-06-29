@@ -2,20 +2,13 @@ package org.freedesktop.dbus.utils.generator;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.types.DBusListType;
-import org.freedesktop.dbus.types.DBusMapType;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.Util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -186,8 +179,7 @@ public final class TypeConverter {
      */
     private static Map<String, List<String>> getTypeAdv(Type _type) throws DBusException {
         Map<String, List<String>> result = new LinkedHashMap<>();
-        if (_type instanceof ParameterizedType) {
-            ParameterizedType pType = (ParameterizedType) _type;
+        if (_type instanceof ParameterizedType pType) {
 
             List<String> generics = new ArrayList<>();
             result.put(pType.getRawType().getTypeName(), generics);

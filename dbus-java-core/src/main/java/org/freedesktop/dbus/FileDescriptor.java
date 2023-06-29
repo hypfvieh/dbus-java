@@ -4,9 +4,7 @@ import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 
 /**
  * Represents a FileDescriptor to be passed over the bus.  Can be created from
@@ -24,12 +22,10 @@ public class FileDescriptor {
         fd = _fd;
     }
 
-    // TODO this should have a better exception?
     public FileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
         fd = getFileDescriptor(_data);
     }
 
-    // TODO this should have a better exception?
     public java.io.FileDescriptor toJavaFileDescriptor() throws MarshallingException {
         return createFileDescriptorByReflection(fd);
     }

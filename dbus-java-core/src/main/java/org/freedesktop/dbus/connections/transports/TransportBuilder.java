@@ -1,26 +1,17 @@
 package org.freedesktop.dbus.connections.transports;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.TransportConfigurationException;
-import org.freedesktop.dbus.exceptions.TransportRegistrationException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.nio.channels.SocketChannel;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -143,144 +134,6 @@ public final class TransportBuilder {
     }
 
     /**
-     * Set the connection timeout (usually only used for TCP based transports).
-     * <p>
-     * default: {@link AbstractConnection#TCP_CONNECT_TIMEOUT}
-     *
-     * @param _timeout timeout, if &lt; 0 default timeout of {@link AbstractConnection#TCP_CONNECT_TIMEOUT} will be used
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withTimeout(int _timeout) {
-        configure().withTimeout(_timeout);
-        return this;
-    }
-
-    /**
-     * Toggle the created transport to be a listening (server) or initiating (client) connection.
-     * <p>
-     * Default is a client connection.
-     *
-     * @param _listen true to create a listening transport (e.g. for server usage)
-     *
-     * @return this
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-05-23")
-    public TransportBuilder isListening(boolean _listen) { //NOPMD
-        return listening(_listen);
-    }
-
-    /**
-     * Toggle the created transport to be a listening (server) or initiating (client) connection.
-     * <p>
-     * Default is a client connection.
-     *
-     * @param _listen true to create a listening transport (e.g. for server usage)
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder listening(boolean _listen) {
-        configure().withListening(_listen);
-        return this;
-    }
-
-    /**
-     * Instantly connect to DBus when {@link #build()} is called.
-     * <p>
-     * default: true
-     *
-     * @param _connect boolean
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withAutoConnect(boolean _connect) {
-        configure().withAutoConnect(_connect);
-        return this;
-    }
-
-    /**
-     * Set a different SASL authentication mode.
-     * <p>
-     * Usually when a unixsocket based transport is used, {@link SaslAuthMode#AUTH_EXTERNAL} will be used.
-     * For TCP based transport {@link SaslAuthMode#AUTH_COOKIE} will be used.
-     * <p>
-     *
-     * @param _authMode authmode to use, if null is given, default mode will be used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withSaslAuthMode(SaslAuthMode _authMode) {
-        configure().withSaslAuthMode(_authMode);
-        return this;
-    }
-
-    /**
-     * The owner of the socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * Default is the user of the running JVM process.<br><br>
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the owner
-     * of the file. Otherwise the file owner will not be changed!
-     *
-     * @param _user user to set, if null is given JVM process user is used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFileOwner(String _user) {
-        configure().withUnixSocketFileOwner(_user);
-        return this;
-    }
-
-    /**
-     * The group of the socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * Default is the group of the running JVM process.<br><br>
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the group
-     * of the file. Otherwise the file group will not be changed!
-     *
-     * @param _group group to set, if null is given JVM process group is used
-     *
-     * @return this
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFileGroup(String _group) {
-        configure().withUnixSocketFileGroup(_group);
-        return this;
-    }
-
-    /**
-     * The permissions which will be set on socket file if a unix socket is used and this is a server transport.
-     * <p>
-     * This method does nothing when used on windows systems.
-     * <b>Please note:</b><br>
-     * The running process user has to have suitable permissions to change the permissions
-     * of the file. Otherwise the file permissions will not be changed!
-     *
-     * @param _permissions permissions to set, if null is given default permissions will be used
-     *
-     * @return this
-     *
-     * @deprecated please use {@link #configure()}
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    public TransportBuilder withUnixSocketFilePermissions(PosixFilePermission... _permissions) {
-        configure().withUnixSocketFilePermissions(_permissions);
-        return this;
-    }
-
-    /**
      * Returns the configuration builder to configure the transport.
      * @return TransportConfigBuilder
      */
@@ -290,11 +143,22 @@ public final class TransportBuilder {
 
     /**
      * Create the transport with the previously provided configuration.
+     * <p>
+     * If autoconnect is enabled and this is a client connection, the connection will be established automatically.
+     * Establishing the connection will be retried several times to allow connection in concurrent setups. The max retry
+     * attempts are calculated by using the configured connection timeout (default: 10000 millis) divided by 500. The
+     * minimum of retries is 1.
+     * </p>
+     * <p>
+     * Without autoconnect, the connection will not be started and has to be started by calling <code>connect()</code>
+     * on the connection instance. In that case there are no automatic reconnection attempts.
+     * </p>
      *
      * @return {@link AbstractTransport} instance
      *
      * @throws DBusException when creating transport fails
-     * @throws IOException when autoconnect is true and connection to DBus failed
+     * @throws IOException when autoconnect is true, connection is not a listening connection and connection to DBus
+     *             failed
      */
     public AbstractTransport build() throws DBusException, IOException {
         BusAddress myBusAddress = getAddress();
@@ -326,18 +190,38 @@ public final class TransportBuilder {
             throw new DBusException("Unknown address type " + myBusAddress.getType() + " or no transport provider found for bus type " + myBusAddress.getBusType());
         }
 
-        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress) {
-            ((IFileBasedBusAddress) myBusAddress).updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
+        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress fbba) {
+            fbba.updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
         }
 
         transport.setPreConnectCallback(config.getPreConnectCallback());
 
-        if (config.isAutoConnect()) {
-            if (config.isListening()) {
-                transport.listen();
-            } else {
-                transport.connect();
-            }
+        if (config.isAutoConnect() && !config.isListening()) {
+            SocketChannel c = null;
+            // support multiple retries so concurrent server/client connection may work out of the box
+            int max = Math.max(500, config.getTimeout()) / 500;
+            int cnt = 0;
+            do {
+                try {
+                    cnt++;
+                    c = transport.connect();
+                } catch (IOException _ex) { // jnr uses IOException when socket address not found, native unix sockets
+                                            // use ConnectException
+                    LOGGER.debug("Connection to {} failed, reconnect attempt {} of {}", getAddress(), cnt, max);
+                    if (cnt >= max) {
+                        throw _ex;
+                    }
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException _ex1) {
+                        LOGGER.debug("Interrupted while waiting for connection retry for address {}", getAddress());
+                        Thread.currentThread().interrupt();
+                    }
+
+                }
+            } while (c == null);
+            LOGGER.debug("Connection to {} established after {} of {} attempts", getAddress(), cnt, max);
         }
         return transport;
     }

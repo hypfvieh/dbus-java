@@ -6,9 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A Wrapper class for Variant values.
@@ -136,7 +134,7 @@ public class Variant<T> {
         if (this == _obj) {
             return true;
         }
-        if (!(_obj instanceof Variant)) {
+        if (!(_obj instanceof Variant<?>)) {
             return false;
         }
         Variant<?> other = (Variant<?>) _obj;

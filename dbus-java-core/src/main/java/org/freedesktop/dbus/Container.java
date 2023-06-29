@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -82,10 +79,9 @@ public abstract class Container {
             return false;
         }
 
-        if (_other instanceof Container) {
-            Container that = (Container) _other;
-            if (this.getClass().equals(that.getClass())) {
-                return Arrays.equals(this.getParameters(), that.getParameters());
+        if (_other instanceof Container cont) {
+            if (this.getClass().equals(cont.getClass())) {
+                return Arrays.equals(this.getParameters(), cont.getParameters());
             } else {
                 return false;
             }

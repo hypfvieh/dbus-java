@@ -27,16 +27,6 @@ public class SaslConfig {
         saslUid = OptionalLong.empty();
     }
 
-    /**
-     * Creates a new empty SaslConfig object
-     * @return SaslConfig
-     * @deprecated only intended for internal backward compatibility, will be removed soon
-     */
-    @Deprecated(forRemoval = true, since = "4.2.2 - 2023-02-03")
-    public static SaslConfig create() {
-        return new SaslConfig();
-    }
-
     public SaslMode getMode() {
         return mode;
     }

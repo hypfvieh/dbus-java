@@ -5,32 +5,16 @@ import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.test.AbstractDBusBaseTest;
-import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ArrayStructPrimitive;
-import org.freedesktop.dbus.test.collections.empty.structs.DeepArrayStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.DeepListStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.DeepMapStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.IEmptyCollectionStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ListMapStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.ListStructPrimitive;
-import org.freedesktop.dbus.test.collections.empty.structs.ListStructStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.MapArrayStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.MapStructIntStruct;
-import org.freedesktop.dbus.test.collections.empty.structs.MapStructPrimitive;
+import org.freedesktop.dbus.test.collections.empty.structs.*;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.freedesktop.dbus.utils.Util;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -67,8 +51,10 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
         try {
             LoggerFactory.getLogger(TestEmptyCollections.class).debug("Initializing server and client");
             serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+            Util.waitFor(getShortTestMethodName() + "Server", () -> serverconn.isConnected(), 5000, 100);
             clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
-            Thread.sleep(500L);
+            Util.waitFor(getShortTestMethodName() + "Client", () -> clientconn.isConnected(), 5000, 100);
+
             serverconn.setWeakReferences(true);
             clientconn.setWeakReferences(true);
 
@@ -231,16 +217,5 @@ class TestEmptyCollections extends AbstractDBusBaseTest {
     /**
      * Wrapper object for first three arguments
      */
-    private static final class ArgumentObj<T> {
-        private final BiFunction<ISampleCollectionInterface, T, String> function;
-        private final Function<String, T> factoryEmpty;
-        private final Function<String, T> factoryNonEmpty;
-
-        ArgumentObj(BiFunction<ISampleCollectionInterface, T, String> _function, Function<String, T> _factoryEmpty,
-                Function<String, T> _factoryNonEmpty) {
-            this.function = _function;
-            this.factoryEmpty = _factoryEmpty;
-            this.factoryNonEmpty = _factoryNonEmpty;
-        }
-    }
+    record ArgumentObj<T>(BiFunction<ISampleCollectionInterface, T, String> function, Function<String, T> factoryEmpty, Function<String, T> factoryNonEmpty) {}
 }

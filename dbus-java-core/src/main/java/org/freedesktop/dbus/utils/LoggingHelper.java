@@ -1,10 +1,6 @@
 package org.freedesktop.dbus.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Helper for some logging stuff, e.g. avoid call {@link Arrays#deepToString(Object[])} if loglevel is not enabled.
@@ -54,9 +50,8 @@ public final class LoggingHelper {
                 result.add("(null)");
             } else if (object.getClass().isArray()) {
                 result.add(arraysVeryDeepStringRecursive((Object[]) object).toString());
-            } else if (object instanceof Collection<?>) {
-                Collection<?> c = (Collection<?>) object;
-                result.add(arraysVeryDeepStringRecursive(c.toArray()).toString());
+            } else if (object instanceof Collection<?> col) {
+                result.add(arraysVeryDeepStringRecursive(col.toArray()).toString());
             } else {
                 result.add(Objects.toString(object));
             }

@@ -17,10 +17,10 @@ public class NativeTransportProvider implements ITransportProvider {
     @Override
     public AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         UnixBusAddress address;
-        if (!(_address instanceof UnixBusAddress)) {
-            address = new UnixBusAddress(_address);
+        if (_address instanceof UnixBusAddress ba) {
+            address = ba;
         } else {
-            address = (UnixBusAddress) _address;
+            address = new UnixBusAddress(_address);
         }
         return new NativeUnixSocketTransport(address, _config);
     }

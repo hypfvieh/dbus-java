@@ -68,17 +68,6 @@ public class SASL {
 
     /**
      * Create a new SASL auth handler.
-     * Defaults to disable file descriptor passing.
-     *
-     * @deprecated should not be used as SASL configuration is not provided
-     */
-    @Deprecated(since = "4.2.2 - 2023-02-03", forRemoval = true)
-    public SASL() {
-        this(SaslConfig.create());
-    }
-
-    /**
-     * Create a new SASL auth handler.
      *
      * @param _saslConfig SASL configuration
      */
@@ -201,35 +190,12 @@ public class SASL {
     }
 
     private byte getNibble(char _c) {
-        switch (_c) {
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            return (byte) (_c - '0');
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        case 'E':
-        case 'F':
-            return (byte) (_c - 'A' + 10);
-        case 'a':
-        case 'b':
-        case 'c':
-        case 'd':
-        case 'e':
-        case 'f':
-            return (byte) (_c - 'a' + 10);
-        default:
-            return 0;
-        }
+        return switch (_c) {
+            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> (byte) (_c - '0');
+            case 'A', 'B', 'C', 'D', 'E', 'F' -> (byte) (_c - 'A' + 10);
+            case 'a', 'b', 'c', 'd', 'e', 'f' -> (byte) (_c - 'a' + 10);
+            default -> 0;
+        };
     }
 
     private String stupidlyDecode(String _data) {
@@ -426,38 +392,30 @@ public class SASL {
     }
 
     public String[] convertAuthTypes(int _types) {
-        switch (_types) {
-            case AUTH_EXTERNAL:
-                return new String[] {
+        return switch (_types) {
+            case AUTH_EXTERNAL -> new String[] {
                         "EXTERNAL"
                 };
-            case AUTH_SHA:
-                return new String[] {
+            case AUTH_SHA -> new String[] {
                         "DBUS_COOKIE_SHA1"
                 };
-            case AUTH_ANON:
-                return new String[] {
+            case AUTH_ANON -> new String[] {
                         "ANONYMOUS"
                 };
-            case AUTH_SHA + AUTH_EXTERNAL:
-                return new String[] {
+            case AUTH_SHA + AUTH_EXTERNAL -> new String[] {
                         "EXTERNAL", "DBUS_COOKIE_SHA1"
                 };
-            case AUTH_SHA + AUTH_ANON:
-                return new String[] {
+            case AUTH_SHA + AUTH_ANON -> new String[] {
                         "ANONYMOUS", "DBUS_COOKIE_SHA1"
                 };
-            case AUTH_EXTERNAL + AUTH_ANON:
-                return new String[] {
+            case AUTH_EXTERNAL + AUTH_ANON -> new String[] {
                         "ANONYMOUS", "EXTERNAL"
                 };
-            case AUTH_EXTERNAL + AUTH_ANON + AUTH_SHA:
-                return new String[] {
+            case AUTH_EXTERNAL + AUTH_ANON + AUTH_SHA -> new String[] {
                         "ANONYMOUS", "EXTERNAL", "DBUS_COOKIE_SHA1"
                 };
-            default:
-                return new String[] {};
-        }
+            default -> new String[] {};
+        };
     }
 
     /**
@@ -627,8 +585,8 @@ public class SASL {
                         } else {
                             try {
                                 int kuid = -1;
-                                if (_transport instanceof AbstractUnixTransport) {
-                                    kuid = ((AbstractUnixTransport) _transport).getUid(_sock);
+                                if (_transport instanceof AbstractUnixTransport aut) {
+                                    kuid = aut.getUid(_sock);
                                 }
                                 if (kuid >= 0) {
                                     kernelUid = stupidlyEncode("" + kuid);
@@ -651,7 +609,7 @@ public class SASL {
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
                                     case OK:
-                                        send(_sock, SaslCommand.OK, saslConfig.getGuid());
+                                        send(_sock, OK, saslConfig.getGuid());
                                         state = SaslAuthState.WAIT_BEGIN;
                                         current = 0;
                                         break;
@@ -683,7 +641,7 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
-                                send(_sock, SaslCommand.OK, saslConfig.getGuid());
+                                send(_sock, OK, saslConfig.getGuid());
                                 state = SaslAuthState.WAIT_BEGIN;
                                 current = 0;
                                 break;
@@ -834,7 +792,7 @@ public class SASL {
             String[] ss = _s.split(" ");
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
             if (0 == COL.compare(ss[0], "OK")) {
-                command = SaslCommand.OK;
+                command = OK;
                 data = ss[1];
             } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;

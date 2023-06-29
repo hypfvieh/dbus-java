@@ -4,9 +4,6 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.messages.Message;
-
-import java.nio.ByteOrder;
 
 /**
  * Builder to create a new DirectConnection.
@@ -27,7 +24,8 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
      * @return this
      */
     public static DirectConnectionBuilder forAddress(String _address) {
-        DirectConnectionBuilder instance = new DirectConnectionBuilder(BusAddress.of(_address));
+        BusAddress busAddress = BusAddress.of(_address);
+        DirectConnectionBuilder instance = new DirectConnectionBuilder(busAddress);
         return instance;
     }
 
@@ -45,20 +43,8 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
         DirectConnection c = new DirectConnection(transportCfg, rsCfg);
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
-        DirectConnection.setEndianness(getEndianess());
+
         return c;
     }
 
-    /**
-     * Get the default system endianness.
-     *
-     * @return LITTLE or BIG
-     * @deprecated if required, use {@link BaseConnectionBuilder#getSystemEndianness()}
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0")
-    public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
-                ? Message.Endian.BIG
-                : Message.Endian.LITTLE;
-    }
 }

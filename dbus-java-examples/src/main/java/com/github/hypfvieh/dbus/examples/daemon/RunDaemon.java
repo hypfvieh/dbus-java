@@ -58,23 +58,9 @@ public class RunDaemon {
     private void connectSelf() throws DBusException, IOException {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);
-        for (int i = 0; i < 6; i++) {
-            try {
-                try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
-                    log.info("Connected to embedded DBus {}", busAddress);
-                    // do something with the connection ;)
-                }
-                break;
-            } catch (DBusException _ex) {
-                if (i > 4) {
-                    throw _ex;
-                }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException _exIe) {
-                    throw new IOException("Interrupted. ", _exIe);
-                }
-            }
+        try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
+            log.info("Connected to embedded DBus {}", busAddress);
+            // do something with the connection ;)
         }
     }
 

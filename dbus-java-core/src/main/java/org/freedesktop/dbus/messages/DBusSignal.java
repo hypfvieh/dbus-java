@@ -2,12 +2,8 @@ package org.freedesktop.dbus.messages;
 
 import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
 
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
-import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -17,14 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -53,9 +43,9 @@ public class DBusSignal extends Message {
     DBusSignal() {
     }
 
-    public DBusSignal(String _source, String _path, String _iface, String _member, String _sig, Object... _args)
+    protected DBusSignal(byte _endianess, String _source, String _path, String _iface, String _member, String _sig, Object... _args)
             throws DBusException {
-        super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
+        super(_endianess, Message.MessageType.SIGNAL, (byte) 0);
 
         if (null == _path || null == _member || null == _iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
@@ -86,9 +76,21 @@ public class DBusSignal extends Message {
      * @param _args The parameters of the signal.
      * @throws DBusException This is thrown if the subclass is incorrectly defined.
      */
-    @SuppressWarnings("unchecked")
     protected DBusSignal(String _objectPath, Object... _args) throws DBusException {
-        super(DBusConnection.getEndianness(), Message.MessageType.SIGNAL, (byte) 0);
+        this((byte) 0, _objectPath, _args);
+    }
+
+    /**
+     * Create a new signal. This contructor MUST be called by all sub classes.
+     *
+     * @param _endianess message endianess
+     * @param _objectPath The path to the object this is emitted from.
+     * @param _args The parameters of the signal.
+     * @throws DBusException This is thrown if the subclass is incorrectly defined.
+     */
+    @SuppressWarnings("unchecked")
+    protected DBusSignal(byte _endianess, String _objectPath, Object... _args) throws DBusException {
+        super(_endianess, Message.MessageType.SIGNAL, (byte) 0);
 
         if (!OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
             throw new DBusException("Invalid object path: " + _objectPath);
@@ -242,6 +244,9 @@ public class DBusSignal extends Message {
                 s = con.newInstance(params);
             }
 
+            // we have to setup endianess after construction otherwise all
+            // signal implementations needs a new constructor :-\
+            s.updateEndianess(_conn.getMessageFactory().getEndianess());
             s.setHeader(getHeader());
             s.setWiredata(getWireData());
             s.setByteCounter(getWireData().length);
