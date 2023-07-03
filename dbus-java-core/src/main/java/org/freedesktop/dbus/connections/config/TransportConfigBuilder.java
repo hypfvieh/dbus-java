@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
-    private final Supplier<R> connectionBuilder;
+    private final Supplier<R>          connectionBuilder;
 
     private TransportConfig   config = new TransportConfig();
 
@@ -18,7 +18,7 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
 
     public TransportConfigBuilder(Supplier<R> _sup) {
         connectionBuilder = _sup;
-        saslConfigBuilder = new SaslConfigBuilder<>(config.getSaslConfig(), () -> this);
+        saslConfigBuilder = new SaslConfigBuilder<>(this);
     }
 
     /**
@@ -41,8 +41,8 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * @return this
      */
     public X withConfig(TransportConfig _config) {
-        Objects.requireNonNull(_config, "TransportConfig required");
-        config = _config;
+        config = Objects.requireNonNull(_config, "TransportConfig required");
+        saslConfigBuilder.withConfig(_config.getSaslConfig());
         return self();
     }
 
@@ -266,9 +266,12 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
 
     /**
      * Returns the transport config.
+     *
      * @return config
      */
     public TransportConfig build() {
+        SaslConfig saslCfg = saslConfigBuilder.build();
+        config.setSaslConfig(saslCfg);
         return config;
     }
 

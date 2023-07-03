@@ -3,7 +3,6 @@ package org.freedesktop.dbus.connections.config;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
 
 import java.util.OptionalLong;
-import java.util.function.Supplier;
 
 /**
  * Configuration used to setup a sasl authentication.
@@ -13,12 +12,12 @@ import java.util.function.Supplier;
  */
 public final class SaslConfigBuilder<R> {
 
-    private final SaslConfig saslConfig;
+    private SaslConfig                         saslConfig;
 
-    private final Supplier<TransportConfigBuilder<?, R>> transportBuilder;
+    private final TransportConfigBuilder<?, R> transportBuilder;
 
-    SaslConfigBuilder(SaslConfig _saslConfig, Supplier<TransportConfigBuilder<?, R>> _transportBuilder) {
-        saslConfig = _saslConfig;
+    SaslConfigBuilder(TransportConfigBuilder<?, R> _transportBuilder) {
+        saslConfig = new SaslConfig();
         transportBuilder = _transportBuilder;
     }
 
@@ -32,7 +31,7 @@ public final class SaslConfigBuilder<R> {
      * @return previous builder, maybe null
      */
     public TransportConfigBuilder<?, R> back() {
-        return transportBuilder.get();
+        return transportBuilder;
     }
 
     /**
@@ -80,5 +79,19 @@ public final class SaslConfigBuilder<R> {
      */
     public SaslConfig build() {
         return saslConfig;
+    }
+
+    /**
+     * Replace the current {@link SaslConfig} with the given instance.<br>
+     * Will do nothing if <code>null</code> is given.
+     *
+     * @param _cfg sasl config
+     * @return this
+     */
+    SaslConfigBuilder<R> withConfig(SaslConfig _cfg) {
+        if (_cfg != null) {
+            saslConfig = _cfg;
+        }
+        return this;
     }
 }

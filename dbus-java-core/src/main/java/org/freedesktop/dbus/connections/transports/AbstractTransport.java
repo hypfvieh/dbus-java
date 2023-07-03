@@ -264,7 +264,7 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Returns the current configuration used for SASL authentication.
+     * Returns the current configuration used for SASL authentication.<br>
      *
      * @return SaslConfig, never null
      */
@@ -311,6 +311,10 @@ public abstract class AbstractTransport implements Closeable {
     @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
     protected void setSaslAuthMode(int _mode) {
         getSaslConfig().setAuthMode(_mode);
+    }
+
+    public TransportConfig getTransportConfig() {
+        return config;
     }
 
     @Override

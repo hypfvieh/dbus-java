@@ -1,26 +1,16 @@
 package org.freedesktop.dbus.connections.transports;
 
-import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.SASL;
+import org.freedesktop.dbus.connections.*;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.TransportConfigurationException;
-import org.freedesktop.dbus.exceptions.TransportRegistrationException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -299,6 +289,8 @@ public final class TransportBuilder {
     public AbstractTransport build() throws DBusException, IOException {
         BusAddress myBusAddress = getAddress();
         TransportConfig config = transportConfigBuilder.build();
+        int configuredSaslAuthMode = config.getSaslConfig().getAuthMode();
+
         if (myBusAddress == null) {
             throw new DBusException("Transport requires a BusAddress, use withBusAddress() to configure before building");
         }
@@ -315,9 +307,11 @@ public final class TransportBuilder {
             transport = provider.createTransport(myBusAddress, config);
             Objects.requireNonNull(transport, "Transport required"); // in case the factory returns null, we cannot continue
 
-            if (config.getSaslConfig().getAuthMode() > 0) {
-                transport.getSaslConfig().setAuthMode(config.getSaslConfig().getAuthMode());
+            // another authentication algorithm was configured manually
+            if (configuredSaslAuthMode > 0 && config.getSaslConfig().getAuthMode() != configuredSaslAuthMode) {
+                transport.getSaslConfig().setAuthMode(configuredSaslAuthMode);
             }
+
         } catch (TransportConfigurationException _ex) {
             LOGGER.error("Could not initialize transport", _ex);
         }

@@ -5,12 +5,7 @@ import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.utils.Util;
 
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -21,7 +16,7 @@ import java.util.function.Consumer;
  */
 public final class TransportConfig {
 
-    private final SaslConfig            saslConfig;
+    private SaslConfig                  saslConfig;
 
     private BusAddress                  busAddress;
 
@@ -48,7 +43,6 @@ public final class TransportConfig {
 
     public TransportConfig(BusAddress _address) {
         busAddress = _address;
-        saslConfig = new SaslConfig();
     }
 
     public TransportConfig() {
@@ -136,7 +130,14 @@ public final class TransportConfig {
     }
 
     public SaslConfig getSaslConfig() {
+        if (saslConfig == null) {
+            saslConfig = new SaslConfig();
+        }
         return saslConfig;
+    }
+
+    void setSaslConfig(SaslConfig _saslCfg) {
+        saslConfig = _saslCfg;
     }
 
     /**
