@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  */
 public final class TransportConfig {
 
-    private final SaslConfig            saslConfig;
+    private SaslConfig                  saslConfig;
 
     private BusAddress                  busAddress;
 
@@ -46,7 +46,6 @@ public final class TransportConfig {
 
     public TransportConfig(BusAddress _address) {
         busAddress = _address;
-        saslConfig = new SaslConfig();
     }
 
     public TransportConfig() {
@@ -134,7 +133,14 @@ public final class TransportConfig {
     }
 
     public SaslConfig getSaslConfig() {
+        if (saslConfig == null) {
+            saslConfig = new SaslConfig();
+        }
         return saslConfig;
+    }
+
+    void setSaslConfig(SaslConfig _saslCfg) {
+        saslConfig = _saslCfg;
     }
 
     public byte getEndianess() {

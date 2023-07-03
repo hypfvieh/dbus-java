@@ -99,4 +99,13 @@ public class SaslConfig {
         fileDescriptorSupport = _fileDescriptorSupport;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [mode=" + mode + ", authMode=" + authMode
+            + ", guid=" + guid + ", saslUid=" + saslUid
+            + ", strictCookiePermissions=" + strictCookiePermissions
+            + ", fileDescriptorSupport="
+            + fileDescriptorSupport + "]";
+    }
+
 }

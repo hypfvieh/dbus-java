@@ -1255,6 +1255,17 @@ public abstract class AbstractConnection implements Closeable {
         disconnectCallback = Optional.ofNullable(_disconnectCallback);
     }
 
+    /**
+     * Returns the transport's configuration.<br>
+     * Please note: changing any value will not change the transport settings!<br>
+     * This is read-only.
+     *
+     * @return transport config
+     */
+    public TransportConfig getTransportConfig() {
+        return transport.getTransportConfig();
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[address=" + busAddress + "]";

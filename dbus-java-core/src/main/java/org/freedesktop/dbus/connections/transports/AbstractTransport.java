@@ -279,7 +279,7 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Returns the current configuration used for SASL authentication.
+     * Returns the current configuration used for SASL authentication.<br>
      *
      * @return SaslConfig, never null
      */
@@ -303,6 +303,10 @@ public abstract class AbstractTransport implements Closeable {
      */
     public MessageFactory getMessageFactory() {
         return messageFactory;
+    }
+
+    public TransportConfig getTransportConfig() {
+        return config;
     }
 
     @Override

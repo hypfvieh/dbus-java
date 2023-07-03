@@ -167,6 +167,8 @@ public final class TransportBuilder {
             throw new DBusException("Transport requires a BusAddress, use withBusAddress() to configure before building");
         }
 
+        int configuredSaslAuthMode = config.getSaslConfig().getAuthMode();
+
         AbstractTransport transport = null;
         ITransportProvider provider = PROVIDERS.get(config.getBusAddress().getBusType());
         if (provider == null) {
@@ -179,9 +181,11 @@ public final class TransportBuilder {
             transport = provider.createTransport(myBusAddress, config);
             Objects.requireNonNull(transport, "Transport required"); // in case the factory returns null, we cannot continue
 
-            if (config.getSaslConfig().getAuthMode() > 0) {
-                transport.getSaslConfig().setAuthMode(config.getSaslConfig().getAuthMode());
+            // another authentication algorithm was configured manually
+            if (configuredSaslAuthMode > 0 && config.getSaslConfig().getAuthMode() != configuredSaslAuthMode) {
+                transport.getSaslConfig().setAuthMode(configuredSaslAuthMode);
             }
+
         } catch (TransportConfigurationException _ex) {
             LOGGER.error("Could not initialize transport", _ex);
         }
