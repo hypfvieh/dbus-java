@@ -73,6 +73,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed possible issue with used serial numbers in messages because signals may manually incremented the serial without updating global serial ([#220](https://github.com/hypfvieh/dbus-java/issues/220))
    - Updated module-info exports, thanks to [brett-smith](https://github.com/brett-smith) ([#221](https://github.com/hypfvieh/dbus-java/issues/221))
    - Ensure that DBusDaemonThread is terminated when close() is called, thanks to [brett-smith](https://github.com/brett-smith) ([#222](https://github.com/hypfvieh/dbus-java/issues/222))
+   - Fixed configured authentication mechanism was always ignored when connecting, thanks to [brett-smith](https://github.com/brett-smith) ([#223](https://github.com/hypfvieh/dbus-java/issues/223))
 
 ##### Changes in 4.3.0 (2023-03-10):
 

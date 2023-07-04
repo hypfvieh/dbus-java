@@ -1243,7 +1243,7 @@ public abstract class AbstractConnection implements Closeable {
      *
      * @return transport config
      */
-    public TransportConfig getTransportConfig() {
+    protected TransportConfig getTransportConfig() {
         return transport.getTransportConfig();
     }
 
