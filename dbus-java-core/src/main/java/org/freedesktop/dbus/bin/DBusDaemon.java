@@ -75,8 +75,10 @@ public class DBusDaemon extends Thread implements Closeable {
         // send to all connections
         if (null == _connStruct) {
             LOGGER.trace("Queuing message {} for all connections", _msg);
-            synchronized (conns) {
-                for (ConnectionStruct d : conns.keySet()) {
+            for (ConnectionStruct d : conns.keySet()) {
+                if (d.connection == null || d.connection.getChannel() == null || !d.connection.getChannel().isConnected()) {
+                    LOGGER.debug("Ignoring broadcast message for disconnected connection {}: {}", d.connection, _msg);
+                } else {
                     if (_head) {
                         outqueue.addFirst(new Pair<>(_msg, new WeakReference<>(d)));
                     } else {
@@ -180,7 +182,7 @@ public class DBusDaemon extends Thread implements Closeable {
     public void close() {
         run.set(false);
         if (!conns.isEmpty()) {
-            // disconnect all remaining connection
+            // disconnect all remaining connections
             Set<ConnectionStruct> connections = new HashSet<>(conns.keySet());
             for (ConnectionStruct c : connections) {
                 removeConnection(c);
@@ -201,19 +203,15 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private void removeConnection(ConnectionStruct _c) {
 
-        boolean exists = false;
-        synchronized (conns) {
-            if (conns.containsKey(_c)) {
-                DBusDaemonReaderThread r = conns.get(_c);
-                exists = true;
-                r.terminate();
-                conns.remove(_c);
-            }
-        }
-        if (exists) {
+        DBusDaemonReaderThread oldThread = conns.remove(_c);
+
+        if (oldThread != null) {
+            oldThread.terminate();
+
             try {
                 if (null != _c.connection) {
                     _c.connection.close();
+                    LOGGER.debug("Terminated connection {}", _c.connection);
                 }
             } catch (IOException _exIo) {
                 LOGGER.trace("Error while closing socketchannel", _exIo);
@@ -227,7 +225,7 @@ public class DBusDaemon extends Thread implements Closeable {
                         try {
                             send(null, new NameOwnerChanged("/org/freedesktop/DBus", name, _c.unique, ""));
                         } catch (DBusException _ex) {
-                            LOGGER.debug("", _ex);
+                            LOGGER.debug("Unable to change owner", _ex);
                         }
                     }
                 }
@@ -758,7 +756,7 @@ public class DBusDaemon extends Thread implements Closeable {
                                     removeConnection(connectionStruct);
                                 }
                             } else {
-                                logger.warn("Connection to {} broken", pollFirst.first.getDestination());
+                                logger.warn("Connection to {} broken", connectionStruct.connection);
                                 removeConnection(connectionStruct);
                             }
 
@@ -805,7 +803,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 try {
                     m = conn.connection.getReader().readMessage();
                 } catch (IOException _ex) {
-                    LOGGER.debug("", _ex);
+                    LOGGER.debug("Error reading message", _ex);
                     removeConnection(conn);
                 } catch (DBusException _ex) {
                     LOGGER.debug("", _ex);
