@@ -99,6 +99,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated module-info exports, thanks to [brett-smith](https://github.com/brett-smith) ([#221](https://github.com/hypfvieh/dbus-java/issues/221))
    - Ensure that DBusDaemonThread is terminated when close() is called, thanks to [brett-smith](https://github.com/brett-smith) ([#222](https://github.com/hypfvieh/dbus-java/issues/222))
    - Fixed configured authentication mechanism was always ignored when connecting, thanks to [brett-smith](https://github.com/brett-smith) ([#223](https://github.com/hypfvieh/dbus-java/issues/223))
+   - Improved logging and handling of disconnected transports in `DBusDaemon`, thanks to [brett-smith](https://github.com/brett-smith) ([#225](https://github.com/hypfvieh/dbus-java/issues/225))
 
 ##### Changes in 4.3.0 (2023-03-10):
 
