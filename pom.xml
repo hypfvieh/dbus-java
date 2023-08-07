@@ -24,11 +24,11 @@
         <check.skip-checkstyle>false</check.skip-checkstyle>
         <check.skip-pmd>false</check.skip-pmd>
         
-        <junit5.minor.version>9.2</junit5.minor.version>
-        <pmd.version>6.54.0</pmd.version>
-        <logback.version>1.4.5</logback.version>
-        <slf4j.version>2.0.6</slf4j.version>
-        <jnr-unixsocket.version>0.38.19</jnr-unixsocket.version>
+        <junit5.minor.version>10.0</junit5.minor.version>
+        <pmd.version>6.55.0</pmd.version>
+        <logback.version>1.4.9</logback.version>
+        <slf4j.version>2.0.7</slf4j.version>
+        <jnr-unixsocket.version>0.38.20</jnr-unixsocket.version>
         <junixsocket.version>2.7.0</junixsocket.version>
 
         <parentDir>${project.basedir}</parentDir>
@@ -279,7 +279,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>10.7.0</version>
+                            <version>10.12.2</version>
                         </dependency>
                     </dependencies>
                 </plugin>
