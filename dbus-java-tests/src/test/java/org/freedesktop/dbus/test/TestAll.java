@@ -795,7 +795,7 @@ public class TestAll extends AbstractDBusBaseTest {
         assertIterableEquals(li, cbHandle.getRetval().get(0));
     }
 
-    private class NestedListCallbackHandler implements CallbackHandler<List<List<Integer>>> {
+    private final class NestedListCallbackHandler implements CallbackHandler<List<List<Integer>>> {
             private List<List<Integer>> retval;
 
             @Override

@@ -58,7 +58,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
         }
     }
 
-    private class P2pServer extends Thread {
+    private final class P2pServer extends Thread {
 
         @Override
         public void run() {
