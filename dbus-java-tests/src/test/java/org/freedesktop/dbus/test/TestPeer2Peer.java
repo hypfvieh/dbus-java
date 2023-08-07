@@ -57,7 +57,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
         }
     }
 
-    private class P2pServer extends Thread {
+    private final class P2pServer extends Thread {
 
         P2pServer() {
             setName("P2pServerThread");

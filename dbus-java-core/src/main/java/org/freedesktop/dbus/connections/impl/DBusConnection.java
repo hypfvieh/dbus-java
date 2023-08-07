@@ -811,7 +811,7 @@ public final class DBusConnection extends AbstractConnection {
         };
     }
 
-    private class SigHandler implements DBusSigHandler<DBusSignal> {
+    private final class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
             if (_signal instanceof DBus.NameAcquired na) {
