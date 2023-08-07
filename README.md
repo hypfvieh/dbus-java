@@ -35,7 +35,7 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
 
 ### How to use file descriptors?
-In DBua-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
+In DBus-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
 Starting with version 4.3.1 file descriptors are supported when using junixsocket-transport.
 
 When trying to use file descriptors in dbus-java 3.x and not providing a implementation for this feature, you may see weird NullPointerExceptions thrown in Message class.
