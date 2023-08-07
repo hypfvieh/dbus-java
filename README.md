@@ -35,21 +35,30 @@ With dbus-java 4.x, java.nio is used for all transports and therefore required c
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
 
 ### How to use file descriptors?
-DBus-Java does not support file descriptors out of the box.
-When trying to use file descriptors you may see weird NullPointerExceptions thrown in Message class when using dbus-java 3.x.
-In dbus-java 4.x you should see error messages indicating that file descriptors are not supported.
+In DBua-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
+Starting with version 4.3.1 file descriptors are supported when using junixsocket-transport.
 
-File descriptors were not implemented because they require a custom pre-compiled library written in C (therefore architecture and OS depended) and will
-only work when using dbus-java in combination with dbus-java-transport-jnr-unixsocket.
+When trying to use file descriptors in dbus-java 3.x and not providing a implementation for this feature, you may see weird NullPointerExceptions thrown in Message class.
+In dbus-java < 4.3.1 you should see error messages indicating that file descriptors are not supported.
 
-To add file-descriptor support:
-
+To use file descriptors with dbus-java 3.x or any version of 4.x before 4.3.1 you have to do the following:
  - (dbus-java 4.x only): Add dbus-java-transport-jnr-unixsocket dependency to your project
  - (dbus-java 4.x only): Remove dbus-java-transport-native-unixsocket if you have used it before
  - Add dependency [com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd) to your classpath
  
 When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x and 1.x if you use dbus-java 3.x.
 DBus-java will automatically detect dbus-java-nativefd and will then provide access to file descriptors.
+
+If you are using version 4.3.1 or higher, you may simple switch to `dbus-java-transport-junixsocket` (instead of `dbus-java-transport-jnr-unixsocket` or `dbus-java-transport-native-unixsocket`).
+You do this by adding `dbus-java-transport-junixsocket` to your classpath.
+Remember to remove the other unixsocket implementations because you are not allowed to have multiple implementations of the same protocol at once.
+
+#### Please note: 
+When adding `dbus-java-transport-junixsocket` to your classpath, you will also pull-in some artifacts of junixsocket project.
+It is also possible that junixsocket will not work on your platform (depends on which platform and architecture you are using).
+They provide a lot of ready-to-use artifacts for different platforms and architectures, but certainly not for all possible combinations out there.
+In case your platform is not supported, you may try `dbus-java-transport-jnr-unixsocket` with [com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd), compile
+junixsocket yourself or open a ticket at [junixsocket](https://github.com/kohlschutter/junixsocket) asking for help.
 
 ### Who uses dbus-java?
 See the list in our [Wiki](https://github.com/hypfvieh/dbus-java/wiki)
@@ -75,6 +84,8 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Ensure that DBusDaemonThread is terminated when close() is called, thanks to [brett-smith](https://github.com/brett-smith) ([#222](https://github.com/hypfvieh/dbus-java/issues/222))
    - Fixed configured authentication mechanism was always ignored when connecting, thanks to [brett-smith](https://github.com/brett-smith) ([#223](https://github.com/hypfvieh/dbus-java/issues/223))
    - Improved logging and handling of disconnected transports in `DBusDaemon`, thanks to [brett-smith](https://github.com/brett-smith) ([#225](https://github.com/hypfvieh/dbus-java/issues/225))
+   - Added additional transport (dbus-java-junixsocket), thanks to [Prototik](https://github.com/Prototik) ([#227](https://github.com/hypfvieh/dbus-java/issues/227)) for providing the implementation
+   - Smaller refactorings to avoid code duplication for new transport
 
 ##### Changes in 4.3.0 (2023-03-10):
 
