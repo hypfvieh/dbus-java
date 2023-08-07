@@ -29,7 +29,8 @@
         <logback.version>1.4.5</logback.version>
         <slf4j.version>2.0.6</slf4j.version>
         <jnr-unixsocket.version>0.38.19</jnr-unixsocket.version>
-        
+        <junixsocket.version>2.7.0</junixsocket.version>
+
         <parentDir>${project.basedir}</parentDir>
     </properties>
 
@@ -38,6 +39,7 @@
         <module>dbus-java-osgi</module>
         <module>dbus-java-utils</module>
         <module>dbus-java-transport-jnr-unixsocket</module>
+        <module>dbus-java-transport-junixsocket</module>
         <module>dbus-java-transport-tcp</module>
         <module>dbus-java-bom</module>
         <module>dbus-java-tests</module>
@@ -416,7 +418,14 @@
                 <version>${jnr-unixsocket.version}</version>
             </dependency>
 
-        </dependencies>        
+            <dependency>
+                <groupId>com.kohlschutter.junixsocket</groupId>
+                <artifactId>junixsocket-core</artifactId>
+                <version>${junixsocket.version}</version>
+                <type>pom</type>
+            </dependency>
+
+        </dependencies>
     </dependencyManagement>
 
     <dependencies>
@@ -516,6 +525,10 @@
         <contributor>
             <name>mk868</name>
             <url>https://github.com/mk868</url>
+        </contributor>
+        <contributor>
+            <name>Prototik</name>
+            <url>https://github.com/Prototik</url>
         </contributor>
 
     </contributors>
