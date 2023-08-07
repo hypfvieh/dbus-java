@@ -32,7 +32,7 @@ public class JUnixSocketMessageReader extends AbstractInputStreamMessageReader {
                     for (FileDescriptor fd : receivedFileDescriptors) {
                         fds.add(new org.freedesktop.dbus.FileDescriptor(FileDescriptorCast.using(fd).as(Integer.class)));
                     }
-    
+
                     logger.debug("=> {}", fds);
                     return fds;
                 }

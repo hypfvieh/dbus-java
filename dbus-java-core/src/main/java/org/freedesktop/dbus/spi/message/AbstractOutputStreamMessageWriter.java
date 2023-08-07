@@ -12,6 +12,11 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Base class which can be used to implement a custom message writer.
+ *
+ * @since 4.3.1 - 2023-08-07
+ */
 public abstract class AbstractOutputStreamMessageWriter implements IMessageWriter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -45,21 +50,21 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
 
             outputChannel.write(ByteBuffer.wrap(buf));
         }
-        
+
         if (hasFileDescriptorSupport) {
             writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
         }
-        
+
         logger.trace("Message sent: {}", _msg);
     }
 
     /**
-     * Called to write any file descriptors to the given channel.<br<
+     * Called to write any file descriptors to the given channel.<br>
      * Should do nothing if there is no file descriptor to write, or method is not supported.
-     * 
+     *
      * @param _outputChannel channel to write to
      * @param _filedescriptors file descriptors attached to message
-     * 
+     *
      * @throws IOException when writing the descriptors fail
      */
     protected abstract void writeFileDescriptors(SocketChannel _outputChannel, List<FileDescriptor> _filedescriptors) throws IOException;
@@ -77,5 +82,5 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
     public boolean isClosed() {
         return !outputChannel.isOpen();
     }
-    
+
 }

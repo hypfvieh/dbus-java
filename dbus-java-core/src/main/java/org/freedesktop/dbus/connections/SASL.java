@@ -651,7 +651,7 @@ public class SASL {
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
                                     case OK:
-                                        send(_sock, SaslCommand.OK, saslConfig.getGuid());
+                                        send(_sock, OK, saslConfig.getGuid());
                                         state = SaslAuthState.WAIT_BEGIN;
                                         current = 0;
                                         break;
@@ -683,7 +683,7 @@ public class SASL {
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
-                                send(_sock, SaslCommand.OK, saslConfig.getGuid());
+                                send(_sock, OK, saslConfig.getGuid());
                                 state = SaslAuthState.WAIT_BEGIN;
                                 current = 0;
                                 break;
@@ -834,7 +834,7 @@ public class SASL {
             String[] ss = _s.split(" ");
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
             if (0 == COL.compare(ss[0], "OK")) {
-                command = SaslCommand.OK;
+                command = OK;
                 data = ss[1];
             } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;

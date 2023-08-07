@@ -19,7 +19,7 @@ import java.util.Objects;
 
 /**
  * Base class which can be used to implement a custom message reader.
- * 
+ *
  * @since 4.3.1 - 2023-08-07
  */
 public abstract class AbstractInputStreamMessageReader implements IMessageReader {
@@ -167,9 +167,9 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
             logger.trace("Only got {} of {} bytes of body", len[3], body.length);
             return null;
         }
-        
+
         try {
-            List<org.freedesktop.dbus.FileDescriptor> fds = null;
+            List<FileDescriptor> fds = null;
             if (hasFileDescriptorSupport) {
                 fds = readFileDescriptors(inputChannel);
             }
@@ -197,10 +197,10 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
      * The implementation should fetch all file descriptors which have been transmitted and return them
      * as List.
      * If no file descriptor is available or feature is not supported, return null.
-     * 
+     *
      * @param _inputChannel input channel to read
      * @return List or null
-     * 
+     *
      * @throws DBusException when reading throws exceptions
      */
     protected abstract List<FileDescriptor> readFileDescriptors(SocketChannel _inputChannel) throws DBusException;

@@ -6,7 +6,7 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 
 public class InputStreamMessageReader extends AbstractInputStreamMessageReader {
-   
+
     public InputStreamMessageReader(final SocketChannel _in) {
         super(_in, false);
     }
@@ -15,5 +15,5 @@ public class InputStreamMessageReader extends AbstractInputStreamMessageReader {
     protected List<FileDescriptor> readFileDescriptors(SocketChannel _inputChannel) {
         return null;
     }
-    
+
 }

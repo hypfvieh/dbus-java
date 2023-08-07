@@ -15,5 +15,5 @@ public class OutputStreamMessageWriter extends AbstractOutputStreamMessageWriter
     protected void writeFileDescriptors(SocketChannel _outputChannel, List<FileDescriptor> _filedescriptors) {
         // not supported
     }
-    
+
 }
