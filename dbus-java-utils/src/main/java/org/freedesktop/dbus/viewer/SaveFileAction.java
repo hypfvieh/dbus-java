@@ -19,7 +19,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 @SuppressWarnings("serial")
-class SaveFileAction extends TabbedSaveAction implements ChangeListener {
+final class SaveFileAction extends TabbedSaveAction implements ChangeListener {
     SaveFileAction(JTabbedPane _tabbedPane) {
         super(_tabbedPane);
 
@@ -48,7 +48,7 @@ class SaveFileAction extends TabbedSaveAction implements ChangeListener {
         return new SelectedTabIterator();
     }
 
-    private class SelectedTabIterator implements Iterator<TextFile> {
+    private final class SelectedTabIterator implements Iterator<TextFile> {
         // CHECKSTYLE:OFF
         boolean iterated = false;
         // CHECKSTYLE:ON

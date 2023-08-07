@@ -150,9 +150,9 @@ public class Message {
         wiredata[2] = bodyBuf;
         body = bodyBuf;
         bufferuse = 3;
-        bodylen = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 4)[0]).longValue();
+        bodylen = ((Number) extract(UINT32_STRING, msgBuf, 4)[0]).longValue();
 
-        long extractedSerial = ((Number) extract(Message.ArgumentType.UINT32_STRING, msgBuf, 8)[0]).longValue();
+        long extractedSerial = ((Number) extract(UINT32_STRING, msgBuf, 8)[0]).longValue();
 
         logger.debug("Received message of type {} with serial {}", type, extractedSerial);
 
@@ -1043,7 +1043,7 @@ public class Message {
         int[] newofs = new int[] {
                 0, _offsets[OFFSET_DATA]
         };
-        String sig = (String) extract(ArgumentType.SIGNATURE_STRING, _dataBuf, newofs)[0];
+        String sig = (String) extract(SIGNATURE_STRING, _dataBuf, newofs)[0];
         newofs[OFFSET_SIG] = 0;
         rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs)[0]);
         _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
@@ -1341,7 +1341,7 @@ public class Message {
                     continue;
                 }
                 if (hIdx == HeaderField.SIGNATURE) {
-                    newHeader.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, object));
+                    newHeader.add(createHeaderArgs(HeaderField.SIGNATURE, SIGNATURE_STRING, object));
                 } else {
                     newHeader.add(new Object[] {hIdx, object});
                 }

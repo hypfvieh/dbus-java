@@ -51,7 +51,7 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
         if (getAddress().isListeningSocket()) {
             throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
         }
-        
+
         socket = AFUNIXSocketChannel.open();
         socket.configureBlocking(true);
         socket.connect(unixSocketAddress);

@@ -82,7 +82,7 @@ public class TestCross extends AbstractDBusBaseTest {
 
     }
 
-    private class ServerThread extends Thread {
+    private final class ServerThread extends Thread {
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
