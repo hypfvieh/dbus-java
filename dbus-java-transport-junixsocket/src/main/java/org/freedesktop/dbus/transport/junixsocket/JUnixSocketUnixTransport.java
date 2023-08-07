@@ -16,7 +16,7 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
     private AFUNIXSocketChannel socket;
     private AFUNIXServerSocketChannel serverSocket;
 
-    public JUnixSocketUnixTransport(UnixBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
+    public JUnixSocketUnixTransport(JUnixSocketBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         super(_address, _config);
 
         StringBuilder path = new StringBuilder();
@@ -95,7 +95,6 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
         throw new IllegalArgumentException("Unable to handle unknown socket type: " + _sock.getClass());
     }
 
-    @SuppressWarnings("removal")
     @Override
     protected boolean isAbstractAllowed() {
         return AFSocket.supports(AFSocketCapability.CAPABILITY_ABSTRACT_NAMESPACE);

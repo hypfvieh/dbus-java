@@ -10,14 +10,10 @@ import org.newsclub.net.unix.AFSocket;
 import org.newsclub.net.unix.AFSocketCapability;
 
 public class JUnixSocketTransportProvider implements ITransportProvider {
+
     @Override
     public String getTransportName() {
         return "dbus-java-transport-junixsocket";
-    }
-
-    @Override
-    public String getSupportedBusType() {
-        return "UNIX";
     }
 
     @Override
@@ -26,18 +22,24 @@ public class JUnixSocketTransportProvider implements ITransportProvider {
             return null;
         }
 
-        UnixBusAddress unixBusAddress;
-        if (_address instanceof UnixBusAddress) {
-            unixBusAddress = (UnixBusAddress) _address;
+        JUnixSocketBusAddress unixBusAddress;
+        if (_address instanceof JUnixSocketBusAddress) {
+            unixBusAddress = (JUnixSocketBusAddress) _address;
         } else {
-            unixBusAddress = new UnixBusAddress(_address);
+            unixBusAddress = new JUnixSocketBusAddress(_address);
         }
 
         return new JUnixSocketUnixTransport(unixBusAddress, _config);
     }
 
     @Override
+    public String getSupportedBusType() {
+        return "UNIX";
+    }
+
+    @Override
     public String createDynamicSessionAddress(boolean _listeningSocket) {
         return Util.createDynamicSessionAddress(_listeningSocket, false);
     }
+
 }

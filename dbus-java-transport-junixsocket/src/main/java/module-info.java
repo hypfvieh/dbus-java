@@ -6,10 +6,8 @@ module org.freedesktop.dbus.transport.junixsocket {
     requires org.freedesktop.dbus;
 
     provides org.freedesktop.dbus.spi.transport.ITransportProvider
-            with
-                    org.freedesktop.dbus.transport.junixsocket.JUnixSocketTransportProvider;
+            with org.freedesktop.dbus.transport.junixsocket.JUnixSocketTransportProvider;
 
     provides org.freedesktop.dbus.spi.message.ISocketProvider
-            with
-                    org.freedesktop.dbus.transport.junixsocket.JUnixSocketSocketProvider;
+            with org.freedesktop.dbus.transport.junixsocket.JUnixSocketSocketProvider;
 }
