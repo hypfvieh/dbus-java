@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 import javax.swing.JTabbedPane;
 
 @SuppressWarnings("serial")
-class SaveAllAction extends TabbedSaveAction {
+final class SaveAllAction extends TabbedSaveAction {
 
     protected SaveAllAction(JTabbedPane _tabbedPane) {
         super(_tabbedPane, "Save All...");
@@ -27,7 +27,7 @@ class SaveAllAction extends TabbedSaveAction {
         return new TabIterator();
     }
 
-    private class TabIterator implements Iterator<TextFile> {
+    private final class TabIterator implements Iterator<TextFile> {
         private int i = 0;
 
         @Override
