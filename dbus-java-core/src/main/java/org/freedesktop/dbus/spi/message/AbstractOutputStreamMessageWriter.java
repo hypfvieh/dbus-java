@@ -83,4 +83,9 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
         return !outputChannel.isOpen();
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [outputChannel=" + outputChannel + ", hasFileDescriptorSupport=" + hasFileDescriptorSupport + "]";
+    }
+
 }

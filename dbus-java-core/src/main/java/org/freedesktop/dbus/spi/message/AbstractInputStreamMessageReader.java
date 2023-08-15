@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Base class which can be used to implement a custom message reader.
@@ -217,4 +215,10 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
     public boolean isClosed() {
         return !inputChannel.isOpen();
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [inputChannel=" + inputChannel + ", hasFileDescriptorSupport=" + hasFileDescriptorSupport + "]";
+    }
+
 }
