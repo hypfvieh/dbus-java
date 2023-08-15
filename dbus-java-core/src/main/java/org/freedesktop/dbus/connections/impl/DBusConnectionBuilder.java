@@ -9,10 +9,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection.DBusBusType;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.AddressBuilder;
-
-import java.nio.ByteOrder;
 
 /**
  * Builder to create a new DBusConnection.
@@ -202,21 +199,8 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
 
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
-        DBusConnection.setEndianness(getEndianess());
         c.connect(registerSelf);
         return c;
     }
 
-    /**
-     * Get the default system endianness.
-     *
-     * @return LITTLE or BIG
-     * @deprecated if required, use {@link BaseConnectionBuilder#getSystemEndianness()}
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0")
-    public static byte getSystemEndianness() {
-       return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
-                ? Message.Endian.BIG
-                : Message.Endian.LITTLE;
-    }
 }

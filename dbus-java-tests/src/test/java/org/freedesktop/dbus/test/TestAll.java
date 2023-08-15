@@ -1,72 +1,29 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.errors.ServiceUnknown;
-import org.freedesktop.dbus.errors.UnknownMethod;
-import org.freedesktop.dbus.errors.UnknownObject;
+import org.freedesktop.dbus.errors.*;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.CallbackHandler;
-import org.freedesktop.dbus.interfaces.DBus;
-import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.test.helper.SampleClass;
-import org.freedesktop.dbus.test.helper.SampleException;
-import org.freedesktop.dbus.test.helper.SampleNewInterfaceClass;
-import org.freedesktop.dbus.test.helper.SampleSerializable;
+import org.freedesktop.dbus.test.helper.*;
 import org.freedesktop.dbus.test.helper.callbacks.handler.CallbackHandlerImpl;
-import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
-import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
-import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
-import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum;
+import org.freedesktop.dbus.test.helper.interfaces.*;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestArraySignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEmptySignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestEnumSignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestObjectSignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestPathSignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestRenamedSignal;
-import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestSignal;
-import org.freedesktop.dbus.test.helper.signals.handler.ArraySignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.BadArraySignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.EmptySignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.EnumSignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.GenericHandlerWithDecode;
-import org.freedesktop.dbus.test.helper.signals.handler.GenericSignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.ObjectSignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.PathSignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.RenamedSignalHandler;
-import org.freedesktop.dbus.test.helper.signals.handler.SignalHandler;
-import org.freedesktop.dbus.test.helper.structs.IntStruct;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct2;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
-import org.freedesktop.dbus.test.helper.structs.SampleTuple;
-import org.freedesktop.dbus.types.UInt16;
-import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.types.UInt64;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.test.helper.signals.SampleSignals.*;
+import org.freedesktop.dbus.test.helper.signals.handler.*;
+import org.freedesktop.dbus.test.helper.structs.*;
+import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.TimeMeasure;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.lang.reflect.Type;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This is a test program which sends and recieves a signal, implements, exports and calls a remote method.
@@ -229,7 +186,7 @@ public class TestAll extends AbstractDBusBaseTest {
 
         clientconn.addGenericSigHandler(signalRule, genericHandler);
 
-        DBusSignal signalToSend = new DBusSignal(null, "/", "org.foo", "methodnoarg", null);
+        DBusSignal signalToSend = clientconn.getMessageFactory().createSignal(null, "/", "org.foo", "methodnoarg", null);
 
         serverconn.sendMessage(signalToSend);
 
@@ -249,8 +206,7 @@ public class TestAll extends AbstractDBusBaseTest {
 
         clientconn.addGenericSigHandler(signalRule, genericDecode);
 
-        DBusSignal signalToSend =
-                new DBusSignal(null, "/", "org.foo", "methodarg", "us", new UInt32(42), "SampleString");
+        DBusSignal signalToSend = serverconn.getMessageFactory().createSignal(null, "/", "org.foo", "methodarg", "us", new UInt32(42), "SampleString");
 
         serverconn.sendMessage(signalToSend);
 
@@ -268,9 +224,7 @@ public class TestAll extends AbstractDBusBaseTest {
         DBusMatchRule signalRule = new DBusMatchRule("signal", null, "methodargNoIface", "/");
 
         clientconn.addGenericSigHandler(signalRule, genericDecode);
-
-        DBusSignal signalToSend =
-                new DBusSignal(null, "/", "org.foo", "methodargNoIface", "us", new UInt32(42), "SampleString");
+        DBusSignal signalToSend = clientconn.getMessageFactory().createSignal(null, "/", "org.foo", "methodargNoIface", "us", new UInt32(42), "SampleString");
 
         serverconn.sendMessage(signalToSend);
 

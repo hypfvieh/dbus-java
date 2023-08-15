@@ -18,8 +18,7 @@ public class IncomingMessageThread extends Thread {
     private final AbstractConnection connection;
 
     public IncomingMessageThread(AbstractConnection _connection, BusAddress _busAddress) {
-        Objects.requireNonNull(_connection);
-        connection = _connection;
+        connection = Objects.requireNonNull(_connection);
         setName("DBusConnection [listener=" + _busAddress.isListeningSocket() + "]");
         setDaemon(true);
     }
@@ -41,7 +40,7 @@ public class IncomingMessageThread extends Thread {
                 // this blocks on outgoing being non-empty or a message being available.
                 msg = connection.readIncoming();
                 if (msg != null) {
-                    logger.trace("Got Incoming Message: {}", msg);
+                    logger.trace("Read message from {}: {}", connection.getTransport(), msg);
 
                     connection.handleMessage(msg);
                 }
@@ -53,8 +52,8 @@ public class IncomingMessageThread extends Thread {
                     logger.error("FatalException in connection thread", _ex);
                     if (connection.isConnected()) {
                         terminate = true;
-                        if (_ex.getCause() instanceof IOException) {
-                            connection.internalDisconnect((IOException) _ex.getCause());
+                        if (_ex.getCause() instanceof IOException ioe) {
+                            connection.internalDisconnect(ioe);
                         } else {
                             connection.internalDisconnect(null);
                         }

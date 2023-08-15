@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 
@@ -18,12 +17,12 @@ public class MethodCall extends MethodBase {
     MethodCall() {
     }
 
-    public MethodCall(String _dest, String _path, String _iface, String _member, byte _flags, String _sig, Object... _args) throws DBusException {
-        this(null, _dest, _path, _iface, _member, _flags, _sig, _args);
+    protected MethodCall(byte _endianess, String _dest, String _path, String _iface, String _member, byte _flags, String _sig, Object... _args) throws DBusException {
+        this(_endianess, null, _dest, _path, _iface, _member, _flags, _sig, _args);
     }
 
-    public MethodCall(String _source, String _dest, String _path, String _iface, String _member, byte _flags, String _sig, Object... _args) throws DBusException {
-        super(DBusConnection.getEndianness(), Message.MessageType.METHOD_CALL, _flags);
+    protected MethodCall(byte _endianess, String _source, String _dest, String _path, String _iface, String _member, byte _flags, String _sig, Object... _args) throws DBusException {
+        super(_endianess, Message.MessageType.METHOD_CALL, _flags);
 
         if (null == _member || null == _path) {
             throw new MessageFormatException("Must specify destination, path and function name to MethodCalls.");

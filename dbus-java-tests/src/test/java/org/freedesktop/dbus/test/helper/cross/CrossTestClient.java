@@ -4,34 +4,16 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.interfaces.Introspectable;
-import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.test.helper.interfaces.Binding;
 import org.freedesktop.dbus.test.helper.interfaces.Binding.CrossSampleStruct;
 import org.freedesktop.dbus.test.helper.interfaces.SamplesInterface;
-import org.freedesktop.dbus.types.DBusMapType;
-import org.freedesktop.dbus.types.UInt16;
-import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.types.UInt64;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.types.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Binding.SampleSignals.Triggered> {
 

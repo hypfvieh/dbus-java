@@ -22,8 +22,8 @@ public class TcpTransportProvider implements ITransportProvider {
     @Override
     public AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         TcpBusAddress address = null;
-        if (_address instanceof TcpBusAddress) {
-            address = (TcpBusAddress) _address;
+        if (_address instanceof TcpBusAddress tba) {
+            address = tba;
         } else {
             address = new TcpBusAddress(_address);
         }

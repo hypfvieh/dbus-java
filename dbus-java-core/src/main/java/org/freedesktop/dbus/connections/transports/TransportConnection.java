@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.connections.transports;
 
+import org.freedesktop.dbus.messages.MessageFactory;
 import org.freedesktop.dbus.spi.message.IMessageReader;
 import org.freedesktop.dbus.spi.message.IMessageWriter;
 
@@ -22,12 +23,15 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TransportConnection implements Closeable {
     private static final AtomicLong TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
-    private final long id = TRANSPORT_ID_GENERATOR.incrementAndGet();
-    private final SocketChannel channel;
-    private final IMessageWriter writer;
-    private final IMessageReader reader;
+    private final long              id                     = TRANSPORT_ID_GENERATOR.incrementAndGet();
+    private final SocketChannel     channel;
+    private final IMessageWriter    writer;
+    private final IMessageReader    reader;
 
-    public TransportConnection(SocketChannel _channel, IMessageWriter _writer, IMessageReader _reader) {
+    private final MessageFactory    messageFactory;
+
+    public TransportConnection(MessageFactory _factory, SocketChannel _channel, IMessageWriter _writer, IMessageReader _reader) {
+        messageFactory = _factory;
         channel = _channel;
         writer = _writer;
         reader = _reader;
@@ -49,10 +53,15 @@ public class TransportConnection implements Closeable {
         return id;
     }
 
+    public MessageFactory getMessageFactory() {
+        return messageFactory;
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [id=" + id + ", channel=" + channel + ", writer=" + writer + ", reader="
-                + reader + "]";
+        return getClass().getSimpleName()
+            + " [id=" + id + ", channel=" + channel + ", writer=" + writer
+            + ", reader=" + reader + "]";
     }
 
     @Override

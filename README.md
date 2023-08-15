@@ -1,38 +1,58 @@
-[![Maven Build/Test JDK 17](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml) [![Maven Build/Test JDK 11](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk11.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk11.yml)
+[![Maven Build/Test JDK 17](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk17.yml)
+[![Maven Build/Test JDK 21](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml)
+
 # dbus-java
- - Legacy 3.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java)
- - Javadoc 3.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java)
- - Current 4.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
- - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
+ - Legacy 4.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg?version=4)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg?version=4)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
+ - Current 5.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Javadoc 5.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
 
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 11+. 
 
-### Important information when updating from dbus-java 3.x.x and earlier
+### Important information when updating from dbus-java 4.x.x and earlier
 
-The new major is no drop-in replacement for 2.7.x or 3.x.x version!
-It requires code changes and at least **Java 11**.
+The new major is no drop-in replacement for earlier versions!
+It requires code changes and at least **Java 17**.
 
-Main difference is the separation of dbus-java functions (now called dbus-java-core) and the transports.
+When migrating from 4.x to 5.x you have to fix/replace all usages of deprecated method calls and class usages.
+Everything deprecated in a previous major version (4.x/3.x) and marked "forRemoval" is gone in 5.x.
+
+When migrating from 3.x, the main difference is the separation of dbus-java into multi module project.
+The base artifact is dbus-java-core and requires at least one additional transport artifact.
 A transport provides the code to connect to DBus daemon on various ways (e.g. unix socket or TCP).
 
 When updating to 4.x you have to add at least one transport to your project.
 If you add a unix socket transport, you have to choose between jnr-unixsocket and native-unixsocket.
-The later will require **Java 16+**, while jnr-unixsockets will work with Java 11 but will pull-in jnr-posix and friends to your project.
+The jnr implementation will pull in jnr-unixsocket, jnr-posix etc. to your project.
+It will also provide support for abstract unixsockets and is required if you want to use file descriptor passing.
+If you need file descriptors as well you also have to add a proper implementation for that (see below).  
 
-The native-unixsockets will work almost like the jnr-unixsockets except it does not support abstract unixsockets.
-If you don't know what abstract unixsockets are, you'll probably don't need it and you can use native-unixsockets when using proper Java version.
-
-If you use ```TransportFactory``` directly, you have to replace it with ```TransportBuilder```.
+If you don't know what abstract unixsockets are and you don't need file descriptors you'll probably you can use native-unixsockets.
 
 ### Note to SPI providers
-If you have used the SPI to extend the MessageReader/Writer of dbus-java, you have to update your code.
-Old providers will not work with dbus-java 4.x because of changed SPI interfaces (sorry!).
+If you have used the SPI to extend the MessageReader/Writer of dbus-java before dbus-java 4.x, you have to update your code.
+Old providers will not work with dbus-java 4.x/5.x because of changed SPI interfaces (sorry!).
 
 The changes were required due to the support of native-unixsocket which is using java.nio, while the old dbus-java code
 uses the old java.io socket API.
 
-With dbus-java 4.x, java.nio is used for all transports and therefore required changes on the SPI.
+With dbus-java 4.x (and 5.x as well), java.nio is used for all transports and therefore required changes on the SPI.
 ```ISocketProvider``` will now use ```SocketChannel``` instead of ```Socket``` in the exported methods.
+
+### Note for custom transports
+If you previously used a custom transport you have to update your code when switching to dbus-java 5.x.
+The `AbstractTransport` base class has been changed and now provides two different methods to separate client and listening
+(server) connections.
+
+The `connectImpl()` was previously existing and will now only be called for client side connections.
+The new method `listenImpl()` is used for server connections and has been added in dbus-java 5.x.
+
+The reason to provide separate methods was to allow bootstrapping server connections before accepting connections.
+In the old implementation `accept()` was usually called in `connectImpl()` and therefore blocked the method until
+a client was connected. This blocked setting up the server side before the first client was connecting.
+
+This forced the user to use some random sleep times to wait for the server setup after first client connects.
+With the separation no more sleep waits are required.
 
 ### How to use file descriptors?
 In DBus-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
@@ -41,12 +61,12 @@ Starting with version 4.3.1 file descriptors are supported when using junixsocke
 When trying to use file descriptors in dbus-java 3.x and not providing a implementation for this feature, you may see weird NullPointerExceptions thrown in Message class.
 In dbus-java < 4.3.1 you should see error messages indicating that file descriptors are not supported.
 
-To use file descriptors with dbus-java 3.x or any version of 4.x before 4.3.1 you have to do the following:
- - (dbus-java 4.x only): Add dbus-java-transport-jnr-unixsocket dependency to your project
- - (dbus-java 4.x only): Remove dbus-java-transport-native-unixsocket if you have used it before
+To use file descriptors with dbus-java version 4.x before 4.3.1 you have to do the following:
+ - Add dbus-java-transport-jnr-unixsocket dependency to your project
+ - Remove dbus-java-transport-native-unixsocket if you have used it before
  - Add dependency [com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd) to your classpath
  
-When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x and 1.x if you use dbus-java 3.x.
+When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x/5.x and 1.x if you use dbus-java 3.x.
 DBus-java will automatically detect dbus-java-nativefd and will then provide access to file descriptors.
 
 If you are using version 4.3.1 or higher, you may simple switch to `dbus-java-transport-junixsocket` (instead of `dbus-java-transport-jnr-unixsocket` or `dbus-java-transport-native-unixsocket`).
@@ -71,6 +91,12 @@ However [LogonBox](https://www.logonbox.com) is not responsible for this project
 The library will remain open source and MIT licensed and can still be used, forked or modified for free.
 
 #### Changes
+
+##### Changes in 5.0.0 (not released yet):
+   - Removed all classes and methods marked as deprecated in 4.x
+   - Updated dependencies and maven plugins
+   - Updated minimum required Java version to 17
+   - Improved handling of listening connections to allow proper bootstrapping the connection before actually starting accepting new connections (thanks to [brett-smith](https://github.com/brett-smith) ([#213](https://github.com/hypfvieh/dbus-java/issues/213)))
 
 ##### Changes in 4.3.1 (not released yet):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))

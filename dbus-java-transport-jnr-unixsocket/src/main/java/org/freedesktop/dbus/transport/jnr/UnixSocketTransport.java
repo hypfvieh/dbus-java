@@ -1,10 +1,7 @@
 package org.freedesktop.dbus.transport.jnr;
 
 import jnr.posix.util.Platform;
-import jnr.unixsocket.UnixServerSocketChannel;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-import jnr.unixsocket.UnixSocketOptions;
+import jnr.unixsocket.*;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
@@ -45,6 +42,29 @@ public class UnixSocketTransport extends AbstractUnixTransport {
         return true; // file descriptor passing allowed when using UNIX_SOCK
     }
 
+    @Override
+    public SocketChannel listenImpl() throws IOException {
+        if (!getAddress().isListeningSocket()) {
+            throw new IOException("Cannot listen on a client connection (use connectImpl() instead)");
+        }
+
+        if (serverSocket == null || !serverSocket.isOpen()) {
+            serverSocket = UnixServerSocketChannel.open();
+            serverSocket.configureBlocking(true);
+            serverSocket.socket().bind(unixSocketAddress);
+        }
+
+        socket = serverSocket.accept();
+        socket.configureBlocking(true);
+
+        // MacOS and FreeBSD don't support SO_PASSCRED
+        if (!Util.isMacOs() && !Platform.IS_FREEBSD) {
+            socket.setOption(UnixSocketOptions.SO_PASSCRED, true);
+        }
+
+        return socket;
+    }
+
     /**
      * Establish a connection to DBus using unix sockets.
      *
@@ -53,13 +73,8 @@ public class UnixSocketTransport extends AbstractUnixTransport {
     @Override
     public SocketChannel connectImpl() throws IOException {
         if (getAddress().isListeningSocket()) {
+            throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
 
-            if (serverSocket == null || !serverSocket.isOpen()) {
-                serverSocket = UnixServerSocketChannel.open();
-                serverSocket.configureBlocking(true);
-                serverSocket.socket().bind(unixSocketAddress);
-            }
-            socket = serverSocket.accept();
         } else {
             socket = UnixSocketChannel.open(unixSocketAddress);
             socket.configureBlocking(true);
@@ -86,12 +101,6 @@ public class UnixSocketTransport extends AbstractUnixTransport {
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
         }
-    }
-
-    @Deprecated
-    @Override
-    protected boolean isAbstractAllowed() {
-        return true;
     }
 
     @Override

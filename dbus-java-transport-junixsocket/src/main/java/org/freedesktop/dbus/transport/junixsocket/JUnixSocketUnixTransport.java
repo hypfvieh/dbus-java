@@ -49,40 +49,16 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
     @Override
     protected SocketChannel connectImpl() throws IOException {
         if (getAddress().isListeningSocket()) {
-            if (serverSocket == null || !serverSocket.isOpen()) {
-                serverSocket = AFUNIXServerSocketChannel.open();
-                serverSocket.configureBlocking(true);
-                serverSocket.bind(unixSocketAddress);
-            }
-            socket = serverSocket.accept();
-        } else {
-            socket = AFUNIXSocketChannel.open();
-            socket.configureBlocking(true);
-            socket.connect(unixSocketAddress);
+            throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
         }
+
+        socket = AFUNIXSocketChannel.open();
+        socket.configureBlocking(true);
+        socket.connect(unixSocketAddress);
 
         socket.setAncillaryReceiveBufferSize(1024);
 
         return socket;
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-
-        if (socket != null) {
-            if (socket.isOpen()) {
-                socket.close();
-            }
-            socket = null;
-        }
-
-        if (serverSocket != null) {
-            if (serverSocket.isOpen()) {
-                serverSocket.close();
-            }
-            serverSocket = null;
-        }
     }
 
     @Override
@@ -96,7 +72,21 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
     }
 
     @Override
-    protected boolean isAbstractAllowed() {
-        return AFSocket.supports(AFSocketCapability.CAPABILITY_ABSTRACT_NAMESPACE);
+    protected SocketChannel listenImpl() throws IOException {
+        if (!getAddress().isListeningSocket()) {
+            throw new IOException("Cannot listen on a client connection (use connectImpl() instead)");
+        }
+
+        if (serverSocket == null || !serverSocket.isOpen()) {
+            serverSocket = AFUNIXServerSocketChannel.open();
+            serverSocket.configureBlocking(true);
+            serverSocket.bind(unixSocketAddress);
+        }
+        socket = serverSocket.accept();
+
+        socket.setAncillaryReceiveBufferSize(1024);
+
+        return socket;
     }
+
 }
