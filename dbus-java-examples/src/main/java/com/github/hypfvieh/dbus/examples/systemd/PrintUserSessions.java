@@ -44,13 +44,15 @@ import java.util.List;
  * </p>
  *
  * @author hypfvieh
- * 
+ *
  * @since 2023-02-27
  */
 public final class PrintUserSessions {
     private PrintUserSessions() {}
 
-    public static void main(String[] _args) throws IOException, DBusException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static void main(String[] _args)
+        throws IOException, DBusException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
         try (DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().build()) {
 
             // fetch properties
@@ -63,7 +65,7 @@ public final class PrintUserSessions {
             for (Object[] us : sessions) {
                 System.out.println(us[0] + " --> " + us[1]);
             }
-            
+
             // Option 2: Use StructHelper and appropriate struct class
             List<SessionStruct> convertToStruct = StructHelper.convertToStructList(sessions, SessionStruct.class);
             for (SessionStruct us : convertToStruct) {
@@ -77,7 +79,7 @@ public final class PrintUserSessions {
         private final String user;
         @Position(1)
         private final DBusPath dbusPath;
-        
+
         public SessionStruct(String _user, DBusPath _dbusPath) {
             user = _user;
             dbusPath = _dbusPath;
@@ -90,6 +92,6 @@ public final class PrintUserSessions {
         public DBusPath getDbusPath() {
             return dbusPath;
         }
-        
+
     }
 }

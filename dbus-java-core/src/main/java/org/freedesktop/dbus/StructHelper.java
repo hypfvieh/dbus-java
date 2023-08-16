@@ -22,86 +22,89 @@ public final class StructHelper {
 
     /**
      * Creates a {@link ArrayList} of struct of the given type using the list of object arrays.
-     *  
+     *
      * @param _obj list of object arrays to process
      * @param _structType struct class to create
-     * 
+     *
      * @param <T> struct type
-     * 
+     *
      * @return List of given struct type
-     * 
+     *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
      * @throws SecurityException when constructor cannot be accesses
      * @throws InstantiationException when reflection fails
      * @throws IllegalAccessException  if this Constructor object is enforcing Java language access control and the underlying constructor is inaccessible.
      * @throws IllegalArgumentException when data types are incompatible or incompatible argument length
      * @throws InvocationTargetException if the underlying constructor throws an exception
-     * 
+     *
      * @since 4.3.1 - 2023-08-16
      */
-    public static <T extends Struct> List<T> convertToStructList(List<Object[]> _obj, Class<T> _structType) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static <T extends Struct> List<T> convertToStructList(List<Object[]> _obj, Class<T> _structType) throws NoSuchMethodException, SecurityException, InstantiationException,
+        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         List<T> result = new ArrayList<>();
         convertToStructCollection(_obj, _structType, result);
         return result;
     }
-    
+
     /**
      * Creates a {@link LinkedHashSet} of struct of the given type using the list of object arrays.
-     *  
+     *
      * @param _obj list of object arrays to process
      * @param _structType struct class to create
-     * 
+     *
      * @param <T> struct type
-     * 
+     *
      * @return List of given struct type
-     * 
+     *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
      * @throws SecurityException when constructor cannot be accesses
      * @throws InstantiationException when reflection fails
      * @throws IllegalAccessException  if this Constructor object is enforcing Java language access control and the underlying constructor is inaccessible.
      * @throws IllegalArgumentException when data types are incompatible or incompatible argument length
      * @throws InvocationTargetException if the underlying constructor throws an exception
-     * 
+     *
      * @since 4.3.1 - 2023-08-16
      */
-    public static <T extends Struct> Set<T> convertToStructSet(Set<Object[]> _obj, Class<T> _structType) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static <T extends Struct> Set<T> convertToStructSet(Set<Object[]> _obj, Class<T> _structType) throws NoSuchMethodException, SecurityException, InstantiationException,
+        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Set<T> result = new LinkedHashSet<>();
         convertToStructCollection(_obj, _structType, result);
         return result;
     }
-    
+
     /**
      * Creates a collection of struct of the given type using the list of object arrays.
-     *  
+     *
      * @param _input list of object arrays to process
      * @param _structType struct class to create
      * @param _result collection to store results
-     * 
+     *
      * @param <T> struct type
-     * 
+     *
      * @return List of given struct type
-     * 
+     *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
      * @throws SecurityException when constructor cannot be accesses
      * @throws InstantiationException when reflection fails
      * @throws IllegalAccessException  if this Constructor object is enforcing Java language access control and the underlying constructor is inaccessible.
      * @throws IllegalArgumentException when data types are incompatible or incompatible argument length
      * @throws InvocationTargetException if the underlying constructor throws an exception
-     * 
+     *
      * @since 4.3.1 - 2023-08-16
      */
-    public static <T extends Struct> void convertToStructCollection(Collection<Object[]> _input, Class<T> _structType, Collection<T> _result) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        
+    public static <T extends Struct> void convertToStructCollection(Collection<Object[]> _input, Class<T> _structType, Collection<T> _result)
+        throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
         Objects.requireNonNull(_structType, "Struct class required");
         Objects.requireNonNull(_result, "Collection for result storage required");
         Objects.requireNonNull(_input, "Input data required");
-        
+
         Class<?>[] constructorArgClasses = Arrays.stream(_structType.getDeclaredFields())
             .filter(f -> f.isAnnotationPresent(Position.class))
             .sorted((f1, f2) -> Integer.compare(f1.getAnnotation(Position.class).value(), f2.getAnnotation(Position.class).value()))
             .map(f -> f.getType())
             .toArray(Class[]::new);
-        
+
         for (Object[] object : _input) {
             if (constructorArgClasses.length != object.length) {
                 throw new IllegalArgumentException("Struct length does not match argument length");
@@ -109,9 +112,9 @@ public final class StructHelper {
             T x = StructHelper.createStruct(constructorArgClasses, (Object) object, _structType);
             _result.add(x);
         }
-        
+
     }
-    
+
     /**
      * Creates a instance of the given {@link Struct} subclass if the given variant is some sort of Struct.
      * @param _variant variant to convert
