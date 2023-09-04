@@ -47,7 +47,7 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
 
     @Override
     protected boolean hasFileDescriptorSupport() {
-        return true; // file descriptor passing allowed when using UNIX_SOCK
+        return false; // See JEP-380: File descriptor not supported by native implementation (yet)
     }
 
     /**
