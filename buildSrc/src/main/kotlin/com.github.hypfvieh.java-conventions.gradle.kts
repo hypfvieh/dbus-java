@@ -26,7 +26,7 @@ dependencies {
 
 group = "com.github.hypfvieh"
 version = "4.3.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 java {
     withSourcesJar()
