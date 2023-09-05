@@ -32,7 +32,7 @@ public interface ITransportProvider {
      *
      * @return transport instance or null
      *
-     * @throws TransformerConfigurationException when configuring transport fails
+     * @throws TransportConfigurationException when configuring transport fails
      */
     AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException;
 
@@ -48,7 +48,7 @@ public interface ITransportProvider {
      *
      * @return transport instance or null
      *
-     * @throws TransformerConfigurationException when configuring transport fails
+     * @throws TransportConfigurationException when configuring transport fails
      * @deprecated just used for compatibility will be removed in the future. Please use {@link #createTransport(BusAddress, TransportConfig)}.
      */
     @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
