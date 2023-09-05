@@ -6,6 +6,7 @@
  - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg?version=4)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
  - Current 5.x: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
  - Javadoc 5.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
+ - Site: [Maven Site](https://hypfvieh.github.io/dbus-java/)
 
 Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 11+. 
 
