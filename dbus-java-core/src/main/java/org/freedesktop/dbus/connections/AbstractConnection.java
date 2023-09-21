@@ -108,7 +108,7 @@ public abstract class AbstractConnection implements Closeable {
 
         receivingService = new ReceivingService(rcvSvcName, _rsCfg);
         senderService =
-            Executors.newFixedThreadPool(1, new NameableThreadFactory(senderThreadName, false));
+            Executors.newFixedThreadPool(1, new NameableThreadFactory(senderThreadName, true));
 
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
