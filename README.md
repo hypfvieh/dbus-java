@@ -87,6 +87,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Improved logging and handling of disconnected transports in `DBusDaemon`, thanks to [brett-smith](https://github.com/brett-smith) ([#225](https://github.com/hypfvieh/dbus-java/issues/225))
    - Added additional transport (dbus-java-junixsocket), thanks to [Prototik](https://github.com/Prototik) ([#227](https://github.com/hypfvieh/dbus-java/issues/227)) for providing the implementation
    - Smaller refactorings to avoid code duplication for new transport
+   - Use daemon threads in `ExecutorService` for DBus-Sender-Threads ([#234](https://github.com/hypfvieh/dbus-java/issues/234))
 
 ##### Changes in 4.3.0 (2023-03-10):
 

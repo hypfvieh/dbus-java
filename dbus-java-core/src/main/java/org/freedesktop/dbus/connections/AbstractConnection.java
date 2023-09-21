@@ -9,25 +9,16 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalDBusException;
-import org.freedesktop.dbus.exceptions.NotConnected;
-import org.freedesktop.dbus.interfaces.CallbackHandler;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.io.*;
+import java.lang.reflect.*;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -114,7 +105,7 @@ public abstract class AbstractConnection implements Closeable {
 
         receivingService = new ReceivingService(_rsCfg);
         senderService =
-                Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", false));
+            Executors.newFixedThreadPool(1, new NameableThreadFactory("DBus Sender Thread-", true));
 
         objectTree = new ObjectTree();
         fallbackContainer = new FallbackContainer();
