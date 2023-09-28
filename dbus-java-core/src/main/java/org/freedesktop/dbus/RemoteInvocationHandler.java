@@ -1,5 +1,7 @@
 package org.freedesktop.dbus;
 
+import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.Error;
@@ -9,10 +11,12 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.PropertyRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +88,16 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } else if (_method.getName().equals("toString")) {
             return remote.toString();
+        } else if (_method.getAnnotation(DBusProperty.class) != null) {
+            var name = DBusNamingUtil.getPropertyName(_method);
+            var access = PropertyRef.accessForMethod(_method);
+            if (access == Access.READ) {
+                var propGetMethod = Properties.class.getMethod("Get", String.class, String.class);
+                return executeRemoteMethod(remote, propGetMethod, conn, CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name);
+            } else {
+                var propSetMethod = Properties.class.getMethod("Set", String.class, String.class, Object.class);
+                return executeRemoteMethod(remote, propSetMethod, conn, CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name, _args[0]);
+            }
         }
 
         return executeRemoteMethod(remote, _method, conn, CALL_TYPE_SYNC, null, _args);

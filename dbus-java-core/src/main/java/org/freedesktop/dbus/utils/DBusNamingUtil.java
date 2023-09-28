@@ -2,6 +2,7 @@ package org.freedesktop.dbus.utils;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.annotations.DBusProperty;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -47,6 +48,33 @@ public final class DBusNamingUtil {
             return _method.getAnnotation(DBusMemberName.class).value();
         }
         return _method.getName();
+    }
+
+    /**
+     * Get a property name for a method (annotated with {@link DBusProperty}. These
+     * would typically be setter / getter type methods. If {@link DBusProperty#name()} is
+     * provided, that will take precedence.
+     *
+     * @param _method input method
+     * @return property name
+     * @see DBusMemberName
+     */
+    public static String getPropertyName(Method _method) {
+        Objects.requireNonNull(_method, "method must not be null");
+
+        if (_method.isAnnotationPresent(DBusProperty.class)) {
+            String defName = _method.getAnnotation(DBusProperty.class).name();
+            if (!"".equals(defName)) {
+                return defName;
+            }
+        }
+        String name = _method.getName();
+        if ((name.startsWith("get") && !"get".equals(name)) || (name.startsWith("set") && !"set".equals(name))) {
+            name = name.substring(3);
+        } else if (name.startsWith("is") && !"is".equals(name)) {
+            name = name.substring(2);
+        }
+        return name;
     }
 
     /**

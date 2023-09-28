@@ -10,6 +10,7 @@ import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
 import org.freedesktop.dbus.annotations.DBusProperties;
 import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -17,6 +18,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
+import org.freedesktop.dbus.utils.PropertyRef;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -29,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -41,6 +44,7 @@ import java.util.Set;
 
 public class ExportedObject {
     private final Map<MethodTuple, Method> methods = new HashMap<>();
+    private final Map<PropertyRef, Method> propertyMethods = new HashMap<>();
     private final String                   introspectionData;
     private final Reference<DBusInterface> object;
 
@@ -96,31 +100,43 @@ public class ExportedObject {
      * @throws DBusException in case of unknown data types
      */
     protected String generatePropertyXml(DBusProperty _property) throws DBusException {
-        Class<?> propertyTypeClass = _property.type();
+        return generatePropertyXml(_property.name(), _property.type(), _property.access());
+    }
+
+    /**
+     * Generates the introspection data for the single property.
+     *
+     * @param _propertyName name
+     * @param _propertyTypeClass type class
+     * @param _access type access
+     * @return xml with property definition
+     * @throws DBusException in case of unknown data types
+     */
+    protected String generatePropertyXml(String _propertyName, Class<?> _propertyTypeClass, Access _access) throws DBusException {
         String propertyTypeString;
-        if (TypeRef.class.isAssignableFrom(propertyTypeClass)) {
-            Type actualType = Arrays.stream(propertyTypeClass.getGenericInterfaces())
+        if (TypeRef.class.isAssignableFrom(_propertyTypeClass)) {
+            Type actualType = Arrays.stream(_propertyTypeClass.getGenericInterfaces())
                     .filter(t -> t instanceof ParameterizedType)
                     .map(t -> (ParameterizedType) t)
                     .filter(t -> TypeRef.class.equals(t.getRawType()))
                     .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
                     .findFirst()
                     .orElseThrow(() ->
-                            new DBusException("Could not read TypeRef type for property '" + _property.name() + "'")
+                            new DBusException("Could not read TypeRef type for property '" + _propertyName + "'")
                     );
             propertyTypeString = Marshalling.getDBusType(new Type[]{actualType});
-        } else if (List.class.equals(propertyTypeClass)) {
+        } else if (List.class.equals(_propertyTypeClass)) {
             // default non generic list types
             propertyTypeString = "av";
-        } else if (Map.class.equals(propertyTypeClass)) {
+        } else if (Map.class.equals(_propertyTypeClass)) {
             // default non generic map type
             propertyTypeString = "a{vv}";
         } else {
-            propertyTypeString = Marshalling.getDBusType(new Type[]{propertyTypeClass});
+            propertyTypeString = Marshalling.getDBusType(new Type[]{_propertyTypeClass});
         }
 
-        String access = _property.access().getAccessName();
-        return "<property name=\"" + _property.name() + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
+        String access = _access.getAccessName();
+        return "<property name=\"" + _propertyName + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
     }
 
     /**
@@ -131,17 +147,61 @@ public class ExportedObject {
      * @throws DBusException in case of unknown data types
      */
     protected String generatePropertiesXml(Class<?> _clz) throws DBusException {
-        StringBuilder xml = new StringBuilder();
-        DBusProperties properties = _clz.getAnnotation(DBusProperties.class);
+        var xml = new StringBuilder();
+        var map = new HashMap<String, PropertyRef>();
+        var properties = _clz.getAnnotation(DBusProperties.class);
         if (properties != null) {
             for (DBusProperty property : properties.value()) {
-                xml.append("  ").append(generatePropertyXml(property)).append("\n");
+                if (property.name().equals("")) {
+                    throw new DBusException("Missing ''name'' on class DBUS property");
+                }
+                if (map.containsKey(property.name())) {
+                    throw new DBusException(MessageFormat.format(
+                        "Property ''{0}'' defined multiple times.", property.name()));
+                }
+                map.put(property.name(), new PropertyRef(property));
             }
         }
-        DBusProperty property = _clz.getAnnotation(DBusProperty.class);
+
+        var property = _clz.getAnnotation(DBusProperty.class);
         if (property != null) {
-            xml.append("  ").append(generatePropertyXml(property)).append("\n");
+            if (property.name().equals("")) {
+                throw new DBusException("Missing ''name'' on class DBUS property");
+            }
+            if (map.containsKey(property.name())) {
+                throw new DBusException(MessageFormat.format(
+                    "Property ''{0}'' defined multiple times.", property.name()));
+            }
+            map.put(property.name(), new PropertyRef(property));
         }
+
+        for (var method : _clz.getDeclaredMethods()) {
+            var propertyAnnot = method.getAnnotation(DBusProperty.class);
+            if (propertyAnnot != null) {
+                var name = DBusNamingUtil.getPropertyName(method);
+                var access = PropertyRef.accessForMethod(method);
+                PropertyRef.checkMethod(method);
+                var type = PropertyRef.typeForMethod(method);
+                var ref = new PropertyRef(name, type, access);
+                propertyMethods.put(ref, method);
+                if (map.containsKey(name)) {
+                    var existing = map.get(name);
+                    if (access.equals(existing.getAccess())) {
+                        throw new DBusException(MessageFormat.format(
+                            "Property ''{0}'' has access mode ''{1}'' defined multiple times.", name, access));
+                    } else {
+                        map.put(name, new PropertyRef(name, type, Access.READ_WRITE));
+                    }
+                } else {
+                    map.put(name, ref);
+                }
+            }
+        }
+
+        for (var ref : map.values()) {
+            xml.append("  ").append(generatePropertyXml(ref.getName(), ref.getType(), ref.getAccess())).append("\n");
+        }
+
         return xml.toString();
     }
 
@@ -323,6 +383,10 @@ public class ExportedObject {
         return methods;
     }
 
+    public Map<PropertyRef, Method> getPropertyMethods() {
+        return propertyMethods;
+    }
+
     public Reference<DBusInterface> getObject() {
         return object;
     }
@@ -334,6 +398,7 @@ public class ExportedObject {
     public static boolean isExcluded(Method _meth) {
         return !Modifier.isPublic(_meth.getModifiers())
                 || _meth.getAnnotation(DBusIgnore.class) != null
+                || _meth.getAnnotation(DBusProperty.class) != null
                 || _meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class)
                         && _meth.getParameterCount() == 0;
     }

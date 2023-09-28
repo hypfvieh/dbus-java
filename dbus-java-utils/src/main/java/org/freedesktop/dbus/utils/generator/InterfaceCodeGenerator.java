@@ -2,6 +2,7 @@ package org.freedesktop.dbus.utils.generator;
 
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -48,12 +49,17 @@ public class InterfaceCodeGenerator {
     private final String                 introspectionData;
 
     private final boolean                disableFilter;
+    private final String                 forcePackageName;
+    private final boolean                propertyMethods;
 
-    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName) {
+    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName, String _packageName, boolean _propertyMethods) {
         disableFilter = _disableFilter;
         introspectionData = _introspectionData;
         nodeName = _objectPath;
         busName = Util.isBlank(_busName) ? "*" : _busName;
+        forcePackageName = _packageName;
+        propertyMethods = _propertyMethods;
+        System.out.println(forcePackageName + "/" + propertyMethods);
     }
 
     /**
@@ -141,7 +147,8 @@ public class InterfaceCodeGenerator {
 
         String interfaceName = _ife.getAttribute("name");
         Map<DbusInterfaceToFqcn, String> fqcn = DbusInterfaceToFqcn.toFqcn(interfaceName);
-        String packageName = fqcn.get(DbusInterfaceToFqcn.PACKAGENAME);
+        String originalPackageName = fqcn.get(DbusInterfaceToFqcn.PACKAGENAME);
+        String packageName =  forcePackageName == null ? originalPackageName : forcePackageName;
         String className = fqcn.get(DbusInterfaceToFqcn.CLASSNAME);
 
         logger.info("Creating interface: {}.{}", packageName, className);
@@ -153,6 +160,10 @@ public class InterfaceCodeGenerator {
         interfaceClass.setPackageName(packageName);
         interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
         interfaceClass.setClassName(className);
+        if (forcePackageName != null) {
+            interfaceClass.getAnnotations().add(new AnnotationInfo(DBusInterfaceName.class,
+                "\"" + originalPackageName + "." + className + "\""));
+        }
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
         List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
@@ -392,8 +403,29 @@ public class InterfaceCodeGenerator {
         String annotationParams = "name = \"" + attrName + "\", "
                 + "type = " + clzzName + ".class, "
                 + "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
-        AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
-        _clzBldr.getAnnotations().add(annotationInfo);
+
+        if (propertyMethods) {
+            if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)
+                || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
+                ClassMethod classMethod = new ClassMethod(
+                   ("boolean".equalsIgnoreCase(clzzName) ? "is" :  "get") + attrName, clzzName, false);
+                    _clzBldr.getMethods().add(classMethod);
+                classMethod.getAnnotations().add("@" + DBusProperty.class.getSimpleName());
+                _clzBldr.getImports().add(DBusProperty.class.getName());
+            }
+
+            if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
+                || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
+                ClassMethod classMethod = new ClassMethod("set" + attrName, "void", false);
+                classMethod.getArguments().add(new MemberOrArgument(attrName.substring(0, 1).toLowerCase() + attrName.substring(1), clzzName));
+                    _clzBldr.getMethods().add(classMethod);
+                classMethod.getAnnotations().add("@" + DBusProperty.class.getSimpleName());
+                _clzBldr.getImports().add(DBusProperty.class.getName());
+            }
+        } else {
+            AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
+            _clzBldr.getAnnotations().add(annotationInfo);
+        }
 
         return additionalClasses;
     }
@@ -493,6 +525,8 @@ public class InterfaceCodeGenerator {
         String objectPath = null;
         String inputFile = null;
         boolean noFilter = false;
+        boolean propertyMethods = false;
+        String forcePackageName = null;
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
@@ -507,6 +541,15 @@ public class InterfaceCodeGenerator {
                 System.exit(0);
             } else if ("--all".equals(p) || "-a".equals(p)) {
                 noFilter = true;
+            } else if ("--propertyMethods".equals(p) || "-m".equals(p)) {
+                propertyMethods = true;
+            } else if ("--package".equals(p) || "-p".equals(p)) {
+                if (_args.length > i) {
+                    forcePackageName = _args[++i];
+                } else {
+                    printHelp();
+                    System.exit(0);
+                }
             } else if ("--version".equals(p) || "-v".equals(p)) {
                 version();
                 System.exit(0);
@@ -574,7 +617,7 @@ public class InterfaceCodeGenerator {
             System.exit(1);
         }
 
-        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath, busName);
+        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath, busName, forcePackageName, propertyMethods);
         try {
 
             Map<File, String> analyze = ci2.analyze(ignoreDtd);
@@ -603,8 +646,10 @@ public class InterfaceCodeGenerator {
         System.out.println("        --system           | -y           Use SYSTEM DBus");
         System.out.println("        --session          | -s           Use SESSION DBus");
         System.out.println("        --outputDir <Dir>  | -o <Dir>     Use <Dir> as output directory for all generated files");
+        System.out.println("        --packageName <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
+        System.out.println("        --propertyMethods  | -m           Generate setter/getter methods for properties");
         System.out.println("");
         System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
         System.out.println("        --version                        Show version information");

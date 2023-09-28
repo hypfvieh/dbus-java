@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * @see org.freedesktop.dbus.interfaces.DBusInterface
  * @see org.freedesktop.dbus.TypeRef
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(DBusProperties.class)
 public @interface DBusProperty {
@@ -40,7 +40,7 @@ public @interface DBusProperty {
      *
      * @return name
      */
-    String name();
+    String name() default "";
 
     /**
      * type of the property, in case of complex types please create custom interface that extends {@link org.freedesktop.dbus.TypeRef}

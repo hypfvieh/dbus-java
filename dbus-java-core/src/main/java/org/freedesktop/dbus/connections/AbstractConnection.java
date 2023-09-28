@@ -1,6 +1,8 @@
 package org.freedesktop.dbus.connections;
 
 import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.annotations.DBusProperties;
+import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
@@ -12,8 +14,10 @@ import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.*;
+import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
+import org.freedesktop.dbus.utils.PropertyRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -748,6 +752,7 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleMessage(final MethodCall _methodCall) throws DBusException {
         logger.debug("Handling incoming method call: {}", _methodCall);
 
@@ -795,11 +800,113 @@ public abstract class AbstractConnection implements Closeable {
                     logger.trace("   {} => {}", mt, exportObject.getMethods().get(mt));
                 }
             }
-            meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-            if (null == meth) {
-                sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
+
+            var params = _methodCall.getParameters();
+            if (params.length == 2 && params[0] instanceof String
+                && params[1] instanceof String
+                && params[0].equals(_methodCall.getInterface())
+                && _methodCall.getName().equals("Get")) {
+                // 'Get' This MIGHT be a property reference
+                var propertyRef = new PropertyRef((String) params[1], null, Access.READ);
+                var propMeth = exportObject.getPropertyMethods().get(propertyRef);
+                if (propMeth != null) {
+                    // This IS a property reference
+                    var object = exportObject.getObject().get();
+
+                    receivingService.execMethodCallHandler(() -> {
+                        _methodCall.setArgs(new Object[0]);
+                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                    });
+
+                    return;
+                }
+            } else if (params.length == 3
+                && params[0] instanceof String
+                && params[1] instanceof String
+                && params[0].equals(_methodCall.getInterface())
+                && _methodCall.getName().equals("Set")) {
+                // 'Set' This MIGHT be a property reference
+
+                var propertyRef = new PropertyRef((String) params[1], null, Access.WRITE);
+                var propMeth = exportObject.getPropertyMethods().get(propertyRef);
+                if (propMeth != null) {
+                    // This IS a property reference
+                    var object = exportObject.getObject().get();
+                    var type = PropertyRef.typeForMethod(propMeth);
+                    var val =  params[2] instanceof Variant ? ((Variant<?>) params[2]).getValue() : params[2];
+                    receivingService.execMethodCallHandler(() -> {
+                        try {
+                            _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {val}, new Type[] {type}, this));
+                            invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                        } catch (Exception _ex) {
+                            logger.debug("", _ex);
+                            handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
+                            return;
+                        }
+                    });
+
+                    return;
+                }
+            } else if (params.length == 1 && params[0] instanceof String
+                && params[0].equals(_methodCall.getInterface())
+                && _methodCall.getName().equals("GetAll")) {
+                // 'GetAll'
+                var allPropertyMethods = exportObject.getPropertyMethods().entrySet();
+                var object = exportObject.getObject().get();
+
+                if (meth == null && object instanceof DBusProperties) {
+                    /* If the object implements DBusProperties as well, we
+                     * need the actual GetAll method as well
+                     */
+                    meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
+                    if (null == meth) {
+                        sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
                         "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
-                return;
+                        return;
+                    }
+                }
+                var originalMeth = meth;
+
+                receivingService.execMethodCallHandler(() -> {
+                    var resultMap = new HashMap<String, Variant<?>>();
+                    for (var propEn : allPropertyMethods) {
+                        var propMeth = propEn.getValue();
+                        try {
+                            _methodCall.setArgs(new Object[0]);
+                            var val = invokeMethod(_methodCall, propMeth, object);
+                            resultMap.put(propEn.getKey().getName(), new Variant<>(val));
+                        } catch (Throwable _ex) {
+                            logger.debug("", _ex);
+                            handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
+                            return;
+                        }
+                    }
+
+                    if (object instanceof DBusProperties) {
+                        resultMap.putAll((Map<? extends String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
+                    }
+
+                    try {
+                        invokedMethodReply(_methodCall, originalMeth, resultMap);
+                    } catch (DBusExecutionException _ex) {
+                        logger.debug("", _ex);
+                        handleException(_methodCall, _ex);
+                    } catch (Throwable _ex) {
+                        logger.debug("", _ex);
+                        handleException(_methodCall,
+                                new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
+                                _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+                    }
+                });
+            }
+
+            if (meth == null) {
+                meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
+                if (null == meth) {
+                    sendMessage(new Error(_methodCall, new UnknownMethod(String.format(
+                           "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
+                    return;
+                }
             }
             o = exportObject.getObject().get();
         }
@@ -811,84 +918,102 @@ public abstract class AbstractConnection implements Closeable {
         }
 
         // now execute it
-        final Method me = meth;
-        final Object ob = o;
-        final boolean noreply = 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED);
-        final DBusCallInfo info = new DBusCallInfo(_methodCall);
-        final AbstractConnection conn = this;
+        queueInvokeMethod(_methodCall, meth, o);
+    }
 
-        logger.trace("Adding Runnable for method {}", meth);
-        Runnable r = new Runnable() {
+    private void queueInvokeMethod(final MethodCall _methodCall, Method _meth, final Object _ob) {
+        logger.trace("Adding Runnable for method {}", _meth);
+        var noReply = 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED);
+        receivingService.execMethodCallHandler(() -> {
+            setupAndInvoke(_methodCall, _meth, _ob, noReply);
+        });
+    }
 
-            @Override
-            public void run() {
-                logger.debug("Running method {} for remote call", me);
-
+    private Object setupAndInvoke(final MethodCall _methodCall, Method _meth, final Object _ob, final boolean _noReply) {
+        logger.debug("Running method {} for remote call", _meth);
+        try {
+            Type[] ts = _meth.getGenericParameterTypes();
+            var params2 = _methodCall.getParameters();
+            _methodCall.setArgs(Marshalling.deSerializeParameters(params2, ts, this));
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
                 try {
-                    Type[] ts = me.getGenericParameterTypes();
-                    _methodCall.setArgs(Marshalling.deSerializeParameters(_methodCall.getParameters(), ts, conn));
-                    LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
-                        try {
-                            logger.trace("Deserialised {} to types {}", Arrays.deepToString(_methodCall.getParameters()), Arrays.deepToString(ts));
-                        } catch (Exception _ex) {
-                            logger.trace("Error getting method call parameters", _ex);
-                        }
-                    });
+                    var params3 = _methodCall.getParameters();
+                    logger.trace("Deserialised {} to types {}", Arrays.deepToString(params3), Arrays.deepToString(ts));
                 } catch (Exception _ex) {
-                    logger.debug("", _ex);
-                    handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                    return;
+                    logger.trace("Error getting method call parameters", _ex);
                 }
+            });
+        } catch (Exception _ex) {
+            logger.debug("", _ex);
+            handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
+            return null;
+        }
 
-                try {
-                    INFOMAP.put(Thread.currentThread(), info);
-                    Object result;
-                    try {
-                        LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
-                            try {
-                                logger.trace("Invoking Method: {} on {} with parameters {}", me, ob, Arrays.deepToString(_methodCall.getParameters()));
-                            } catch (DBusException _ex) {
-                                logger.trace("Error getting parameters from method call", _ex);
-                            }
-                        });
+        return invokeMethodAndReply(_methodCall, _meth, _ob, _noReply);
+    }
 
-                        result = me.invoke(ob, _methodCall.getParameters());
-                    } catch (InvocationTargetException _ex) {
-                        logger.debug(_ex.getMessage(), _ex);
-                        throw _ex.getCause();
-                    }
-                    INFOMAP.remove(Thread.currentThread());
-                    if (!noreply) {
-                        MethodReturn reply;
-                        if (Void.TYPE.equals(me.getReturnType())) {
-                            reply = new MethodReturn(_methodCall, null);
-                        } else {
-                            StringBuffer sb = new StringBuffer();
-                            for (String s : Marshalling.getDBusType(me.getGenericReturnType())) {
-                                sb.append(s);
-                            }
-                            Object[] nr = Marshalling.convertParameters(new Object[] {
-                                    result
-                            }, new Type[] {
-                                    me.getGenericReturnType()
-                            }, conn);
-
-                            reply = new MethodReturn(_methodCall, sb.toString(), nr);
-                        }
-                        conn.sendMessage(reply);
-                    }
-                } catch (DBusExecutionException _ex) {
-                    logger.debug("", _ex);
-                    handleException(_methodCall, _ex);
-                } catch (Throwable _ex) {
-                    logger.debug("", _ex);
-                    handleException(_methodCall,
-                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                                    _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-                }
+    private Object invokeMethodAndReply(final MethodCall _methodCall, final Method _me, final Object _ob, final boolean _noreply) {
+        try {
+            var result = invokeMethod(_methodCall, _me, _ob);
+            if (!_noreply) {
+                invokedMethodReply(_methodCall, _me, result);
             }
-        };
-        receivingService.execMethodCallHandler(r);
+            return result;
+        } catch (DBusExecutionException _ex) {
+            logger.debug("", _ex);
+            handleException(_methodCall, _ex);
+        } catch (Throwable _ex) {
+            logger.debug("", _ex);
+            handleException(_methodCall,
+                    new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
+                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+        }
+        return null;
+    }
+
+    private void invokedMethodReply(final MethodCall _methodCall, final Method _me, Object _result)
+        throws DBusException {
+        MethodReturn reply;
+        if (Void.TYPE.equals(_me.getReturnType())) {
+            reply = new MethodReturn(_methodCall, null);
+        } else {
+            StringBuffer sb = new StringBuffer();
+            for (String s : Marshalling.getDBusType(_me.getGenericReturnType())) {
+                sb.append(s);
+            }
+            Object[] nr = Marshalling.convertParameters(new Object[] {
+                    _result
+            }, new Type[] {
+                    _me.getGenericReturnType()
+            }, this);
+
+            reply = new MethodReturn(_methodCall, sb.toString(), nr);
+        }
+        sendMessage(reply);
+    }
+
+    private Object invokeMethod(final MethodCall _methodCall, final Method _me, final Object _ob)
+            throws DBusException, IllegalAccessException, Throwable {
+        var info = new DBusCallInfo(_methodCall);
+        INFOMAP.put(Thread.currentThread(), info);
+        try {
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
+                try {
+                    var params4 = _methodCall.getParameters();
+                    logger.trace("Invoking Method: {} on {} with parameters {}", _me, _ob, Arrays.deepToString(params4));
+                } catch (DBusException _ex) {
+                    logger.trace("Error getting parameters from method call", _ex);
+                }
+            });
+
+            var params5 = _methodCall.getParameters();
+            return _me.invoke(_ob, params5);
+        } catch (InvocationTargetException _ex) {
+            logger.debug(_ex.getMessage(), _ex);
+            throw _ex.getCause();
+        } finally {
+            INFOMAP.remove(Thread.currentThread());
+        }
     }
 
     /**
