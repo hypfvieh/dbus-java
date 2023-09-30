@@ -1,6 +1,6 @@
 package org.freedesktop.dbus;
 
-import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -88,7 +88,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } else if (_method.getName().equals("toString")) {
             return remote.toString();
-        } else if (_method.getAnnotation(DBusProperty.class) != null) {
+        } else if (_method.getAnnotation(DBusBoundProperty.class) != null) {
             String name = DBusNamingUtil.getPropertyName(_method);
             Access access = PropertyRef.accessForMethod(_method);
             if (access == Access.READ) {

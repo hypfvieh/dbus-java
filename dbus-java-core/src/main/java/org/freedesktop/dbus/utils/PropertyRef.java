@@ -6,12 +6,12 @@ import java.util.Objects;
 // CHECKSTYLE:OFF
 /* TODO Impossible to correct. Whichever way around these imports are, checkstyle complains */
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty;
 // CHECKSTYLE:ON
 
 /**
- * Contains the same information as a {@link DBusProperty}, but as a POJO. Use
+ * Contains the same information as a {@link DBusBoundProperty}, but as a POJO. Use
  * internally when dealing with properties that are derived methods annotated
  * with said annotation.
  */
@@ -65,8 +65,8 @@ public final  class PropertyRef {
     }
 
     public static Access accessForMethod(Method _method) {
-        DBusProperty annotation = _method.getAnnotation(DBusProperty.class);
-        Access access = _method.getName().startsWith("set") ? Access.WRITE : Access.READ;
+        DBusBoundProperty annotation = _method.getAnnotation(DBusBoundProperty.class);
+        Access access = _method.getName().toLowerCase().startsWith("set") ? Access.WRITE : Access.READ;
         if (annotation.access().equals(Access.READ) || annotation.access().equals(Access.WRITE)) {
             access = annotation.access();
         }
@@ -74,9 +74,9 @@ public final  class PropertyRef {
     }
 
     public static Class<?> typeForMethod(Method _method) {
-        DBusProperty annotation = _method.getAnnotation(DBusProperty.class);
+        DBusBoundProperty annotation = _method.getAnnotation(DBusBoundProperty.class);
         Class<?> type = annotation.type();
-        if (type == null || type.equals(Variant.class)) {
+        if (type == null || type.equals(Void.class)) {
             if (accessForMethod(_method) == Access.READ) {
                 return _method.getReturnType();
             } else {

@@ -26,11 +26,14 @@ import java.lang.annotation.Target;
  *   }
  * }
  * </pre>
+ * <p>As an alternative to this annotation, you might consider using {@link DBusBoundProperty}. This
+ * allows you to achieve the same results with less code.</p>.
  *
  * @see org.freedesktop.dbus.interfaces.DBusInterface
+ * @see org.freedesktop.dbus.annotations.DBusBoundProperty
  * @see org.freedesktop.dbus.TypeRef
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(DBusProperties.class)
 public @interface DBusProperty {
@@ -40,7 +43,7 @@ public @interface DBusProperty {
      *
      * @return name
      */
-    String name() default "";
+    String name();
 
     /**
      * type of the property, in case of complex types please create custom interface that extends {@link org.freedesktop.dbus.TypeRef}

@@ -5,6 +5,7 @@ import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.StrongReference;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusIgnore;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
@@ -152,9 +153,6 @@ public class ExportedObject {
         DBusProperties properties = _clz.getAnnotation(DBusProperties.class);
         if (properties != null) {
             for (DBusProperty property : properties.value()) {
-                if (property.name().equals("")) {
-                    throw new DBusException("Missing ''name'' on class DBUS property");
-                }
                 if (map.containsKey(property.name())) {
                     throw new DBusException(MessageFormat.format(
                         "Property ''{0}'' defined multiple times.", property.name()));
@@ -165,9 +163,6 @@ public class ExportedObject {
 
         DBusProperty property = _clz.getAnnotation(DBusProperty.class);
         if (property != null) {
-            if (property.name().equals("")) {
-                throw new DBusException("Missing ''name'' on class DBUS property");
-            }
             if (map.containsKey(property.name())) {
                 throw new DBusException(MessageFormat.format(
                     "Property ''{0}'' defined multiple times.", property.name()));
@@ -176,7 +171,7 @@ public class ExportedObject {
         }
 
         for (Method method : _clz.getDeclaredMethods()) {
-            DBusProperty propertyAnnot = method.getAnnotation(DBusProperty.class);
+            DBusBoundProperty propertyAnnot = method.getAnnotation(DBusBoundProperty.class);
             if (propertyAnnot != null) {
                 String name = DBusNamingUtil.getPropertyName(method);
                 Access access = PropertyRef.accessForMethod(method);
@@ -398,7 +393,7 @@ public class ExportedObject {
     public static boolean isExcluded(Method _meth) {
         return !Modifier.isPublic(_meth.getModifiers())
                 || _meth.getAnnotation(DBusIgnore.class) != null
-                || _meth.getAnnotation(DBusProperty.class) != null
+                || _meth.getAnnotation(DBusBoundProperty.class) != null
                 || _meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class)
                         && _meth.getParameterCount() == 0;
     }

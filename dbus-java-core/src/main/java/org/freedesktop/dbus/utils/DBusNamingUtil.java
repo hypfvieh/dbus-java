@@ -1,8 +1,8 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusMemberName;
-import org.freedesktop.dbus.annotations.DBusProperty;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -51,8 +51,8 @@ public final class DBusNamingUtil {
     }
 
     /**
-     * Get a property name for a method (annotated with {@link DBusProperty}. These
-     * would typically be setter / getter type methods. If {@link DBusProperty#name()} is
+     * Get a property name for a method (annotated with {@link DBusBoundProperty}. These
+     * would typically be setter / getter type methods. If {@link DBusBoundProperty#name()} is
      * provided, that will take precedence.
      *
      * @param _method input method
@@ -62,16 +62,18 @@ public final class DBusNamingUtil {
     public static String getPropertyName(Method _method) {
         Objects.requireNonNull(_method, "method must not be null");
 
-        if (_method.isAnnotationPresent(DBusProperty.class)) {
-            String defName = _method.getAnnotation(DBusProperty.class).name();
+        if (_method.isAnnotationPresent(DBusBoundProperty.class)) {
+            String defName = _method.getAnnotation(DBusBoundProperty.class).name();
             if (!"".equals(defName)) {
                 return defName;
             }
         }
         String name = _method.getName();
-        if ((name.startsWith("get") && !"get".equals(name)) || (name.startsWith("set") && !"set".equals(name))) {
+        String lowerCaseName = name.toLowerCase();
+        if ((lowerCaseName.startsWith("get") && !"get".equals(lowerCaseName))
+         || (lowerCaseName.startsWith("set") && !"set".equals(lowerCaseName))) {
             name = name.substring(3);
-        } else if (name.startsWith("is") && !"is".equals(name)) {
+        } else if (lowerCaseName.startsWith("is") && !"is".equals(lowerCaseName)) {
             name = name.substring(2);
         }
         return name;

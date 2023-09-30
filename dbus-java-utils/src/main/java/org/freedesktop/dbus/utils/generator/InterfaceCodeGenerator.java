@@ -2,6 +2,7 @@ package org.freedesktop.dbus.utils.generator;
 
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.Position;
@@ -410,8 +411,8 @@ public class InterfaceCodeGenerator {
                 ClassMethod classMethod = new ClassMethod(
                    ("boolean".equalsIgnoreCase(clzzName) ? "is" :  "get") + attrName, clzzName, false);
                     _clzBldr.getMethods().add(classMethod);
-                classMethod.getAnnotations().add("@" + DBusProperty.class.getSimpleName());
-                _clzBldr.getImports().add(DBusProperty.class.getName());
+                classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+                _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
 
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
@@ -419,8 +420,8 @@ public class InterfaceCodeGenerator {
                 ClassMethod classMethod = new ClassMethod("set" + attrName, "void", false);
                 classMethod.getArguments().add(new MemberOrArgument(attrName.substring(0, 1).toLowerCase() + attrName.substring(1), clzzName));
                     _clzBldr.getMethods().add(classMethod);
-                classMethod.getAnnotations().add("@" + DBusProperty.class.getSimpleName());
-                _clzBldr.getImports().add(DBusProperty.class.getName());
+                classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+                _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
         } else {
             AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
@@ -649,7 +650,7 @@ public class InterfaceCodeGenerator {
         System.out.println("        --packageName <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
-        System.out.println("        --propertyMethods  | -m           Generate setter/getter methods for properties");
+        System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
         System.out.println("");
         System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
         System.out.println("        --version                        Show version information");
