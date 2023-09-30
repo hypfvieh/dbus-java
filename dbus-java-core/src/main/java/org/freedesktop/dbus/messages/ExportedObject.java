@@ -147,9 +147,9 @@ public class ExportedObject {
      * @throws DBusException in case of unknown data types
      */
     protected String generatePropertiesXml(Class<?> _clz) throws DBusException {
-        var xml = new StringBuilder();
-        var map = new HashMap<String, PropertyRef>();
-        var properties = _clz.getAnnotation(DBusProperties.class);
+        StringBuilder xml = new StringBuilder();
+        Map<String, PropertyRef> map = new HashMap<>();
+        DBusProperties properties = _clz.getAnnotation(DBusProperties.class);
         if (properties != null) {
             for (DBusProperty property : properties.value()) {
                 if (property.name().equals("")) {
@@ -163,7 +163,7 @@ public class ExportedObject {
             }
         }
 
-        var property = _clz.getAnnotation(DBusProperty.class);
+        DBusProperty property = _clz.getAnnotation(DBusProperty.class);
         if (property != null) {
             if (property.name().equals("")) {
                 throw new DBusException("Missing ''name'' on class DBUS property");
@@ -175,17 +175,17 @@ public class ExportedObject {
             map.put(property.name(), new PropertyRef(property));
         }
 
-        for (var method : _clz.getDeclaredMethods()) {
-            var propertyAnnot = method.getAnnotation(DBusProperty.class);
+        for (Method method : _clz.getDeclaredMethods()) {
+            DBusProperty propertyAnnot = method.getAnnotation(DBusProperty.class);
             if (propertyAnnot != null) {
-                var name = DBusNamingUtil.getPropertyName(method);
-                var access = PropertyRef.accessForMethod(method);
+                String name = DBusNamingUtil.getPropertyName(method);
+                Access access = PropertyRef.accessForMethod(method);
                 PropertyRef.checkMethod(method);
-                var type = PropertyRef.typeForMethod(method);
-                var ref = new PropertyRef(name, type, access);
+                Class<?> type = PropertyRef.typeForMethod(method);
+                PropertyRef ref = new PropertyRef(name, type, access);
                 propertyMethods.put(ref, method);
                 if (map.containsKey(name)) {
-                    var existing = map.get(name);
+                    PropertyRef existing = map.get(name);
                     if (access.equals(existing.getAccess())) {
                         throw new DBusException(MessageFormat.format(
                             "Property ''{0}'' has access mode ''{1}'' defined multiple times.", name, access));

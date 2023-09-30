@@ -17,6 +17,15 @@ public class DBusExecutionException extends RuntimeException {
         super(_message);
     }
 
+    /**
+    * Create an exception with the specified message
+    * @param _message message
+    * @param _cause cause
+    */
+    public DBusExecutionException(String _message, Throwable _cause) {
+        super(_message, _cause);
+    }
+
     public void setType(String _type) {
         this.type = _type;
     }

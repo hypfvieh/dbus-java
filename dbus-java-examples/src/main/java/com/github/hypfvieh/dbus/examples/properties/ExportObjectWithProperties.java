@@ -1,5 +1,6 @@
 package com.github.hypfvieh.dbus.examples.properties;
 
+import com.github.hypfvieh.dbus.examples.properties.InterfaceWithProperties.Color;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.interfaces.Properties;
@@ -21,7 +22,7 @@ public final class ExportObjectWithProperties {
     public static void main(String[] _args) throws Exception {
         try (var conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             // create object
-            var obj = new ObjectWithProperties();
+            ObjectWithProperties obj = new ObjectWithProperties();
             obj.setMyProperty("My property value");
 
             conn.requestBusName("com.acme");
@@ -38,11 +39,15 @@ public final class ExportObjectWithProperties {
 
                 // Print value of property from object via its getter
                 System.out.println("> " + myObject.getMyProperty());
+                System.out.println("> " + myObject.isMyOtherProperty());
+                System.out.println("> " + myObject.getMyAltProperty());
+                System.out.println("> " + myObject.getColor());
 
                 // Change values of property on object via their setters
                 myObject.setMyProperty("A new value!");
                 myObject.setMyOtherProperty(true);
                 myObject.setMyAltProperty(987);
+                myObject.setColor(Color.GREEN);
 
             }
 
@@ -50,6 +55,7 @@ public final class ExportObjectWithProperties {
             System.out.println("This should say 'A new value!': " + obj.getMyProperty());
             System.out.println("This should say 'true': " + obj.isMyOtherProperty());
             System.out.println("This should say '987': " + obj.getMyAltProperty());
+            System.out.println("This should say 'GREEN': " + obj.getColor());
         }
     }
 }

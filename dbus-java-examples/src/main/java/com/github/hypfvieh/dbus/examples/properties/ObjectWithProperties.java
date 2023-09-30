@@ -5,6 +5,7 @@ public class ObjectWithProperties implements InterfaceWithProperties {
     private String myProperty = "Initial value";
     private boolean myOtherProperty;
     private long myAltProperty = 123;
+    private Color color = Color.RED;
 
     @Override
     public String getObjectPath() {
@@ -51,4 +52,13 @@ public class ObjectWithProperties implements InterfaceWithProperties {
         myOtherProperty = _property;
     }
 
+    @Override
+    public Color getColor() {
+        return color;
+    }
+
+    @Override
+    public void setColor(Color _color) {
+        this.color = _color;
+    }
 }

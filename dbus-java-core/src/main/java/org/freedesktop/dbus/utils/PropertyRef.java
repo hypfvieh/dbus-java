@@ -65,8 +65,8 @@ public final  class PropertyRef {
     }
 
     public static Access accessForMethod(Method _method) {
-        var annotation = _method.getAnnotation(DBusProperty.class);
-        var access = _method.getName().startsWith("set") ? Access.WRITE : Access.READ;
+        DBusProperty annotation = _method.getAnnotation(DBusProperty.class);
+        Access access = _method.getName().startsWith("set") ? Access.WRITE : Access.READ;
         if (annotation.access().equals(Access.READ) || annotation.access().equals(Access.WRITE)) {
             access = annotation.access();
         }
@@ -74,8 +74,8 @@ public final  class PropertyRef {
     }
 
     public static Class<?> typeForMethod(Method _method) {
-        var annotation = _method.getAnnotation(DBusProperty.class);
-        var type = annotation.type();
+        DBusProperty annotation = _method.getAnnotation(DBusProperty.class);
+        Class<?> type = annotation.type();
         if (type == null || type.equals(Variant.class)) {
             if (accessForMethod(_method) == Access.READ) {
                 return _method.getReturnType();
@@ -87,7 +87,7 @@ public final  class PropertyRef {
     }
 
     public static void checkMethod(Method _method) {
-        var access = accessForMethod(_method);
+        Access access = accessForMethod(_method);
         if (access == Access.READ && (_method.getParameterCount() > 0 || _method.getReturnType().equals(void.class))) {
             throw new IllegalArgumentException("READ properties must have zero parameters, and not return void.");
         }

@@ -8,6 +8,10 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 @DBusInterfaceName("com.acme.InterfaceWithProperties")
 public interface InterfaceWithProperties extends DBusInterface {
 
+    enum Color {
+        RED, GREEN, BLUE
+    }
+
     String sayHello();
 
     int getJustAnInteger();
@@ -29,4 +33,10 @@ public interface InterfaceWithProperties extends DBusInterface {
 
     @DBusProperty
     void setMyOtherProperty(boolean  _property);
+
+    @DBusProperty
+    Color getColor();
+
+    @DBusProperty
+    void setColor(Color _color);
 }
