@@ -33,6 +33,7 @@
         <item name="Code Generation" href="/code-generation.html" />
         <item name="Exporting Objects" href="/exporting-objects.html" />
         <item name="Calling Remote Objects" href="/remote-objects.html" />
+        <item name="Properties" href="/properties.html" />
         <item name="Howto..." href="/howto.html" />
     </menu>
     <menu ref="reports"/>
