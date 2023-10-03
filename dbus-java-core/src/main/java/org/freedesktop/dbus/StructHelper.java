@@ -81,8 +81,6 @@ public final class StructHelper {
      *
      * @param <T> struct type
      *
-     * @return List of given struct type
-     *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
      * @throws SecurityException when constructor cannot be accesses
      * @throws InstantiationException when reflection fails
