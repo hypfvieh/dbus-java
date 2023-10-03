@@ -173,8 +173,8 @@ public final class StructHelper {
         try {
             Constructor<T> declaredConstructor = _classToConstruct.getDeclaredConstructor(_constructorArgs);
             declaredConstructor.setAccessible(true);
-            if (_values instanceof Object[]) {
-                return declaredConstructor.newInstance((Object[]) _values);
+            if (_values instanceof Object[] oa) {
+                return declaredConstructor.newInstance(oa);
             } else {
                 return declaredConstructor.newInstance(_values);
             }

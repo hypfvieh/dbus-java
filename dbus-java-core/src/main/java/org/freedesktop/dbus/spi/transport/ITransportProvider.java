@@ -37,28 +37,6 @@ public interface ITransportProvider {
     AbstractTransport createTransport(BusAddress _address, TransportConfig _config) throws TransportConfigurationException;
 
     /**
-     * Creates a new instance of this transport service using the given bus address and timeout.
-     * <b>
-     * This method is only implemented for compatibility to older transports.
-     * It will be removed in the future.
-     * Please use {@link #createTransport(BusAddress, TransportConfig)} instead.
-     * </b>
-     * @param _address bus address
-     * @param _timeout timeout to use (if supported)
-     *
-     * @return transport instance or null
-     *
-     * @throws TransformerConfigurationException when configuring transport fails
-     * @deprecated just used for compatibility will be removed in the future. Please use {@link #createTransport(BusAddress, TransportConfig)}.
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-21", forRemoval = true)
-    default AbstractTransport createTransport(BusAddress _address, int _timeout) throws TransportConfigurationException {
-        TransportConfig transportConfig = new TransportConfig();
-        transportConfig.setTimeout(_timeout);
-        return createTransport(_address, transportConfig);
-    }
-
-    /**
      * Type of transport.
      * Should return an identifier for the supported socket type (e.g. UNIX for unix socket, TCP for tcp sockets).
      *

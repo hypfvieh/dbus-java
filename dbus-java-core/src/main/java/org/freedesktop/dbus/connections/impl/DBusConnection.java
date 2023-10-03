@@ -4,43 +4,23 @@ import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.NotConnected;
-import org.freedesktop.dbus.interfaces.DBus;
-import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.interfaces.*;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.utils.AddressBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -59,8 +39,6 @@ import java.util.stream.Collectors;
 public final class DBusConnection extends AbstractConnection {
 
     static final ConcurrentMap<String, DBusConnection> CONNECTIONS           = new ConcurrentHashMap<>();
-
-    private static String                              dbusMachineIdFile;
 
     private final Logger                               logger                = LoggerFactory.getLogger(getClass());
 
@@ -88,162 +66,23 @@ public final class DBusConnection extends AbstractConnection {
         shared = _shared;
     }
 
-    /**
-     * Connect to the BUS. If a connection already exists to the specified Bus, a reference to it is returned. Will
-     * always register our own session to Dbus.
-     *
-     * @param _address The address of the bus to connect to
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @return {@link DBusConnection}
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection getConnection(String _address) throws DBusException {
-        return getConnection(_address, true, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
-    }
-
-    /**
-     * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned.
-     * Will register our own session to DBus if registerSelf is true (default).
-     * A new connection is created every time if shared-flag is false.
-     *
-     * @param _address The address of the bus to connect to
-     * @param _registerSelf register own session in dbus
-     * @param _shared use a shared connections
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @return {@link DBusConnection}
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared)
-            throws DBusException {
-        return getConnection(_address, _registerSelf, _shared, AbstractConnection.TCP_CONNECT_TIMEOUT);
-    }
-
-    /**
-     * Connect to the BUS. If a connection already exists to the specified Bus and the shared-flag is true, a reference is returned.
-     * Will register our own session to DBus if registerSelf is true (default).
-     * A new connection is created every time if shared-flag is false.
-     *
-     * @param _address The address of the bus to connect to
-     * @param _registerSelf register own session in dbus
-     * @param _shared use a shared connections
-     * @param _timeout connect timeout if this is a TCP socket, 0 will block forever, if this is not a TCP socket this value is ignored
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @return {@link DBusConnection}
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection getConnection(String _address, boolean _registerSelf, boolean _shared, int _timeout)
-            throws DBusException {
-
-        return DBusConnectionBuilder.forAddress(_address)
-            .withRegisterSelf(_registerSelf)
-            .withShared(_shared)
-            .transportConfig()
-                .withAdditionalConfig("TIMEOUT", 10000)
-            .back()
-            .build();
-    }
-
-    /**
-     * Connect to DBus.
-     * If a connection already exists to the specified Bus, a reference to it is returned.
-     *
-     * @param _bustype The Bus to connect to.
-
-     * @return {@link DBusConnection}
-     *
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection getConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, true, AbstractConnection.TCP_CONNECT_TIMEOUT);
-    }
-
-    /**
-     * Connect to DBus using a new connection even if there is already a connection established.
-     *
-     * @param _bustype The Bus to connect to.
-     *
-     * @return {@link DBusConnection}
-     *
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection newConnection(DBusBusType _bustype) throws DBusException {
-        return getConnection(_bustype, false, AbstractConnection.TCP_CONNECT_TIMEOUT);
-    }
-
-    /**
-     * Connect to the BUS.
-     * If a connection to the specified Bus already exists and shared-flag is true, a reference to it is returned.
-     * Otherwise a new connection will be created.
-     *
-     * @param _bustype The Bus to connect to.
-     * @param _shared use shared connection
-     * @param _timeout connect timeout if this is a TCP socket, 0 will block forever, if this is not a TCP socket this value is ignored
-     *
-     * @return {@link DBusConnection}
-     *
-     * @throws DBusException If there is a problem connecting to the Bus.
-     * @deprecated use {@link DBusConnectionBuilder}
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static DBusConnection getConnection(DBusBusType _bustype, boolean _shared, int _timeout) throws DBusException {
-        BusAddress address;
-
-        switch (_bustype) {
-            case SYSTEM:
-                address = AddressBuilder.getSystemConnection();
-                break;
-            case SESSION:
-                address = AddressBuilder.getSessionConnection(dbusMachineIdFile);
-                break;
-            default:
-                throw new DBusException("Invalid Bus Type: " + _bustype);
-        }
-
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX") // no unix transport
-                && TransportBuilder.getRegisteredBusTypes().contains("TCP") // but tcp transport
-                && (address == null || address.isBusType("UNIX"))) { // no address or unix socket address
-
-            // no UNIX transport available, or lookup did not return anything useful
-            address = BusAddress.of(System.getProperty(TCP_ADDRESS_PROPERTY));
-        }
-
-        return getConnection(address.toString(), true, _shared, _timeout);
-    }
-
     private AtomicInteger getConcurrentConnections() {
         return concurrentConnections;
     }
 
     /**
-     * Set a specific machine-id file path to read the machine ID from. The
-     * system variable DBUS_MACHINE_ID_LOCATION will take precedence
-     * over this.
-     *
-     * @param _dbusMachineIdFile file containing DBus machine ID.
-     * @deprecated no longer required when {@link DBusConnectionBuilder} is used
-     */
-    @Deprecated(since = "4.1.0", forRemoval = true)
-    public static void setDbusMachineIdFile(String _dbusMachineIdFile) {
-        DBusConnection.dbusMachineIdFile = _dbusMachineIdFile;
-    }
-
-    /**
-     * Connect to bus and register if asked.
-     * Should only be called by Builder.
+     * Connect to bus and register if asked. Should only be called by Builder.
      *
      * @param _registerSelf true to register
-     * @throws DBusException if registering fails
+     * @throws DBusException if registering or connection fails
      */
     void connect(boolean _registerSelf) throws DBusException {
         // start listening for calls
-        listen();
+        try {
+            listen();
+        } catch (IOException _ex) {
+            throw new DBusException(_ex);
+        }
 
         // register disconnect handlers
         DBusSigHandler<?> h = new SigHandler();
@@ -390,15 +229,12 @@ public final class DBusConnection extends AbstractConnection {
             logger.debug("", _exDb);
             throw new DBusException(_exDb);
         }
-        switch (rv.intValue()) {
-            case DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-            case DBus.DBUS_REQUEST_NAME_REPLY_EXISTS:
-                throw new DBusException("Failed to register bus name");
-            case DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-            case DBus.DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-            default:
-                break;
+
+        if (rv.intValue() == DBus.DBUS_REQUEST_NAME_REPLY_IN_QUEUE
+            || rv.intValue() == DBus.DBUS_REQUEST_NAME_REPLY_EXISTS) {
+            throw new DBusException("Failed to register bus name");
         }
+
         synchronized (this.busnames) {
             this.busnames.add(_busname);
         }
@@ -978,9 +814,9 @@ public final class DBusConnection extends AbstractConnection {
     private final class SigHandler implements DBusSigHandler<DBusSignal> {
         @Override
         public void handle(DBusSignal _signal) {
-             if (_signal instanceof DBus.NameAcquired) {
+            if (_signal instanceof DBus.NameAcquired na) {
                 synchronized (busnames) {
-                    busnames.add(((DBus.NameAcquired) _signal).name);
+                    busnames.add(na.name);
                 }
             }
         }

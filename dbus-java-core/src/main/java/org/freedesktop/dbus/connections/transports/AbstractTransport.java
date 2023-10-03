@@ -8,7 +8,9 @@ import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
 import org.freedesktop.dbus.spi.message.*;
+import org.freedesktop.dbus.utils.IThrowingSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,19 +31,20 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractTransport implements Closeable {
 
-    private static final AtomicLong TRANSPORT_ID_GENERATOR = new AtomicLong(0);
+    private static final AtomicLong              TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
     private final ServiceLoader<ISocketProvider> spiLoader              = ServiceLoader.load(ISocketProvider.class, AbstractTransport.class.getClassLoader());
 
-    private final Logger                         logger    = LoggerFactory.getLogger(getClass());
+    private final Logger                         logger                 = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;
 
     private TransportConnection                  transportConnection;
     private boolean                              fileDescriptorSupported;
 
-    private final long                           transportId = TRANSPORT_ID_GENERATOR.incrementAndGet();
+    private final long                           transportId            = TRANSPORT_ID_GENERATOR.incrementAndGet();
 
     private final TransportConfig                config;
+    private final MessageFactory                 messageFactory;
 
     protected AbstractTransport(BusAddress _address, TransportConfig _config) {
         address = Objects.requireNonNull(_address, "BusAddress required");
@@ -54,6 +57,7 @@ public abstract class AbstractTransport implements Closeable {
         }
         config.getSaslConfig().setGuid(address.getGuid());
         config.getSaslConfig().setFileDescriptorSupport(hasFileDescriptorSupport());
+        messageFactory = new MessageFactory(config.getEndianess());
     }
 
     /**
@@ -89,12 +93,13 @@ public abstract class AbstractTransport implements Closeable {
 
     /**
      * Returns true if inputReader and outputWriter are not yet closed.
+     *
      * @return boolean
      */
     public synchronized boolean isConnected() {
         return transportConnection != null
-                && transportConnection.getWriter() != null && !transportConnection.getWriter().isClosed()
-                && transportConnection.getReader() != null && !transportConnection.getReader().isClosed();
+            && transportConnection.getWriter() != null && !transportConnection.getWriter().isClosed()
+            && transportConnection.getReader() != null && !transportConnection.getReader().isClosed();
     }
 
     /**
@@ -105,20 +110,22 @@ public abstract class AbstractTransport implements Closeable {
     protected abstract boolean hasFileDescriptorSupport();
 
     /**
-     * Return true if the transport supports 'abstract' sockets.
-     * @return true if abstract sockets supported, false otherwise
+     * Abstract method implemented by concrete sub classes to establish a connection using whatever transport type (e.g.
+     * TCP/Unix socket).
      *
-     * @deprecated Is no longer used and will be removed
-     */
-    @Deprecated(forRemoval = true, since = "4.2.0 - 2022-07-18")
-    protected abstract boolean isAbstractAllowed();
-
-    /**
-     * Abstract method implemented by concrete sub classes to establish a connection
-     * using whatever transport type (e.g. TCP/Unix socket).
      * @throws IOException when connection fails
      */
     protected abstract SocketChannel connectImpl() throws IOException;
+
+    /**
+     * Abstract method implemented by concrete sub classes to listen for a new connection using whatever transport type
+     * (e.g. TCP/Unix socket).
+     *
+     * @throws IOException when connection fails
+     *
+     * @since 5.0.0 - 2023-05-18
+     */
+    protected abstract SocketChannel listenImpl() throws IOException;
 
     /**
      * Establish connection on created transport.<br>
@@ -134,7 +141,7 @@ public abstract class AbstractTransport implements Closeable {
         if (getAddress().isListeningSocket()) {
             throw new InvalidBusAddressException("Cannot connect when using listening address (try use listen() instead)");
         }
-        transportConnection = internalConnect();
+        transportConnection = internalConnect(() -> connectImpl());
         return transportConnection.getChannel();
     }
 
@@ -166,22 +173,29 @@ public abstract class AbstractTransport implements Closeable {
         if (!getAddress().isListeningSocket()) {
             throw new InvalidBusAddressException("Cannot listen on client connection address (try use connect() instead)");
         }
-        transportConnection = internalConnect();
+        transportConnection = internalConnect(() -> listenImpl());
         return transportConnection;
     }
 
-    private TransportConnection internalConnect() throws IOException {
+    /**
+     * Method used internally to do the actual connect.
+     *
+     * @param _channelProvider listen or connect call which will return a socket channel
+     * @return TransportConnection
+     * @throws IOException when channel provider could not create a SocketChannel
+     */
+    private TransportConnection internalConnect(IThrowingSupplier<SocketChannel, IOException> _channelProvider) throws IOException {
         if (config.getPreConnectCallback() != null) {
             config.getPreConnectCallback().accept(this);
         }
-        SocketChannel channel = connectImpl();
+        SocketChannel channel = _channelProvider.get();
+
         authenticate(channel);
         return createInputOutput(channel);
     }
 
     /**
-     * Set a callback which will be called right before the connection will
-     * be established to the transport.
+     * Set a callback which will be called right before the connection will be established to the transport.
      *
      * @param _run runnable to execute, null if no callback should be executed
      *
@@ -211,11 +225,11 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Setup message reader/writer.
-     * Will look for SPI provider first, if none is found default implementation is used.
+     * Setup message reader/writer. Will look for SPI provider first, if none is found default implementation is used.
      * The default implementation does not support file descriptor passing!
      *
      * @param _socket socket to use
+     * @param _messageFactory message factory
      * @return TransportConnection with configured socket channel, reader and writer
      */
     private TransportConnection createInputOutput(SocketChannel _socket) {
@@ -243,10 +257,11 @@ public abstract class AbstractTransport implements Closeable {
             logger.debug("No alternative ISocketProvider found, using built-in implementation");
             reader = new InputStreamMessageReader(_socket);
             writer = new OutputStreamMessageWriter(_socket);
-            fileDescriptorSupported = false; // internal implementation does not support file descriptors even if server allows it
+            fileDescriptorSupported = false; // internal implementation does not support file descriptors even if server
+                                             // allows it
         }
 
-        return new TransportConnection(_socket, writer, reader);
+        return new TransportConnection(messageFactory, _socket, writer, reader);
     }
 
     /**
@@ -277,44 +292,21 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
-     * Set the SASL authentication mode.
+     * Returns the current transport connection.
      *
-     * @deprecated please use {@link #getSaslConfig()}.getAuthMode() instead
+     * @return TransportConnection, null if not connected yet
      */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected int getSaslAuthMode() {
-        return getSaslConfig().getAuthMode();
+    public TransportConnection getTransportConnection() {
+        return transportConnection;
     }
 
     /**
-     * Set the SASL authentication mode.
+     * Currently configured message factory.
      *
-     * @deprecated please use {@link #getSaslConfig()}.getMode() instead
+     * @return factory
      */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected SASL.SaslMode getSaslMode() {
-        return getSaslConfig().getMode();
-    }
-    /**
-     * Set the SASL mode (server or client).
-     *
-     * @param _saslMode mode to set
-     * @deprecated please use {@link #getSaslConfig()}.setMode(int) instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected void setSaslMode(SASL.SaslMode _saslMode) {
-        getSaslConfig().setMode(_saslMode);
-    }
-
-    /**
-     * Set the SASL authentication mode.
-     *
-     * @param _mode mode to set
-     * @deprecated please use {@link #getSaslConfig()}.setSaslAuthMode(int) instead
-     */
-    @Deprecated(since = "4.2.0 - 2022-07-22", forRemoval = true)
-    protected void setSaslAuthMode(int _mode) {
-        getSaslConfig().setAuthMode(_mode);
+    public MessageFactory getMessageFactory() {
+        return messageFactory;
     }
 
     public TransportConfig getTransportConfig() {
@@ -325,18 +317,18 @@ public abstract class AbstractTransport implements Closeable {
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(" [id=")
-                .append(transportId)
-                .append(", ");
+            .append(transportId)
+            .append(", ");
 
         if (transportConnection != null) {
             sb.append("connectionId=")
-                    .append(transportConnection.getId())
-                    .append(", ");
+                .append(transportConnection.getId())
+                .append(", ");
         }
 
         sb.append("address=")
-                .append(address)
-                .append("]");
+            .append(address)
+            .append("]");
 
         return sb.toString();
     }
