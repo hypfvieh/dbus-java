@@ -14,8 +14,9 @@ methods. By convention this is done using a JavaBeans like pattern.
 This method is likely preferable in most cases, as it has a number of advantages over the
 legacy method described below.
 
- * Simpler code when exporting services, no need to implement `Get()`, `Set()` and `GetAll()` from `org.freedesktop.DBus.Properties`.  In fact, you do not need to implement this interface at all.
- * Simpler code when accessing services, no casting or unwrapping `Variant`.  
+ * Simpler code when exporting services, no need to implement `Get()`, `Set()` and `GetAll()` from `org.freedesktop.DBus.Properties`.
+   In fact, you do not need to implement this interface at all.
+ * Simpler code when accessing properties on services, no casting or accessing properties by string names.  
  * More natural. Java programmers are familiar with this pattern.
  * Makes it much easier to share interfaces between client and server code.
 
@@ -217,9 +218,9 @@ The above example, re-written to use `@DBusProperty`, would look like this.
 package com.acme;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.interfaces.Properties;
-import org.freedesktop.dbus.types.Variant;
 
 @DBusProperty(access = Access.READ_WRITE, name = "MyProperty", type = String.class)
 @DBusProperty(access = Access.READ_WRITE, name = "ZZZZZZZ", type = String.class)
@@ -252,34 +253,32 @@ public class MyObject implements MyInterface {
         return "Hello!";
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public <A> A Get(String _interfaceName, String _propertyName) {
-        if(_propertyName.equals("MyProperty")) {
-            return (A)myProperty;
-        }
-        else if(_propertyName.equals("ZZZZZZZ")) {
-            return (A)myAltProperty;
-        }
-        else if(_propertyName.equals("MyOtherProperty")) {
-            return (A)myOtherProperty;
-        }
-        else
+        if ("MyProperty".equals(_propertyName)) {
+            return (A) new Variant<>(myProperty);
+        } else if ("ZZZZZZZ".equals(_propertyName)) {
+            return (A) new Variant<>(myAltProperty);
+        } else if ("MyOtherProperty".equals(_propertyName)) {
+            return (A) new Variant<>(myOtherProperty);
+        } else {
             throw new IllegalArgumentException();
+        }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <A> void Set(String _interfaceName, String _propertyName, A _value) {
-         if(_propertyName.equals("MyProperty")) {
-            myProperty = (String)_value;
-        }
-        else if(_propertyName.equals("ZZZZZZZ")) {
-            myAltProperty = (String)_value;
-        }
-        else if(_propertyName.equals("MyOtherProperty")) {
-            myOtherProperty = (Boolean)_value;
-        }
-        else
+        if ("MyProperty".equals(_propertyName)) {
+            myProperty = ((Variant<String>) _value).getValue();
+        } else if ("ZZZZZZZ".equals(_propertyName)) {
+            myAltProperty = ((Variant<Long>) _value).getValue();
+        } else if ("MyOtherProperty".equals(_propertyName)) {
+            myOtherProperty = ((Variant<Boolean>) _value).getValue();
+        } else {
             throw new IllegalArgumentException();
+        }
     }
 
     @Override
@@ -314,14 +313,14 @@ public class ImportMyObject {
     ImportMyObject() throws DBusException {
         DBusConnection conn = DBusConnectionBuilder.forSessionBus().build();
         
-        MyInterface  obj = conn.getRemoteObject(MyInterface.class);
-        
-        System.out.println("My property: " + 
-                        ((Variant<String>)obj.Get("MyProperty")).getValue());
-        System.out.println("My Alt property: " + 
-                        ((Variant<String>)obj.Get("ZZZZZZZ")).getValue());
-        System.out.println("My Other property: " + 
-                        ((Variant<Boolean>)obj.Get("MyOtherProperty")).getValue());
+        MyInterface  obj = conn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
+
+        System.out.println("My property: "
+            + (String) obj.Get("com.acme.MyInterface", "MyProperty"));
+        System.out.println("My Alt property: "
+            + (Long) obj.Get("com.acme.MyInterface", "ZZZZZZZ"));
+        System.out.println("My Other property: "
+            + (Boolean) obj.Get("com.acme.MyInterface", "MyOtherProperty"));
     }
 
     public static void main(String[] args) throws DBusException {
