@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>4.3.1</version>
+    <version>4.3.2-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/dbus-java</url>
@@ -466,7 +466,7 @@
         <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
         <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
         <url>https://github.com/hypfvieh/dbus-java.git</url>
-        <tag>dbus-java-parent-4.3.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
