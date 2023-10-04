@@ -10,6 +10,7 @@ import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -80,9 +81,20 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             assertEquals(null, exception.get()); // assertEquals() gives a better error message
         }
 
-        long dbusDaemonThreadCnt = Thread.getAllStackTraces().keySet().stream()
-            .filter(e -> e.getName().startsWith(DBusDaemon.class.getSimpleName()))
-            .count();
-        assertEquals(0, dbusDaemonThreadCnt, "All dbus daemon threads should have been terminated");
+        Entry<Thread, StackTraceElement[]> elems = null;
+        for (Entry<Thread, StackTraceElement[]> stacks : Thread.getAllStackTraces().entrySet()) {
+            if (stacks.getKey().getName().startsWith(DBusDaemon.class.getSimpleName())) {
+                elems = stacks;
+                break;
+            }
+        }
+
+        if (elems != null) {
+            System.out.println("Found possibly running instances: " + elems.getKey().getName());
+            for (StackTraceElement st : elems.getValue()) {
+                System.out.println("\t" + st.toString());
+            }
+            fail("All dbus daemon threads should have been terminated");
+        }
     }
 }
