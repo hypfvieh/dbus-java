@@ -3,7 +3,6 @@ package org.freedesktop.dbus.transport.junixsocket;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.spi.message.AbstractInputStreamMessageReader;
 import org.newsclub.net.unix.AFUNIXSocketChannel;
-import org.newsclub.net.unix.FileDescriptorCast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ public class JUnixSocketMessageReader extends AbstractInputStreamMessageReader {
                 } else {
                     List<org.freedesktop.dbus.FileDescriptor> fds = new ArrayList<>();
                     for (FileDescriptor fd : receivedFileDescriptors) {
-                        fds.add(new org.freedesktop.dbus.FileDescriptor(FileDescriptorCast.using(fd).as(Integer.class)));
+                        fds.add(new org.freedesktop.dbus.FileDescriptor(fd));
                     }
 
                     logger.debug("=> {}", fds);

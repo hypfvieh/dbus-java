@@ -14,6 +14,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.messages;
     exports org.freedesktop.dbus.spi.transport;
     exports org.freedesktop.dbus.spi.message;
+    exports org.freedesktop.dbus.spi.filedescriptors;
     exports org.freedesktop.dbus.types;
     exports org.freedesktop.dbus.utils;
 
@@ -25,4 +26,5 @@ module org.freedesktop.dbus {
 
     uses org.freedesktop.dbus.spi.message.ISocketProvider;
     uses org.freedesktop.dbus.spi.transport.ITransportProvider;
+    uses org.freedesktop.dbus.spi.filedescriptors.IFileDescriptorHelper;
 }

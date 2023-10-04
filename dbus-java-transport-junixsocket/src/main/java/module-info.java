@@ -10,4 +10,7 @@ module org.freedesktop.dbus.transport.junixsocket {
 
     provides org.freedesktop.dbus.spi.message.ISocketProvider
             with org.freedesktop.dbus.transport.junixsocket.JUnixSocketSocketProvider;
+
+    provides org.freedesktop.dbus.spi.filedescriptors.IFileDescriptorHelper
+            with org.freedesktop.dbus.transport.junixsocket.JUnixSocketFileDescriptorHelper;
 }

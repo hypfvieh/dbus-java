@@ -1,10 +1,11 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.exceptions.MarshallingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.freedesktop.dbus.spi.filedescriptors.IFileDescriptorHelper;
+import org.freedesktop.dbus.spi.filedescriptors.ReflectionFileDescriptorHelper;
 
-import java.lang.reflect.*;
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 /**
  * Represents a FileDescriptor to be passed over the bus.  Can be created from
@@ -13,8 +14,7 @@ import java.lang.reflect.*;
  *
  */
 public class FileDescriptor {
-
-    private final Logger      logger          = LoggerFactory.getLogger(getClass());
+    private static final ServiceLoader<IFileDescriptorHelper> HELPERS = ServiceLoader.load(IFileDescriptorHelper.class, FileDescriptor.class.getClassLoader());
 
     private final int fd;
 
@@ -27,7 +27,16 @@ public class FileDescriptor {
     }
 
     public java.io.FileDescriptor toJavaFileDescriptor() throws MarshallingException {
-        return createFileDescriptorByReflection(fd);
+        for (IFileDescriptorHelper helper : HELPERS) {
+            Optional<java.io.FileDescriptor> result = helper.createFileDescriptor(fd);
+            if (result.isPresent()) {
+                return result.get();
+            }
+        }
+
+        return ReflectionFileDescriptorHelper.getInstance()
+                .flatMap(helper -> helper.createFileDescriptor(fd))
+                .orElseThrow(() -> new MarshallingException("Could not create new FileDescriptor instance"));
     }
 
     public int getIntFileDescriptor() {
@@ -35,26 +44,37 @@ public class FileDescriptor {
     }
 
     private int getFileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
-        Field declaredField;
-        try {
-            declaredField = _data.getClass().getDeclaredField("fd");
-            declaredField.setAccessible(true);
-            return declaredField.getInt(_data);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException _ex) {
-            logger.error("Could not get filedescriptor by reflection.", _ex);
-            throw new MarshallingException("Could not get member 'fd' of FileDescriptor by reflection!", _ex);
+        for (IFileDescriptorHelper helper : HELPERS) {
+            Optional<Integer> result = helper.getFileDescriptorValue(_data);
+            if (result.isPresent()) {
+                return result.get();
+            }
         }
+
+        return ReflectionFileDescriptorHelper.getInstance()
+                .flatMap(helper -> helper.getFileDescriptorValue(_data))
+                .orElseThrow(() -> new MarshallingException("Could not get FileDescriptor value"));
     }
 
-    private java.io.FileDescriptor createFileDescriptorByReflection(long _demarshallint) throws MarshallingException {
-        try {
-            Constructor<java.io.FileDescriptor> constructor = java.io.FileDescriptor.class.getDeclaredConstructor(int.class);
-            constructor.setAccessible(true);
-            return constructor.newInstance((int) _demarshallint);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException _ex) {
-            logger.error("Could not create new FileDescriptor instance by reflection.", _ex);
-            throw new MarshallingException("Could not create new FileDescriptor instance by reflection", _ex);
+    @Override
+    public boolean equals(Object _o) {
+        if (this == _o) {
+            return true;
         }
+        if (_o == null || getClass() != _o.getClass()) {
+            return false;
+        }
+        FileDescriptor that = (FileDescriptor) _o;
+        return fd == that.fd;
+    }
+
+    @Override
+    public int hashCode() {
+        return fd;
+    }
+
+    @Override
+    public String toString() {
+        return FileDescriptor.class.getSimpleName() + "[fd=" + fd + "]";
     }
 }

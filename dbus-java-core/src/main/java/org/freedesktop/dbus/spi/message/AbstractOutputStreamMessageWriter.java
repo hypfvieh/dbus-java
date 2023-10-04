@@ -40,6 +40,10 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
             return;
         }
 
+        if (hasFileDescriptorSupport) {
+            writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
+        }
+
         for (byte[] buf : _msg.getWireData()) {
             if (logger.isTraceEnabled()) {
                 logger.trace("{}", null == buf ? "(buffer was null)" : Hexdump.format(buf));
@@ -49,10 +53,6 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
             }
 
             outputChannel.write(ByteBuffer.wrap(buf));
-        }
-
-        if (hasFileDescriptorSupport) {
-            writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
         }
 
         logger.trace("Message sent: {}", _msg);

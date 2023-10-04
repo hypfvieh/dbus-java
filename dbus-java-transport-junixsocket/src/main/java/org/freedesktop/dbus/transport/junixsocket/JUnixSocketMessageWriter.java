@@ -1,8 +1,8 @@
 package org.freedesktop.dbus.transport.junixsocket;
 
+import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.freedesktop.dbus.spi.message.AbstractOutputStreamMessageWriter;
 import org.newsclub.net.unix.AFUNIXSocketChannel;
-import org.newsclub.net.unix.FileDescriptorCast;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -19,11 +19,15 @@ public class JUnixSocketMessageWriter extends AbstractOutputStreamMessageWriter 
     protected void writeFileDescriptors(SocketChannel _outputChannel, List<org.freedesktop.dbus.FileDescriptor> _filedescriptors) throws IOException {
         if (_outputChannel instanceof AFUNIXSocketChannel) {
             if (_filedescriptors != null && !_filedescriptors.isEmpty()) {
-                FileDescriptor[] fds = new FileDescriptor[_filedescriptors.size()];
-                for (int i = 0; i < _filedescriptors.size(); i++) {
-                    fds[i] = FileDescriptorCast.unsafeUsing(_filedescriptors.get(i).getIntFileDescriptor()).getFileDescriptor();
+                try {
+                    FileDescriptor[] fds = new FileDescriptor[_filedescriptors.size()];
+                    for (int i = 0; i < _filedescriptors.size(); i++) {
+                        fds[i] = _filedescriptors.get(i).toJavaFileDescriptor();
+                    }
+                    ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors(fds);
+                } catch (MarshallingException _ex) {
+                    throw new IOException("unable to marshall file descriptors", _ex);
                 }
-                ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors(fds);
             } else {
                 ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors((FileDescriptor[]) null);
             }

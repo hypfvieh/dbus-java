@@ -313,6 +313,10 @@ public abstract class AbstractTransport implements Closeable {
         return config;
     }
 
+    public boolean isFileDescriptorSupported() {
+        return fileDescriptorSupported;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
