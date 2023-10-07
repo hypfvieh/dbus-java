@@ -1,5 +1,6 @@
-package org.freedesktop.dbus.spi.filedescriptors;
+package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.spi.message.ISocketProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,28 +10,38 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-public class ReflectionFileDescriptorHelper implements IFileDescriptorHelper {
+/**
+ * Helper to work with {@link FileDescriptor} instances by using reflection
+ *
+ * @author Sergey Shatunov
+ * @since 5.0.0 - 2023-10-07
+ */
+public final class ReflectionFileDescriptorHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionFileDescriptorHelper.class);
-    private static volatile IFileDescriptorHelper instance;
+    private static volatile ReflectionFileDescriptorHelper instance;
 
     private final Field fdField;
     private final Constructor<FileDescriptor> constructor;
 
-    public ReflectionFileDescriptorHelper() throws ReflectiveOperationException {
+    private ReflectionFileDescriptorHelper() throws ReflectiveOperationException {
         fdField = FileDescriptor.class.getDeclaredField("fd");
         fdField.setAccessible(true);
         constructor = FileDescriptor.class.getDeclaredConstructor(int.class);
         constructor.setAccessible(true);
     }
 
-    public static Optional<? extends IFileDescriptorHelper> getInstance()  {
+    /**
+     * @return {@link ReflectionFileDescriptorHelper} instance, or {@link Optional#empty()} if it cannot be initialized
+     * (mainly due to missing reflection access)
+     */
+    public static Optional<ReflectionFileDescriptorHelper> getInstance() {
         if (instance == null) {
             synchronized (ReflectionFileDescriptorHelper.class) {
                 if (instance == null) {
                     try {
                         instance = new ReflectionFileDescriptorHelper();
                     } catch (ReflectiveOperationException _ex) {
-                        LOGGER.error("Unable to hook up java.io.FileDescriptor by using reflection.");
+                        LOGGER.error("Unable to hook up java.io.FileDescriptor by using reflection.", _ex);
                         return Optional.empty();
                     }
                 }
@@ -40,7 +51,9 @@ public class ReflectionFileDescriptorHelper implements IFileDescriptorHelper {
         return Optional.ofNullable(instance);
     }
 
-    @Override
+    /**
+     * @see ISocketProvider#getFileDescriptorValue(FileDescriptor)
+     */
     public Optional<Integer> getFileDescriptorValue(FileDescriptor _fd) {
         try {
             return Optional.of(fdField.getInt(_fd));
@@ -50,7 +63,9 @@ public class ReflectionFileDescriptorHelper implements IFileDescriptorHelper {
         }
     }
 
-    @Override
+    /**
+     * @see ISocketProvider#createFileDescriptor(int)
+     */
     public Optional<FileDescriptor> createFileDescriptor(int _fd) {
         try {
             return Optional.of(constructor.newInstance(_fd));

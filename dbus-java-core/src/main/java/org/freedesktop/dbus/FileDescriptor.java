@@ -1,8 +1,8 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.exceptions.MarshallingException;
-import org.freedesktop.dbus.spi.filedescriptors.IFileDescriptorHelper;
-import org.freedesktop.dbus.spi.filedescriptors.ReflectionFileDescriptorHelper;
+import org.freedesktop.dbus.spi.message.ISocketProvider;
+import org.freedesktop.dbus.utils.ReflectionFileDescriptorHelper;
 
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -11,10 +11,9 @@ import java.util.ServiceLoader;
  * Represents a FileDescriptor to be passed over the bus.  Can be created from
  * either an integer(gotten through some JNI/JNA/JNR call) or from a
  * java.io.FileDescriptor.
- *
  */
-public class FileDescriptor {
-    private static final ServiceLoader<IFileDescriptorHelper> HELPERS = ServiceLoader.load(IFileDescriptorHelper.class, FileDescriptor.class.getClassLoader());
+public final class FileDescriptor {
+    private static final ServiceLoader<ISocketProvider> SPI_LOADER = ServiceLoader.load(ISocketProvider.class, FileDescriptor.class.getClassLoader());
 
     private final int fd;
 
@@ -27,8 +26,8 @@ public class FileDescriptor {
     }
 
     public java.io.FileDescriptor toJavaFileDescriptor() throws MarshallingException {
-        for (IFileDescriptorHelper helper : HELPERS) {
-            Optional<java.io.FileDescriptor> result = helper.createFileDescriptor(fd);
+        for (ISocketProvider provider : SPI_LOADER) {
+            Optional<java.io.FileDescriptor> result = provider.createFileDescriptor(fd);
             if (result.isPresent()) {
                 return result.get();
             }
@@ -44,8 +43,8 @@ public class FileDescriptor {
     }
 
     private int getFileDescriptor(java.io.FileDescriptor _data) throws MarshallingException {
-        for (IFileDescriptorHelper helper : HELPERS) {
-            Optional<Integer> result = helper.getFileDescriptorValue(_data);
+        for (ISocketProvider provider : SPI_LOADER) {
+            Optional<Integer> result = provider.getFileDescriptorValue(_data);
             if (result.isPresent()) {
                 return result.get();
             }
