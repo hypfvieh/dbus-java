@@ -2,6 +2,7 @@ module:org.freedesktop.dbus
 org.freedesktop.dbus
 org.freedesktop.dbus.annotations
 org.freedesktop.dbus.bin
+org.freedesktop.dbus.config
 org.freedesktop.dbus.connections
 org.freedesktop.dbus.connections.config
 org.freedesktop.dbus.connections.impl

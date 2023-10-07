@@ -12,7 +12,7 @@ import org.freedesktop.dbus.annotations.DBusProperty;
 
 /**
  * Contains the same information as a {@link DBusBoundProperty}, but as a POJO. Use
- * internally when dealing with properties that are derived methods annotated
+ * internally when dealing with properties that are derived from methods annotated
  * with said annotation.
  */
 public final  class PropertyRef {

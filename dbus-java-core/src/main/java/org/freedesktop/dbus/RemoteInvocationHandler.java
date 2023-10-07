@@ -4,14 +4,12 @@ import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.errors.Error;
 import org.freedesktop.dbus.errors.NoReply;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
@@ -20,11 +18,7 @@ import org.freedesktop.dbus.utils.PropertyRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.Arrays;
 
 public class RemoteInvocationHandler implements InvocationHandler {
@@ -78,10 +72,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         } else if (_method.getName().equals("wait")) {
             if (0 == _args.length) {
                 remote.wait();
-            } else if (1 == _args.length && _args[0] instanceof Long) {
-                remote.wait((Long) _args[0]);
-            } else if (2 == _args.length && _args[0] instanceof Long && _args[1] instanceof Integer) {
-                remote.wait((Long) _args[0], (Integer) _args[1]);
+            } else if (1 == _args.length && _args[0] instanceof Long l) {
+                remote.wait(l);
+            } else if (2 == _args.length && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
+                remote.wait(l, i);
             }
             if (_args.length <= 2) {
                 return null;
@@ -133,28 +127,28 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         switch (rp.length) {
-        case 0:
-            if (null == c || Void.TYPE.equals(c)) {
-                return null;
-            } else {
-                throw new DBusException("Wrong return type (got void, expected a value)");
-            }
-        case 1:
-            return rp[0];
-        default:
+            case 0:
+                if (null == c || Void.TYPE.equals(c)) {
+                    return null;
+                } else {
+                    throw new DBusException("Wrong return type (got void, expected a value)");
+                }
+            case 1:
+                return rp[0];
+            default:
 
-            // check we are meant to return multiple values
-            if (!Tuple.class.isAssignableFrom(c)) {
-                throw new DBusException("Wrong return type (not expecting Tuple)");
-            }
+                // check we are meant to return multiple values
+                if (!Tuple.class.isAssignableFrom(c)) {
+                    throw new DBusException("Wrong return type (not expecting Tuple)");
+                }
 
-            Constructor<? extends Object> cons = c.getConstructors()[0];
-            try {
-                return cons.newInstance(rp);
-            } catch (Exception _ex) {
-                LOGGER.debug("", _ex);
-                throw new DBusException(_ex.getMessage());
-            }
+                Constructor<? extends Object> cons = c.getConstructors()[0];
+                try {
+                    return cons.newInstance(rp);
+                } catch (Exception _ex) {
+                    LOGGER.debug("", _ex);
+                    throw new DBusException(_ex.getMessage());
+                }
         }
     }
 
@@ -190,10 +184,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         try {
             String name = DBusNamingUtil.getMethodName(_m);
             if (null == _ro.getInterface()) {
-                call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), null, name, flags, sig, args);
+                call = _conn.getMessageFactory().createMethodCall(null, _ro.getBusName(), _ro.getObjectPath(), null, name, flags, sig, args);
             } else {
                 String iface = DBusNamingUtil.getInterfaceName(_ro.getInterface());
-                call = new MethodCall(_ro.getBusName(), _ro.getObjectPath(), iface, name, flags, sig, args);
+                call = _conn.getMessageFactory().createMethodCall(null, _ro.getBusName(), _ro.getObjectPath(), iface, name, flags, sig, args);
             }
         } catch (DBusException _ex) {
             LOGGER.debug("Failed to construct outgoing method call.", _ex);
@@ -226,8 +220,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
             throw new NoReply("No reply within specified time");
         }
 
-        if (reply instanceof Error) {
-            ((Error) reply).throwException();
+        if (reply instanceof Error err) {
+            err.throwException();
         }
 
         try {

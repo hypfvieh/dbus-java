@@ -5,26 +5,9 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public final class AddressBuilder {
-    /**
-     * @deprecated Constant has been moved to {@link DBusSysProps}.
-     */
-    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
-    public static final String  DBUS_SYSTEM_BUS_ADDRESS        = "DBUS_SYSTEM_BUS_ADDRESS";
-    /**
-     * @deprecated Constant has been moved to {@link DBusSysProps}.
-     */
-    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
-    public static final String  DEFAULT_SYSTEM_BUS_ADDRESS     = "unix:path=/var/run/dbus/system_bus_socket";
-    /**
-     * @deprecated Constant has been moved to {@link DBusSysProps}.
-     */
-    @Deprecated(forRemoval = true, since = "v4.2.2 - 2023-01-20")
-    public static final String  DBUS_SESSION_BUS_ADDRESS       = "DBUS_SESSION_BUS_ADDRESS";
 
     private AddressBuilder() {}
 

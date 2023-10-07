@@ -5,16 +5,11 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.Util;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -199,9 +194,9 @@ public class StructTreeBuilder {
 
         for (Type type : dataType) {
             StructTree subTree;
-            if (type instanceof ParameterizedType) {
-                subTree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
-                subTree.subType.addAll(buildTree((ParameterizedType) type));
+            if (type instanceof ParameterizedType pt) {
+                subTree = new StructTree(pt.getRawType().getTypeName());
+                subTree.subType.addAll(buildTree(pt));
             } else {
                 subTree = new StructTree(type.getClass().getName());
             }
@@ -225,9 +220,9 @@ public class StructTreeBuilder {
         }
 
         for (Type type : _pType.getActualTypeArguments()) {
-            if (type instanceof ParameterizedType) {
-                StructTree tree = new StructTree(((ParameterizedType) type).getRawType().getTypeName());
-                tree.subType.addAll(buildTree((ParameterizedType) type));
+            if (type instanceof ParameterizedType pt) {
+                StructTree tree = new StructTree(pt.getRawType().getTypeName());
+                tree.subType.addAll(buildTree(pt));
                 trees.add(tree);
             } else {
                 StructTree tree = new StructTree(type.getTypeName());

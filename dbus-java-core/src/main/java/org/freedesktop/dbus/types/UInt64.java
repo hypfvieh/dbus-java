@@ -131,7 +131,7 @@ public class UInt64 extends Number implements Comparable<UInt64> {
     /** Test two UInt64s for equality. */
     @Override
     public boolean equals(Object _o) {
-        return _o instanceof UInt64 && this.value.equals(((UInt64) _o).value);
+        return _o instanceof UInt64 ui && this.value.equals(ui.value);
     }
 
     @Override

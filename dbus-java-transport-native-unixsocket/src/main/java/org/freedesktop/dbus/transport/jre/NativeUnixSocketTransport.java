@@ -58,15 +58,28 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
     @Override
     public SocketChannel connectImpl() throws IOException {
         if (getAddress().isListeningSocket()) {
-            if (serverSocket == null || !serverSocket.isOpen()) {
-                serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
-                serverSocket.bind(unixSocketAddress);
-            }
-            socket = serverSocket.accept();
+            throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
         } else {
             socket = SocketChannel.open(unixSocketAddress);
         }
 
+        socket.configureBlocking(true);
+
+        return socket;
+    }
+
+    @Override
+    public SocketChannel listenImpl() throws IOException {
+        if (!getAddress().isListeningSocket()) {
+            throw new IOException("Cannot listen on a client connection (use connectImpl() instead)");
+        }
+
+        if (serverSocket == null || !serverSocket.isOpen()) {
+            serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX).bind(unixSocketAddress);
+            serverSocket.configureBlocking(true);
+        }
+
+        socket = serverSocket.accept();
         socket.configureBlocking(true);
 
         return socket;
@@ -85,12 +98,6 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
         }
-    }
-
-    @Deprecated
-    @Override
-    public boolean isAbstractAllowed() {
-        return false;
     }
 
     @Override

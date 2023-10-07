@@ -19,7 +19,10 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Sample on Daemon.
+ * Sample for daemon usage.
+ * <p>
+ * Creates a and starts a DBus daemon, connects to it and exports some objects.
+ * </p>
  *
  * @author hypfvieh
  */
@@ -69,32 +72,18 @@ public class RunTwoPartDaemon {
     private void connectSelf() throws DBusException, IOException {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);
-        for (int i = 0; i < 6; i++) {
-            DBusConnection conn;
-            try  {
-                conn = DBusConnectionBuilder.forAddress(busAddress).build();
-                log.info("Connected to embedded DBus {}", busAddress);
+        try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
+            log.info("Connected to embedded DBus {}", busAddress);
 
-                conn.requestBusName(EXPORT_NAME);
-                SomeExport someExport = new SomeExport();
-                conn.exportObject("/", someExport);
+            conn.requestBusName(EXPORT_NAME);
+            SomeExport someExport = new SomeExport();
+            conn.exportObject("/", someExport);
 
-                // wait for clients
-                while (true) {
-                    try {
-                        Thread.sleep(500L);
-                    } catch (InterruptedException _ex) {
-                    }
-                }
-            } catch (DBusException _ex) {
-                if (i > 4) {
-                    throw _ex;
-                }
+            // wait for clients
+            while (true) {
                 try {
-                    Thread.sleep(500);
-                } catch (InterruptedException _exIe) {
-                    throw new IOException("Interrupted. ", _exIe);
-                }
+                    Thread.sleep(500L);
+                } catch (InterruptedException _ex) {}
             }
         }
     }

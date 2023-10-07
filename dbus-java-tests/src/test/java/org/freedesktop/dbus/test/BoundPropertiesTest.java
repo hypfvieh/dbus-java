@@ -57,8 +57,6 @@ public class BoundPropertiesTest extends AbstractDBusBaseTest {
 //                myObject.setAList(Arrays.asList(999, 998, 997, 996));
 //                myObject.setAMap(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2));
 
-                Thread.sleep(100000000L);
-
                 assertEquals(myObject.getMyProperty(), "New value");
                 assertTrue(myObject.isMyOtherProperty());
                 assertEquals(myObject.getMyAltProperty(), 987);

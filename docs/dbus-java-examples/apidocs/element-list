@@ -1,5 +1,6 @@
 com.github.hypfvieh.dbus.examples.daemon
 com.github.hypfvieh.dbus.examples.daemon.twopart
+com.github.hypfvieh.dbus.examples.mpris
 com.github.hypfvieh.dbus.examples.nested
 com.github.hypfvieh.dbus.examples.nested.data
 com.github.hypfvieh.dbus.examples.networkmanager
@@ -11,3 +12,5 @@ org.freedesktop
 org.freedesktop.networkmanager
 org.freedesktop.networkmanager.device
 org.freedesktop.networkmanager.settings
+org.mpris
+org.mpris.mediaplayer2

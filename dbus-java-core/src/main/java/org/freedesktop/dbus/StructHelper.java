@@ -81,8 +81,6 @@ public final class StructHelper {
      *
      * @param <T> struct type
      *
-     * @return List of given struct type
-     *
      * @throws NoSuchMethodException when no constructor can be found for the arguments of the struct
      * @throws SecurityException when constructor cannot be accesses
      * @throws InstantiationException when reflection fails
@@ -173,8 +171,8 @@ public final class StructHelper {
         try {
             Constructor<T> declaredConstructor = _classToConstruct.getDeclaredConstructor(_constructorArgs);
             declaredConstructor.setAccessible(true);
-            if (_values instanceof Object[]) {
-                return declaredConstructor.newInstance((Object[]) _values);
+            if (_values instanceof Object[] oa) {
+                return declaredConstructor.newInstance(oa);
             } else {
                 return declaredConstructor.newInstance(_values);
             }

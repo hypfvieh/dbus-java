@@ -3,15 +3,13 @@ package org.freedesktop.dbus.utils.bin;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.errors.Error;
+import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MessageFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public final class Caller {
 
@@ -28,23 +26,24 @@ public final class Caller {
                 System.exit(1);
             }
 
-            Message m = new MethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
+            MessageFactory msgFactory = conn.getTransportConnection().getMessageFactory();
+            Message m = msgFactory.createMethodCall("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello", (byte) 0, null);
             conn.writeMessage(m);
 
             if ("".equals(_args[2])) {
                 _args[2] = null;
             }
             if (_args.length == 4) {
-                m = new MethodCall(_args[0], _args[1], _args[2], _args[3], (byte) 0, null);
+                m = msgFactory.createMethodCall(_args[0], _args[1], _args[2], _args[3], (byte) 0, null);
             } else {
                 List<Type> lts = new ArrayList<>();
                 Marshalling.getJavaType(_args[4], lts, -1);
                 Type[] ts = lts.toArray(new Type[0]);
                 Object[] os = new Object[_args.length - 5];
                 for (int i = 5; i < _args.length; i++) {
-                    if (ts[i - 5] instanceof Class) {
+                    if (ts[i - 5] instanceof Class<?> clz) {
                         try {
-                            Constructor<?> c = ((Class<?>) ts[i - 5]).getConstructor(String.class);
+                            Constructor<?> c = clz.getConstructor(String.class);
                             os[i - 5] = c.newInstance(_args[i]);
                         } catch (Exception _ex) {
                             os[i - 5] = _args[i];
@@ -53,15 +52,15 @@ public final class Caller {
                         os[i - 5] = _args[i];
                     }
                 }
-                m = new MethodCall(_args[0], _args[1], _args[2], _args[3], (byte) 0, _args[4], os);
+                m = msgFactory.createMethodCall(_args[0], _args[1], _args[2], _args[3], (byte) 0, _args[4], os);
             }
             long serial = m.getSerial();
             conn.writeMessage(m);
             do {
                 m = conn.readMessage();
             } while (serial != m.getReplySerial());
-            if (m instanceof Error) {
-                ((Error) m).throwException();
+            if (m instanceof Error err) {
+                err.throwException();
             } else {
                 Object[] os = m.getParameters();
                 System.out.println(Arrays.deepToString(os));

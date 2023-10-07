@@ -128,9 +128,8 @@ public class InterfaceCodeGenerator {
     static List<Element> convertToElementList(NodeList _nodeList) {
         List<Element> elemList = new ArrayList<>();
         for (int i = 0; i < _nodeList.getLength(); i++) {
-            if (_nodeList.item(i) instanceof Element) {
-                Element elem = (Element) _nodeList.item(i);
-                elemList.add(elem);
+            if (_nodeList.item(i) instanceof Element elm) {
+                elemList.add(elm);
             }
         }
         return elemList;
