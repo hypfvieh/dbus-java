@@ -22,11 +22,12 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final SocketChannel outputChannel;
-    private final boolean       hasFileDescriptorSupport;
 
-    public AbstractOutputStreamMessageWriter(final SocketChannel _out, boolean _fileDescriptorSupport) {
+    private final ISocketProvider socketProviderImpl;
+
+    public AbstractOutputStreamMessageWriter(final SocketChannel _out, ISocketProvider _socketProviderImpl) {
         outputChannel = Objects.requireNonNull(_out, "SocketChannel required");
-        hasFileDescriptorSupport = _fileDescriptorSupport;
+        socketProviderImpl = Objects.requireNonNull(_socketProviderImpl, "ISocketProvider implementation required");
     }
 
     @Override
@@ -40,7 +41,7 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
             return;
         }
 
-        if (hasFileDescriptorSupport) {
+        if (socketProviderImpl.isFileDescriptorPassingSupported()) {
             writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
         }
 
@@ -69,6 +70,14 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
      */
     protected abstract void writeFileDescriptors(SocketChannel _outputChannel, List<FileDescriptor> _filedescriptors) throws IOException;
 
+    protected Logger getLogger() {
+        return logger;
+    }
+
+    protected ISocketProvider getSocketProviderImpl() {
+        return socketProviderImpl;
+    }
+
     @Override
     public void close() throws IOException {
         logger.debug("Closing Message Writer");
@@ -85,7 +94,7 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [outputChannel=" + outputChannel + ", hasFileDescriptorSupport=" + hasFileDescriptorSupport + "]";
+        return getClass().getSimpleName() + " [outputChannel=" + outputChannel + ", socketProviderImpl=" + socketProviderImpl + "]";
     }
 
 }

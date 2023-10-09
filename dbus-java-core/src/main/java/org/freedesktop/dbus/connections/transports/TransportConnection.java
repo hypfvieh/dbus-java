@@ -1,8 +1,7 @@
 package org.freedesktop.dbus.connections.transports;
 
 import org.freedesktop.dbus.messages.MessageFactory;
-import org.freedesktop.dbus.spi.message.IMessageReader;
-import org.freedesktop.dbus.spi.message.IMessageWriter;
+import org.freedesktop.dbus.spi.message.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -27,12 +26,14 @@ public class TransportConnection implements Closeable {
     private final SocketChannel     channel;
     private final IMessageWriter    writer;
     private final IMessageReader    reader;
+    private final ISocketProvider   socketProviderImpl;
 
     private final MessageFactory    messageFactory;
 
-    public TransportConnection(MessageFactory _factory, SocketChannel _channel, IMessageWriter _writer, IMessageReader _reader) {
+    public TransportConnection(MessageFactory _factory, SocketChannel _channel, ISocketProvider _socketProviderImpl, IMessageWriter _writer, IMessageReader _reader) {
         messageFactory = _factory;
         channel = _channel;
+        socketProviderImpl = _socketProviderImpl;
         writer = _writer;
         reader = _reader;
     }
@@ -47,6 +48,10 @@ public class TransportConnection implements Closeable {
 
     public IMessageReader getReader() {
         return reader;
+    }
+
+    public ISocketProvider getSocketProviderImpl() {
+        return socketProviderImpl;
     }
 
     public long getId() {

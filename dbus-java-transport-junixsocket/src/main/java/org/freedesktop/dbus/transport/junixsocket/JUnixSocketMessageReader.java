@@ -2,21 +2,20 @@ package org.freedesktop.dbus.transport.junixsocket;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.spi.message.AbstractInputStreamMessageReader;
+import org.freedesktop.dbus.spi.message.ISocketProvider;
 import org.newsclub.net.unix.AFUNIXSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class JUnixSocketMessageReader extends AbstractInputStreamMessageReader {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public JUnixSocketMessageReader(AFUNIXSocketChannel _socket, boolean _hasFileDescriptorSupport) {
-        super(_socket, _hasFileDescriptorSupport);
+    public JUnixSocketMessageReader(AFUNIXSocketChannel _socket, ISocketProvider _socketProviderImpl) {
+        super(_socket, _socketProviderImpl);
     }
 
     @Override
@@ -29,10 +28,11 @@ public class JUnixSocketMessageReader extends AbstractInputStreamMessageReader {
                 } else {
                     List<org.freedesktop.dbus.FileDescriptor> fds = new ArrayList<>();
                     for (FileDescriptor fd : receivedFileDescriptors) {
-                        fds.add(new org.freedesktop.dbus.FileDescriptor(fd));
+                        Optional<Integer> fileDescriptorValue = getSocketProviderImpl().getFileDescriptorValue(fd);
+                        fileDescriptorValue.ifPresent(f -> fds.add(new org.freedesktop.dbus.FileDescriptor(f)));
                     }
 
-                    logger.debug("=> {}", fds);
+                    getLogger().debug("=> {}", fds);
                     return fds;
                 }
             } catch (IOException _ex) {

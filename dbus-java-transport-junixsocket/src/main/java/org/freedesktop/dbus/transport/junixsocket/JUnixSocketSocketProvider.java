@@ -1,12 +1,7 @@
 package org.freedesktop.dbus.transport.junixsocket;
 
-import org.freedesktop.dbus.spi.message.IMessageReader;
-import org.freedesktop.dbus.spi.message.IMessageWriter;
-import org.freedesktop.dbus.spi.message.ISocketProvider;
-import org.newsclub.net.unix.AFSocket;
-import org.newsclub.net.unix.AFSocketCapability;
-import org.newsclub.net.unix.AFUNIXSocketChannel;
-import org.newsclub.net.unix.FileDescriptorCast;
+import org.freedesktop.dbus.spi.message.*;
+import org.newsclub.net.unix.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +13,7 @@ import java.util.Optional;
 public class JUnixSocketSocketProvider implements ISocketProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(JUnixSocketSocketProvider.class);
 
-    private boolean hasFileDescriptorSupport = false;
+    private boolean             hasFileDescriptorSupport = true;
 
     @Override
     public IMessageReader createReader(SocketChannel _socket) {
@@ -26,7 +21,7 @@ public class JUnixSocketSocketProvider implements ISocketProvider {
             return null;
         }
         if (_socket instanceof AFUNIXSocketChannel) {
-            return new JUnixSocketMessageReader((AFUNIXSocketChannel) _socket, hasFileDescriptorSupport);
+            return new JUnixSocketMessageReader((AFUNIXSocketChannel) _socket, this);
         }
         return null;
     }
@@ -37,7 +32,7 @@ public class JUnixSocketSocketProvider implements ISocketProvider {
             return null;
         }
         if (_socket instanceof AFUNIXSocketChannel) {
-            return new JUnixSocketMessageWriter((AFUNIXSocketChannel) _socket, hasFileDescriptorSupport);
+            return new JUnixSocketMessageWriter((AFUNIXSocketChannel) _socket, this);
         }
         return null;
     }
@@ -49,7 +44,7 @@ public class JUnixSocketSocketProvider implements ISocketProvider {
 
     @Override
     public boolean isFileDescriptorPassingSupported() {
-        return AFSocket.supports(AFSocketCapability.CAPABILITY_FILE_DESCRIPTORS) && AFSocket.supports(AFSocketCapability.CAPABILITY_UNSAFE);
+        return hasFileDescriptorSupport && AFSocket.supports(AFSocketCapability.CAPABILITY_FILE_DESCRIPTORS) && AFSocket.supports(AFSocketCapability.CAPABILITY_UNSAFE);
     }
 
     @Override

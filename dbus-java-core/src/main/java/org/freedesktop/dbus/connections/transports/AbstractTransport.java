@@ -235,6 +235,7 @@ public abstract class AbstractTransport implements Closeable {
     private TransportConnection createInputOutput(SocketChannel _socket) {
         IMessageReader reader = null;
         IMessageWriter writer = null;
+        ISocketProvider providerImpl = null;
         try {
             for (ISocketProvider provider : spiLoader) {
                 logger.debug("Found ISocketProvider {}", provider);
@@ -244,6 +245,7 @@ public abstract class AbstractTransport implements Closeable {
                 writer = provider.createWriter(_socket);
                 if (reader != null && writer != null) {
                     logger.debug("Using ISocketProvider {}", provider);
+                    providerImpl = provider;
                     break;
                 }
             }
@@ -261,7 +263,7 @@ public abstract class AbstractTransport implements Closeable {
                                              // allows it
         }
 
-        return new TransportConnection(messageFactory, _socket, writer, reader);
+        return new TransportConnection(messageFactory, _socket, providerImpl, writer, reader);
     }
 
     /**

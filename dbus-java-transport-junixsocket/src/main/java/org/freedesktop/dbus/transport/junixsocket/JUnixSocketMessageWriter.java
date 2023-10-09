@@ -2,6 +2,7 @@ package org.freedesktop.dbus.transport.junixsocket;
 
 import org.freedesktop.dbus.exceptions.MarshallingException;
 import org.freedesktop.dbus.spi.message.AbstractOutputStreamMessageWriter;
+import org.freedesktop.dbus.spi.message.ISocketProvider;
 import org.newsclub.net.unix.AFUNIXSocketChannel;
 
 import java.io.FileDescriptor;
@@ -11,8 +12,8 @@ import java.util.List;
 
 public class JUnixSocketMessageWriter extends AbstractOutputStreamMessageWriter {
 
-    public JUnixSocketMessageWriter(AFUNIXSocketChannel _socket, boolean _hasFileDescriptorSupport) {
-        super(_socket, _hasFileDescriptorSupport);
+    public JUnixSocketMessageWriter(AFUNIXSocketChannel _socket, ISocketProvider _socketProviderImpl) {
+        super(_socket, _socketProviderImpl);
     }
 
     @Override
@@ -22,7 +23,7 @@ public class JUnixSocketMessageWriter extends AbstractOutputStreamMessageWriter 
                 try {
                     FileDescriptor[] fds = new FileDescriptor[_filedescriptors.size()];
                     for (int i = 0; i < _filedescriptors.size(); i++) {
-                        fds[i] = _filedescriptors.get(i).toJavaFileDescriptor();
+                        fds[i] = _filedescriptors.get(i).toJavaFileDescriptor(getSocketProviderImpl());
                     }
                     ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors(fds);
                 } catch (MarshallingException _ex) {
