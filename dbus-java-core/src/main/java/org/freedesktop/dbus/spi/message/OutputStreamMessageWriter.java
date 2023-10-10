@@ -8,7 +8,7 @@ import java.util.List;
 public class OutputStreamMessageWriter extends AbstractOutputStreamMessageWriter {
 
     public OutputStreamMessageWriter(SocketChannel _out) {
-        super(_out, false);
+        super(_out, DefaultSocketProvider.INSTANCE);
     }
 
     @Override

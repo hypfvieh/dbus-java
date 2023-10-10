@@ -27,13 +27,14 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
     private final byte[]        buf;
     private final byte[]        tbuf;
     private final SocketChannel inputChannel;
-    private final boolean       hasFileDescriptorSupport;
 
     private byte[]              header;
     private byte[]              body;
 
-    public AbstractInputStreamMessageReader(final SocketChannel _in, boolean _hasFileDescriptorSupport) {
-        hasFileDescriptorSupport = _hasFileDescriptorSupport;
+    private final ISocketProvider socketProviderImpl;
+
+    public AbstractInputStreamMessageReader(final SocketChannel _in, ISocketProvider _socketProviderImpl) {
+        socketProviderImpl = Objects.requireNonNull(_socketProviderImpl, "ISocketProvider implementation required");
         inputChannel = Objects.requireNonNull(_in, "SocketChannel required");
         len = new int[4];
         tbuf = new byte[4];
@@ -168,7 +169,7 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
 
         try {
             List<FileDescriptor> fds = null;
-            if (hasFileDescriptorSupport) {
+            if (socketProviderImpl.isFileDescriptorPassingSupported()) {
                 fds = readFileDescriptors(inputChannel);
             }
 
@@ -203,6 +204,14 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
      */
     protected abstract List<FileDescriptor> readFileDescriptors(SocketChannel _inputChannel) throws DBusException;
 
+    protected Logger getLogger() {
+        return logger;
+    }
+
+    protected ISocketProvider getSocketProviderImpl() {
+        return socketProviderImpl;
+    }
+
     @Override
     public void close() throws IOException {
         if (inputChannel.isOpen()) {
@@ -218,7 +227,7 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [inputChannel=" + inputChannel + ", hasFileDescriptorSupport=" + hasFileDescriptorSupport + "]";
+        return getClass().getSimpleName() + " [inputChannel=" + inputChannel + ", socketProviderImpl=" + socketProviderImpl + "]";
     }
 
 }

@@ -22,11 +22,12 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final SocketChannel outputChannel;
-    private final boolean       hasFileDescriptorSupport;
 
-    public AbstractOutputStreamMessageWriter(final SocketChannel _out, boolean _fileDescriptorSupport) {
+    private final ISocketProvider socketProviderImpl;
+
+    public AbstractOutputStreamMessageWriter(final SocketChannel _out, ISocketProvider _socketProviderImpl) {
         outputChannel = Objects.requireNonNull(_out, "SocketChannel required");
-        hasFileDescriptorSupport = _fileDescriptorSupport;
+        socketProviderImpl = Objects.requireNonNull(_socketProviderImpl, "ISocketProvider implementation required");
     }
 
     @Override
@@ -40,6 +41,10 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
             return;
         }
 
+        if (socketProviderImpl.isFileDescriptorPassingSupported()) {
+            writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
+        }
+
         for (byte[] buf : _msg.getWireData()) {
             if (logger.isTraceEnabled()) {
                 logger.trace("{}", null == buf ? "(buffer was null)" : Hexdump.format(buf));
@@ -49,10 +54,6 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
             }
 
             outputChannel.write(ByteBuffer.wrap(buf));
-        }
-
-        if (hasFileDescriptorSupport) {
-            writeFileDescriptors(outputChannel, _msg.getFiledescriptors());
         }
 
         logger.trace("Message sent: {}", _msg);
@@ -68,6 +69,14 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
      * @throws IOException when writing the descriptors fail
      */
     protected abstract void writeFileDescriptors(SocketChannel _outputChannel, List<FileDescriptor> _filedescriptors) throws IOException;
+
+    protected Logger getLogger() {
+        return logger;
+    }
+
+    protected ISocketProvider getSocketProviderImpl() {
+        return socketProviderImpl;
+    }
 
     @Override
     public void close() throws IOException {
@@ -85,7 +94,7 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [outputChannel=" + outputChannel + ", hasFileDescriptorSupport=" + hasFileDescriptorSupport + "]";
+        return getClass().getSimpleName() + " [outputChannel=" + outputChannel + ", socketProviderImpl=" + socketProviderImpl + "]";
     }
 
 }

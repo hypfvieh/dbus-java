@@ -8,7 +8,7 @@ import java.util.List;
 public class InputStreamMessageReader extends AbstractInputStreamMessageReader {
 
     public InputStreamMessageReader(final SocketChannel _in) {
-        super(_in, false);
+        super(_in, DefaultSocketProvider.INSTANCE);
     }
 
     @Override
