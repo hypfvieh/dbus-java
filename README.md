@@ -99,6 +99,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated minimum required Java version to 17
    - Improved handling of listening connections to allow proper bootstrapping the connection before actually starting accepting new connections (thanks to [brett-smith](https://github.com/brett-smith) ([#213](https://github.com/hypfvieh/dbus-java/issues/213)))
    - Updated export-object documentation ([#236](https://github.com/hypfvieh/dbus-java/issues/236))
+   - Fixed issues with autoConnect option, added method to register to bus by 'Hello' message manually, thanks to [brett-smith](https://github.com/brett-smith) ([#238](https://github.com/hypfvieh/dbus-java/issues/238))
 
 ##### Changes in 4.3.1 (2023-10-03):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))

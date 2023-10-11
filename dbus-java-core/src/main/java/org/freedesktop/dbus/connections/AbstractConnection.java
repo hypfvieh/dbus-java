@@ -1445,6 +1445,10 @@ public abstract class AbstractConnection implements Closeable {
         return transport.getTransportConfig();
     }
 
+    public boolean isFileDescriptorSupported() {
+        return transport.isFileDescriptorSupported();
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[address=" + busAddress + "]";
