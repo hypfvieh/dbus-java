@@ -103,6 +103,19 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
     }
 
     /**
+     * Register the new connection on DBus using 'hello' message. Default is true.
+     *
+     * @param _register boolean
+     * @return this
+     *
+     * @since 5.0.0 - 2023-10-11
+     */
+    public X withRegisterSelf(boolean _register) {
+        config.setRegisterSelf(_register);
+        return self();
+    }
+
+    /**
      * Switch to the {@link SaslConfigBuilder} to configure the SASL authentication mechanism.<br>
      * Use {@link SaslConfigBuilder#back()} to return to this builder when finished.
      *

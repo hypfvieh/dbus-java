@@ -32,6 +32,7 @@ public final class TransportConfig {
     private String                      fileGroup;
 
     private byte                        endianess        = BaseConnectionBuilder.getSystemEndianness();
+    private boolean                     registerSelf     = true;
 
     /**
      * Unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if
@@ -149,6 +150,14 @@ public final class TransportConfig {
 
     public void setEndianess(byte _endianess) {
         endianess = _endianess;
+    }
+
+    public boolean isRegisterSelf() {
+        return registerSelf;
+    }
+
+    public void setRegisterSelf(boolean _registerSelf) {
+        registerSelf = _registerSelf;
     }
 
     /**

@@ -35,8 +35,10 @@ public final class PulseAudioDbus {
         } else {
             DBusConnection connection = DBusConnectionBuilder
                     .forAddress(address)
-                    .withRegisterSelf(false)
                     .withShared(false)
+                    .transportConfig()
+                    .withRegisterSelf(false)
+                    .back()
                     .build();
 
             Properties core1Props = connection.getRemoteObject("org.PulseAudio.Core1", "/org/pulseaudio/core1", Properties.class);

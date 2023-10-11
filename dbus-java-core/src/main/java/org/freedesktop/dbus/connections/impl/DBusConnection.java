@@ -47,6 +47,9 @@ public final class DBusConnection extends AbstractConnection {
     private final String                               machineId;
     private DBus                                       dbus;
 
+    /** Whether the connection was registered using 'Hello' message. */
+    private boolean                                    registered;
+
     /** Count how many 'connections' we manage internally.
      * This is required because a {@link DBusConnection} to the same address will always return the same object and
      * the 'real' disconnection should only occur when there is no second/third/whatever connection is left. */
@@ -73,10 +76,9 @@ public final class DBusConnection extends AbstractConnection {
     /**
      * Connect to bus and register if asked. Should only be called by Builder.
      *
-     * @param _registerSelf true to register
      * @throws DBusException if registering or connection fails
      */
-    void connect(boolean _registerSelf) throws DBusException {
+    void connectImpl() throws DBusException {
         // start listening for calls
         try {
             listen();
@@ -89,14 +91,32 @@ public final class DBusConnection extends AbstractConnection {
         addSigHandlerWithoutMatch(DBus.NameAcquired.class, h);
 
         // register ourselves if not disabled
-        if (_registerSelf) {
-            dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
-            try {
-                busnames.add(dbus.Hello());
-            } catch (DBusExecutionException _ex) {
-                logger.debug("Error while doing 'Hello' handshake", _ex);
-                throw new DBusException(_ex.getMessage());
-            }
+        if (getTransportConfig().isRegisterSelf() && getTransport().isConnected()) {
+            register();
+        }
+    }
+
+    /**
+     * Register this connection on the bus using 'Hello' message.<br>
+     * Will do nothing if session was already registered.
+     *
+     * @throws DBusException when sending message fails
+     *
+     * @since 5.0.0 - 2023-10-11
+     */
+    public void register() throws DBusException {
+        if (registered) {
+            return;
+        }
+
+        dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
+
+        try {
+            busnames.add(dbus.Hello());
+            registered = true;
+        } catch (DBusExecutionException _ex) {
+            logger.debug("Error while doing 'Hello' handshake", _ex);
+            throw new DBusException(_ex.getMessage(), _ex);
         }
     }
 

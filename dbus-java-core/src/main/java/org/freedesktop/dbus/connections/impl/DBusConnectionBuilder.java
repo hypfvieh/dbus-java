@@ -20,7 +20,6 @@ import org.freedesktop.dbus.utils.AddressBuilder;
 public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConnectionBuilder, DBusConnection> {
 
     private final String        machineId;
-    private boolean             registerSelf            = true;
     private boolean             shared                  = true;
 
     private DBusConnectionBuilder(BusAddress _address, String _machineId) {
@@ -146,16 +145,6 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
         return address;
 
     }
-    /**
-     * Register the new connection on DBus using 'hello' message. Default is true.
-     *
-     * @param _register boolean
-     * @return this
-     */
-    public DBusConnectionBuilder withRegisterSelf(boolean _register) {
-        registerSelf = _register;
-        return this;
-    }
 
     /**
      * Use this connection as shared connection. Shared connection means that the same connection is used multiple times
@@ -199,7 +188,7 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
 
         c.setDisconnectCallback(getDisconnectCallback());
         c.setWeakReferences(isWeakReference());
-        c.connect(registerSelf);
+        c.connectImpl();
         return c;
     }
 
