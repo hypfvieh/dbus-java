@@ -51,14 +51,13 @@ public class AbstractDBusBaseTest extends AbstractBaseTest {
 
             logger.info("Creating {} based DBus daemon on address {}", busType, addr);
             edbus = new EmbeddedDBusDaemon(addr);
-            edbus.startInBackground();
+            edbus.startInBackgroundAndWait(MAX_WAIT);
 
             if (address.isBusType("TCP")) {
                 String addrStr  = address.removeParameter("listen").toString();
                 System.setProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS, addrStr);
             }
 
-            waitForDaemon(edbus);
         }
     }
 

@@ -47,10 +47,8 @@ public class SASLTest extends AbstractBaseTest {
         logger.debug("Starting embedded bus on address {})", listenBusAddress);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
             daemon.setSaslAuthMode(SaslAuthMode.AUTH_ANONYMOUS);
-            daemon.startInBackground();
+            daemon.startInBackgroundAndWait(MAX_WAIT);
             logger.debug("Started embedded bus on address {}", listenBusAddress);
-
-            waitForDaemon(daemon);
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress);

@@ -8,7 +8,6 @@ import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.SocketClosedException;
-import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * Simple DBusDaemon implementation to use if no DBusDaemon is running on the OS level.
@@ -30,7 +32,7 @@ public class EmbeddedDBusDaemon implements Closeable {
     private DBusDaemon daemon;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
-    private final AtomicBoolean connectionReady = new AtomicBoolean(false);
+   // private final AtomicBoolean connectionReady = new AtomicBoolean(false);
 
     private SaslAuthMode saslAuthMode;
 
@@ -39,6 +41,11 @@ public class EmbeddedDBusDaemon implements Closeable {
     private String unixSocketFileGroup;
 
     private PosixFilePermission[] unixSocketFilePermissions;
+
+    private Consumer<AbstractTransport> connectCallback;
+    private Consumer<AbstractTransport> bindCallback;
+
+    private CountDownLatch startupLatch = new CountDownLatch(1);
 
     public EmbeddedDBusDaemon(BusAddress _address) {
         // create copy of address so manipulation happens later does not interfere with our instance
@@ -55,7 +62,7 @@ public class EmbeddedDBusDaemon implements Closeable {
     @Override
     public synchronized void close() throws IOException {
         closed.set(true);
-        connectionReady.set(false);
+        startupLatch = new CountDownLatch(1);
         if (daemon != null) {
             daemon.close();
             try {
@@ -102,13 +109,37 @@ public class EmbeddedDBusDaemon implements Closeable {
      * Starts the DBusDaemon in background.
      * <p>
      * Will wait up to the given period of milliseconds for the background thread to get ready.
+     *
+     * @param _maxWaitMillis maximum wait time in milliseconds
+     * @throws IllegalStateException when interrupted or wait for daemon timed out
+     */
+    public void startInBackgroundAndWait(long _maxWaitMillis) throws IllegalStateException {
+        startInBackground();
+        try {
+            startupLatch.await(_maxWaitMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException _ex) {
+            throw new IllegalStateException("Daemon not started after " + _maxWaitMillis + " milliseconds");
+        }
+    }
+
+    /**
+     * Starts the DBusDaemon in background.
+     * <p>
+     * Waits until the daemon is ready before return indefinitely.
      * If given wait time exceeded, a {@link RuntimeException} is thrown.
      *
      * @param _maxWaitMillis maximum wait time in milliseconds
+     * @throws IllegalStateException when interrupted while waiting for daemon to start
+     *
+     * @since 5.0.0 - 2023-10-20
      */
-    public void startInBackgroundAndWait(long _maxWaitMillis) {
+    public void startInBackgroundAndWait() throws IllegalStateException {
         startInBackground();
-        Util.waitFor("EmbeddedDbusDaemon", this::isRunning, _maxWaitMillis, 100);
+        try {
+            startupLatch.await();
+        } catch (InterruptedException _ex) {
+            throw new IllegalStateException("Interrupted while waiting for daemon to start");
+        }
     }
 
     /**
@@ -117,7 +148,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      * @return true if running, false otherwise
      */
     public synchronized boolean isRunning() {
-        return connectionReady.get() && daemon != null && daemon.isRunning();
+        return startupLatch.getCount() == 0 && daemon != null && daemon.isRunning();
     }
 
     /**
@@ -179,6 +210,41 @@ public class EmbeddedDBusDaemon implements Closeable {
         unixSocketFilePermissions = _permissions;
     }
 
+    /**
+     * Configured pre-connect callback.
+     * @return Consumer or null
+     */
+    public Consumer<AbstractTransport> getConnectCallback() {
+        return connectCallback;
+    }
+
+    /**
+     * Callback which will be called by transport right before the socket is bound and connections will be accepted.
+     *
+     * @param _connectCallback callback or null to disable
+     */
+    public void setConnectCallback(Consumer<AbstractTransport> _connectCallback) {
+        connectCallback = _connectCallback;
+    }
+
+    /**
+     * Configured bind callback.
+     * @return Consumer or null
+     */
+    public Consumer<AbstractTransport> getBindCallback() {
+        return bindCallback;
+    }
+
+    /**
+     * Callback which will be called by transport right after the server socket was bound.<br>
+     * Server will not yet accept connections at this point, but it started listening on the configured address.
+     *
+     * @param _callback
+     */
+    public void setBindCallback(Consumer<AbstractTransport> _callback) {
+        bindCallback = _callback;
+    }
+
     private synchronized void setDaemonAndStart(AbstractTransport _transport) {
         daemon = new DBusDaemon(_transport);
         daemon.start();
@@ -202,6 +268,13 @@ public class EmbeddedDBusDaemon implements Closeable {
                 .withUnixSocketFileOwner(unixSocketFileOwner)
                 .withUnixSocketFileGroup(unixSocketFileGroup)
                 .withUnixSocketFilePermissions(unixSocketFilePermissions)
+                .withPreConnectCallback(connectCallback)
+                .withAfterBindCallback(x -> {
+                    if (bindCallback != null) {
+                        bindCallback.accept(x);
+                    }
+                    startupLatch.countDown();
+                })
                 .withAutoConnect(false)
                 .configureSasl().withAuthMode(getSaslAuthMode()).back()
                 .back()
@@ -213,7 +286,6 @@ public class EmbeddedDBusDaemon implements Closeable {
             do {
                 try {
                     LOGGER.debug("Begin listening to: {}", transport);
-                    connectionReady.set(true);
                     TransportConnection s = transport.listen();
                     daemon.addSock(s);
                 } catch (AuthenticationException _ex) {

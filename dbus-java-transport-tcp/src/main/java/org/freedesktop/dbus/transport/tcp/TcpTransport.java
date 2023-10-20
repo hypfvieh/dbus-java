@@ -39,18 +39,23 @@ public class TcpTransport extends AbstractTransport {
         return (TcpBusAddress) super.getAddress();
     }
 
+    @Override
+    protected boolean isBound() {
+        return serverSocket != null && serverSocket.isOpen();
+    }
+
     /**
      * Listen for new connections using TCP.
      *
      * @throws IOException on error
      */
     @Override
-    protected SocketChannel listenImpl() throws IOException {
+    protected void bindImpl() throws IOException {
         if (!getAddress().isListeningSocket()) {
             throw new IOException("Cannot listen on client connections (use connectImpl() instead)");
         }
 
-        if (serverSocket == null || !serverSocket.isOpen()) {
+        if (!isBound()) {
             InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
             serverSocket = ServerSocketChannel.open();
             serverSocket.configureBlocking(true);
@@ -59,12 +64,16 @@ public class TcpTransport extends AbstractTransport {
 
             serverSocket.bind(socketAddress);
         }
+    }
+
+    @Override
+    protected SocketChannel acceptImpl() throws IOException {
         socket = serverSocket.accept();
         return socket;
     }
 
     /**
-     * Connect to DBus using TCP.#
+     * Connect to DBus using TCP.
      *
      * @throws IOException on error
      */
@@ -88,11 +97,7 @@ public class TcpTransport extends AbstractTransport {
     }
 
     @Override
-    public void close() throws IOException {
-        getLogger().debug("Disconnecting Transport: {}", this);
-
-        super.close();
-
+    protected void closeTransport() throws IOException {
         if (socket != null && socket.isOpen()) {
             socket.close();
         }

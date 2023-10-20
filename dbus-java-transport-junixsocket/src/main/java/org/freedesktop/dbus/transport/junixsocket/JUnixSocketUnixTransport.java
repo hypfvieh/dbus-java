@@ -72,21 +72,40 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
     }
 
     @Override
-    protected SocketChannel listenImpl() throws IOException {
+    protected void bindImpl() throws IOException {
         if (!getAddress().isListeningSocket()) {
             throw new IOException("Cannot listen on a client connection (use connectImpl() instead)");
         }
 
-        if (serverSocket == null || !serverSocket.isOpen()) {
+        if (!isBound()) {
             serverSocket = AFUNIXServerSocketChannel.open();
             serverSocket.configureBlocking(true);
             serverSocket.bind(unixSocketAddress);
         }
-        socket = serverSocket.accept();
+    }
 
+    @Override
+    protected SocketChannel acceptImpl() throws IOException {
+        socket = serverSocket.accept();
         socket.setAncillaryReceiveBufferSize(1024);
 
         return socket;
+    }
+
+    @Override
+    protected boolean isBound() {
+        return serverSocket != null && serverSocket.isOpen();
+    }
+
+    @Override
+    protected void closeTransport() throws IOException {
+        if (socket != null && socket.isOpen()) {
+            socket.close();
+        }
+
+        if (serverSocket != null && serverSocket.isOpen()) {
+            serverSocket.close();
+        }
     }
 
 }

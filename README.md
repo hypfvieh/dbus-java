@@ -42,18 +42,30 @@ With dbus-java 4.x (and 5.x as well), java.nio is used for all transports and th
 
 ### Note for custom transports
 If you previously used a custom transport you have to update your code when switching to dbus-java 5.x.
-The `AbstractTransport` base class has been changed and now provides two different methods to separate client and listening
+The `AbstractTransport` base class has been changed and now provides different methods to separate client and listening
 (server) connections.
 
 The `connectImpl()` was previously existing and will now only be called for client side connections.
-The new method `listenImpl()` is used for server connections and has been added in dbus-java 5.x.
+The new methods `bindImpl()`, `acceptImpl()` and `isBound()` are used for server connections and has been added in dbus-java 5.x.
 
 The reason to provide separate methods was to allow bootstrapping server connections before accepting connections.
 In the old implementation `accept()` was usually called in `connectImpl()` and therefore blocked the method until
 a client was connected. This blocked setting up the server side before the first client was connecting.
-
 This forced the user to use some random sleep times to wait for the server setup after first client connects.
 With the separation no more sleep waits are required.
+
+With the new methods, everything related to setup the server socket should be done in `bindImpl()` including the binding
+of the listening socket (calling `bind()` on the server socket). Everything done in this method should not block.
+You mustn't call `accept()` on your server socket in `bindImpl()`!
+
+In `acceptImpl()` it is expected that the transport calls `accept()` on its server socket and therefore this method will block.
+It must return the `SocketChannel` for each client connected (like `connectImpl()` does).
+
+The `isBound()` method must return the bind status of the server socket. This means for example
+server socket is not `null` and server socket is opened.
+This method is used by `AbstractTransport` to determine if `bindImpl()` was called before and if the server socket is ready to accept
+connections.
+
 
 ### How to use file descriptors?
 In DBus-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
@@ -94,9 +106,9 @@ The library will remain open source and MIT licensed and can still be used, fork
 #### Changes
 
 ##### Changes in 5.0.0 (not released yet):
+   - **Updated minimum required Java version to 17**
    - Removed all classes and methods marked as deprecated in 4.x
    - Updated dependencies and maven plugins
-   - Updated minimum required Java version to 17
    - Improved handling of listening connections to allow proper bootstrapping the connection before actually starting accepting new connections (thanks to [brett-smith](https://github.com/brett-smith) ([#213](https://github.com/hypfvieh/dbus-java/issues/213)))
    - Updated export-object documentation ([#236](https://github.com/hypfvieh/dbus-java/issues/236))
    - Fixed issues with autoConnect option, added method to register to bus by 'Hello' message manually, thanks to [brett-smith](https://github.com/brett-smith) ([#238](https://github.com/hypfvieh/dbus-java/issues/238))

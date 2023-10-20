@@ -85,6 +85,25 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
     }
 
     /**
+     * Set a callback which will be called after {@code bindImpl()} on a server connection was called.<br>
+     * This method is only called if the transport is configured as server connection.
+     * <p>
+     * The given consumer will receive the created {@link AbstractTransport} object which is not yet
+     * accepting connections. A callback should <b>NEVER</b> call accept on the transport, but is allowed to do further
+     * configuration if needed.
+     * </p>
+     *
+     * @param _callback consumer to call, null to remove any callback
+     *
+     * @return this
+     * @since 5.0.0 - 2023-10-20
+     */
+    public X withAfterBindCallback(Consumer<AbstractTransport> _callback) {
+        config.setPreConnectCallback(_callback);
+        return self();
+    }
+
+    /**
      * Instantly connect to DBus when {@link #build()} is called.
      * <p>
      * This option will be ignored when this is a listening (server) socket.
