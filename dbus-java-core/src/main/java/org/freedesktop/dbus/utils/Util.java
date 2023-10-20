@@ -1,13 +1,19 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.TypeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.attribute.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -653,5 +659,40 @@ public final class Util {
             waited += _sleepTime;
             LOGGER.debug("Waiting for {} to be available: {} of {} ms waited", _lockName, waited, _timeoutMs);
         } while (!wait);
+    }
+
+    /**
+     * Gets the type wrapped by a {@link TypeRef} interface.
+     *
+     * @param _type class to unwrap
+     * @return Type used in TypeRef if class is extending TypeRef interface, null otherwise
+     */
+    public static Type unwrapTypeRef(Class<?> _type) {
+        return Arrays.stream(_type.getGenericInterfaces())
+            .filter(t -> t instanceof ParameterizedType)
+            .map(t -> (ParameterizedType) t)
+            .filter(t -> TypeRef.class.equals(t.getRawType()))
+            .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
+            .findFirst().orElse(null);
+    }
+
+    /**
+     * Convert a object of arbitrary type to an object array.<br>
+     * If input is null or not an array, an empty array will be returned.
+     *
+     * @param _obj object of arbitrary type
+     * @return object array
+     */
+    public static Object[] toObjectArray(Object _obj) {
+        if (_obj == null || !_obj.getClass().isArray()) {
+            return new Object[0];
+        }
+
+        int length = Array.getLength(_obj);
+        Object[] ret = new Object[length];
+        for (int i = 0; i < length; i++) {
+            ret[i] = Array.get(_obj, i);
+        }
+        return ret;
     }
 }

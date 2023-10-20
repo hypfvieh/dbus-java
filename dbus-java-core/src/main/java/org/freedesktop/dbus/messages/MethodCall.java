@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MethodCall extends MethodBase {
-    private static long replyWaitTimeout = Duration.ofSeconds(20).toMillis();
+    private static long replyWaitTimeout = Duration.ofMinutes(20).toMillis(); // TODO reset this
 
     // CHECKSTYLE:OFF
     Message              reply              = null;

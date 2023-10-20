@@ -68,7 +68,13 @@ public class Variant<T> {
     }
 
     /**
-    * Create a Variant.
+    * Create a Variant.<br>
+    * It is expected that the given value is compatible with the provided DBus signature String.<br>
+    * This constructor is intended to be used when a generic using class/interface should be wrapped.<br>
+    * Map or List are two examples where it is not possible to determine the internal data type
+    * (the type represented by a generic placeholder) due to type erasure.<br>
+    * Therefore the only way to properly serialize these Maps/Lists is by providing a suitable signature manually.
+    *
     * @param _value The wrapped value.
     * @param _sig The explicit type of the value, as a dbus type string.
     * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.

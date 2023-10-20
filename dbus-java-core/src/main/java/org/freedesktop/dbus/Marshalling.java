@@ -398,21 +398,33 @@ public final class Marshalling {
     }
 
     /**
-    * Recursively converts types for serialization onto DBus.
-    * @param _parameters The parameters to convert.
-    * @param _types The (possibly generic) types of the parameters.
-    * @param _conn the connection
-    * @return The converted parameters.
-    * @throws DBusException Thrown if there is an error in converting the objects.
-    */
-    public static Object[] convertParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws DBusException {
+     * Recursively converts types for serialization onto DBus.<br>
+     * <br>
+     * When _customSignature is not empty or null, it will be used to wrap the given parameters to a {@link Variant}<br>
+     * of the type defined in the _customSignature array.<br>
+     * It is required that every {@link Variant} passed has a signature definition in _customSignature.<br>
+     * E.g. 3 Objects are given in _parameters: String, Variant, Variant.<br>
+     * Then it is expected that _customSignature (if used) contains 2 entries one for each {@link Variant}.<br>
+     * <br>
+     * If the _customSignature is smaller than the count of {@link Variant}s in _parameters, all remaining {@link Variant}s<br>
+     * are created without a explicit signature (Variant constructor will try to determine type automatically).<br>
+     * If more entries are given then {@link Variant}s found in _parameters, the additional signatures are ignored.
+     *
+     * @param _parameters The parameters to convert.
+     * @param _types The (possibly generic) types of the parameters.
+     * @param _customSignatures custom signatures used for variants found in _types, each found variant must have one matching custom signature
+     * @param _conn the connection
+     * @return The converted parameters.
+     * @throws DBusException Thrown if there is an error in converting the objects.
+     */
+    public static Object[] convertParameters(Object[] _parameters, Type[] _types, String[] _customSignatures, AbstractConnection _conn) throws DBusException {
         if (null == _parameters) {
             return null;
         }
 
         Object[] parameters = _parameters;
         Type[] types = _types;
-
+        int lastCustomSig = 0;
         for (int i = 0; i < parameters.length; i++) {
             if (null == parameters[i]) {
                 continue;
@@ -458,12 +470,31 @@ public final class Marshalling {
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
                 // its an unwrapped variant, wrap it
-                parameters[i] = new Variant<>(parameters[i]);
+                if (_customSignatures != null && _customSignatures.length > 0 && _customSignatures.length > lastCustomSig) {
+                    parameters[i] = new Variant<>(parameters[i], _customSignatures[lastCustomSig]);
+                    lastCustomSig++;
+                } else {
+                    parameters[i] = new Variant<>(parameters[i]);
+                }
+
             } else if (parameters[i] instanceof DBusInterface di) {
                 parameters[i] = _conn.getExportedObject(di);
             }
         }
         return parameters;
+    }
+
+    /**
+     * Recursively converts types for serialization onto DBus.
+     *
+     * @param _parameters The parameters to convert.
+     * @param _types The (possibly generic) types of the parameters.
+     * @param _conn the connection
+     * @return The converted parameters.
+     * @throws DBusException Thrown if there is an error in converting the objects.
+     */
+    public static Object[] convertParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws DBusException {
+        return convertParameters(_parameters, _types, null, _conn);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -632,11 +663,11 @@ public final class Marshalling {
         Object[] parameters = _parameters;
         Type[] types = _types;
 
-        if (types.length == 1 && types[0] instanceof ParameterizedType pt && Tuple.class.isAssignableFrom((Class<?>) ((ParameterizedType) types[0]).getRawType())) {
+        if (types.length == 1 && types[0] instanceof ParameterizedType pt && Tuple.class.isAssignableFrom((Class<?>) (pt).getRawType())) {
             types = pt.getActualTypeArguments();
         }
 
-        if (types.length == 1 && types[0] instanceof Class && Tuple.class.isAssignableFrom((Class<?>) types[0])) {
+        if (types.length == 1 && types[0] instanceof Class<?> clz && Tuple.class.isAssignableFrom(clz)) {
             String typeName = types[0].getTypeName();
             Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
             if (constructors.length != 1) {

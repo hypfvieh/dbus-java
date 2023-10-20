@@ -1,12 +1,7 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperties;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
@@ -14,6 +9,7 @@ import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.errors.InvalidMethodArgument;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -23,18 +19,13 @@ import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
-import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.messages.Message;
-import org.freedesktop.dbus.messages.MessageFactory;
-import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.messages.MethodReturn;
-import org.freedesktop.dbus.messages.ObjectTree;
+import org.freedesktop.dbus.propertyref.PropertyRef;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
-import org.freedesktop.dbus.utils.PropertyRef;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,26 +34,13 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
@@ -769,7 +747,6 @@ public abstract class AbstractConnection implements Closeable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void handleMessage(final MethodCall _methodCall) throws DBusException {
         logger.debug("Handling incoming method call: {}", _methodCall);
 
@@ -819,114 +796,8 @@ public abstract class AbstractConnection implements Closeable {
             }
 
             Object[] params = _methodCall.getParameters();
-            if (params.length == 2 && params[0] instanceof String
-                && params[1] instanceof String
-                && _methodCall.getName().equals("Get")) {
-
-                // 'Get' This MIGHT be a property reference
-                PropertyRef propertyRef = new PropertyRef((String) params[1], null, DBusProperty.Access.READ);
-                Method propMeth = exportObject.getPropertyMethods().get(propertyRef);
-                if (propMeth != null) {
-                    // This IS a property reference
-                    Object object = exportObject.getObject().get();
-
-                    receivingService.execMethodCallHandler(() -> {
-                        _methodCall.setArgs(new Object[0]);
-                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
-                    });
-
-                    return;
-                }
-            } else if (params.length == 3
-                && params[0] instanceof String
-                && params[1] instanceof String
-                && _methodCall.getName().equals("Set")) {
-                // 'Set' This MIGHT be a property reference
-
-                PropertyRef propertyRef = new PropertyRef((String) params[1], null, Access.WRITE);
-                Method propMeth = exportObject.getPropertyMethods().get(propertyRef);
-                if (propMeth != null) {
-                    // This IS a property reference
-                    Object object = exportObject.getObject().get();
-                    Class<?> type = PropertyRef.typeForMethod(propMeth);
-                    Object val =  params[2] instanceof Variant ? ((Variant<?>) params[2]).getValue() : params[2];
-                    receivingService.execMethodCallHandler(() -> {
-                        try {
-                            _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {val}, new Type[] {type}, this));
-                            invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
-                        } catch (Exception _ex) {
-                            logger.debug("", _ex);
-                            handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                            return;
-                        }
-                    });
-
-                    return;
-                }
-            } else if (params.length == 1 && params[0] instanceof String
-                && _methodCall.getName().equals("GetAll")) {
-                // 'GetAll'
-                Set<Entry<PropertyRef, Method>> allPropertyMethods = exportObject.getPropertyMethods().entrySet();
-                /* If there are no property methods on this object, just process as normal */
-                if (!allPropertyMethods.isEmpty()) {
-                    Object object = exportObject.getObject().get();
-
-                    if (meth == null && object instanceof DBusProperties) {
-                        meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-                        if (null == meth) {
-                            sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
-                                "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
-                            return;
-                        }
-                    } else if (meth == null) {
-                        try {
-                            meth = Properties.class.getDeclaredMethod("GetAll", String.class);
-                        } catch (NoSuchMethodException | SecurityException _ex) {
-                            logger.debug("", _ex);
-                            handleException(_methodCall,
-                                new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                                _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-                        }
-                    }
-
-                    Method originalMeth = meth;
-
-                    receivingService.execMethodCallHandler(() -> {
-                        Map<String, Object> resultMap = new HashMap<>();
-                        for (Entry<PropertyRef, Method> propEn : allPropertyMethods) {
-                            Method propMeth = propEn.getValue();
-                            if (propEn.getKey().getAccess() == Access.READ) {
-                                try {
-                                    _methodCall.setArgs(new Object[0]);
-                                    Object val =  invokeMethod(_methodCall, propMeth, object);
-                                    resultMap.put(propEn.getKey().getName(), val);
-                                } catch (Throwable _ex) {
-                                    logger.debug("", _ex);
-                                    handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                                    return;
-                                }
-                            }
-                        }
-
-                        if (object instanceof DBusProperties) {
-                            resultMap.putAll((Map<? extends String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
-                        }
-
-                        try {
-                            invokedMethodReply(_methodCall, originalMeth, resultMap);
-                        } catch (DBusExecutionException _ex) {
-                            logger.debug("", _ex);
-                            handleException(_methodCall, _ex);
-                        } catch (Throwable _ex) {
-                            logger.debug("", _ex);
-                            handleException(_methodCall,
-                                new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                                _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-                        }
-                    });
-
-                    return;
-                }
+            if (handleDBusBoundProperties(exportObject, _methodCall, params)) {
+                return;
             }
 
             if (meth == null) {
@@ -948,6 +819,161 @@ public abstract class AbstractConnection implements Closeable {
 
         // now execute it
         queueInvokeMethod(_methodCall, meth, o);
+    }
+
+    /**
+     * Method which handles the magic related to {@link DBusBoundProperty} annotation.<br>
+     * It takes care of proper method calling (calling Get/Set stuff on DBus Properties interface)<br>
+     * and will also take care of converting wrapped Variant types.
+     *
+     * @param _exportObject exported object
+     * @param _methodCall method to call
+     * @param _params parameter to pass to method
+     *
+     * @return true if call was handled, false otherwise
+     *
+     * @throws DBusException when something fails
+     */
+    @SuppressWarnings("unchecked")
+    private boolean handleDBusBoundProperties(ExportedObject _exportObject, final MethodCall _methodCall, Object[] _params) throws DBusException {
+        if (_params.length == 2 && _params[0] instanceof String
+            && _params[1] instanceof String
+            && _methodCall.getName().equals("Get")) {
+
+            // 'Get' This MIGHT be a property reference
+            PropertyRef propertyRef = new PropertyRef((String) _params[1], null, DBusProperty.Access.READ);
+            Method propMeth = _exportObject.getPropertyMethods().get(propertyRef);
+            if (propMeth != null) {
+                // This IS a property reference
+                Object object = _exportObject.getObject().get();
+
+                receivingService.execMethodCallHandler(() -> {
+                    _methodCall.setArgs(new Object[0]);
+                    invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                });
+
+                return true;
+            }
+        } else if (_params.length == 3
+            && _params[0] instanceof String
+            && _params[1] instanceof String
+            && _methodCall.getName().equals("Set")) {
+            // 'Set' This MIGHT be a property reference
+
+            PropertyRef propertyRef = new PropertyRef((String) _params[1], null, Access.WRITE);
+            Method propMeth = _exportObject.getPropertyMethods().get(propertyRef);
+            if (propMeth != null) {
+                // This IS a property reference
+                Object object = _exportObject.getObject().get();
+                Class<?> type = PropertyRef.typeForMethod(propMeth);
+                AtomicBoolean isVariant = new AtomicBoolean(false);
+
+                Object val = Optional.ofNullable(_params[2])
+                    .map(v -> {
+                        if (v instanceof Variant<?> va) {
+                            isVariant.set(true);
+                            return va.getValue();
+                        }
+                        return v;
+                    }).orElse(null);
+
+                receivingService.execMethodCallHandler(() -> {
+                    try {
+                        Object myVal = val;
+                        Parameter[] parameters = propMeth.getParameters();
+                        // the setter method can only be used if it has just 1 parameter
+                        if (parameters.length != 1) {
+                            throw new InvalidMethodArgument("Expected method with one argument, but found " + parameters.length);
+                        }
+                        // take care of arrays:
+                        // DBus only knows arrays of types, not lists or other collections.
+                        // if the method which should be called wants a Collection we have to
+                        // convert the array to a proper type
+                        if (Collection.class.isAssignableFrom(parameters[0].getType())
+                            && isVariant.get() && myVal != null && myVal.getClass().isArray()) {
+
+                            if (Set.class.isAssignableFrom(parameters[0].getType())) {
+                                myVal = new LinkedHashSet<>(Arrays.asList(Util.toObjectArray(myVal)));
+                            } else { // assume list is fine for all other collection types
+                                myVal = new ArrayList<>(Arrays.asList(Util.toObjectArray(myVal)));
+                            }
+                        }
+                        _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this));
+                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                    } catch (Exception _ex) {
+                        logger.debug("Failed to invoke method call on Properties", _ex);
+                        handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
+                        return;
+                    }
+                });
+
+                return true;
+            }
+        } else if (_params.length == 1 && _params[0] instanceof String
+            && _methodCall.getName().equals("GetAll")) {
+            // 'GetAll'
+            Set<Entry<PropertyRef, Method>> allPropertyMethods = _exportObject.getPropertyMethods().entrySet();
+            /* If there are no property methods on this object, just process as normal */
+            if (!allPropertyMethods.isEmpty()) {
+                Object object = _exportObject.getObject().get();
+                Method meth = null;
+                if (meth == null && object instanceof DBusProperties) {
+                    meth = _exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
+                    if (null == meth) {
+                        sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
+                            "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
+                        return true;
+                    }
+                } else if (meth == null) {
+                    try {
+                        meth = Properties.class.getDeclaredMethod("GetAll", String.class);
+                    } catch (NoSuchMethodException | SecurityException _ex) {
+                        logger.debug("Properties GetAll failed", _ex);
+                        handleException(_methodCall,
+                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
+                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+                    }
+                }
+
+                Method originalMeth = meth;
+
+                receivingService.execMethodCallHandler(() -> {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    for (Entry<PropertyRef, Method> propEn : allPropertyMethods) {
+                        Method propMeth = propEn.getValue();
+                        if (propEn.getKey().getAccess() == Access.READ) {
+                            try {
+                                _methodCall.setArgs(new Object[0]);
+                                Object val =  invokeMethod(_methodCall, propMeth, object);
+                                resultMap.put(propEn.getKey().getName(), val);
+                            } catch (Throwable _ex) {
+                                logger.debug("", _ex);
+                                handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
+                                return;
+                            }
+                        }
+                    }
+
+                    if (object instanceof DBusProperties) {
+                        resultMap.putAll((Map<? extends String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
+                    }
+
+                    try {
+                        invokedMethodReply(_methodCall, originalMeth, resultMap);
+                    } catch (DBusExecutionException _ex) {
+                        logger.debug("Error invoking method call", _ex);
+                        handleException(_methodCall, _ex);
+                    } catch (Throwable _ex) {
+                        logger.debug("Failed to invoke method call", _ex);
+                        handleException(_methodCall,
+                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
+                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+                    }
+                });
+                return true;
+            }
+        }
+        return false;
     }
 
     private void queueInvokeMethod(final MethodCall _methodCall, Method _meth, final Object _ob) {
@@ -989,10 +1015,10 @@ public abstract class AbstractConnection implements Closeable {
             }
             return result;
         } catch (DBusExecutionException _ex) {
-            logger.debug("", _ex);
+            logger.debug("Failed to invoke method call", _ex);
             handleException(_methodCall, _ex);
         } catch (Throwable _ex) {
-            logger.debug("", _ex);
+            logger.debug("Error invoking method call", _ex);
             handleException(_methodCall,
                     new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
                             _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));

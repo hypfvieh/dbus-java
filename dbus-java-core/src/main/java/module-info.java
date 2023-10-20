@@ -16,6 +16,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.spi.message;
     exports org.freedesktop.dbus.types;
     exports org.freedesktop.dbus.utils;
+    exports org.freedesktop.dbus.propertyref;
 
     requires jdk.security.auth;
 

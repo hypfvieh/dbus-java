@@ -1,20 +1,20 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.NoReply;
-import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.propertyref.PropRefRemoteHandler;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.LoggingHelper;
-import org.freedesktop.dbus.utils.PropertyRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +27,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
     public static final int CALL_TYPE_CALLBACK = 2;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInvocationHandler.class);
+
     // CHECKSTYLE:OFF
     AbstractConnection conn;
     RemoteObject       remote;
@@ -82,24 +83,12 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } else if (_method.getName().equals("toString")) {
             return remote.toString();
-        } else if (_method.getAnnotation(DBusBoundProperty.class) != null) {
-            String name = DBusNamingUtil.getPropertyName(_method);
-            Access access = PropertyRef.accessForMethod(_method);
-            if (access == Access.READ) {
-                Method propGetMethod = Properties.class.getMethod("Get", String.class, String.class);
-                return executeRemoteMethod(remote, propGetMethod,
-                       new Type[] {_method.getGenericReturnType()}, conn, CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name);
-            } else {
-                Method propSetMethod = Properties.class.getMethod("Set", String.class, String.class, Object.class);
-                return executeRemoteMethod(remote, propSetMethod,
-                       new Type[] {_method.getGenericReturnType()}, conn, CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name, _args[0]);
-            }
+        } else if (_method.isAnnotationPresent(DBusBoundProperty.class)) {
+            return PropRefRemoteHandler.handleDBusBoundProperty(conn, remote, _method, _args);
         }
 
         return executeRemoteMethod(remote, _method, conn, CALL_TYPE_SYNC, null, _args);
     }
-
-    // CHECKSTYLE:ON
 
     public static Object convertRV(String _sig, Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
         return convertRV(_sig, _rp, new Type[] {_m.getGenericReturnType()}, _m, _conn);
@@ -157,15 +146,32 @@ public class RemoteInvocationHandler implements InvocationHandler {
         return executeRemoteMethod(_ro, _m, new Type[] {_m.getGenericReturnType()}, _conn, _syncmethod, _callback, _args);
     }
 
-    public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m,
-                                             final Type[] _types, final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
+    /**
+     * Executes a remote method.
+     *
+     * @param _ro remote object
+     * @param _m method to call
+     * @param _customSignatures array of custom signatures which will be used for variants
+     * @param _types array of types
+     * @param _conn connection
+     * @param _syncmethod true if the method is executed synchronously
+     * @param _callback callback used when async method call
+     * @param _args arguments to pass to method
+     *
+     * @return Object, maybe null
+     *
+     * @throws DBusException when call fails
+     */
+    public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m, String[] _customSignatures,
+        final Type[] _types, final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
+
         Type[] ts = _m.getGenericParameterTypes();
         String sig = null;
         Object[] args = _args;
         if (ts.length > 0) {
             try {
                 sig = Marshalling.getDBusType(ts);
-                args = Marshalling.convertParameters(args, ts, _conn);
+                args = Marshalling.convertParameters(args, ts, _customSignatures, _conn);
             } catch (DBusException _ex) {
                 throw new DBusExecutionException("Failed to construct D-Bus type: " + _ex.getMessage());
             }
@@ -231,4 +237,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
             throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
     }
+
+    public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m,
+                                             final Type[] _types, final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
+        return executeRemoteMethod(_ro, _m, null, _types, _conn, _syncmethod, _callback, _args);
+    }
+
 }

@@ -1,19 +1,19 @@
-package org.freedesktop.dbus.utils;
+package org.freedesktop.dbus.propertyref;
+
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
+import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.DBusProperty.Access;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
-
-// CHECKSTYLE:OFF
-/* TODO Impossible to correct. Whichever way around these imports are, checkstyle complains */
-import org.freedesktop.dbus.annotations.DBusProperty.Access;
-import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusProperty;
-// CHECKSTYLE:ON
 
 /**
  * Contains the same information as a {@link DBusBoundProperty}, but as a POJO. Use
  * internally when dealing with properties that are derived from methods annotated
  * with said annotation.
+ *
+ * @author Brett Smith
+ * @since 5.0.0 - 2023-10-20
  */
 public final  class PropertyRef {
 

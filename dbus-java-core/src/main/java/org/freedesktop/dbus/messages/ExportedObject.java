@@ -1,16 +1,7 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.MethodTuple;
-import org.freedesktop.dbus.StrongReference;
-import org.freedesktop.dbus.Tuple;
-import org.freedesktop.dbus.TypeRef;
-import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusIgnore;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.annotations.DBusMemberName;
-import org.freedesktop.dbus.annotations.DBusProperties;
-import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.annotations.*;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -18,30 +9,17 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.propertyref.PropertyRef;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
-import org.freedesktop.dbus.utils.PropertyRef;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class ExportedObject {
     private final Map<MethodTuple, Method> methods = new HashMap<>();
@@ -116,15 +94,10 @@ public class ExportedObject {
     protected String generatePropertyXml(String _propertyName, Class<?> _propertyTypeClass, Access _access) throws DBusException {
         String propertyTypeString;
         if (TypeRef.class.isAssignableFrom(_propertyTypeClass)) {
-            Type actualType = Arrays.stream(_propertyTypeClass.getGenericInterfaces())
-                    .filter(t -> t instanceof ParameterizedType)
-                    .map(t -> (ParameterizedType) t)
-                    .filter(t -> TypeRef.class.equals(t.getRawType()))
-                    .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new DBusException("Could not read TypeRef type for property '" + _propertyName + "'")
-                    );
+            Type actualType = Optional.ofNullable(Util.unwrapTypeRef(_propertyTypeClass))
+                .orElseThrow(() ->
+                    new DBusException("Could not read TypeRef type for property '" + _propertyName + "'")
+            );
             propertyTypeString = Marshalling.getDBusType(new Type[]{actualType});
         } else if (List.class.equals(_propertyTypeClass)) {
             // default non generic list types

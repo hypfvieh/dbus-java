@@ -53,9 +53,8 @@ public class BoundPropertiesTest extends AbstractDBusBaseTest {
                 SampleStruct struct2 = new SampleStruct("XXXX", new UInt32(999), new Variant<>(false));
                 myObject.setStruct(struct2);
 
-// TODO these two fail with exceptions
-//                myObject.setAList(Arrays.asList(999, 998, 997, 996));
-//                myObject.setAMap(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2));
+                myObject.setAList(Arrays.asList(999, 998, 997, 996));
+                myObject.setAMap(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2));
 
                 assertEquals(myObject.getMyProperty(), "New value");
                 assertTrue(myObject.isMyOtherProperty());
@@ -67,15 +66,14 @@ public class BoundPropertiesTest extends AbstractDBusBaseTest {
                 assertEquals(new UInt32(999), struct2.getInt32Value());
                 assertEquals(new Variant<>(false), struct2.getVariantValue());
 
-// TODO these two will fail until setAList and setAMap above work
-//                assertEquals(Arrays.asList(999, 998, 997, 996), myObject.getAList());
-//                assertEquals(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2), myObject.getAMap());
+                assertEquals(Arrays.asList(999, 998, 997, 996), myObject.getAList());
+                assertEquals(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2), myObject.getAMap());
 
             }
         }
     }
 
-    interface StringList extends TypeRef<List<String>> {
+    interface IntegerList extends TypeRef<List<Integer>> {
 
     }
 
@@ -134,10 +132,10 @@ public class BoundPropertiesTest extends AbstractDBusBaseTest {
         @DBusBoundProperty(type = LongMap.class)
         void setAMap(Map<String, Long> _aMap);
 
-        @DBusBoundProperty(type = StringList.class)
+        @DBusBoundProperty(type = IntegerList.class)
         List<Integer> getAList();
 
-        @DBusBoundProperty(type = StringList.class)
+        @DBusBoundProperty(type = IntegerList.class)
         void setAList(List<Integer> _aList);
     }
 
