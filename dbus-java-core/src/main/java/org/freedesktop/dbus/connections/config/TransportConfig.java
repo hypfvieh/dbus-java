@@ -22,6 +22,7 @@ public final class TransportConfig {
     private BusAddress                  busAddress;
 
     private Consumer<AbstractTransport> preConnectCallback;
+    private Consumer<AbstractTransport> afterBindCallback;
 
     private int                         timeout          = 10000;
     private boolean                     autoConnect      = true;
@@ -75,6 +76,14 @@ public final class TransportConfig {
 
     public void setPreConnectCallback(Consumer<AbstractTransport> _preConnectCallback) {
         preConnectCallback = _preConnectCallback;
+    }
+
+    public Consumer<AbstractTransport> getAfterBindCallback() {
+        return afterBindCallback;
+    }
+
+    public void setAfterBindCallback(Consumer<AbstractTransport> _afterBindCallback) {
+        afterBindCallback = _afterBindCallback;
     }
 
     public boolean isAutoConnect() {

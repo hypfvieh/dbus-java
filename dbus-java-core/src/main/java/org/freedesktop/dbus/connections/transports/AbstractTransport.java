@@ -18,6 +18,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicLong;
@@ -110,22 +111,53 @@ public abstract class AbstractTransport implements Closeable {
     protected abstract boolean hasFileDescriptorSupport();
 
     /**
-     * Abstract method implemented by concrete sub classes to establish a connection using whatever transport type (e.g.
-     * TCP/Unix socket).
+     * Abstract method implemented by concrete sub classes to establish a connection.
+     * @return socket channel connected to DBus server
      *
      * @throws IOException when connection fails
      */
     protected abstract SocketChannel connectImpl() throws IOException;
 
     /**
-     * Abstract method implemented by concrete sub classes to listen for a new connection using whatever transport type
-     * (e.g. TCP/Unix socket).
+     * Method to accept new incoming listening connections.<br>
+     * This is the place where {@code accept()} is called on the server socket created by {@link #bindImpl()}.<br>
+     * Therefore this method will block until a client is connected.
+     *
+     * @return newly connected client socket
      *
      * @throws IOException when connection fails
      *
-     * @since 5.0.0 - 2023-05-18
+     * @since 5.0.0 - 2023-10-20
      */
-    protected abstract SocketChannel listenImpl() throws IOException;
+    protected abstract SocketChannel acceptImpl() throws IOException;
+
+    /**
+     * Method called to prepare listening for connections.<br>
+     * This is usually the place where the {@code ServerSocketChannel} is created and {@code bind()} is called.
+     *
+     * @throws IOException when connection fails
+     *
+     * @since 5.0.0 - 2023-10-20
+     */
+    protected abstract void bindImpl() throws IOException;
+
+    /**
+     * Method which is called to close a transport.<br>
+     * Should be used to close all sockets and/or serversockets.
+     *
+     * @throws IOException when something fails while closing transport
+     * @since 5.0.0 - 2023-10-20
+     */
+    protected abstract void closeTransport() throws IOException;
+
+    /**
+     * Status of the server socket if this transport is configured to be a server connection.<br>
+     * Must be false if {@link #bindImpl()} was not called.
+     *
+     * @return boolean
+     * @since 5.0.0 - 2023-10-20
+     */
+    protected abstract boolean isBound();
 
     /**
      * Establish connection on created transport.<br>
@@ -173,7 +205,13 @@ public abstract class AbstractTransport implements Closeable {
         if (!getAddress().isListeningSocket()) {
             throw new InvalidBusAddressException("Cannot listen on client connection address (try use connect() instead)");
         }
-        transportConnection = internalConnect(() -> listenImpl());
+
+        if (!isBound()) {
+            bindImpl();
+            runCallback(config.getAfterBindCallback());
+        }
+
+        transportConnection = internalConnect(() -> acceptImpl());
         return transportConnection;
     }
 
@@ -185,9 +223,7 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException when channel provider could not create a SocketChannel
      */
     private TransportConnection internalConnect(IThrowingSupplier<SocketChannel, IOException> _channelProvider) throws IOException {
-        if (config.getPreConnectCallback() != null) {
-            config.getPreConnectCallback().accept(this);
-        }
+        runCallback(config.getPreConnectCallback());
         SocketChannel channel = _channelProvider.get();
 
         authenticate(channel);
@@ -267,6 +303,14 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     /**
+     * Runs a callback if not null.
+     * @param _callback callback to execute
+     */
+    private void runCallback(Consumer<AbstractTransport> _callback) {
+        Optional.ofNullable(_callback).ifPresent(c -> c.accept(this));
+    }
+
+    /**
      * Returns the {@link BusAddress} used for this transport.
      *
      * @return BusAddress, never null
@@ -340,11 +384,14 @@ public abstract class AbstractTransport implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         if (transportConnection != null) {
             transportConnection.close();
             transportConnection = null;
         }
+
+        getLogger().debug("Disconnecting Transport: {}", this);
+        closeTransport();
     }
 
 }

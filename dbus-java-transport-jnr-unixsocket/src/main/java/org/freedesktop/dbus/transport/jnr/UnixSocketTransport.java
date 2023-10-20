@@ -1,7 +1,10 @@
 package org.freedesktop.dbus.transport.jnr;
 
 import jnr.posix.util.Platform;
-import jnr.unixsocket.*;
+import jnr.unixsocket.UnixServerSocketChannel;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
+import jnr.unixsocket.UnixSocketOptions;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
@@ -43,17 +46,26 @@ public class UnixSocketTransport extends AbstractUnixTransport {
     }
 
     @Override
-    public SocketChannel listenImpl() throws IOException {
+    protected boolean isBound() {
+        return serverSocket != null && serverSocket.isOpen();
+    }
+
+    @Override
+    public void bindImpl() throws IOException {
         if (!getAddress().isListeningSocket()) {
             throw new IOException("Cannot listen on a client connection (use connectImpl() instead)");
         }
 
-        if (serverSocket == null || !serverSocket.isOpen()) {
+        if (!isBound()) {
             serverSocket = UnixServerSocketChannel.open();
             serverSocket.configureBlocking(true);
             serverSocket.socket().bind(unixSocketAddress);
         }
 
+    }
+
+    @Override
+    public SocketChannel acceptImpl() throws IOException {
         socket = serverSocket.accept();
         socket.configureBlocking(true);
 
@@ -89,11 +101,7 @@ public class UnixSocketTransport extends AbstractUnixTransport {
     }
 
     @Override
-    public void close() throws IOException {
-        getLogger().debug("Disconnecting Transport");
-
-        super.close();
-
+    protected void closeTransport() throws IOException {
         if (socket != null && socket.isOpen()) {
             socket.close();
         }

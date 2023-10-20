@@ -25,10 +25,8 @@ public class Issue196Test extends AbstractBaseTest {
         BusAddress listenBusAddress = BusAddress.of(busAddress).getListenerAddress();
 
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
-            daemon.startInBackground();
+            daemon.startInBackgroundAndWait(MAX_WAIT);
             logger.debug("Started embedded bus on address {}", listenBusAddress);
-
-            waitForDaemon(daemon);
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress);

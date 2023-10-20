@@ -28,10 +28,8 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
         logger.debug("Starting embedded bus on address {})", listenBusAddress);
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
-            daemon.startInBackground();
             logger.debug("Started embedded bus on address {}", listenBusAddress);
-
-            waitForDaemon(daemon);
+            daemon.startInBackgroundAndWait(MAX_WAIT);
 
             // connect to started daemon process
             logger.info("Connecting to embedded DBus {}", busAddress);
