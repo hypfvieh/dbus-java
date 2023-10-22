@@ -8,7 +8,7 @@
  - Javadoc 5.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
  - Site: [Maven Site](https://hypfvieh.github.io/dbus-java/)
 
-Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 11+. 
+Improved version of [Java-DBus library provided by freedesktop.org](https://dbus.freedesktop.org/doc/dbus-java/) with support for Java 17+. 
 
 ### Important information when updating from dbus-java 4.x.x and earlier
 
@@ -44,6 +44,11 @@ With dbus-java 4.x (and 5.x as well), java.nio is used for all transports and th
 If you previously used a custom transport you have to update your code when switching to dbus-java 5.x.
 The `AbstractTransport` base class has been changed and now provides different methods to separate client and listening
 (server) connections.
+
+Additionally there is a new method called `closeTransport()` which must be implemented to ensure all used resources
+(e.g. `SocketChannel` or `ServerSocketChannel` instance) are properly closed.
+Previously a transport should have overridden `close()` and call `super.close()` after closing the transport.
+This is now longer needed (`close()` is now final and cannot be overriden) and is replaced by `closeTransport()`.
 
 The `connectImpl()` was previously existing and will now only be called for client side connections.
 The new methods `bindImpl()`, `acceptImpl()` and `isBound()` are used for server connections and has been added in dbus-java 5.x.
