@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.messages.ExportedObject;
@@ -7,15 +7,15 @@ public class GlobalHandler implements org.freedesktop.dbus.interfaces.Peer, org.
     /**
      *
      */
-    private final AbstractConnection connection;
+    private final AbstractConnectionBase connection;
     private final String             objectpath;
 
-    GlobalHandler(AbstractConnection _abstractConnection) {
+    GlobalHandler(AbstractConnectionBase _abstractConnection) {
         connection = _abstractConnection;
         this.objectpath = null;
     }
 
-    GlobalHandler(AbstractConnection _abstractConnection, String _objectpath) {
+    GlobalHandler(AbstractConnectionBase _abstractConnection, String _objectpath) {
         connection = _abstractConnection;
         this.objectpath = _objectpath;
     }

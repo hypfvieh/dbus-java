@@ -1,5 +1,6 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
+import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.interfaces.FatalException;
@@ -15,9 +16,9 @@ public class IncomingMessageThread extends Thread {
     private final Logger             logger = LoggerFactory.getLogger(getClass());
 
     private volatile boolean         terminate;
-    private final AbstractConnection connection;
+    private final ConnectionMessageHandler connection;
 
-    public IncomingMessageThread(AbstractConnection _connection, BusAddress _busAddress) {
+    public IncomingMessageThread(ConnectionMessageHandler _connection, BusAddress _busAddress) {
         connection = Objects.requireNonNull(_connection);
         setName("DBusConnection [listener=" + _busAddress.isListeningSocket() + "]");
         setDaemon(true);

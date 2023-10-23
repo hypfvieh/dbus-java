@@ -1,4 +1,4 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.utils.LoggingHelper;

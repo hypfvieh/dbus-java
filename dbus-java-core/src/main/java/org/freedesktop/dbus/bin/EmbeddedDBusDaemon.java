@@ -128,7 +128,6 @@ public class EmbeddedDBusDaemon implements Closeable {
      * Waits until the daemon is ready before return indefinitely.
      * If given wait time exceeded, a {@link RuntimeException} is thrown.
      *
-     * @param _maxWaitMillis maximum wait time in milliseconds
      * @throws IllegalStateException when interrupted while waiting for daemon to start
      *
      * @since 5.0.0 - 2023-10-20

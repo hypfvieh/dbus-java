@@ -1,9 +1,9 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
-import org.freedesktop.dbus.connections.ReceivingService.ExecutorNames;
-import org.freedesktop.dbus.connections.ReceivingService.IThreadPoolRetryHandler;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.connections.shared.ExecutorNames;
+import org.freedesktop.dbus.connections.shared.IThreadPoolRetryHandler;
 import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;

@@ -2,6 +2,7 @@ package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSerializable;
@@ -417,7 +418,7 @@ public final class Marshalling {
      * @return The converted parameters.
      * @throws DBusException Thrown if there is an error in converting the objects.
      */
-    public static Object[] convertParameters(Object[] _parameters, Type[] _types, String[] _customSignatures, AbstractConnection _conn) throws DBusException {
+    public static Object[] convertParameters(Object[] _parameters, Type[] _types, String[] _customSignatures, AbstractConnectionBase _conn) throws DBusException {
         if (null == _parameters) {
             return null;
         }
@@ -493,12 +494,12 @@ public final class Marshalling {
      * @return The converted parameters.
      * @throws DBusException Thrown if there is an error in converting the objects.
      */
-    public static Object[] convertParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws DBusException {
+    public static Object[] convertParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws DBusException {
         return convertParameters(_parameters, _types, null, _conn);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnection _conn) throws Exception {
+    static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnectionBase _conn) throws Exception {
         LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type);
 
         Object parameter = _parameter;
@@ -637,7 +638,7 @@ public final class Marshalling {
         return parameter;
     }
 
-    static List<Object> deSerializeParameters(List<Object> _parameters, Type _type, AbstractConnection _conn) throws Exception {
+    static List<Object> deSerializeParameters(List<Object> _parameters, Type _type, AbstractConnectionBase _conn) throws Exception {
         LOGGER.trace("Deserializing from {} to {}", _parameters, _type);
         if (null == _parameters) {
             return null;
@@ -653,7 +654,7 @@ public final class Marshalling {
     }
 
     @SuppressWarnings("unchecked")
-    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnection _conn) throws Exception {
+    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
         LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
 
         if (null == _parameters) {

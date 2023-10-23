@@ -1,9 +1,9 @@
 package org.freedesktop.dbus.connections.config;
 
-import org.freedesktop.dbus.connections.ReceivingService;
-import org.freedesktop.dbus.connections.ReceivingService.ExecutorNames;
-import org.freedesktop.dbus.connections.ReceivingService.IThreadPoolRetryHandler;
+import org.freedesktop.dbus.connections.base.ReceivingService;
 import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
+import org.freedesktop.dbus.connections.shared.ExecutorNames;
+import org.freedesktop.dbus.connections.shared.IThreadPoolRetryHandler;
 import org.freedesktop.dbus.utils.Util;
 import org.slf4j.LoggerFactory;
 

@@ -1,52 +1,31 @@
 package org.freedesktop.dbus.connections;
 
-import org.freedesktop.dbus.*;
-import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusProperties;
-import org.freedesktop.dbus.annotations.DBusProperty;
-import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.RemoteInvocationHandler;
+import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.connections.base.ConnectionMessageHandler;
+import org.freedesktop.dbus.connections.base.IncomingMessageThread;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.errors.InvalidMethodArgument;
-import org.freedesktop.dbus.errors.UnknownMethod;
-import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.FatalDBusException;
-import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
-import org.freedesktop.dbus.messages.*;
-import org.freedesktop.dbus.messages.Error;
-import org.freedesktop.dbus.propertyref.PropertyRef;
-import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.LoggingHelper;
-import org.freedesktop.dbus.utils.NameableThreadFactory;
-import org.freedesktop.dbus.utils.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.ExportedObject;
+import org.freedesktop.dbus.messages.MethodCall;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 
 /**
  * Handles a connection to DBus.
  */
-public abstract class AbstractConnection implements Closeable {
+public abstract non-sealed class AbstractConnection extends ConnectionMessageHandler {
 
     public static final boolean      FLOAT_SUPPORT          = null != System.getenv("DBUS_JAVA_FLOATS");
     public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
@@ -57,110 +36,16 @@ public abstract class AbstractConnection implements Closeable {
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
 
-    private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
-
-    private final Logger                                                          logger;
-
-    private final ObjectTree                                                      objectTree;
-
-    private final Map<String, ExportedObject>                                     exportedObjects;
-    private final Map<DBusInterface, RemoteObject>                                importedObjects;
-
-    private final PendingCallbackManager                                          callbackManager;
-
-    private final FallbackContainer                                               fallbackContainer;
-
-    private final Queue<Error>                                                    pendingErrorQueue;
-
-    private final Map<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> handledSignals;
-    private final Map<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>>           genericHandledSignals;
-    private final Map<Long, MethodCall>                                           pendingCalls;
-
-    private final IncomingMessageThread                                           readerThread;
-    private final ExecutorService                                                 senderService;
-    private final ReceivingService                                                receivingService;
-    private final BusAddress                                                      busAddress;
-
-    private final MessageFactory                                                  messageFactory;
-
-    private boolean                                                               weakreferences       = false;
-    private volatile boolean                                                      disconnecting        = false;
-
-    private AbstractTransport                                                     transport;
-
-    private Optional<IDisconnectCallback>                                         disconnectCallback   =
-            Optional.ofNullable(null);
+    private boolean                                weakreferences       = false;
 
     protected AbstractConnection(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
-        logger = LoggerFactory.getLogger(getClass());
-        exportedObjects = Collections.synchronizedMap(new HashMap<>());
-        importedObjects = new ConcurrentHashMap<>();
-
-        exportedObjects.put(null, new ExportedObject(new GlobalHandler(this), weakreferences));
-
-        handledSignals = new ConcurrentHashMap<>();
-        genericHandledSignals = new ConcurrentHashMap<>();
-
-        pendingCalls = Collections.synchronizedMap(new LinkedHashMap<>());
-        callbackManager = new PendingCallbackManager();
-
-        pendingErrorQueue = new ConcurrentLinkedQueue<>();
-
-        TransportBuilder transportBuilder = TransportBuilder.create(_transportConfig);
-        busAddress = transportBuilder.getAddress();
-
-        String senderThreadName = "DBus Sender Thread-";
-        String rcvSvcName = "";
-        if (logger.isDebugEnabled()) {
-            senderThreadName = "DBus Sender Thread: " + busAddress.isListeningSocket() + ", ";
-            rcvSvcName = "RcvSvc: " + busAddress.isListeningSocket() + " ";
-        }
-
-        receivingService = new ReceivingService(rcvSvcName, _rsCfg);
-        senderService =
-            Executors.newFixedThreadPool(1, new NameableThreadFactory(senderThreadName, true));
-
-        objectTree = new ObjectTree();
-        fallbackContainer = new FallbackContainer();
-
-        readerThread = new IncomingMessageThread(this, busAddress);
-
-        try {
-            transport = transportBuilder.build();
-            messageFactory = Optional.ofNullable(transport)
-                .map(AbstractTransport::getMessageFactory)
-                .orElseThrow();
-        } catch (IOException | DBusException _ex) {
-            logger.debug("Error creating transport", _ex);
-            if (_ex instanceof IOException ioe) {
-                internalDisconnect(ioe);
-            }
-            throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
-        }
+        super(_transportConfig, _rsCfg);
     }
 
-    /**
-     * Retrieves an remote object using source and path.
-     * Will try to find suitable exported DBusInterface automatically.
-     *
-     * @param _source source
-     * @param _path path
-     *
-     * @return {@link DBusInterface} compatible object
-     */
-    public abstract DBusInterface getExportedObject(String _source, String _path) throws DBusException;
-
-    /**
-     * Retrieves an remote object using source and path.
-     * Will use the given type as object class.
-     *
-     * @param _source source
-     * @param _path path
-     * @param _type class of remote object
-     *
-     * @return {@link DBusInterface} compatible object
-     */
-    public abstract <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException;
+    @Override
+    protected IncomingMessageThread createReaderThread(BusAddress _busAddress) {
+        return new IncomingMessageThread(this, _busAddress);
+    }
 
     /**
      * Remove a match rule with the given {@link DBusSigHandler}.
@@ -215,12 +100,6 @@ public abstract class AbstractConnection implements Closeable {
     protected abstract AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
 
     /**
-     * The generated UUID of this machine.
-     * @return String
-     */
-    public abstract String getMachineId();
-
-    /**
      * If given type is null, will try to find suitable types by examining the given ifaces.
      * If a non-null type is given, returns the given type.
      *
@@ -235,7 +114,7 @@ public abstract class AbstractConnection implements Closeable {
         if (_type == null) {
             for (String iface : _ifaces) {
 
-                logger.debug("Trying interface {}", iface);
+                getLogger().debug("Trying interface {}", iface);
                 int j = 0;
                 while (j >= 0) {
                     try {
@@ -245,7 +124,7 @@ public abstract class AbstractConnection implements Closeable {
                         }
                         break;
                     } catch (Exception _ex) {
-                        logger.trace("No class found for {}", iface, _ex);
+                        getLogger().trace("No class found for {}", iface, _ex);
                     }
                     j = iface.lastIndexOf('.');
                     char[] cs = iface.toCharArray();
@@ -259,37 +138,6 @@ public abstract class AbstractConnection implements Closeable {
             ifcs.add(_type);
         }
         return ifcs;
-    }
-
-    /**
-     * Start reading and messages.
-     *
-     * @throws IOException when listening fails
-     */
-    protected void listen() throws IOException {
-        readerThread.start();
-    }
-
-    public String getExportedObject(DBusInterface _interface) throws DBusException {
-
-        Optional<Entry<String, ExportedObject>> foundInterface =
-                getExportedObjects().entrySet().stream()
-                    .filter(e -> _interface.equals(e.getValue().getObject().get()))
-                    .findFirst();
-        if (foundInterface.isPresent()) {
-            return foundInterface.get().getKey();
-        } else {
-            RemoteObject rObj = getImportedObjects().get(_interface);
-            if (rObj != null) {
-                String s = rObj.getObjectPath();
-                if (s != null) {
-                    return s;
-                }
-            }
-
-            throw new DBusException("Not an object exported or imported by this connection");
-        }
-
     }
 
     /**
@@ -369,7 +217,7 @@ public abstract class AbstractConnection implements Closeable {
             throw new DBusException("Invalid object path: " + _objectPrefix);
         }
         ExportedObject eo = new ExportedObject(_object, weakreferences);
-        fallbackContainer.add(_objectPrefix, eo);
+        getFallbackContainer().add(_objectPrefix, eo);
     }
 
     /**
@@ -379,34 +227,7 @@ public abstract class AbstractConnection implements Closeable {
      *            The prefix to remove the fallback for.
      */
     public void removeFallback(String _objectprefix) {
-        fallbackContainer.remove(_objectprefix);
-    }
-
-    /**
-     * Stop Exporting an object
-     *
-     * @param _objectpath
-     *            The objectpath to stop exporting.
-     */
-    public void unExportObject(String _objectpath) {
-        synchronized (getExportedObjects()) {
-            getExportedObjects().remove(_objectpath);
-            getObjectTree().remove(_objectpath);
-        }
-    }
-
-    /**
-     * Send a message or signal to the DBus daemon.
-     * @param _message message to send
-     */
-    public void sendMessage(Message _message) {
-        if (!isConnected()) {
-            throw new NotConnected("Cannot send message: Not connected");
-        }
-
-        Runnable runnable = () -> sendMessageInternally(_message);
-
-        senderService.execute(runnable);
+        getFallbackContainer().remove(_objectprefix);
     }
 
     /**
@@ -531,107 +352,6 @@ public abstract class AbstractConnection implements Closeable {
     }
 
     /**
-     * Special disconnect method which may be used whenever some cleanup before or after
-     * disconnection to DBus is required.
-     * @param _before action execute before actual disconnect, null if not needed
-     * @param _after action execute after disconnect, null if not needed
-     */
-    protected synchronized void disconnect(IDisconnectAction _before, IDisconnectAction _after) {
-        if (_before != null) {
-            _before.perform();
-        }
-        internalDisconnect(null);
-        if (_after != null) {
-            _after.perform();
-        }
-    }
-
-    /**
-     * Disconnects the DBus session.
-     * This method is private as it should never be overwritten by subclasses,
-     * otherwise we have an endless recursion when using {@link #disconnect(IDisconnectAction, IDisconnectAction)}
-     * which then will cause a StackOverflowError.
-     *
-     * @param _connectionError exception caused the disconnection (null if intended disconnect)
-     */
-    protected final synchronized void internalDisconnect(IOException _connectionError) {
-
-        if (!isConnected()) { // already disconnected
-            logger.debug("Ignoring disconnect, already disconnected");
-            return;
-        }
-        disconnecting = true;
-
-        logger.debug("Disconnecting Abstract Connection");
-
-        disconnectCallback.ifPresent(cb -> {
-            Optional.ofNullable(_connectionError)
-                .ifPresentOrElse(ex -> cb.disconnectOnError(ex), () -> cb.requestedDisconnect(null));
-        });
-
-        // stop reading new messages
-        readerThread.terminate();
-
-        // terminate the signal handling pool
-        receivingService.shutdown(10, TimeUnit.SECONDS);
-
-        // stop potentially waiting method-calls
-        logger.debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
-        Exception interrupt = _connectionError == null ? new IOException("Disconnecting") : _connectionError;
-        for (MethodCall mthCall : getPendingCalls().values()) {
-            try {
-                mthCall.setReply(getMessageFactory().createError(mthCall, interrupt));
-            } catch (DBusException _ex) {
-                logger.debug("Cannot set method reply to error", _ex);
-            }
-        }
-
-        // shutdown sender executor service, send all remaining messages in main thread when no exception caused disconnection
-        logger.debug("Shutting down SenderService");
-        List<Runnable> remainingMsgsToSend = senderService.shutdownNow();
-        // only try to send remaining messages when disconnection was not
-        // caused by an IOException, otherwise we may block for method calls waiting for
-        // reply which will never be received (due to disconnection by IOException)
-        if (_connectionError == null) {
-            for (Runnable runnable : remainingMsgsToSend) {
-                runnable.run();
-            }
-        } else if (!remainingMsgsToSend.isEmpty()) {
-            logger.debug("Will not send {} messages due to connection closed by IOException", remainingMsgsToSend.size());
-        }
-
-        // disconnect from the transport layer
-        try {
-            if (transport != null) {
-                transport.close();
-                transport = null;
-            }
-        } catch (IOException _ex) {
-            logger.debug("Exception while disconnecting transport.", _ex);
-        }
-
-        // stop all the workers
-        receivingService.shutdownNow();
-        disconnecting = false;
-    }
-
-    /**
-     * Disconnect from the Bus.
-     */
-    public synchronized void disconnect() {
-        logger.debug("Disconnect called");
-        internalDisconnect(null);
-    }
-
-    /**
-     * Disconnect this session (for use in try-with-resources).
-     */
-    @Override
-    public void close() throws IOException {
-        disconnect();
-    }
-
-    /**
      * Call a method asynchronously and set a callback. This handler will be called in a separate thread.
      *
      * @param <A>
@@ -647,7 +367,7 @@ public abstract class AbstractConnection implements Closeable {
      */
     public <A> void callWithCallback(DBusInterface _object, String _m, CallbackHandler<A> _callback,
             Object... _parameters) {
-        logger.trace("callWithCallback({}, {}, {})", _object, _m, _callback);
+        getLogger().trace("callWithCallback({}, {}, {})", _object, _m, _callback);
         Class<?>[] types = createTypesArray(_parameters);
         RemoteObject ro = getImportedObjects().get(_object);
 
@@ -661,10 +381,10 @@ public abstract class AbstractConnection implements Closeable {
             RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_CALLBACK,
                     _callback, _parameters);
         } catch (DBusExecutionException _ex) {
-            logger.debug("", _ex);
+            getLogger().debug("", _ex);
             throw _ex;
         } catch (Exception _ex) {
-            logger.debug("", _ex);
+            getLogger().debug("", _ex);
             throw new DBusExecutionException(_ex.getMessage());
         }
     }
@@ -694,10 +414,10 @@ public abstract class AbstractConnection implements Closeable {
             return (DBusAsyncReply<?>) RemoteInvocationHandler.executeRemoteMethod(ro, me, this,
                     RemoteInvocationHandler.CALL_TYPE_ASYNC, null, _parameters);
         } catch (DBusExecutionException _ex) {
-            logger.debug("", _ex);
+            getLogger().debug("", _ex);
             throw _ex;
         } catch (Exception _ex) {
-            logger.debug("", _ex);
+            getLogger().debug("", _ex);
             throw new DBusExecutionException(_ex.getMessage());
         }
     }
@@ -722,762 +442,12 @@ public abstract class AbstractConnection implements Closeable {
                 .toArray(Class[]::new);
     }
 
-    protected void handleException(Message _methodOrSignal, DBusExecutionException _exception) {
-        try {
-            sendMessage(getMessageFactory().createError(_methodOrSignal, _exception));
-        } catch (DBusException _ex) {
-            logger.warn("Exception caught while processing previous error.", _ex);
-        }
-    }
-
-    /**
-     * Handle received message from DBus.
-     * @param _message
-     * @throws DBusException
-     */
-    void handleMessage(Message _message) throws DBusException {
-        if (_message instanceof DBusSignal) {
-            handleMessage((DBusSignal) _message, true);
-        } else if (_message instanceof MethodCall) {
-            handleMessage((MethodCall) _message);
-        } else if (_message instanceof MethodReturn) {
-            handleMessage((MethodReturn) _message);
-        } else if (_message instanceof Error) {
-            handleMessage((Error) _message);
-        }
-    }
-
-    private void handleMessage(final MethodCall _methodCall) throws DBusException {
-        logger.debug("Handling incoming method call: {}", _methodCall);
-
-        ExportedObject exportObject;
-        Method meth = null;
-        Object o = null;
-
-        if (null == _methodCall.getInterface() || _methodCall.getInterface().equals("org.freedesktop.DBus.Peer")
-                || _methodCall.getInterface().equals("org.freedesktop.DBus.Introspectable")) {
-            exportObject = getExportedObjects().get(null);
-            if (null != exportObject && null == exportObject.getObject().get()) {
-                unExportObject(null);
-                exportObject = null;
-            }
-            if (null != exportObject) {
-                meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-            }
-            if (null != meth) {
-                o = new GlobalHandler(this, _methodCall.getPath());
-            }
-        }
-        if (null == o) {
-            // now check for specific exported functions
-
-            exportObject = getExportedObjects().get(_methodCall.getPath());
-            if (exportObject != null && exportObject.getObject().get() == null) {
-                logger.info("Unexporting {} implicitly", _methodCall.getPath());
-                unExportObject(_methodCall.getPath());
-                exportObject = null;
-            }
-
-            if (null == exportObject) {
-                exportObject = fallbackContainer.get(_methodCall.getPath());
-            }
-
-            if (null == exportObject) {
-                sendMessage(getMessageFactory().createError(_methodCall,
-                    new UnknownObject(_methodCall.getPath() + " is not an object provided by this process.")));
-                return;
-            }
-            if (logger.isTraceEnabled()) {
-                logger.trace("Searching for method {}  with signature {}", _methodCall.getName(), _methodCall.getSig());
-                logger.trace("List of methods on {}: ", exportObject);
-                for (MethodTuple mt : exportObject.getMethods().keySet()) {
-                    logger.trace("   {} => {}", mt, exportObject.getMethods().get(mt));
-                }
-            }
-
-            Object[] params = _methodCall.getParameters();
-            if (handleDBusBoundProperties(exportObject, _methodCall, params)) {
-                return;
-            }
-
-            if (meth == null) {
-                meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-                if (null == meth) {
-                    sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
-                        "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
-                    return;
-                }
-            }
-            o = exportObject.getObject().get();
-        }
-
-        if (ExportedObject.isExcluded(meth)) {
-            sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
-                    "The method `%s.%s' is not exported.", _methodCall.getInterface(), _methodCall.getName()))));
-            return;
-        }
-
-        // now execute it
-        queueInvokeMethod(_methodCall, meth, o);
-    }
-
-    /**
-     * Method which handles the magic related to {@link DBusBoundProperty} annotation.<br>
-     * It takes care of proper method calling (calling Get/Set stuff on DBus Properties interface)<br>
-     * and will also take care of converting wrapped Variant types.
-     *
-     * @param _exportObject exported object
-     * @param _methodCall method to call
-     * @param _params parameter to pass to method
-     *
-     * @return true if call was handled, false otherwise
-     *
-     * @throws DBusException when something fails
-     */
-    @SuppressWarnings("unchecked")
-    private boolean handleDBusBoundProperties(ExportedObject _exportObject, final MethodCall _methodCall, Object[] _params) throws DBusException {
-        if (_params.length == 2 && _params[0] instanceof String
-            && _params[1] instanceof String
-            && _methodCall.getName().equals("Get")) {
-
-            // 'Get' This MIGHT be a property reference
-            PropertyRef propertyRef = new PropertyRef((String) _params[1], null, DBusProperty.Access.READ);
-            Method propMeth = _exportObject.getPropertyMethods().get(propertyRef);
-            if (propMeth != null) {
-                // This IS a property reference
-                Object object = _exportObject.getObject().get();
-
-                receivingService.execMethodCallHandler(() -> {
-                    _methodCall.setArgs(new Object[0]);
-                    invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
-                });
-
-                return true;
-            }
-        } else if (_params.length == 3
-            && _params[0] instanceof String
-            && _params[1] instanceof String
-            && _methodCall.getName().equals("Set")) {
-            // 'Set' This MIGHT be a property reference
-
-            PropertyRef propertyRef = new PropertyRef((String) _params[1], null, Access.WRITE);
-            Method propMeth = _exportObject.getPropertyMethods().get(propertyRef);
-            if (propMeth != null) {
-                // This IS a property reference
-                Object object = _exportObject.getObject().get();
-                Class<?> type = PropertyRef.typeForMethod(propMeth);
-                AtomicBoolean isVariant = new AtomicBoolean(false);
-
-                Object val = Optional.ofNullable(_params[2])
-                    .map(v -> {
-                        if (v instanceof Variant<?> va) {
-                            isVariant.set(true);
-                            return va.getValue();
-                        }
-                        return v;
-                    }).orElse(null);
-
-                receivingService.execMethodCallHandler(() -> {
-                    try {
-                        Object myVal = val;
-                        Parameter[] parameters = propMeth.getParameters();
-                        // the setter method can only be used if it has just 1 parameter
-                        if (parameters.length != 1) {
-                            throw new InvalidMethodArgument("Expected method with one argument, but found " + parameters.length);
-                        }
-                        // take care of arrays:
-                        // DBus only knows arrays of types, not lists or other collections.
-                        // if the method which should be called wants a Collection we have to
-                        // convert the array to a proper type
-                        if (Collection.class.isAssignableFrom(parameters[0].getType())
-                            && isVariant.get() && myVal != null && myVal.getClass().isArray()) {
-
-                            if (Set.class.isAssignableFrom(parameters[0].getType())) {
-                                myVal = new LinkedHashSet<>(Arrays.asList(Util.toObjectArray(myVal)));
-                            } else { // assume list is fine for all other collection types
-                                myVal = new ArrayList<>(Arrays.asList(Util.toObjectArray(myVal)));
-                            }
-                        }
-                        _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this));
-                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
-                    } catch (Exception _ex) {
-                        logger.debug("Failed to invoke method call on Properties", _ex);
-                        handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                        return;
-                    }
-                });
-
-                return true;
-            }
-        } else if (_params.length == 1 && _params[0] instanceof String
-            && _methodCall.getName().equals("GetAll")) {
-            // 'GetAll'
-            Set<Entry<PropertyRef, Method>> allPropertyMethods = _exportObject.getPropertyMethods().entrySet();
-            /* If there are no property methods on this object, just process as normal */
-            if (!allPropertyMethods.isEmpty()) {
-                Object object = _exportObject.getObject().get();
-                Method meth = null;
-                if (meth == null && object instanceof DBusProperties) {
-                    meth = _exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-                    if (null == meth) {
-                        sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
-                            "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
-                        return true;
-                    }
-                } else if (meth == null) {
-                    try {
-                        meth = Properties.class.getDeclaredMethod("GetAll", String.class);
-                    } catch (NoSuchMethodException | SecurityException _ex) {
-                        logger.debug("Properties GetAll failed", _ex);
-                        handleException(_methodCall,
-                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-                    }
-                }
-
-                Method originalMeth = meth;
-
-                receivingService.execMethodCallHandler(() -> {
-                    Map<String, Object> resultMap = new HashMap<>();
-                    for (Entry<PropertyRef, Method> propEn : allPropertyMethods) {
-                        Method propMeth = propEn.getValue();
-                        if (propEn.getKey().getAccess() == Access.READ) {
-                            try {
-                                _methodCall.setArgs(new Object[0]);
-                                Object val =  invokeMethod(_methodCall, propMeth, object);
-                                resultMap.put(propEn.getKey().getName(), val);
-                            } catch (Throwable _ex) {
-                                logger.debug("", _ex);
-                                handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                                return;
-                            }
-                        }
-                    }
-
-                    if (object instanceof DBusProperties) {
-                        resultMap.putAll((Map<? extends String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
-                    }
-
-                    try {
-                        invokedMethodReply(_methodCall, originalMeth, resultMap);
-                    } catch (DBusExecutionException _ex) {
-                        logger.debug("Error invoking method call", _ex);
-                        handleException(_methodCall, _ex);
-                    } catch (Throwable _ex) {
-                        logger.debug("Failed to invoke method call", _ex);
-                        handleException(_methodCall,
-                            new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-                    }
-                });
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void queueInvokeMethod(final MethodCall _methodCall, Method _meth, final Object _ob) {
-        logger.trace("Adding Runnable for method {}", _meth);
-        boolean noReply = 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED);
-        receivingService.execMethodCallHandler(() -> {
-            setupAndInvoke(_methodCall, _meth, _ob, noReply);
-        });
-    }
-
-    private Object setupAndInvoke(final MethodCall _methodCall, Method _meth, final Object _ob, final boolean _noReply) {
-        logger.debug("Running method {} for remote call", _meth);
-        try {
-            Type[] ts = _meth.getGenericParameterTypes();
-            Object[] params2 = _methodCall.getParameters();
-            _methodCall.setArgs(Marshalling.deSerializeParameters(params2, ts, this));
-            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
-                try {
-                    Object[] params3 = _methodCall.getParameters();
-                    logger.trace("Deserialised {} to types {}", Arrays.deepToString(params3), Arrays.deepToString(ts));
-                } catch (Exception _ex) {
-                    logger.trace("Error getting method call parameters", _ex);
-                }
-            });
-        } catch (Exception _ex) {
-            logger.debug("", _ex);
-            handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-            return null;
-        }
-
-        return invokeMethodAndReply(_methodCall, _meth, _ob, _noReply);
-    }
-
-    private Object invokeMethodAndReply(final MethodCall _methodCall, final Method _me, final Object _ob, final boolean _noreply) {
-        try {
-            Object result = invokeMethod(_methodCall, _me, _ob);
-            if (!_noreply) {
-                invokedMethodReply(_methodCall, _me, result);
-            }
-            return result;
-        } catch (DBusExecutionException _ex) {
-            logger.debug("Failed to invoke method call", _ex);
-            handleException(_methodCall, _ex);
-        } catch (Throwable _ex) {
-            logger.debug("Error invoking method call", _ex);
-            handleException(_methodCall,
-                    new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
-        }
-        return null;
-    }
-
-    private void invokedMethodReply(final MethodCall _methodCall, final Method _me, Object _result)
-        throws DBusException {
-        MethodReturn reply;
-        if (Void.TYPE.equals(_me.getReturnType())) {
-            reply = getMessageFactory().createMethodReturn(_methodCall, null);
-        } else {
-            StringBuffer sb = new StringBuffer();
-            for (String s : Marshalling.getDBusType(_me.getGenericReturnType())) {
-                sb.append(s);
-            }
-            Object[] nr = Marshalling.convertParameters(new Object[] {
-                    _result
-            }, new Type[] {
-                    _me.getGenericReturnType()
-            }, this);
-
-            reply = getMessageFactory().createMethodReturn(_methodCall, sb.toString(), nr);
-        }
-        sendMessage(reply);
-    }
-
-    private Object invokeMethod(final MethodCall _methodCall, final Method _me, final Object _ob)
-            throws DBusException, IllegalAccessException, Throwable {
-        DBusCallInfo info = new DBusCallInfo(_methodCall);
-        INFOMAP.put(Thread.currentThread(), info);
-        try {
-            LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
-                try {
-                    Object[] params4 = _methodCall.getParameters();
-                    logger.trace("Invoking Method: {} on {} with parameters {}", _me, _ob, Arrays.deepToString(params4));
-                } catch (DBusException _ex) {
-                    logger.trace("Error getting parameters from method call", _ex);
-                }
-            });
-
-            Object[] params5 = _methodCall.getParameters();
-            return _me.invoke(_ob, params5);
-        } catch (InvocationTargetException _ex) {
-            logger.debug(_ex.getMessage(), _ex);
-            throw _ex.getCause();
-        } finally {
-            INFOMAP.remove(Thread.currentThread());
-        }
-    }
-
-    /**
-     * Handle a signal received on DBus.
-     *
-     * @param _signal signal to handle
-     * @param _useThreadPool whether to handle this signal in another thread or handle it byself
-     */
-    @SuppressWarnings({
-            "unchecked"
-    })
-    private void handleMessage(final DBusSignal _signal, boolean _useThreadPool) {
-        logger.debug("Handling incoming signal: {}", _signal);
-
-        List<DBusSigHandler<? extends DBusSignal>> handlers = new ArrayList<>();
-        List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
-
-        for (Entry<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> e : getHandledSignals().entrySet()) {
-            if (e.getKey().matches(_signal, false)) {
-                handlers.addAll(e.getValue());
-            }
-        }
-
-        for (Entry<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>> e : getGenericHandledSignals().entrySet()) {
-            if (e.getKey().matches(_signal, false)) {
-                genericHandlers.addAll(e.getValue());
-            }
-        }
-
-        if (handlers.isEmpty() && genericHandlers.isEmpty()) {
-            return;
-        }
-
-        final AbstractConnection conn = this;
-        for (final DBusSigHandler<? extends DBusSignal> h : handlers) {
-            logger.trace("Adding Runnable for signal {} with handler {}",  _signal, h);
-            Runnable command = () -> {
-                try {
-                    DBusSignal rs;
-                    if (_signal.getClass().equals(DBusSignal.class)) {
-                        rs = _signal.createReal(conn);
-                    } else {
-                        rs = _signal;
-                    }
-                    if (rs == null) {
-                        return;
-                    }
-                    ((DBusSigHandler<DBusSignal>) h).handle(rs);
-                } catch (DBusException _ex) {
-                    logger.warn("Exception while running signal handler '{}' for signal '{}':", h, _signal, _ex);
-                    handleException(_signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
-                            + "." + _signal.getName() + ": " + _ex.getMessage()));
-                }
-            };
-            if (_useThreadPool) {
-                receivingService.execSignalHandler(command);
-            } else {
-                command.run();
-            }
-        }
-
-        for (final DBusSigHandler<DBusSignal> h : genericHandlers) {
-            logger.trace("Adding Runnable for signal {} with handler {}",  _signal, h);
-            Runnable command = () -> h.handle(_signal);
-            if (_useThreadPool) {
-                receivingService.execSignalHandler(command);
-            } else {
-                command.run();
-            }
-        }
-    }
-
-    private void handleMessage(final Error _err) {
-        logger.debug("Handling incoming error: {}", _err);
-        MethodCall m = null;
-        if (getPendingCalls() == null) {
-            return;
-        }
-        synchronized (getPendingCalls()) {
-            if (getPendingCalls().containsKey(_err.getReplySerial())) {
-                m = getPendingCalls().remove(_err.getReplySerial());
-            }
-        }
-        if (m != null) {
-            m.setReply(_err);
-            CallbackHandler<?> cbh;
-            cbh = callbackManager.removeCallback(m);
-            logger.trace("{} = pendingCallbacks.remove({})", cbh, m);
-
-            // queue callback for execution
-            if (null != cbh) {
-                final CallbackHandler<?> fcbh = cbh;
-                logger.trace("Adding Error Runnable with callback handler {}", fcbh);
-                Runnable command = new Runnable() {
-
-                    @Override
-                    public synchronized void run() {
-                        try {
-                            logger.trace("Running Error Callback for {}", _err);
-                            DBusCallInfo info = new DBusCallInfo(_err);
-                            INFOMAP.put(Thread.currentThread(), info);
-
-                            fcbh.handleError(_err.getException());
-                            INFOMAP.remove(Thread.currentThread());
-
-                        } catch (Exception _ex) {
-                            logger.debug("Exception while running error callback.", _ex);
-                        }
-                    }
-                };
-                receivingService.execErrorHandler(command);
-            }
-
-        } else {
-            getPendingErrorQueue().add(_err);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void handleMessage(final MethodReturn _mr) {
-        logger.debug("Handling incoming method return: {}", _mr);
-        MethodCall m = null;
-
-        if (null == getPendingCalls()) {
-            return;
-        }
-
-        synchronized (getPendingCalls()) {
-            if (getPendingCalls().containsKey(_mr.getReplySerial())) {
-                m = getPendingCalls().remove(_mr.getReplySerial());
-            }
-        }
-
-        if (null != m) {
-            m.setReply(_mr);
-            _mr.setCall(m);
-            @SuppressWarnings("rawtypes")
-            CallbackHandler cbh = callbackManager.getCallback(m);
-            DBusAsyncReply<?> asr = callbackManager.getCallbackReply(m);
-            callbackManager.removeCallback(m);
-
-            // queue callback for execution
-            if (null != cbh) {
-                final CallbackHandler<Object> fcbh = cbh;
-                final DBusAsyncReply<?> fasr = asr;
-                if (fasr == null) {
-                    logger.debug("Cannot add runnable for method, given method callback was null");
-                    return;
-                }
-                logger.trace("Adding Runnable for method {} with callback handler {}", fcbh, fasr.getMethod());
-                Runnable r = new Runnable() {
-
-                    @Override
-                    public synchronized void run() {
-                        try {
-                            logger.trace("Running Callback for {}", _mr);
-                            DBusCallInfo info = new DBusCallInfo(_mr);
-                            INFOMAP.put(Thread.currentThread(), info);
-                            Object convertRV = RemoteInvocationHandler.convertRV(_mr.getSig(), _mr.getParameters(),
-                                    fasr.getMethod(), fasr.getConnection());
-                            fcbh.handle(convertRV);
-                            INFOMAP.remove(Thread.currentThread());
-
-                        } catch (Exception _ex) {
-                            logger.debug("Exception while running callback.", _ex);
-                        }
-                    }
-                };
-                receivingService.execMethodReturnHandler(r);
-            }
-
-        } else {
-            try {
-                sendMessage(getMessageFactory().createError(_mr, new DBusExecutionException(
-                        "Spurious reply. No message with the given serial id was awaiting a reply.")));
-            } catch (DBusException _exDe) {
-                logger.trace("Could not send error message", _exDe);
-            }
-        }
-    }
-
     public void queueCallback(MethodCall _call, Method _method, CallbackHandler<?> _callback) {
-        callbackManager.queueCallback(_call, _method, _callback, this);
-    }
-
-    /**
-     * Send a message to DBus.
-     * @param _message message to send
-     */
-    private void sendMessageInternally(Message _message) {
-        try {
-            if (!isConnected()) {
-                throw new NotConnected("Disconnected");
-            }
-            if (_message instanceof DBusSignal ds) {
-                // update endianess if signal was created manually
-                if (_message.getEndianess() == (byte) 0) {
-                    _message.updateEndianess(getMessageFactory().getEndianess());
-                }
-
-                ds.appendbody(this);
-            }
-
-            if (_message instanceof MethodCall mc && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
-                synchronized (getPendingCalls()) {
-                    getPendingCalls().put(_message.getSerial(), mc);
-                }
-            }
-
-            logger.trace("Writing message to connection {}: {}", transport, _message);
-            transport.writeMessage(_message);
-
-        } catch (Exception _ex) {
-            logger.trace("Exception while sending message.", _ex);
-
-            if (_message instanceof MethodCall mc && _ex instanceof DBusExecutionException) {
-                try {
-                    mc.setReply(getMessageFactory().createError(_message, _ex));
-                } catch (DBusException _exDe) {
-                    logger.trace("Could not set message reply", _exDe);
-                }
-            } else if (_message instanceof MethodCall mc) {
-                try {
-                    logger.info("Setting reply to {} as an error", _message);
-                    mc.setReply(
-                        getMessageFactory().createError(_message, new DBusExecutionException("Message Failed to Send: " + _ex.getMessage())));
-                } catch (DBusException _exDe) {
-                    logger.trace("Could not set message reply", _exDe);
-                }
-            } else if (_message instanceof MethodReturn) {
-                try {
-                    transport.writeMessage(getMessageFactory().createError(_message, _ex));
-                } catch (IOException | DBusException _exIo) {
-                    logger.debug("Error writing method return to transport", _exIo);
-                }
-            }
-            if (_ex instanceof IOException ioe) {
-                logger.debug("Fatal IOException while sending message, disconnecting", _ex);
-                internalDisconnect(ioe);
-            }
-        }
-    }
-
-    Message readIncoming() throws DBusException {
-        if (!isConnected()) {
-            return null;
-        }
-        Message m = null;
-        try {
-            m = transport.readMessage();
-        } catch (IOException _exIo) {
-            if (_exIo instanceof EOFException || _exIo instanceof ClosedByInterruptException) {
-                disconnectCallback.ifPresent(cb -> cb.clientDisconnect());
-                if (disconnecting // when we are already disconnecting, ignore further errors
-                    || busAddress.isListeningSocket()) { // when we are listener, a client may disconnect any time which
-                                                         // is no error
-                    return null;
-                }
-            }
-
-            if (isConnected()) {
-                throw new FatalDBusException(_exIo);
-            } // if run is false, suppress all exceptions - the connection either is already disconnected or should be disconnected right now
-        }
-        return m;
-    }
-
-    protected synchronized Map<String, ExportedObject> getExportedObjects() {
-        return exportedObjects;
-    }
-
-    FallbackContainer getFallbackContainer() {
-        return fallbackContainer;
-    }
-
-    /**
-     * Returns a structure with information on the current method call.
-     *
-     * @return the DBusCallInfo for this method call, or null if we are not in a method call.
-     */
-    public static DBusCallInfo getCallInfo() {
-        return INFOMAP.get(Thread.currentThread());
-    }
-
-    /**
-     * Return any DBus error which has been received.
-     *
-     * @return A DBusExecutionException, or null if no error is pending.
-     */
-    public DBusExecutionException getError() {
-        Error poll = getPendingErrorQueue().poll();
-        if (poll != null) {
-            return poll.getException();
-        }
-        return null;
-    }
-
-    /**
-     * Returns the address this connection is connected to.
-     *
-     * @return new {@link BusAddress} object
-     */
-    public BusAddress getAddress() {
-        return busAddress;
-    }
-
-    /**
-     * Whether the transport is connected.
-     *
-     * @return true if connected
-     */
-    public boolean isConnected() {
-        return transport != null && transport.isConnected();
-    }
-
-    /**
-     * The currently configured transport.
-     *
-     * @return AbstractTransport
-     */
-    protected AbstractTransport getTransport() {
-        return transport;
-    }
-
-    /**
-     * Connects the underlying transport if it is not already connected.
-     * <p>
-     * Will work for both, client and server (listening) connections.
-     * </p>
-     *
-     * @return true if connection established or already connected, false otherwise
-     * @throws IOException when connection was not already established and creating the connnection failed
-     */
-    public boolean connect() throws IOException {
-        if (!transport.isConnected()) {
-            if (transport.isListening()) {
-                return transport.listen() != null;
-            } else {
-                return transport.connect() != null;
-            }
-        }
-        return false;
-    }
-
-    public MessageFactory getMessageFactory() {
-        return messageFactory;
-    }
-
-    protected Queue<Error> getPendingErrorQueue() {
-        return pendingErrorQueue;
-    }
-
-    protected Map<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> getHandledSignals() {
-        return handledSignals;
-    }
-
-    protected Map<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>> getGenericHandledSignals() {
-        return genericHandledSignals;
-    }
-
-    protected Map<Long, MethodCall> getPendingCalls() {
-        return pendingCalls;
-    }
-
-    protected Map<DBusInterface, RemoteObject> getImportedObjects() {
-        return importedObjects;
-    }
-
-    protected ObjectTree getObjectTree() {
-        return objectTree;
-    }
-
-    /**
-     * Returns the currently configured disconnect callback.
-     *
-     * @return callback or null if no callback registered
-     */
-    public IDisconnectCallback getDisconnectCallback() {
-        return disconnectCallback.orElse(null);
-    }
-
-    /**
-     * Set the callback which will be notified when a disconnection happens.
-     * Use null to remove.
-     *
-     * @param _disconnectCallback callback to execute or null to remove
-     */
-    public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
-        disconnectCallback = Optional.ofNullable(_disconnectCallback);
-    }
-
-    /**
-     * Returns the transport's configuration.<br>
-     * Please note: changing any value will not change the transport settings!<br>
-     * This is read-only.
-     *
-     * @return transport config
-     */
-    public TransportConfig getTransportConfig() {
-        return transport.getTransportConfig();
+        getCallbackManager().queueCallback(_call, _method, _callback, this);
     }
 
     public boolean isFileDescriptorSupported() {
-        return transport.isFileDescriptorSupported();
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[address=" + busAddress + "]";
+        return getTransport().isFileDescriptorSupported();
     }
 
 }

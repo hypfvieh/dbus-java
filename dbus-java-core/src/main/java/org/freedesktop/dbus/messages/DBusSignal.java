@@ -2,8 +2,11 @@ package org.freedesktop.dbus.messages;
 
 import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
 
-import org.freedesktop.dbus.*;
-import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.ObjectPath;
+import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -13,8 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodType;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -184,7 +193,7 @@ public class DBusSignal extends Message {
      *
      * @throws DBusException when reading signal fails
      */
-    public DBusSignal createReal(AbstractConnection _conn) throws DBusException {
+    public DBusSignal createReal(AbstractConnectionBase _conn) throws DBusException {
         String intname = INT_NAMES.get(getInterface());
         String signame = SIGNAL_NAMES.get(getName());
         if (null == intname) {
@@ -267,7 +276,7 @@ public class DBusSignal extends Message {
         CACHED_CONSTRUCTORS.put(_clazz, list);
     }
 
-    public void appendbody(AbstractConnection _conn) throws DBusException {
+    public void appendbody(AbstractConnectionBase _conn) throws DBusException {
         if (bodydone) {
             return;
         }

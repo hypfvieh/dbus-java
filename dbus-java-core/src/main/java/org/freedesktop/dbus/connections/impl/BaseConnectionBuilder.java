@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.connections.impl;
 
 import org.freedesktop.dbus.connections.*;
+import org.freedesktop.dbus.connections.base.ReceivingService;
 import org.freedesktop.dbus.connections.config.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;

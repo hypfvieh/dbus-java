@@ -6,7 +6,9 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.connections;
     exports org.freedesktop.dbus.connections.config;
     exports org.freedesktop.dbus.connections.impl;
+    exports org.freedesktop.dbus.connections.base;
     exports org.freedesktop.dbus.connections.transports;
+    exports org.freedesktop.dbus.connections.shared;
     exports org.freedesktop.dbus.errors;
     exports org.freedesktop.dbus.exceptions;
     exports org.freedesktop.dbus.handlers;

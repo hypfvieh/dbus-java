@@ -1,6 +1,7 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.messages.MethodCall;
 

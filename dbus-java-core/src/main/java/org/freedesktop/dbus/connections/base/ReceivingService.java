@@ -1,7 +1,9 @@
-package org.freedesktop.dbus.connections;
+package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.connections.shared.ExecutorNames;
+import org.freedesktop.dbus.connections.shared.IThreadPoolRetryHandler;
 import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
@@ -10,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service providing threads for every type of message expected to be received by DBus.
@@ -191,57 +196,6 @@ public class ReceivingService {
         }
 
         closed = true;
-    }
-
-    /**
-     * Enum representing different executor services.
-     *
-     * @author hypfvieh
-     * @version 4.0.1 - 2022-02-02
-     */
-    public enum ExecutorNames {
-        SIGNAL("SignalExecutor"),
-        ERROR("ErrorExecutor"),
-        METHODCALL("MethodCallExecutor"),
-        METHODRETURN("MethodReturnExecutor");
-
-        private final String description;
-
-        ExecutorNames(String _name) {
-            description = _name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-    }
-
-    /**
-     * Interface which specifies a handler which will be called when the thread pool throws any exception.
-     *
-     * @author hypfvieh
-     * @since 4.2.0 - 2022-07-14
-     */
-    @FunctionalInterface
-    public interface IThreadPoolRetryHandler {
-        /**
-         * Called to handle an exception.
-         * <p>
-         * This method should return true to retry execution or false to
-         * just ignore the error and drop the unhandled message.
-         * </p>
-         *
-         * @param _executor the executor which has thrown the exception
-         * @param _ex the exception which was thrown
-         *
-         * @return true to retry execution of the failed runnable, false to ignore runnable
-         */
-        boolean handle(ExecutorNames _executor, Exception _ex);
     }
 
 }
