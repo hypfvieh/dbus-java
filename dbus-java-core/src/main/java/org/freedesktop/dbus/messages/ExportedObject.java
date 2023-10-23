@@ -364,7 +364,11 @@ public class ExportedObject {
     }
 
     public static boolean isExcluded(Method _meth) {
-        return !Modifier.isPublic(_meth.getModifiers())
+        return _meth == null
+                || !Modifier.isPublic(_meth.getModifiers())
+                || _meth.isSynthetic() // method created by compiler
+                || _meth.isDefault() // method with default implementation (in interfaces), won't work anyway
+                || _meth.isBridge() // bridge method created by compiler
                 || _meth.getAnnotation(DBusIgnore.class) != null
                 || _meth.getAnnotation(DBusBoundProperty.class) != null
                 || _meth.getName().equals("getObjectPath") && _meth.getReturnType().equals(String.class)

@@ -118,6 +118,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated export-object documentation ([#236](https://github.com/hypfvieh/dbus-java/issues/236))
    - Fixed issues with autoConnect option, added method to register to bus by 'Hello' message manually, thanks to [brett-smith](https://github.com/brett-smith) ([#238](https://github.com/hypfvieh/dbus-java/issues/238))
    - Added feature which allows to annotate setter or getter methods in exported objects to use the DBus Properties interface behind the scenes, thanks to [brett-smith](https://github.com/brett-smith) ([PR#235](https://github.com/hypfvieh/dbus-java/issues/235))
+   - `ExportedObject.isExcluded(Method)` now returns true for bridge, default and synthetic methods, reported by [brett-smith](https://github.com/brett-smith) ([#240](https://github.com/hypfvieh/dbus-java/issues/240))
 
 ##### Changes in 4.3.1 (2023-10-03):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))
