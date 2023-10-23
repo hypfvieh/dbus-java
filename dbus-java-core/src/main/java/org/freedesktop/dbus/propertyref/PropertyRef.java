@@ -92,7 +92,7 @@ public final  class PropertyRef {
             throw new IllegalArgumentException("READ properties must have zero parameters, and not return void.");
         }
         if (access == Access.WRITE && (_method.getParameterCount() != 1 || !_method.getReturnType().equals(void.class))) {
-            throw new IllegalArgumentException("WRITE properties must have exaclty 1 parameter, and return void.");
+            throw new IllegalArgumentException("WRITE properties must have exactly 1 parameter, and return void.");
         }
     }
 }
