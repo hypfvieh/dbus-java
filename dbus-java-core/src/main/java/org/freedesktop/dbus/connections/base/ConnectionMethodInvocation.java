@@ -11,6 +11,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
+import org.freedesktop.dbus.messages.constants.Flags;
 import org.freedesktop.dbus.utils.LoggingHelper;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +37,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
 
     protected void queueInvokeMethod(final MethodCall _methodCall, Method _meth, final Object _ob) {
         getLogger().trace("Adding Runnable for method {}", _meth);
-        boolean noReply = 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED);
+        boolean noReply = 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED);
         getReceivingService().execMethodCallHandler(() -> {
             setupAndInvoke(_methodCall, _meth, _ob, noReply);
         });

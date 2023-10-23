@@ -2,7 +2,7 @@ package org.freedesktop.dbus.connections.config;
 
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
-import org.freedesktop.dbus.messages.Message.Endian;
+import org.freedesktop.dbus.messages.constants.Endian;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;

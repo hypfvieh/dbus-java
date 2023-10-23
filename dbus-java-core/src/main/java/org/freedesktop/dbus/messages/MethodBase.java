@@ -2,6 +2,8 @@ package org.freedesktop.dbus.messages;
 
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
+import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.types.UInt32;
 
 import java.util.*;
@@ -29,7 +31,7 @@ public abstract class MethodBase extends Message {
         int totalFileDes = _args == null ? 0 : Arrays.stream(_args).filter(x -> x instanceof FileDescriptor).mapToInt(i -> 1).sum();
 
         if (totalFileDes > 0) {
-            _hargs.add(createHeaderArgs(Message.HeaderField.UNIX_FDS, ArgumentType.UINT32_STRING, new UInt32(totalFileDes)));
+            _hargs.add(createHeaderArgs(HeaderField.UNIX_FDS, ArgumentType.UINT32_STRING, new UInt32(totalFileDes)));
         }
 
     }

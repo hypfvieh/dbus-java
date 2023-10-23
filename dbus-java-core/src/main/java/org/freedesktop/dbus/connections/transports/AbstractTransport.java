@@ -9,6 +9,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.spi.message.*;
 import org.freedesktop.dbus.utils.IThrowingSupplier;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException on write error or if output was already closed or null
      */
     public void writeMessage(Message _msg) throws IOException {
-        if (!fileDescriptorSupported && Message.ArgumentType.FILEDESCRIPTOR == _msg.getType()) {
+        if (!fileDescriptorSupported && ArgumentType.FILEDESCRIPTOR == _msg.getType()) {
             throw new IllegalArgumentException("File descriptors are not supported!");
         }
         if (transportConnection.getWriter() != null && !transportConnection.getWriter().isClosed()) {

@@ -5,6 +5,9 @@ import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_PARTIAL_PA
 
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
+import org.freedesktop.dbus.messages.constants.HeaderField;
+import org.freedesktop.dbus.messages.constants.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +33,7 @@ public class Error extends Message {
 
     protected Error(byte _endianess, String _source, String _dest, String _errorName, long _replyserial, String _sig, Object... _args)
             throws DBusException {
-        super(_endianess, Message.MessageType.ERROR, (byte) 0);
+        super(_endianess, MessageType.ERROR, (byte) 0);
 
         if (null == _errorName) {
             throw new MessageFormatException("Must specify error name to Errors.");

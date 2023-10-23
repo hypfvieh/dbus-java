@@ -1,6 +1,9 @@
 package org.freedesktop.dbus.messages;
 
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
+import org.freedesktop.dbus.messages.constants.HeaderField;
+import org.freedesktop.dbus.messages.constants.MessageType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +20,7 @@ public class MethodReturn extends MethodBase {
     }
 
     protected MethodReturn(byte _endianess, String _source, String _dest, long _replyserial, String _sig, Object... _args) throws DBusException {
-        super(_endianess, Message.MessageType.METHOD_RETURN, (byte) 0);
+        super(_endianess, MessageType.METHOD_RETURN, (byte) 0);
 
         List<Object> hargs = new ArrayList<>();
         hargs.add(createHeaderArgs(HeaderField.REPLY_SERIAL, ArgumentType.UINT32_STRING, _replyserial));

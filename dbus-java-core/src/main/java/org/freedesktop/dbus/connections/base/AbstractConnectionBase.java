@@ -18,6 +18,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
+import org.freedesktop.dbus.messages.constants.Flags;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -347,7 +348,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
                 ds.appendbody(this);
             }
 
-            if (_message instanceof MethodCall mc && 0 == (_message.getFlags() & Message.Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
+            if (_message instanceof MethodCall mc && 0 == (_message.getFlags() & Flags.NO_REPLY_EXPECTED) && null != getPendingCalls()) {
                 synchronized (getPendingCalls()) {
                     getPendingCalls().put(_message.getSerial(), mc);
                 }

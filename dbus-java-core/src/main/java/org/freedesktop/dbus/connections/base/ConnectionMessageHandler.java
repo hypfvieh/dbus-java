@@ -17,6 +17,7 @@ import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
+import org.freedesktop.dbus.messages.constants.Flags;
 import org.freedesktop.dbus.propertyref.PropertyRef;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
@@ -348,7 +349,7 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
 
                 getReceivingService().execMethodCallHandler(() -> {
                     _methodCall.setArgs(new Object[0]);
-                    invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                    invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED));
                 });
 
                 return true;
@@ -398,7 +399,7 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                             }
                         }
                         _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this));
-                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Message.Flags.NO_REPLY_EXPECTED));
+                        invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED));
                     } catch (Exception _ex) {
                         getLogger().debug("Failed to invoke method call on Properties", _ex);
                         handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));

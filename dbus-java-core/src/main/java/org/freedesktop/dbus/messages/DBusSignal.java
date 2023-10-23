@@ -10,6 +10,9 @@ import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
+import org.freedesktop.dbus.messages.constants.HeaderField;
+import org.freedesktop.dbus.messages.constants.MessageType;
 import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.slf4j.Logger;
@@ -54,7 +57,7 @@ public class DBusSignal extends Message {
 
     protected DBusSignal(byte _endianess, String _source, String _path, String _iface, String _member, String _sig, Object... _args)
             throws DBusException {
-        super(_endianess, Message.MessageType.SIGNAL, (byte) 0);
+        super(_endianess, MessageType.SIGNAL, (byte) 0);
 
         if (null == _path || null == _member || null == _iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
@@ -99,7 +102,7 @@ public class DBusSignal extends Message {
      */
     @SuppressWarnings("unchecked")
     protected DBusSignal(byte _endianess, String _objectPath, Object... _args) throws DBusException {
-        super(_endianess, Message.MessageType.SIGNAL, (byte) 0);
+        super(_endianess, MessageType.SIGNAL, (byte) 0);
 
         if (!OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
             throw new DBusException("Invalid object path: " + _objectPath);

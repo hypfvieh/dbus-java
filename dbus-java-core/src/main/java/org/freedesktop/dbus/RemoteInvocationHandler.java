@@ -12,6 +12,7 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.constants.Flags;
 import org.freedesktop.dbus.propertyref.PropRefRemoteHandler;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.LoggingHelper;
@@ -179,13 +180,13 @@ public class RemoteInvocationHandler implements InvocationHandler {
         MethodCall call;
         byte flags = 0;
         if (!_ro.isAutostart()) {
-            flags |= Message.Flags.NO_AUTO_START;
+            flags |= Flags.NO_AUTO_START;
         }
         if (_syncmethod == CALL_TYPE_ASYNC) {
-            flags |= Message.Flags.ASYNC;
+            flags |= Flags.ASYNC;
         }
         if (_m.isAnnotationPresent(MethodNoReply.class)) {
-            flags |= Message.Flags.NO_REPLY_EXPECTED;
+            flags |= Flags.NO_REPLY_EXPECTED;
         }
         try {
             String name = DBusNamingUtil.getMethodName(_m);

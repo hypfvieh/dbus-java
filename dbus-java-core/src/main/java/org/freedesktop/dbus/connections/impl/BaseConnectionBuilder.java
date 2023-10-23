@@ -5,7 +5,7 @@ import org.freedesktop.dbus.connections.base.ReceivingService;
 import org.freedesktop.dbus.connections.config.*;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.constants.Endian;
 
 import java.nio.ByteOrder;
 
@@ -118,7 +118,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      */
     public static byte getSystemEndianness() {
        return ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)
-                ? Message.Endian.BIG
-                : Message.Endian.LITTLE;
+                ? Endian.BIG
+                : Endian.LITTLE;
     }
 }

@@ -6,7 +6,7 @@ import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSerializable;
-import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
@@ -27,44 +27,44 @@ public final class Marshalling {
 
     private static final Map<Class<?>, Byte> CLASS_TO_ARGUMENTTYPE = new LinkedHashMap<>();
     static {
-        CLASS_TO_ARGUMENTTYPE.put(Boolean.class, Message.ArgumentType.BOOLEAN); // class
-        CLASS_TO_ARGUMENTTYPE.put(Boolean.TYPE, Message.ArgumentType.BOOLEAN); // primitive type
+        CLASS_TO_ARGUMENTTYPE.put(Boolean.class, ArgumentType.BOOLEAN); // class
+        CLASS_TO_ARGUMENTTYPE.put(Boolean.TYPE, ArgumentType.BOOLEAN); // primitive type
 
-        CLASS_TO_ARGUMENTTYPE.put(Byte.class, Message.ArgumentType.BYTE);
-        CLASS_TO_ARGUMENTTYPE.put(Byte.TYPE, Message.ArgumentType.BYTE);
+        CLASS_TO_ARGUMENTTYPE.put(Byte.class, ArgumentType.BYTE);
+        CLASS_TO_ARGUMENTTYPE.put(Byte.TYPE, ArgumentType.BYTE);
 
-        CLASS_TO_ARGUMENTTYPE.put(Short.class, Message.ArgumentType.INT16);
-        CLASS_TO_ARGUMENTTYPE.put(Short.TYPE, Message.ArgumentType.INT16);
+        CLASS_TO_ARGUMENTTYPE.put(Short.class, ArgumentType.INT16);
+        CLASS_TO_ARGUMENTTYPE.put(Short.TYPE, ArgumentType.INT16);
 
-        CLASS_TO_ARGUMENTTYPE.put(Integer.class, Message.ArgumentType.INT32);
-        CLASS_TO_ARGUMENTTYPE.put(Integer.TYPE, Message.ArgumentType.INT32);
+        CLASS_TO_ARGUMENTTYPE.put(Integer.class, ArgumentType.INT32);
+        CLASS_TO_ARGUMENTTYPE.put(Integer.TYPE, ArgumentType.INT32);
 
-        CLASS_TO_ARGUMENTTYPE.put(Long.class, Message.ArgumentType.INT64);
-        CLASS_TO_ARGUMENTTYPE.put(Long.TYPE, Message.ArgumentType.INT64);
+        CLASS_TO_ARGUMENTTYPE.put(Long.class, ArgumentType.INT64);
+        CLASS_TO_ARGUMENTTYPE.put(Long.TYPE, ArgumentType.INT64);
 
-        CLASS_TO_ARGUMENTTYPE.put(Double.class, Message.ArgumentType.DOUBLE);
-        CLASS_TO_ARGUMENTTYPE.put(Double.TYPE, Message.ArgumentType.DOUBLE);
+        CLASS_TO_ARGUMENTTYPE.put(Double.class, ArgumentType.DOUBLE);
+        CLASS_TO_ARGUMENTTYPE.put(Double.TYPE, ArgumentType.DOUBLE);
 
         if (AbstractConnection.FLOAT_SUPPORT) {
-            CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.FLOAT);
-            CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.FLOAT);
+            CLASS_TO_ARGUMENTTYPE.put(Float.class, ArgumentType.FLOAT);
+            CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, ArgumentType.FLOAT);
         } else {
-            CLASS_TO_ARGUMENTTYPE.put(Float.class, Message.ArgumentType.DOUBLE);
-            CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, Message.ArgumentType.DOUBLE);
+            CLASS_TO_ARGUMENTTYPE.put(Float.class, ArgumentType.DOUBLE);
+            CLASS_TO_ARGUMENTTYPE.put(Float.TYPE, ArgumentType.DOUBLE);
         }
 
-        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, Message.ArgumentType.UINT16);
-        CLASS_TO_ARGUMENTTYPE.put(UInt32.class, Message.ArgumentType.UINT32);
-        CLASS_TO_ARGUMENTTYPE.put(UInt64.class, Message.ArgumentType.UINT64);
+        CLASS_TO_ARGUMENTTYPE.put(UInt16.class, ArgumentType.UINT16);
+        CLASS_TO_ARGUMENTTYPE.put(UInt32.class, ArgumentType.UINT32);
+        CLASS_TO_ARGUMENTTYPE.put(UInt64.class, ArgumentType.UINT64);
 
-        CLASS_TO_ARGUMENTTYPE.put(CharSequence.class, Message.ArgumentType.STRING);
-        CLASS_TO_ARGUMENTTYPE.put(Variant.class, Message.ArgumentType.VARIANT);
+        CLASS_TO_ARGUMENTTYPE.put(CharSequence.class, ArgumentType.STRING);
+        CLASS_TO_ARGUMENTTYPE.put(Variant.class, ArgumentType.VARIANT);
 
-        CLASS_TO_ARGUMENTTYPE.put(FileDescriptor.class, Message.ArgumentType.FILEDESCRIPTOR);
+        CLASS_TO_ARGUMENTTYPE.put(FileDescriptor.class, ArgumentType.FILEDESCRIPTOR);
 
-        CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, Message.ArgumentType.OBJECT_PATH);
-        CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, Message.ArgumentType.OBJECT_PATH);
-        CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, Message.ArgumentType.OBJECT_PATH);
+        CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, ArgumentType.OBJECT_PATH);
+        CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, ArgumentType.OBJECT_PATH);
+        CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, ArgumentType.OBJECT_PATH);
     }
 
     private Marshalling() {
@@ -137,9 +137,9 @@ public final class Marshalling {
         }
 
         if (_dataType instanceof TypeVariable) {
-            _out[_level].append((char) Message.ArgumentType.VARIANT);
+            _out[_level].append((char) ArgumentType.VARIANT);
         } else if (_dataType instanceof GenericArrayType gat) {
-            _out[_level].append((char) Message.ArgumentType.ARRAY);
+            _out[_level].append((char) ArgumentType.ARRAY);
             String[] s = recursiveGetDBusType(_out, gat.getGenericComponentType(), false, _level + 1);
             if (s.length != 1) {
                 throw new DBusException("Multi-valued array types not permitted");
@@ -200,22 +200,22 @@ public final class Marshalling {
             } else if (List.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 for (Type t : p.getActualTypeArguments()) {
                     if (Type.class.equals(t)) {
-                        _out[_level].append((char) Message.ArgumentType.SIGNATURE);
+                        _out[_level].append((char) ArgumentType.SIGNATURE);
                     } else {
                         String[] s = recursiveGetDBusType(_out, t, false, _level + 1);
                         if (s.length != 1) {
                             throw new DBusException("Multi-valued array types not permitted");
                         }
-                        _out[_level].append((char) Message.ArgumentType.ARRAY);
+                        _out[_level].append((char) ArgumentType.ARRAY);
                         _out[_level].append(s[0]);
                     }
                 }
             } else if (p.getRawType().equals(Variant.class)) {
-                _out[_level].append((char) Message.ArgumentType.VARIANT);
+                _out[_level].append((char) ArgumentType.VARIANT);
             } else if (DBusInterface.class.isAssignableFrom((Class<?>) p.getRawType())) {
-                _out[_level].append((char) Message.ArgumentType.OBJECT_PATH);
+                _out[_level].append((char) ArgumentType.OBJECT_PATH);
             } else if (Struct.class.isAssignableFrom((Class<?>) p.getRawType())) {
-                _out[_level].append((char) Message.ArgumentType.STRUCT1);
+                _out[_level].append((char) ArgumentType.STRUCT1);
             } else if (Tuple.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 Type[] ts = p.getActualTypeArguments();
                 List<String> vs = new ArrayList<>();
@@ -232,9 +232,9 @@ public final class Marshalling {
 
             if (dataTypeClazz.isArray()) {
                 if (Type.class.equals(((Class<?>) _dataType).getComponentType())) {
-                    _out[_level].append((char) Message.ArgumentType.SIGNATURE);
+                    _out[_level].append((char) ArgumentType.SIGNATURE);
                 } else {
-                    _out[_level].append((char) Message.ArgumentType.ARRAY);
+                    _out[_level].append((char) ArgumentType.ARRAY);
                     String[] s = recursiveGetDBusType(_out, ((Class<?>) _dataType).getComponentType(), false, _level + 1);
                     if (s.length != 1) {
                         throw new DBusException("Multi-valued array types not permitted");
@@ -242,7 +242,7 @@ public final class Marshalling {
                     _out[_level].append(s[0]);
                 }
             } else if (Struct.class.isAssignableFrom((Class<?>) _dataType)) {
-                _out[_level].append((char) Message.ArgumentType.STRUCT1);
+                _out[_level].append((char) ArgumentType.STRUCT1);
                 Type[] ts = Container.getTypeCache(_dataType);
                 if (null == ts) {
                     Field[] fs = ((Class<?>) _dataType).getDeclaredFields();
@@ -267,7 +267,7 @@ public final class Marshalling {
                 _out[_level].append(')');
 
             } else if (Enum.class.isAssignableFrom(dataTypeClazz)) {
-                _out[_level].append((char) Message.ArgumentType.STRING);
+                _out[_level].append((char) ArgumentType.STRING);
             } else {
                 boolean found = false;
 
@@ -308,12 +308,12 @@ public final class Marshalling {
             int idx = 0;
             for (; idx < _dbusType.length() && (-1 == _limit || _limit > _resultValue.size()); idx++) {
                 switch (_dbusType.charAt(idx)) {
-                case Message.ArgumentType.STRUCT1:
+                case ArgumentType.STRUCT1:
                     int structIdx = idx + 1;
                     for (int structLen = 1; structLen > 0; structIdx++) {
-                        if (Message.ArgumentType.STRUCT2 == _dbusType.charAt(structIdx)) {
+                        if (ArgumentType.STRUCT2 == _dbusType.charAt(structIdx)) {
                             structLen--;
-                        } else if (Message.ArgumentType.STRUCT1 == _dbusType.charAt(structIdx)) {
+                        } else if (ArgumentType.STRUCT1 == _dbusType.charAt(structIdx)) {
                             structLen++;
                         }
                     }
@@ -323,8 +323,8 @@ public final class Marshalling {
                     _resultValue.add(new DBusStructType(contained.toArray(new Type[0])));
                     idx = structIdx - 1; //-1 because j already points to the next signature char
                     break;
-                case Message.ArgumentType.ARRAY:
-                    if (Message.ArgumentType.DICT_ENTRY1 == _dbusType.charAt(idx + 1)) {
+                case ArgumentType.ARRAY:
+                    if (ArgumentType.DICT_ENTRY1 == _dbusType.charAt(idx + 1)) {
                         contained = new ArrayList<>();
                         javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
                         _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
@@ -336,52 +336,52 @@ public final class Marshalling {
                         idx += javaType;
                     }
                     break;
-                case Message.ArgumentType.VARIANT:
+                case ArgumentType.VARIANT:
                     _resultValue.add(Variant.class);
                     break;
-                case Message.ArgumentType.BOOLEAN:
+                case ArgumentType.BOOLEAN:
                     _resultValue.add(Boolean.class);
                     break;
-                case Message.ArgumentType.INT16:
+                case ArgumentType.INT16:
                     _resultValue.add(Short.class);
                     break;
-                case Message.ArgumentType.BYTE:
+                case ArgumentType.BYTE:
                     _resultValue.add(Byte.class);
                     break;
-                case Message.ArgumentType.OBJECT_PATH:
+                case ArgumentType.OBJECT_PATH:
                     _resultValue.add(DBusPath.class);
                     break;
-                case Message.ArgumentType.UINT16:
+                case ArgumentType.UINT16:
                     _resultValue.add(UInt16.class);
                     break;
-                case Message.ArgumentType.INT32:
+                case ArgumentType.INT32:
                     _resultValue.add(Integer.class);
                     break;
-                case Message.ArgumentType.UINT32:
+                case ArgumentType.UINT32:
                     _resultValue.add(UInt32.class);
                     break;
-                case Message.ArgumentType.INT64:
+                case ArgumentType.INT64:
                     _resultValue.add(Long.class);
                     break;
-                case Message.ArgumentType.UINT64:
+                case ArgumentType.UINT64:
                     _resultValue.add(UInt64.class);
                     break;
-                case Message.ArgumentType.DOUBLE:
+                case ArgumentType.DOUBLE:
                     _resultValue.add(Double.class);
                     break;
-                case Message.ArgumentType.FLOAT:
+                case ArgumentType.FLOAT:
                     _resultValue.add(Float.class);
                     break;
-                case Message.ArgumentType.STRING:
+                case ArgumentType.STRING:
                     _resultValue.add(CharSequence.class);
                     break;
-                case Message.ArgumentType.FILEDESCRIPTOR:
+                case ArgumentType.FILEDESCRIPTOR:
                     _resultValue.add(FileDescriptor.class);
                     break;
-                case Message.ArgumentType.SIGNATURE:
+                case ArgumentType.SIGNATURE:
                     _resultValue.add(Type[].class);
                     break;
-                case Message.ArgumentType.DICT_ENTRY1:
+                case ArgumentType.DICT_ENTRY1:
                     _resultValue.add(Map.Entry.class);
                     contained = new ArrayList<>();
                     javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);

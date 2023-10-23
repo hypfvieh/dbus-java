@@ -1,11 +1,14 @@
 package org.freedesktop.dbus.messages;
 
-import static org.freedesktop.dbus.messages.Message.ArgumentType.*;
+import static org.freedesktop.dbus.messages.constants.ArgumentType.*;
 
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.constants.ArgumentType;
+import org.freedesktop.dbus.messages.constants.Endian;
+import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
@@ -1569,93 +1572,5 @@ public class Message {
     interface ExtractMethod {
         Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained)
                 throws DBusException;
-    }
-
-    /** Defines constants representing the flags which can be set on a message. */
-    public interface Flags {
-        byte NO_REPLY_EXPECTED = 0x01;
-        byte NO_AUTO_START     = 0x02;
-        byte ASYNC             = 0x40;
-    }
-
-    /** Defines constants for each message type. */
-    public interface MessageType {
-        byte METHOD_CALL   = 1;
-        byte METHOD_RETURN = 2;
-        byte ERROR         = 3;
-        byte SIGNAL        = 4;
-    }
-
-    /** Defines constants for each valid header field type. */
-    public interface HeaderField {
-        int MAX_FIELDS    = 10;
-
-        byte PATH         = 1;
-        byte INTERFACE    = 2;
-        byte MEMBER       = 3;
-        byte ERROR_NAME   = 4;
-        byte REPLY_SERIAL = 5;
-        byte DESTINATION  = 6;
-        byte SENDER       = 7;
-        byte SIGNATURE    = 8;
-        byte UNIX_FDS     = 9;
-    }
-
-    /**
-     * Defines constants for each argument type. There are two constants for each argument type, as a byte or as a
-     * String (the _STRING version)
-     */
-    public interface ArgumentType {
-        String BYTE_STRING           = "y";
-        String BOOLEAN_STRING        = "b";
-        String INT16_STRING          = "n";
-        String UINT16_STRING         = "q";
-        String INT32_STRING          = "i";
-        String UINT32_STRING         = "u";
-        String INT64_STRING          = "x";
-        String UINT64_STRING         = "t";
-        String DOUBLE_STRING         = "d";
-        String FLOAT_STRING          = "f";
-        String STRING_STRING         = "s";
-        String OBJECT_PATH_STRING    = "o";
-        String SIGNATURE_STRING      = "g";
-        String FILEDESCRIPTOR_STRING = "h";
-        String ARRAY_STRING          = "a";
-        String VARIANT_STRING        = "v";
-        String STRUCT_STRING         = "r";
-        String STRUCT1_STRING        = "(";
-        String STRUCT2_STRING        = ")";
-        String DICT_ENTRY_STRING     = "e";
-        String DICT_ENTRY1_STRING    = "{";
-        String DICT_ENTRY2_STRING    = "}";
-
-        byte   BYTE                  = 'y';
-        byte   BOOLEAN               = 'b';
-        byte   INT16                 = 'n';
-        byte   UINT16                = 'q';
-        byte   INT32                 = 'i';
-        byte   UINT32                = 'u';
-        byte   INT64                 = 'x';
-        byte   UINT64                = 't';
-        byte   DOUBLE                = 'd';
-        byte   FLOAT                 = 'f';
-        byte   STRING                = 's';
-        byte   OBJECT_PATH           = 'o';
-        byte   SIGNATURE             = 'g';
-        byte   FILEDESCRIPTOR        = 'h';
-        byte   ARRAY                 = 'a';
-        byte   VARIANT               = 'v';
-        byte   STRUCT                = 'r';
-        byte   STRUCT1               = '(';
-        byte   STRUCT2               = ')';
-        byte   DICT_ENTRY            = 'e';
-        byte   DICT_ENTRY1           = '{';
-        byte   DICT_ENTRY2           = '}';
-    }
-
-    /** Defines constants representing the endianness of the message. */
-    public interface Endian {
-        byte BIG    = 'B';
-        byte LITTLE = 'l';
     }
 }
