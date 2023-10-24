@@ -36,14 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,7 +52,7 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 public class DBusViewer {
     private static final Map<String, DBusBusType> CONNECTION_TYPES = new HashMap<>();
-    private static final String DOC_TYPE = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">";
+    private static final String DOC_TYPE = "\\<!DOCTYPE[^>]+\\>";
 
     static {
         CONNECTION_TYPES.put("System", DBusBusType.SYSTEM);
@@ -255,7 +248,9 @@ public class DBusViewer {
             DBusEntry e = addEntry(_name, _path);
             String introspectData = e.getIntrospectable().Introspect();
 
-            Document document = builder.parse(new InputSource(new StringReader(introspectData.replace(DOC_TYPE, ""))));
+            String removeDocType = introspectData.replaceFirst(DOC_TYPE, "");
+
+            Document document = builder.parse(new InputSource(new StringReader(removeDocType)));
             Element root = document.getDocumentElement();
 
             NodeList children = root.getChildNodes();
