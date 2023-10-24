@@ -2,9 +2,9 @@
 [![Maven Build/Test JDK 21](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml/badge.svg)](https://github.com/hypfvieh/dbus-java/actions/workflows/maven_jdk21.yml)
 
 # dbus-java
- - Legacy 4.x: [![Maven Central](https://img.shields.io/maven-central/v/com.github.hypfvieh/dbus-java-core?versionPrefix=4)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Legacy 4.x: [![Maven Central](https://img.shields.io/maven-central/v/com.github.hypfvieh/dbus-java-core?versionPrefix=4)](https://search.maven.org/search?q=g:com.github.hypfvieh%20AND%20a:dbus-java-core%20AND%20v:4*)
  - Javadoc 4.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg?version=4)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
- - Current 5.x: [![Maven Central](https://img.shields.io/maven-central/v/com.github.hypfvieh/dbus-java-core)](https://maven-badges.herokuapp.com/maven-central/com.github.hypfvieh/dbus-java-core)
+ - Current 5.x: [![Maven Central](https://img.shields.io/maven-central/v/com.github.hypfvieh/dbus-java-core)](https://search.maven.org/search?q=g:com.github.hypfvieh%20AND%20a:dbus-java-core%20AND%20v:5*)
  - Javadoc 5.x: [![Javadoc](https://javadoc.io/badge2/com.github.hypfvieh/dbus-java-core/javadoc.svg)](https://javadoc.io/doc/com.github.hypfvieh/dbus-java-core)
  - Site: [Maven Site](https://hypfvieh.github.io/dbus-java/)
 
