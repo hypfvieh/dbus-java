@@ -6,15 +6,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FallbackContainer {
 
-    private final Logger                        logger    = LoggerFactory.getLogger(getClass());
-    private final Map<String[], ExportedObject> fallbacks = new HashMap<>();
+    private final Logger                        logger;
+    private final Map<String[], ExportedObject> fallbacks;
 
     FallbackContainer() {
+        logger = LoggerFactory.getLogger(getClass());
+        fallbacks = new ConcurrentHashMap<>();
     }
 
     public synchronized void add(String _path, ExportedObject _eo) {

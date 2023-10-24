@@ -22,13 +22,16 @@ import java.text.MessageFormat;
 import java.util.*;
 
 public class ExportedObject {
-    private final Map<MethodTuple, Method> methods = new HashMap<>();
-    private final Map<PropertyRef, Method> propertyMethods = new HashMap<>();
+    private final Map<MethodTuple, Method> methods;
+    private final Map<PropertyRef, Method> propertyMethods;
     private final String                   introspectionData;
     private final Reference<DBusInterface> object;
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
         object = _weakreferences ? new WeakReference<>(_object) : new StrongReference<>(_object);
+
+        methods = new HashMap<>();
+        propertyMethods = new HashMap<>();
 
         Set<Class<?>> implementedInterfaces = getDBusInterfaces(_object.getClass());
         implementedInterfaces.add(Introspectable.class);
@@ -361,6 +364,14 @@ public class ExportedObject {
 
     public String getIntrospectiondata() {
         return introspectionData;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+            + " [methodCount=" + methods.size()
+            + ", propertyMethodCount=" + propertyMethods.size()
+            + ", object=" + (object.get() != null ? Objects.toString(object) : "<no object referenced>") + "]";
     }
 
     public static boolean isExcluded(Method _meth) {

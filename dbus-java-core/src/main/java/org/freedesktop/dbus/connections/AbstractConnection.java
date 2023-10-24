@@ -210,7 +210,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If the objectpath is incorrectly formatted,
      */
     public void addFallback(String _objectPrefix, DBusInterface _object) throws DBusException {
-        if (null == _objectPrefix || _objectPrefix.isEmpty()) {
+        if (_objectPrefix == null || _objectPrefix.isEmpty()) {
             throw new DBusException("Must Specify an Object Path");
         }
         if (_objectPrefix.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPrefix).matches()) {

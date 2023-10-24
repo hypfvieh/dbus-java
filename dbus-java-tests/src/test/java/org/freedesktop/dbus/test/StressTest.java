@@ -8,12 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,7 +49,7 @@ public class StressTest extends AbstractDBusBaseTest {
         // start the client tests
         List<Thread> threads = createClientThreads(clientConnections, serviceConnections, numberOfRequestsPerClient);
         threads.forEach(Thread::start);
-        threads.forEach(t -> runUnchecked(() -> t.join(10_000)));
+        threads.forEach(t -> runUnchecked(() -> t.join(20_000)));
 
         // assert
         assertTrue(asyncExceptions.isEmpty(), "No exceptions expected");

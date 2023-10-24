@@ -272,17 +272,21 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
             // now check for specific exported functions
 
             exportObject = getExportedObjects().get(_methodCall.getPath());
+            getLogger().debug("Found exported object: {}", exportObject == null ? "<no object found>" : exportObject);
+
             if (exportObject != null && exportObject.getObject().get() == null) {
-                getLogger().info("Unexporting {} implicitly", _methodCall.getPath());
+                getLogger().info("Unexporting {} implicitly (object present: {}, reference present: {})", _methodCall.getPath(), exportObject != null, exportObject.getObject().get() == null);
                 unExportObject(_methodCall.getPath());
                 exportObject = null;
             }
 
-            if (null == exportObject) {
+            if (exportObject == null) {
                 exportObject = getFallbackContainer().get(_methodCall.getPath());
+                getLogger().debug("Found {} in fallback container", exportObject == null ? "no" : exportObject);
             }
 
-            if (null == exportObject) {
+            if (exportObject == null) {
+                getLogger().debug("No object found for method {}", _methodCall.getPath());
                 sendMessage(getMessageFactory().createError(_methodCall,
                     new UnknownObject(_methodCall.getPath() + " is not an object provided by this process.")));
                 return;
