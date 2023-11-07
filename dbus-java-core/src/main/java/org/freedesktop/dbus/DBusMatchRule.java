@@ -3,22 +3,25 @@ package org.freedesktop.dbus;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.messages.*;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Error;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.messages.MethodReturn;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.Util;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 /**
  * Defined a rule to match a message.<br>
  * This is mainly used to handle / take actions when signals arrive.
  */
 public class DBusMatchRule {
-    private static final Pattern IFACE_PATTERN = Pattern.compile(".*\\..*");
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
 
     /** Equals operations used in {@link #matches(DBusMatchRule, boolean)} - do not change order! */
@@ -132,7 +135,8 @@ public class DBusMatchRule {
     }
 
     void assertDBusInterface(String _str) throws DBusException {
-        if (!IFACE_PATTERN.matcher(_str).matches()) {
+        // we need a valid package name
+        if (_str == null || _str.isEmpty() || _str.startsWith(".") || !_str.contains(".")) {
             throw new DBusException("DBusInterfaces must be defined in a package.");
         }
     }
