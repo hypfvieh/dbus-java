@@ -22,6 +22,11 @@ import java.util.function.Function;
  * This is mainly used to handle / take actions when signals arrive.
  */
 public class DBusMatchRule {
+    private static final String                                   MSG_TYPE_METHOD_REPLY       = "method_reply";
+    private static final String                                   MSG_TYPE_METHOD_CALL        = "method_call";
+    private static final String                                   MSG_TYPE_ERROR              = "error";
+    private static final String                                   MSG_TYPE_SIGNAL             = "signal";
+
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
 
     /** Equals operations used in {@link #matches(DBusMatchRule, boolean)} - do not change order! */
@@ -69,20 +74,20 @@ public class DBusMatchRule {
         object = null;
         member = _m instanceof Error ? null : _m.getName();
         if (_m instanceof DBusSignal) {
-            type = "signal";
+            type = MSG_TYPE_SIGNAL;
         } else if (_m instanceof Error) {
-            type = "error";
+            type = MSG_TYPE_ERROR;
         } else if (_m instanceof MethodCall) {
-            type = "method_call";
+            type = MSG_TYPE_METHOD_CALL;
         } else if (_m instanceof MethodReturn) {
-            type = "method_reply";
+            type = MSG_TYPE_METHOD_REPLY;
         } else {
             type = null;
         }
     }
 
     public DBusMatchRule(Class<? extends DBusInterface> _c, String _method) throws DBusException {
-        this(_c, null, null, "method_call", _method);
+        this(_c, null, null, MSG_TYPE_METHOD_CALL, _method);
     }
 
     @SuppressWarnings("unchecked")
@@ -103,17 +108,17 @@ public class DBusMatchRule {
 
             member = _member != null ? _member : DBusNamingUtil.getSignalName(_c);
             SIGNALTYPEMAP.put(iface + '$' + member, (Class<? extends DBusSignal>) _c);
-            type = _type != null ? _type : "signal";
+            type = _type != null ? _type : MSG_TYPE_SIGNAL;
         } else if (Error.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
             member = _member != null ? _member : null;
-            type = _type != null ? _type : "error";
+            type = _type != null ? _type : MSG_TYPE_ERROR;
         } else if (DBusExecutionException.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
             member = _member != null ? _member : null;
-            type = _type != null ? _type : "error";
+            type = _type != null ? _type : MSG_TYPE_ERROR;
         } else {
             throw new DBusException("Invalid type for match rule: " + _c);
         }

@@ -21,6 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Contains static methods for marshalling values.
  */
 public final class Marshalling {
+    private static final String MTH_NAME_DESERIALIZE = "deserialize";
+    private static final String ERROR_MULTI_VALUED_ARRAY = "Multi-valued array types not permitted";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Marshalling.class);
 
     private static final Map<Type, String[]> TYPE_CACHE = new ConcurrentHashMap<>();
@@ -142,7 +145,7 @@ public final class Marshalling {
             _out[_level].append((char) ArgumentType.ARRAY);
             String[] s = recursiveGetDBusType(_out, gat.getGenericComponentType(), false, _level + 1);
             if (s.length != 1) {
-                throw new DBusException("Multi-valued array types not permitted");
+                throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
             }
             _out[_level].append(s[0]);
         } else if (_dataType instanceof Class<?> && DBusSerializable.class.isAssignableFrom((Class<?>) _dataType)
@@ -152,13 +155,13 @@ public final class Marshalling {
             Type[] newtypes = null;
             if (_dataType instanceof Class<?> clz) {
                 for (Method m : clz.getDeclaredMethods()) {
-                    if (m.getName().equals("deserialize")) {
+                    if (m.getName().equals(MTH_NAME_DESERIALIZE)) {
                         newtypes = m.getGenericParameterTypes();
                     }
                 }
             } else {
                 for (Method m : ((Class<?>) ((ParameterizedType) _dataType).getRawType()).getDeclaredMethods()) {
-                    if (m.getName().equals("deserialize")) {
+                    if (m.getName().equals(MTH_NAME_DESERIALIZE)) {
                         newtypes = m.getGenericParameterTypes();
                     }
                 }
@@ -184,12 +187,12 @@ public final class Marshalling {
                 try {
                     String[] s = recursiveGetDBusType(_out, t[0], true, _level + 1);
                     if (s.length != 1) {
-                        throw new DBusException("Multi-valued array types not permitted");
+                        throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
                     }
                     _out[_level].append(s[0]);
                     s = recursiveGetDBusType(_out, t[1], false, _level + 1);
                     if (s.length != 1) {
-                        throw new DBusException("Multi-valued array types not permitted");
+                        throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
                     }
                     _out[_level].append(s[0]);
                 } catch (ArrayIndexOutOfBoundsException _ex) {
@@ -204,7 +207,7 @@ public final class Marshalling {
                     } else {
                         String[] s = recursiveGetDBusType(_out, t, false, _level + 1);
                         if (s.length != 1) {
-                            throw new DBusException("Multi-valued array types not permitted");
+                            throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
                         }
                         _out[_level].append((char) ArgumentType.ARRAY);
                         _out[_level].append(s[0]);
@@ -237,7 +240,7 @@ public final class Marshalling {
                     _out[_level].append((char) ArgumentType.ARRAY);
                     String[] s = recursiveGetDBusType(_out, ((Class<?>) _dataType).getComponentType(), false, _level + 1);
                     if (s.length != 1) {
-                        throw new DBusException("Multi-valued array types not permitted");
+                        throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
                     }
                     _out[_level].append(s[0]);
                 }
@@ -434,7 +437,7 @@ public final class Marshalling {
 
             if (parameters[i] instanceof DBusSerializable ds) {
                 for (Method m : parameters[i].getClass().getDeclaredMethods()) {
-                    if (m.getName().equals("deserialize")) {
+                    if (m.getName().equals(MTH_NAME_DESERIALIZE)) {
                         Type[] newtypes = m.getParameterTypes();
                         Type[] expand = new Type[types.length + newtypes.length - 1];
                         System.arraycopy(types, 0, expand, 0, i);
@@ -713,7 +716,7 @@ public final class Marshalling {
                     dsc = (Class<? extends DBusSerializable>) ((ParameterizedType) types[i]).getRawType();
                 }
                 for (Method m : dsc.getDeclaredMethods()) {
-                    if (m.getName().equals("deserialize")) {
+                    if (m.getName().equals(MTH_NAME_DESERIALIZE)) {
                         Type[] newtypes = m.getGenericParameterTypes();
                         try {
                             Object[] sub = new Object[newtypes.length];

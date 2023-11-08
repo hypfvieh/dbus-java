@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A replacement DBusDaemon
  */
 public class DBusDaemon extends Thread implements Closeable {
+    private static final String DBUS_BUSPATH = "/org/freedesktop/DBus";
+
     public static final int                                                     QUEUE_POLL_WAIT = 500;
 
     private static final Logger                                                 LOGGER          =
@@ -241,7 +243,7 @@ public class DBusDaemon extends Thread implements Closeable {
             for (String name : toRemove) {
                 names.remove(name);
                 try {
-                    send(null, new NameOwnerChanged("/org/freedesktop/DBus", name, _c.unique, ""));
+                    send(null, new NameOwnerChanged(DBUS_BUSPATH, name, _c.unique, ""));
                 } catch (DBusException _ex) {
                     LOGGER.debug("Unable to change owner", _ex);
                 }
@@ -371,7 +373,7 @@ public class DBusDaemon extends Thread implements Closeable {
      * @throws DBusException if signal creation fails
      */
     private DBusSignal generateNameAcquiredSignal(TransportConnection _connection, String _name) throws DBusException {
-        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameAcquired", "s", _name);
+        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", DBUS_BUSPATH, "org.freedesktop.DBus", "NameAcquired", "s", _name);
     }
 
     /**
@@ -387,7 +389,7 @@ public class DBusDaemon extends Thread implements Closeable {
      * @throws DBusException if signal creation fails
      */
     private DBusSignal generatedNameOwnerChangedSignal(TransportConnection _connection, String _name, String _oldOwner, String _newOwner) throws DBusException {
-        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
+        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", DBUS_BUSPATH, "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
     }
 
     public static class ConnectionStruct {
@@ -529,8 +531,8 @@ public class DBusDaemon extends Thread implements Closeable {
                 LOGGER.info("Client {} acquired name {}", connStruct.unique, _name);
                 rv = DBus.DBUS_RELEASE_NAME_REPLY_RELEASED;
                 try {
-                    send(connStruct, new NameLost("/org/freedesktop/DBus", _name));
-                    send(null, new NameOwnerChanged("/org/freedesktop/DBus", _name, connStruct.unique, ""));
+                    send(connStruct, new NameLost(DBUS_BUSPATH, _name));
+                    send(null, new NameOwnerChanged(DBUS_BUSPATH, _name, connStruct.unique, ""));
                 } catch (DBusException _ex) {
                     LOGGER.debug("", _ex);
                 }
@@ -626,81 +628,84 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public String Introspect() {
-            return "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n"
-                    + "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n"
-                    + "<node>\n"
-                    + "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n"
-                    + "    <method name=\"Introspect\">\n"
-                    + "      <arg name=\"data\" direction=\"out\" type=\"s\"/>\n"
-                    + "    </method>\n"
-                    + "  </interface>\n"
-                    + "  <interface name=\"org.freedesktop.DBus\">\n"
-                    + "    <method name=\"RequestName\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"in\" type=\"u\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"ReleaseName\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"StartServiceByName\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"in\" type=\"u\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"Hello\">\n"
-                    + "      <arg direction=\"out\" type=\"s\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"NameHasOwner\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"b\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"ListNames\">\n"
-                    + "      <arg direction=\"out\" type=\"as\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"ListActivatableNames\">\n"
-                    + "      <arg direction=\"out\" type=\"as\"/>\n"
-                    + "    </method>\n" + "    <method name=\"AddMatch\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"RemoveMatch\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"GetNameOwner\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"s\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"ListQueuedOwners\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"as\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"GetConnectionUnixUser\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"GetConnectionUnixProcessID\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"u\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"GetConnectionSELinuxSecurityContext\">\n"
-                    + "      <arg direction=\"in\" type=\"s\"/>\n"
-                    + "      <arg direction=\"out\" type=\"ay\"/>\n"
-                    + "    </method>\n"
-                    + "    <method name=\"ReloadConfig\">\n"
-                    + "    </method>\n"
-                    + "    <signal name=\"NameOwnerChanged\">\n"
-                    + "      <arg type=\"s\"/>\n"
-                    + "      <arg type=\"s\"/>\n"
-                    + "      <arg type=\"s\"/>\n"
-                    + "    </signal>\n"
-                    + "    <signal name=\"NameLost\">\n"
-                    + "      <arg type=\"s\"/>\n"
-                    + "    </signal>\n"
-                    + "    <signal name=\"NameAcquired\">\n"
-                    + "      <arg type=\"s\"/>\n"
-                    + "    </signal>\n"
-                    + "  </interface>\n" + "</node>";
+            return """
+            	<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+            	"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+            	<node>
+            	  <interface name="org.freedesktop.DBus.Introspectable">
+            	    <method name="Introspect">
+            	      <arg name="data" direction="out" type="s"/>
+            	    </method>
+            	  </interface>
+            	  <interface name="org.freedesktop.DBus">
+            	    <method name="RequestName">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="in" type="u"/>
+            	      <arg direction="out" type="u"/>
+            	    </method>
+            	    <method name="ReleaseName">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="u"/>
+            	    </method>
+            	    <method name="StartServiceByName">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="in" type="u"/>
+            	      <arg direction="out" type="u"/>
+            	    </method>
+            	    <method name="Hello">
+            	      <arg direction="out" type="s"/>
+            	    </method>
+            	    <method name="NameHasOwner">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="b"/>
+            	    </method>
+            	    <method name="ListNames">
+            	      <arg direction="out" type="as"/>
+            	    </method>
+            	    <method name="ListActivatableNames">
+            	      <arg direction="out" type="as"/>
+            	    </method>
+            	    <method name="AddMatch">
+            	      <arg direction="in" type="s"/>
+            	    </method>
+            	    <method name="RemoveMatch">
+            	      <arg direction="in" type="s"/>
+            	    </method>
+            	    <method name="GetNameOwner">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="s"/>
+            	    </method>
+            	    <method name="ListQueuedOwners">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="as"/>
+            	    </method>
+            	    <method name="GetConnectionUnixUser">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="u"/>
+            	    </method>
+            	    <method name="GetConnectionUnixProcessID">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="u"/>
+            	    </method>
+            	    <method name="GetConnectionSELinuxSecurityContext">
+            	      <arg direction="in" type="s"/>
+            	      <arg direction="out" type="ay"/>
+            	    </method>
+            	    <method name="ReloadConfig">
+            	    </method>
+            	    <signal name="NameOwnerChanged">
+            	      <arg type="s"/>
+            	      <arg type="s"/>
+            	      <arg type="s"/>
+            	    </signal>
+            	    <signal name="NameLost">
+            	      <arg type="s"/>
+            	    </signal>
+            	    <signal name="NameAcquired">
+            	      <arg type="s"/>
+            	    </signal>
+            	  </interface>
+            	</node>""";
         }
 
         @Override
