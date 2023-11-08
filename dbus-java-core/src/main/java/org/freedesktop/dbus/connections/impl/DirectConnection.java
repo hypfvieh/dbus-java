@@ -16,7 +16,7 @@ import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.utils.AddressBuilder;
-import org.freedesktop.dbus.validators.ValidatorBase;
+import org.freedesktop.dbus.utils.DBusObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +133,7 @@ public class DirectConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: null");
         }
 
-        ValidatorBase.of(_objectPath).assertObjectPath();
+        DBusObjects.requireObjectPath(_objectPath);
 
         return dynamicProxy(_objectPath, null);
     }
@@ -159,8 +159,8 @@ public class DirectConnection extends AbstractConnection {
             throw new ClassCastException("Not A DBus Interface");
         }
 
-        ValidatorBase.of(_objectPath).assertObjectPath();
-        
+        DBusObjects.requireObjectPath(_objectPath);
+
         if (!DBusInterface.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Interface");
         }

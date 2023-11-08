@@ -13,7 +13,7 @@ import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.messages.constants.MessageType;
 import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
-import org.freedesktop.dbus.validators.ValidatorBase;
+import org.freedesktop.dbus.utils.DBusObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +103,7 @@ public class DBusSignal extends Message {
     protected DBusSignal(byte _endianess, String _objectPath, Object... _args) throws DBusException {
         super(_endianess, MessageType.SIGNAL, (byte) 0);
 
-        ValidatorBase.of(_objectPath).assertObjectPath();
+        DBusObjects.requireObjectPath(_objectPath);
 
         Class<? extends DBusSignal> tc = getClass();
         String member = DBusNamingUtil.getSignalName(tc);

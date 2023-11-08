@@ -17,7 +17,7 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
-import org.freedesktop.dbus.validators.ValidatorBase;
+import org.freedesktop.dbus.utils.DBusObjects;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 public abstract non-sealed class AbstractConnection extends ConnectionMessageHandler {
 
     public static final boolean      FLOAT_SUPPORT          = null != System.getenv("DBUS_JAVA_FLOATS");
-    public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
-    public static final Pattern      CONNID_REGEX           = Pattern.compile("^:[0-9]*\\.[0-9]*$");
     public static final Pattern      DOLLAR_PATTERN         = Pattern.compile("[$]");
 
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
@@ -168,7 +166,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
         if (null == _objectPath || _objectPath.isEmpty()) {
             throw new DBusException("Must Specify an Object Path");
         }
-        ValidatorBase.of(_objectPath).assertObjectPath();
+        DBusObjects.requireObjectPath(_objectPath);
         synchronized (getExportedObjects()) {
             if (null != getExportedObjects().get(_objectPath)) {
                 throw new DBusException("Object already exported");
@@ -209,7 +207,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If the objectpath is incorrectly formatted,
      */
     public void addFallback(String _objectPrefix, DBusInterface _object) throws DBusException {
-        ValidatorBase.of(_objectPrefix).assertObjectPath();
+        DBusObjects.requireObjectPath(_objectPrefix);
         ExportedObject eo = new ExportedObject(_object, weakreferences);
         getFallbackContainer().add(_objectPrefix, eo);
     }
@@ -263,7 +261,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             throws DBusException {
         assertSignal(_type);
         String objectPath = getImportedObjects().get(_object).getObjectPath();
-        ValidatorBase.of(objectPath).assertObjectPath();
+        DBusObjects.requireObjectPath(objectPath);
         removeSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
     }
 
@@ -314,7 +312,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             throw new DBusException("Not an object exported or imported by this connection");
         }
         String objectPath = rObj.getObjectPath();
-        ValidatorBase.of(objectPath).assertObjectPath();
+        DBusObjects.requireObjectPath(objectPath);
         return addSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
     }
 

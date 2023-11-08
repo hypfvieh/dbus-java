@@ -151,7 +151,7 @@ public final class AddressBuilder {
     /**
      * Creates a machine identifier by using the MD5 sum of the hostname.
      * If hostname could not be determined, a random string will be used.
-     * 
+     *
      * @return String
      */
     public static String createMachineId() {
