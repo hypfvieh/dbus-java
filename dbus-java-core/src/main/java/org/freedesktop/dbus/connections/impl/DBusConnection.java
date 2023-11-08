@@ -9,9 +9,7 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
@@ -19,6 +17,7 @@ import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.validators.ValidatorBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -311,16 +310,18 @@ public final class DBusConnection extends AbstractConnection {
      * @return A reference to a remote object.
      * @throws ClassCastException
      *             If type is not a sub-type of DBusInterface
-     * @throws DBusException
+     * @throws InvalidBusNameException
      *             If busname or objectpath are incorrectly formatted.
+     * @throws DBusException
+     *             If retrieving remote object fails
      */
-    public DBusInterface getPeerRemoteObject(String _busname, String _objectpath) throws DBusException {
+    public DBusInterface getPeerRemoteObject(String _busname, String _objectpath) throws InvalidBusNameException, DBusException {
         if (null == _busname) {
-            throw new DBusException("Invalid bus name: null");
+            throw new InvalidBusNameException();
         }
 
         if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
-            throw new DBusException("Invalid bus name: " + _busname);
+            throw new InvalidBusNameException(_busname);
         }
 
         String unique = dbus.GetNameOwner(_busname);
@@ -349,23 +350,25 @@ public final class DBusConnection extends AbstractConnection {
      * @throws ClassCastException
      *             If type is not a sub-type of DBusInterface
      * @throws DBusException
-     *             If busname or objectpath are incorrectly formatted.
+     *             If remote object cannot be retrieved
+     * @throws InvalidBusNameException
+     *             If busname is incorrectly formatted
+     * @throws InvalidObjectPathException
+     *             If objectpath is incorrectly formatted
      */
-    public DBusInterface getRemoteObject(String _busname, String _objectpath) throws DBusException {
+    public DBusInterface getRemoteObject(String _busname, String _objectpath) throws DBusException, InvalidBusNameException, InvalidObjectPathException {
         if (null == _busname) {
-            throw new DBusException("Invalid bus name: null");
+            throw new InvalidBusNameException();
         }
         if (null == _objectpath) {
-            throw new DBusException("Invalid object path: null");
+            throw new InvalidObjectPathException();
         }
 
         if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
-            throw new DBusException("Invalid bus name: " + _busname);
+            throw new InvalidBusNameException(_busname);
         }
 
-        if (_objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + _objectpath);
-        }
+        ValidatorBase.of(_objectpath).assertObjectPath();
 
         return dynamicProxy(_busname, _objectpath, null);
     }
@@ -394,15 +397,17 @@ public final class DBusConnection extends AbstractConnection {
      *             If type is not a sub-type of DBusInterface
      * @throws DBusException
      *             If busname or objectpath are incorrectly formatted or type is not in a package.
+     * @throws InvalidBusNameException
+     *             If busname is incorrectly formatted
      */
     public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type,
-            boolean _autostart) throws DBusException {
+            boolean _autostart) throws DBusException, InvalidBusNameException {
         if (null == _busname) {
-            throw new DBusException("Invalid bus name: null");
+            throw new InvalidBusNameException();
         }
 
         if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
-            throw new DBusException("Invalid bus name: " + _busname);
+            throw new InvalidBusNameException(_busname);
         }
 
         String unique = dbus.GetNameOwner(_busname);
@@ -467,22 +472,17 @@ public final class DBusConnection extends AbstractConnection {
     public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type,
             boolean _autostart) throws DBusException {
         if (null == _busname) {
-            throw new DBusException("Invalid bus name: null");
-        }
-        if (null == _objectpath) {
-            throw new DBusException("Invalid object path: null");
+            throw new InvalidBusNameException();
         }
         if (null == _type) {
             throw new ClassCastException("Not A DBus Interface");
         }
 
         if (_busname.length() > MAX_NAME_LENGTH || !BUSNAME_REGEX.matcher(_busname).matches() && !CONNID_REGEX.matcher(_busname).matches()) {
-            throw new DBusException("Invalid bus name: " + _busname);
+            throw new InvalidBusNameException(_busname);
         }
 
-        if (!OBJECT_REGEX_PATTERN.matcher(_objectpath).matches() || _objectpath.length() > MAX_NAME_LENGTH) {
-            throw new DBusException("Invalid object path: " + _objectpath);
-        }
+        ValidatorBase.of(_objectpath).assertObjectPath();
 
         if (!DBusInterface.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Interface");
@@ -547,9 +547,8 @@ public final class DBusConnection extends AbstractConnection {
         validateSignal(_type, _source);
 
         String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + objectpath);
-        }
+        ValidatorBase.of(objectpath).assertObjectPath();
+        
         removeSigHandler(new DBusMatchRule(_type, _source, objectpath), _handler);
     }
 
@@ -636,9 +635,7 @@ public final class DBusConnection extends AbstractConnection {
         validateSignal(_type, _source);
 
         String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + objectpath);
-        }
+        ValidatorBase.of(objectpath).assertObjectPath();
         addSigHandler(new DBusMatchRule(_type, _source, objectpath), (DBusSigHandler<? extends DBusSignal>) _handler);
         return new AutoCloseable() {
             @Override

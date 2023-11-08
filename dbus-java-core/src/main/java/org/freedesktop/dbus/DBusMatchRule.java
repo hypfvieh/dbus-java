@@ -233,7 +233,7 @@ public class DBusMatchRule {
     public String toString() {
         String s = null;
         if (null != type) {
-            s = null == s ? "type='" + type + "'" : s + ",type='" + type + "'";
+            s = "type='" + type + "'";
         }
         if (null != member) {
             s = null == s ? "member='" + member + "'" : s + ",member='" + member + "'";

@@ -2,30 +2,39 @@ package org.freedesktop.dbus.bin;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.*;
+import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode;
+import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.*;
+import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
-import org.freedesktop.dbus.messages.*;
+import org.freedesktop.dbus.interfaces.FatalException;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.Message;
+import org.freedesktop.dbus.messages.MessageFactory;
+import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
-import org.freedesktop.dbus.utils.Hexdump;
+import org.freedesktop.dbus.utils.AddressBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,9 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A replacement DBusDaemon
  */
 public class DBusDaemon extends Thread implements Closeable {
-    private static final String DBUS_BUSPATH = "/org/freedesktop/DBus";
-
     public static final int                                                     QUEUE_POLL_WAIT = 500;
+
+    private static final String DBUS_BUSPATH = "/org/freedesktop/DBus";
 
     private static final Logger                                                 LOGGER          =
             LoggerFactory.getLogger(DBusDaemon.class);
@@ -412,14 +421,7 @@ public class DBusDaemon extends Thread implements Closeable {
         private ConnectionStruct connStruct;
 
         public DBusServer() {
-            String ascii;
-            try {
-                ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
-            } catch (NoSuchAlgorithmException | UnknownHostException _ex) {
-                ascii = this.hashCode() + "";
-            }
-
-            machineId = ascii;
+            machineId = AddressBuilder.createMachineId();
         }
 
         @Override
@@ -629,83 +631,83 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String Introspect() {
             return """
-            	<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-            	"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-            	<node>
-            	  <interface name="org.freedesktop.DBus.Introspectable">
-            	    <method name="Introspect">
-            	      <arg name="data" direction="out" type="s"/>
-            	    </method>
-            	  </interface>
-            	  <interface name="org.freedesktop.DBus">
-            	    <method name="RequestName">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="in" type="u"/>
-            	      <arg direction="out" type="u"/>
-            	    </method>
-            	    <method name="ReleaseName">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="u"/>
-            	    </method>
-            	    <method name="StartServiceByName">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="in" type="u"/>
-            	      <arg direction="out" type="u"/>
-            	    </method>
-            	    <method name="Hello">
-            	      <arg direction="out" type="s"/>
-            	    </method>
-            	    <method name="NameHasOwner">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="b"/>
-            	    </method>
-            	    <method name="ListNames">
-            	      <arg direction="out" type="as"/>
-            	    </method>
-            	    <method name="ListActivatableNames">
-            	      <arg direction="out" type="as"/>
-            	    </method>
-            	    <method name="AddMatch">
-            	      <arg direction="in" type="s"/>
-            	    </method>
-            	    <method name="RemoveMatch">
-            	      <arg direction="in" type="s"/>
-            	    </method>
-            	    <method name="GetNameOwner">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="s"/>
-            	    </method>
-            	    <method name="ListQueuedOwners">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="as"/>
-            	    </method>
-            	    <method name="GetConnectionUnixUser">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="u"/>
-            	    </method>
-            	    <method name="GetConnectionUnixProcessID">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="u"/>
-            	    </method>
-            	    <method name="GetConnectionSELinuxSecurityContext">
-            	      <arg direction="in" type="s"/>
-            	      <arg direction="out" type="ay"/>
-            	    </method>
-            	    <method name="ReloadConfig">
-            	    </method>
-            	    <signal name="NameOwnerChanged">
-            	      <arg type="s"/>
-            	      <arg type="s"/>
-            	      <arg type="s"/>
-            	    </signal>
-            	    <signal name="NameLost">
-            	      <arg type="s"/>
-            	    </signal>
-            	    <signal name="NameAcquired">
-            	      <arg type="s"/>
-            	    </signal>
-            	  </interface>
-            	</node>""";
+                <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+                <node>
+                  <interface name="org.freedesktop.DBus.Introspectable">
+                    <method name="Introspect">
+                      <arg name="data" direction="out" type="s"/>
+                    </method>
+                  </interface>
+                  <interface name="org.freedesktop.DBus">
+                    <method name="RequestName">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="u"/>
+                      <arg direction="out" type="u"/>
+                    </method>
+                    <method name="ReleaseName">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="u"/>
+                    </method>
+                    <method name="StartServiceByName">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="u"/>
+                      <arg direction="out" type="u"/>
+                    </method>
+                    <method name="Hello">
+                      <arg direction="out" type="s"/>
+                    </method>
+                    <method name="NameHasOwner">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="b"/>
+                    </method>
+                    <method name="ListNames">
+                      <arg direction="out" type="as"/>
+                    </method>
+                    <method name="ListActivatableNames">
+                      <arg direction="out" type="as"/>
+                    </method>
+                    <method name="AddMatch">
+                      <arg direction="in" type="s"/>
+                    </method>
+                    <method name="RemoveMatch">
+                      <arg direction="in" type="s"/>
+                    </method>
+                    <method name="GetNameOwner">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="s"/>
+                    </method>
+                    <method name="ListQueuedOwners">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="as"/>
+                    </method>
+                    <method name="GetConnectionUnixUser">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="u"/>
+                    </method>
+                    <method name="GetConnectionUnixProcessID">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="u"/>
+                    </method>
+                    <method name="GetConnectionSELinuxSecurityContext">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="ay"/>
+                    </method>
+                    <method name="ReloadConfig">
+                    </method>
+                    <signal name="NameOwnerChanged">
+                      <arg type="s"/>
+                      <arg type="s"/>
+                      <arg type="s"/>
+                    </signal>
+                    <signal name="NameLost">
+                      <arg type="s"/>
+                    </signal>
+                    <signal name="NameAcquired">
+                      <arg type="s"/>
+                    </signal>
+                  </interface>
+                </node>""";
         }
 
         @Override
@@ -786,6 +788,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     }
                 } catch (InterruptedException _ex) {
                     logger.debug("Got interrupted", _ex);
+                    Thread.currentThread().interrupt();
                 }
             }
             logger.debug(">>>> Sender Thread terminated <<<<");

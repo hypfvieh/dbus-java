@@ -67,12 +67,12 @@ public class RunDaemon {
     public static void main(String[] _args) throws Exception {
         TransportProtocol proto = TransportProtocol.UNIX;
         if (_args.length == 1) {
-            if (_args[1].equalsIgnoreCase("TCP")) {
+            if (_args[0].equalsIgnoreCase("TCP")) {
                 proto = TransportProtocol.TCP;
-            } else if (_args[1].equalsIgnoreCase("UNIX")) {
+            } else if (_args[0].equalsIgnoreCase("UNIX")) {
                 proto = TransportProtocol.UNIX;
             } else {
-                throw new RuntimeException("Unknown transport protocol: " + _args[1]);
+                throw new RuntimeException("Unknown transport protocol: " + _args[0]);
             }
         }
         RunDaemon runDaemon = new RunDaemon(proto);

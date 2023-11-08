@@ -8,6 +8,7 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -103,7 +104,7 @@ public final class NetworkManagerExample3 {
             }
 
         } catch (IOException | DBusException _ex) {
-            _ex.printStackTrace();
+            LoggerFactory.getLogger(NetworkManagerExample3.class).error("Error", _ex);
         }
     }
 }

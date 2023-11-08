@@ -142,7 +142,7 @@ public class DBusViewer {
                             }
                         });
                     } catch (DBusExecutionException | DBusException _ex) {
-                        _ex.printStackTrace();
+                        LoggerFactory.getLogger(getClass()).error("Error", _ex);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -176,7 +176,7 @@ public class DBusViewer {
 
                 p.visitNode(name, "/");
             } catch (IOException | SAXException | DBusException | DBusExecutionException _ex) {
-                _ex.printStackTrace();
+                LoggerFactory.getLogger(getClass()).error("Error", _ex);
             }
             results = p.getResult();
             p.reset();
@@ -269,7 +269,7 @@ public class DBusViewer {
                                 visitNode(_name, _path + '/' + nameNode.getNodeValue());
                             }
                         } catch (DBusException _ex) {
-                            _ex.printStackTrace();
+                            LoggerFactory.getLogger(getClass()).error("Error", _ex);
                         }
                     }
                 }

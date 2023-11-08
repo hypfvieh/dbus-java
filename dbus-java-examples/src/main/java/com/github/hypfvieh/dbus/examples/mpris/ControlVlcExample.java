@@ -6,6 +6,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.mpris.mediaplayer2.Player;
 import org.mpris.mediaplayer2.Player.Seeked;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,7 +61,7 @@ public final class ControlVlcExample {
             player.Seek(seekTime);
             Thread.sleep(500L); // wait a bit to receive the "Seeked" signal
         } catch (IOException _ex) {
-            _ex.printStackTrace();
+            LoggerFactory.getLogger(ControlVlcExample.class).error("Error", _ex);
         }
     }
 

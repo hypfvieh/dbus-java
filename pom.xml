@@ -24,6 +24,7 @@
 
         <check.skip-checkstyle>false</check.skip-checkstyle>
         <check.skip-pmd>false</check.skip-pmd>
+        <sonar.skip>true</sonar.skip>
         
         <junit5.minor.version>10.0</junit5.minor.version>
         <pmd.version>6.55.0</pmd.version>
@@ -598,5 +599,38 @@
             </properties>
         </profile>
         
+        <profile>
+            <id>sonarcloud</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.skip>false</sonar.skip>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.organization>hypfvieh</sonar.organization>
+                
+                <maven.test.skip>true</maven.test.skip>
+                <skipTests>true</skipTests>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <check.skip-javadoc>true</check.skip-javadoc>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>3.10.0.2594</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>sonar</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

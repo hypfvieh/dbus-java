@@ -45,8 +45,16 @@ public class SASL {
     public static final int       COOKIE_TIMEOUT              = 240;
     public static final String    COOKIE_CONTEXT              = "org_freedesktop_java";
 
+    private static final String   AUTH_TYPE_EXTERNAL          = "EXTERNAL";
+    private static final String   AUTH_TYPE_DBUS_COOKIE_SHA1  = "DBUS_COOKIE_SHA1";
+    private static final String   AUTH_TYPE_ANONYMOUS         = "ANONYMOUS";
+
+    private static final String   INVALID_CMD_ERR             = "Got invalid command";
+
     // stop reading when reaching ~1MByte of data
     private static final int      MAX_READ_BYTES              = 1024 * 1024;
+
+    private static final Random   RANDOM                      = new Random();
 
     private static final Collator COL = Collator.getInstance();
     static {
@@ -290,7 +298,7 @@ public class SASL {
             try {
                 md = MessageDigest.getInstance("SHA");
             } catch (NoSuchAlgorithmException _ex) {
-                logger.debug("", _ex);
+                logger.debug("Could not find SHA algorithm", _ex);
                 return SaslResult.ERROR;
             }
 
@@ -338,7 +346,7 @@ public class SASL {
         try {
             md = MessageDigest.getInstance("SHA");
         } catch (NoSuchAlgorithmException _ex) {
-            logger.error("", _ex);
+            logger.error("SHA hash algorithm not available", _ex);
             return SaslResult.ERROR;
         }
         switch (_auth) {
@@ -358,8 +366,8 @@ public class SASL {
                     byte[] buf = new byte[8];
                     Message.marshallintBig(id, buf, 0, 8);
                     challenge = stupidlyEncode(md.digest(buf));
-                    Random r = new Random();
-                    r.nextBytes(buf);
+
+                    RANDOM.nextBytes(buf);
                     cookie = stupidlyEncode(md.digest(buf));
                     try {
                         addCookie(context, "" + id, id / 1000, cookie);
@@ -399,25 +407,25 @@ public class SASL {
     public String[] convertAuthTypes(int _types) {
         return switch (_types) {
             case AUTH_EXTERNAL -> new String[] {
-                        "EXTERNAL"
+                        AUTH_TYPE_EXTERNAL
                 };
             case AUTH_SHA -> new String[] {
-                        "DBUS_COOKIE_SHA1"
+                        AUTH_TYPE_DBUS_COOKIE_SHA1
                 };
             case AUTH_ANON -> new String[] {
-                        "ANONYMOUS"
+                        AUTH_TYPE_ANONYMOUS
                 };
             case AUTH_SHA + AUTH_EXTERNAL -> new String[] {
-                        "EXTERNAL", "DBUS_COOKIE_SHA1"
+                        AUTH_TYPE_EXTERNAL, AUTH_TYPE_DBUS_COOKIE_SHA1
                 };
             case AUTH_SHA + AUTH_ANON -> new String[] {
-                        "ANONYMOUS", "DBUS_COOKIE_SHA1"
+                        AUTH_TYPE_ANONYMOUS, AUTH_TYPE_DBUS_COOKIE_SHA1
                 };
             case AUTH_EXTERNAL + AUTH_ANON -> new String[] {
-                        "ANONYMOUS", "EXTERNAL"
+                        AUTH_TYPE_ANONYMOUS, AUTH_TYPE_EXTERNAL
                 };
             case AUTH_EXTERNAL + AUTH_ANON + AUTH_SHA -> new String[] {
-                        "ANONYMOUS", "EXTERNAL", "DBUS_COOKIE_SHA1"
+                        AUTH_TYPE_ANONYMOUS, AUTH_TYPE_EXTERNAL, AUTH_TYPE_DBUS_COOKIE_SHA1
                 };
             default -> new String[] {};
         };
@@ -520,7 +528,7 @@ public class SASL {
                             }
                             break;
                         default:
-                            send(_sock, ERROR, "Got invalid command");
+                            send(_sock, ERROR, INVALID_CMD_ERR);
                             break;
                         }
                     break;
@@ -541,20 +549,20 @@ public class SASL {
                         int available = c.getMechs() & (~failed);
                         state = SaslAuthState.WAIT_DATA;
                         if (0 != (available & AUTH_EXTERNAL)) {
-                            send(_sock, AUTH, "EXTERNAL", luid);
+                            send(_sock, AUTH, AUTH_TYPE_EXTERNAL, luid);
                             current = AUTH_EXTERNAL;
                         } else if (0 != (available & AUTH_SHA)) {
-                            send(_sock, AUTH, "DBUS_COOKIE_SHA1", luid);
+                            send(_sock, AUTH, AUTH_TYPE_DBUS_COOKIE_SHA1, luid);
                             current = AUTH_SHA;
                         } else if (0 != (available & AUTH_ANON)) {
-                            send(_sock, AUTH, "ANONYMOUS");
+                            send(_sock, AUTH, AUTH_TYPE_ANONYMOUS);
                             current = AUTH_ANON;
                         } else {
                             state = SaslAuthState.FAILED;
                         }
                         break;
                     default:
-                        send(_sock, ERROR, "Got invalid command");
+                        send(_sock, ERROR, INVALID_CMD_ERR);
                         break;
                     }
                     break;
@@ -632,7 +640,7 @@ public class SASL {
                                 state = SaslAuthState.FAILED;
                                 break;
                             default:
-                                send(_sock, ERROR, "Got invalid command");
+                                send(_sock, ERROR, INVALID_CMD_ERR);
                                 break;
                             }
                     break;
@@ -666,7 +674,7 @@ public class SASL {
                             state = SaslAuthState.FAILED;
                         break;
                         default:
-                            send(_sock, ERROR, "Got invalid command");
+                            send(_sock, ERROR, INVALID_CMD_ERR);
                         break;
                     }
                     break;
@@ -691,7 +699,7 @@ public class SASL {
 
                             break;
                             default:
-                                send(_sock, ERROR, "Got invalid command");
+                                send(_sock, ERROR, INVALID_CMD_ERR);
                             break;
                         }
                     break;
@@ -723,13 +731,13 @@ public class SASL {
     private int handleReject(int _available, String _luid, SocketChannel _sock) throws IOException {
         int current = -1;
         if (0 != (_available & AUTH_EXTERNAL)) {
-            send(_sock, AUTH, "EXTERNAL", _luid);
+            send(_sock, AUTH, AUTH_TYPE_EXTERNAL, _luid);
             current = AUTH_EXTERNAL;
         } else if (0 != (_available & AUTH_SHA)) {
-            send(_sock, AUTH, "DBUS_COOKIE_SHA1", _luid);
+            send(_sock, AUTH, AUTH_TYPE_DBUS_COOKIE_SHA1, _luid);
             current = AUTH_SHA;
         } else if (0 != (_available & AUTH_ANON)) {
-            send(_sock, AUTH, "ANONYMOUS");
+            send(_sock, AUTH, AUTH_TYPE_ANONYMOUS);
             current = AUTH_ANON;
         }
         return current;
@@ -802,11 +810,11 @@ public class SASL {
             } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;
                 if (ss.length > 1) {
-                    if (0 == COL.compare(ss[1], "EXTERNAL")) {
+                    if (0 == COL.compare(ss[1], AUTH_TYPE_EXTERNAL)) {
                         mechs = AUTH_EXTERNAL;
-                    } else if (0 == COL.compare(ss[1], "DBUS_COOKIE_SHA1")) {
+                    } else if (0 == COL.compare(ss[1], AUTH_TYPE_DBUS_COOKIE_SHA1)) {
                         mechs = AUTH_SHA;
-                    } else if (0 == COL.compare(ss[1], "ANONYMOUS")) {
+                    } else if (0 == COL.compare(ss[1], AUTH_TYPE_ANONYMOUS)) {
                         mechs = AUTH_ANON;
                     }
                 }
@@ -820,11 +828,11 @@ public class SASL {
             } else if (0 == COL.compare(ss[0], "REJECTED")) {
                 command = REJECTED;
                 for (int i = 1; i < ss.length; i++) {
-                    if (0 == COL.compare(ss[i], "EXTERNAL")) {
+                    if (0 == COL.compare(ss[i], AUTH_TYPE_EXTERNAL)) {
                         mechs |= AUTH_EXTERNAL;
-                    } else if (0 == COL.compare(ss[i], "DBUS_COOKIE_SHA1")) {
+                    } else if (0 == COL.compare(ss[i], AUTH_TYPE_DBUS_COOKIE_SHA1)) {
                         mechs |= AUTH_SHA;
-                    } else if (0 == COL.compare(ss[i], "ANONYMOUS")) {
+                    } else if (0 == COL.compare(ss[i], AUTH_TYPE_ANONYMOUS)) {
                         mechs |= AUTH_ANON;
                     }
                 }

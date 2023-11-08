@@ -3,26 +3,28 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.RemoteInvocationHandler;
+import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.*;
+import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
-import org.freedesktop.dbus.utils.Hexdump;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.AddressBuilder;
+import org.freedesktop.dbus.validators.ValidatorBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,7 @@ public class DirectConnection extends AbstractConnection {
 
     DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_transportCfg, _rsCfg);
-        machineId = createMachineId();
+        machineId = AddressBuilder.createMachineId();
         if (!getAddress().isServer()) {
             try {
                 listen();
@@ -62,21 +64,6 @@ public class DirectConnection extends AbstractConnection {
             getTransport().listen();
         }
         super.listen();
-    }
-
-    private String createMachineId() {
-        String ascii;
-
-        try {
-            ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
-            return ascii;
-        } catch (NoSuchAlgorithmException _ex) {
-            logger.trace("MD5 algorithm not present", _ex);
-        } catch (UnknownHostException _ex) {
-            logger.trace("Unable to determine this machines hostname", _ex);
-        }
-
-        return Util.randomString(32);
     }
 
     @SuppressWarnings("unchecked")
@@ -146,9 +133,7 @@ public class DirectConnection extends AbstractConnection {
             throw new DBusException("Invalid object path: null");
         }
 
-        if (_objectPath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
-            throw new DBusException("Invalid object path: " + _objectPath);
-        }
+        ValidatorBase.of(_objectPath).assertObjectPath();
 
         return dynamicProxy(_objectPath, null);
     }
@@ -174,10 +159,8 @@ public class DirectConnection extends AbstractConnection {
             throw new ClassCastException("Not A DBus Interface");
         }
 
-        if (_objectPath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
-            throw new DBusException("Invalid object path: " + _objectPath);
-        }
-
+        ValidatorBase.of(_objectPath).assertObjectPath();
+        
         if (!DBusInterface.class.isAssignableFrom(_type)) {
             throw new ClassCastException("Not A DBus Interface");
         }

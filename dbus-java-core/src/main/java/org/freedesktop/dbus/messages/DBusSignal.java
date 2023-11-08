@@ -1,7 +1,5 @@
 package org.freedesktop.dbus.messages;
 
-import static org.freedesktop.dbus.connections.AbstractConnection.OBJECT_REGEX_PATTERN;
-
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.ObjectPath;
@@ -15,6 +13,7 @@ import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.messages.constants.MessageType;
 import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
+import org.freedesktop.dbus.validators.ValidatorBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,9 +103,7 @@ public class DBusSignal extends Message {
     protected DBusSignal(byte _endianess, String _objectPath, Object... _args) throws DBusException {
         super(_endianess, MessageType.SIGNAL, (byte) 0);
 
-        if (!OBJECT_REGEX_PATTERN.matcher(_objectPath).matches()) {
-            throw new DBusException("Invalid object path: " + _objectPath);
-        }
+        ValidatorBase.of(_objectPath).assertObjectPath();
 
         Class<? extends DBusSignal> tc = getClass();
         String member = DBusNamingUtil.getSignalName(tc);

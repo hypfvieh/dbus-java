@@ -11,6 +11,7 @@
 package org.freedesktop.dbus.viewer;
 
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -103,7 +104,7 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                         });
 
                     } catch (Exception _ex) {
-                        _ex.printStackTrace();
+                        LoggerFactory.getLogger(getClass()).error("Error", _ex);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {

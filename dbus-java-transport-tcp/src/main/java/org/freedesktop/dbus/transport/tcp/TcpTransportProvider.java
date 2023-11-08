@@ -12,7 +12,9 @@ import java.net.ServerSocket;
 import java.util.Random;
 
 public class TcpTransportProvider implements ITransportProvider {
-    public static final int TCP_CONNECT_TIMEOUT     = 100000;
+    public static final int     TCP_CONNECT_TIMEOUT = 100000;
+
+    private static final Random RANDOM              = new Random();
 
     @Override
     public String getTransportName() {
@@ -42,14 +44,11 @@ public class TcpTransportProvider implements ITransportProvider {
     public String createDynamicSessionAddress(boolean _listeningSocket) {
         String address = "tcp:host=localhost";
         int port;
-        try {
-            ServerSocket s = new ServerSocket();
+        try (ServerSocket s = new ServerSocket()) {
             s.bind(null);
             port = s.getLocalPort();
-            s.close();
         } catch (Exception _ex) {
-            Random r = new Random();
-            port = 32768 + (Math.abs(r.nextInt()) % 28232);
+            port = 32768 + (Math.abs(RANDOM.nextInt()) % 28232);
         }
         address += ",port=" + port;
         if (_listeningSocket) {

@@ -10,12 +10,14 @@ import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.exceptions.InvalidSignalException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
+import org.freedesktop.dbus.validators.ValidatorBase;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -30,7 +32,6 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
     public static final boolean      FLOAT_SUPPORT          = null != System.getenv("DBUS_JAVA_FLOATS");
     public static final Pattern      BUSNAME_REGEX          = Pattern.compile("^[-_a-zA-Z][-_a-zA-Z0-9]*(\\.[-_a-zA-Z][-_a-zA-Z0-9]*)*$");
     public static final Pattern      CONNID_REGEX           = Pattern.compile("^:[0-9]*\\.[0-9]*$");
-    public static final Pattern      OBJECT_REGEX_PATTERN   = Pattern.compile("^/([-_a-zA-Z0-9]+(/[-_a-zA-Z0-9]+)*)?$");
     public static final Pattern      DOLLAR_PATTERN         = Pattern.compile("[$]");
 
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
@@ -167,9 +168,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
         if (null == _objectPath || _objectPath.isEmpty()) {
             throw new DBusException("Must Specify an Object Path");
         }
-        if (_objectPath.length() > MAX_NAME_LENGTH || !(OBJECT_REGEX_PATTERN.matcher(_objectPath).matches())) {
-            throw new DBusException("Invalid object path: " + _objectPath);
-        }
+        ValidatorBase.of(_objectPath).assertObjectPath();
         synchronized (getExportedObjects()) {
             if (null != getExportedObjects().get(_objectPath)) {
                 throw new DBusException("Object already exported");
@@ -210,12 +209,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If the objectpath is incorrectly formatted,
      */
     public void addFallback(String _objectPrefix, DBusInterface _object) throws DBusException {
-        if (_objectPrefix == null || _objectPrefix.isEmpty()) {
-            throw new DBusException("Must Specify an Object Path");
-        }
-        if (_objectPrefix.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(_objectPrefix).matches()) {
-            throw new DBusException("Invalid object path: " + _objectPrefix);
-        }
+        ValidatorBase.of(_objectPrefix).assertObjectPath();
         ExportedObject eo = new ExportedObject(_object, weakreferences);
         getFallbackContainer().add(_objectPrefix, eo);
     }
@@ -245,10 +239,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If type is not a sub-type of DBusSignal.
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-
+        assertSignal(_type);
         removeSigHandler(new DBusMatchRule(_type), _handler);
     }
 
@@ -270,14 +261,10 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-        String objectpath = getImportedObjects().get(_object).getObjectPath();
-        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + objectpath);
-        }
-        removeSigHandler(new DBusMatchRule(_type, null, objectpath), _handler);
+        assertSignal(_type);
+        String objectPath = getImportedObjects().get(_object).getObjectPath();
+        ValidatorBase.of(objectPath).assertObjectPath();
+        removeSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
     }
 
     /**
@@ -297,9 +284,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If type is not a sub-type of DBusSignal.
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
+        assertSignal(_type);
         return addSigHandler(new DBusMatchRule(_type), _handler);
     }
 
@@ -323,18 +308,20 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
             throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
+        assertSignal(_type);
         RemoteObject rObj = getImportedObjects().get(_object);
         if (rObj == null) {
             throw new DBusException("Not an object exported or imported by this connection");
         }
-        String objectpath = rObj.getObjectPath();
-        if (objectpath.length() > MAX_NAME_LENGTH || !OBJECT_REGEX_PATTERN.matcher(objectpath).matches()) {
-            throw new DBusException("Invalid object path: " + objectpath);
+        String objectPath = rObj.getObjectPath();
+        ValidatorBase.of(objectPath).assertObjectPath();
+        return addSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
+    }
+
+    private <T extends DBusSignal> void assertSignal(Class<T> _type) throws InvalidSignalException {
+        if (!DBusSignal.class.isAssignableFrom(_type)) {
+            throw new InvalidSignalException(_type);
         }
-        return addSigHandler(new DBusMatchRule(_type, null, objectpath), _handler);
     }
 
     protected <T extends DBusSignal> void addSigHandlerWithoutMatch(Class<? extends DBusSignal> _signal, DBusSigHandler<T> _handler) throws DBusException {

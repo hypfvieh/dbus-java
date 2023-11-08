@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
  * @since v3.2.5 - 2020-12-28
  */
 public final class Util {
+    private static final Random RANDOM = new Random();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
     /** Characters used for random strings */
@@ -151,10 +153,9 @@ public final class Util {
         if (_length <= 0) {
             return "";
         }
-        Random random = new Random();
         char[] buf = new char[_length];
         for (int idx = 0; idx < buf.length; ++idx) {
-            buf[idx] = SYMBOLS[random.nextInt(SYMBOLS.length)];
+            buf[idx] = SYMBOLS[RANDOM.nextInt(SYMBOLS.length)];
         }
         return new String(buf);
     }
@@ -497,9 +498,8 @@ public final class Util {
      * @return String
      */
     public static String genGUID() {
-        Random r = new Random();
         byte[] buf = new byte[16];
-        r.nextBytes(buf);
+        RANDOM.nextBytes(buf);
         return Hexdump.toHex(buf, false);
     }
 
@@ -514,12 +514,11 @@ public final class Util {
     public static String createDynamicSessionAddress(boolean _listeningSocket, boolean _abstract) {
         String address = "unix:";
         String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
-        Random r = new Random();
 
         do {
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < 10; i++) {
-                sb.append((char) (Math.abs(r.nextInt()) % 26) + 65);
+                sb.append((char) (Math.abs(RANDOM.nextInt()) % 26) + 65);
             }
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(Util.class).trace("Trying path {}", path);

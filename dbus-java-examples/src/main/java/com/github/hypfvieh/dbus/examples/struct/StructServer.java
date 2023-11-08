@@ -4,6 +4,7 @@ import org.freedesktop.dbus.StructHelper;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.types.Variant;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -69,7 +70,7 @@ public class StructServer implements IStructServer {
 
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException _ex) {
-            _ex.printStackTrace();
+            LoggerFactory.getLogger(StructServer.class).error("Error", _ex);
         }
     }
 

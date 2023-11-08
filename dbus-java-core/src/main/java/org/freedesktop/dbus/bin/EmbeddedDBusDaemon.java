@@ -69,6 +69,7 @@ public class EmbeddedDBusDaemon implements Closeable {
                 daemon.join(5000L);
             } catch (InterruptedException _ex) {
                 LOGGER.debug("Interrupted while waiting for daemon thread to terminate");
+                Thread.currentThread().interrupt();
             }
             daemon = null;
         }
@@ -118,6 +119,7 @@ public class EmbeddedDBusDaemon implements Closeable {
         try {
             startupLatch.await(_maxWaitMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException _ex) {
+            Thread.currentThread().interrupt();
             throw new IllegalStateException("Daemon not started after " + _maxWaitMillis + " milliseconds");
         }
     }
@@ -137,6 +139,7 @@ public class EmbeddedDBusDaemon implements Closeable {
         try {
             startupLatch.await();
         } catch (InterruptedException _ex) {
+            Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while waiting for daemon to start");
         }
     }

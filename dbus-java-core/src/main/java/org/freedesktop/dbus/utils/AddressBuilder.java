@@ -3,8 +3,13 @@ package org.freedesktop.dbus.utils;
 import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.exceptions.AddressResolvingException;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public final class AddressBuilder {
@@ -143,4 +148,24 @@ public final class AddressBuilder {
         return String.format("%s@%s", Util.getCurrentUser(), Util.getHostName());
     }
 
+    /**
+     * Creates a machine identifier by using the MD5 sum of the hostname.
+     * If hostname could not be determined, a random string will be used.
+     * 
+     * @return String
+     */
+    public static String createMachineId() {
+        String ascii;
+
+        try {
+            ascii = Hexdump.toAscii(MessageDigest.getInstance("MD5").digest(InetAddress.getLocalHost().getHostName().getBytes()));
+            return ascii;
+        } catch (NoSuchAlgorithmException _ex) {
+            LoggerFactory.getLogger(AddressBuilder.class).trace("MD5 algorithm not present", _ex);
+        } catch (UnknownHostException _ex) {
+            LoggerFactory.getLogger(AddressBuilder.class).trace("Unable to determine this machines hostname", _ex);
+        }
+
+        return Util.randomString(32);
+    }
 }
