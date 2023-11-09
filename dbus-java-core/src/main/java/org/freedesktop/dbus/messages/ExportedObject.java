@@ -190,7 +190,6 @@ public class ExportedObject {
             if (isExcluded(meth)) {
                 continue;
             }
-            String ms = "";
             String methodName = DBusNamingUtil.getMethodName(meth);
             if (methodName.length() > AbstractConnection.MAX_NAME_LENGTH) {
                 throw new DBusException(
@@ -206,10 +205,11 @@ public class ExportedObject {
                             .append("\" />\n");
                 }
             }
+            StringBuilder ms = new StringBuilder();
             for (Type pt : meth.getGenericParameterTypes()) {
                 for (String s : Marshalling.getDBusType(pt)) {
                     sb.append("   <arg type=\"").append(s).append("\" direction=\"in\"/>\n");
-                    ms += s;
+                    ms.append(s);
                 }
             }
             if (!Void.TYPE.equals(meth.getGenericReturnType())) {
@@ -233,7 +233,7 @@ public class ExportedObject {
                 }
             }
             sb.append("  </method>\n");
-            methods.putIfAbsent(new MethodTuple(methodName, ms), meth);
+            methods.putIfAbsent(new MethodTuple(methodName, ms.toString()), meth);
         }
 
         return sb.toString();

@@ -7,6 +7,7 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode
 import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.exceptions.SocketClosedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,6 @@ public class EmbeddedDBusDaemon implements Closeable {
     private DBusDaemon daemon;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
-   // private final AtomicBoolean connectionReady = new AtomicBoolean(false);
 
     private SaslAuthMode saslAuthMode;
 
@@ -52,7 +52,7 @@ public class EmbeddedDBusDaemon implements Closeable {
         address = BusAddress.of(Objects.requireNonNull(_address, "Address required"));
     }
 
-    public EmbeddedDBusDaemon(String _address) throws DBusException {
+    public EmbeddedDBusDaemon(String _address) throws InvalidBusAddressException {
         this(BusAddress.of(_address));
     }
 
@@ -117,10 +117,12 @@ public class EmbeddedDBusDaemon implements Closeable {
     public void startInBackgroundAndWait(long _maxWaitMillis) throws IllegalStateException {
         startInBackground();
         try {
-            startupLatch.await(_maxWaitMillis, TimeUnit.MILLISECONDS);
+            if (!startupLatch.await(_maxWaitMillis, TimeUnit.MILLISECONDS)) {
+                throw new IllegalStateException("Daemon not started after " + _maxWaitMillis + " milliseconds");
+            }
         } catch (InterruptedException _ex) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Daemon not started after " + _maxWaitMillis + " milliseconds");
+            throw new IllegalStateException("Startup of daemon interrupted");
         }
     }
 

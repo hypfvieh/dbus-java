@@ -178,6 +178,7 @@ public class ReceivingService {
                 es.getValue().awaitTermination(_timeout, _unit);
             } catch (InterruptedException _ex) {
                 logger.debug("Interrupted while waiting for termination of executor");
+                Thread.currentThread().interrupt();
             }
         }
 

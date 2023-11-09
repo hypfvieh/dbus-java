@@ -33,7 +33,7 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
 
     private final ISocketProvider socketProviderImpl;
 
-    public AbstractInputStreamMessageReader(final SocketChannel _in, ISocketProvider _socketProviderImpl) {
+    protected AbstractInputStreamMessageReader(final SocketChannel _in, ISocketProvider _socketProviderImpl) {
         socketProviderImpl = Objects.requireNonNull(_socketProviderImpl, "ISocketProvider implementation required");
         inputChannel = Objects.requireNonNull(_in, "SocketChannel required");
         len = new int[4];

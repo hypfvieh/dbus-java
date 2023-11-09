@@ -257,7 +257,7 @@ public class DBusSignal extends Message {
             // signal implementations needs a new constructor :-\
             s.updateEndianess(_conn.getMessageFactory().getEndianess());
             s.setHeader(getHeader());
-            s.setWiredata(getWireData());
+            s.setWireData(getWireData());
             s.setByteCounter(getWireData().length);
             return s;
         } catch (Exception _ex) {

@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public final class ReflectionFileDescriptorHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionFileDescriptorHelper.class);
-    private static volatile ReflectionFileDescriptorHelper instance;
+    private static final Optional<ReflectionFileDescriptorHelper> INSTANCE = createInstance();
 
     private final Field fdField;
     private final Constructor<FileDescriptor> constructor;
@@ -28,27 +28,6 @@ public final class ReflectionFileDescriptorHelper {
         fdField.setAccessible(true);
         constructor = FileDescriptor.class.getDeclaredConstructor(int.class);
         constructor.setAccessible(true);
-    }
-
-    /**
-     * @return {@link ReflectionFileDescriptorHelper} instance, or {@link Optional#empty()} if it cannot be initialized
-     * (mainly due to missing reflection access)
-     */
-    public static Optional<ReflectionFileDescriptorHelper> getInstance() {
-        if (instance == null) {
-            synchronized (ReflectionFileDescriptorHelper.class) {
-                if (instance == null) {
-                    try {
-                        instance = new ReflectionFileDescriptorHelper();
-                    } catch (ReflectiveOperationException _ex) {
-                        LOGGER.error("Unable to hook up java.io.FileDescriptor by using reflection.", _ex);
-                        return Optional.empty();
-                    }
-                }
-            }
-        }
-
-        return Optional.ofNullable(instance);
     }
 
     /**
@@ -74,5 +53,22 @@ public final class ReflectionFileDescriptorHelper {
             LOGGER.error("Could not create new FileDescriptor instance by reflection.", _ex);
             return Optional.empty();
         }
+    }
+
+    private static Optional<ReflectionFileDescriptorHelper> createInstance() {
+        try {
+            return Optional.of(new ReflectionFileDescriptorHelper());
+        } catch (ReflectiveOperationException _ex) {
+            LOGGER.error("Unable to hook up java.io.FileDescriptor by using reflection.", _ex);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * @return {@link ReflectionFileDescriptorHelper} instance, or {@link Optional#empty()} if it cannot be initialized
+     * (mainly due to missing reflection access)
+     */
+    public static Optional<ReflectionFileDescriptorHelper> getInstance() {
+        return INSTANCE;
     }
 }

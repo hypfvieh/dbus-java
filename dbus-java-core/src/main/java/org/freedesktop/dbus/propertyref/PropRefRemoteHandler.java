@@ -8,6 +8,7 @@ import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
@@ -48,9 +49,8 @@ public final class PropRefRemoteHandler {
      * @return remote invocation result
      *
      * @throws DBusException when DBus call fails
-     * @throws NoSuchMethodException when method was not found
      */
-    public static Object handleDBusBoundProperty(AbstractConnection _conn, RemoteObject _remote, Method _method, Object[] _args) throws DBusException, NoSuchMethodException {
+    public static Object handleDBusBoundProperty(AbstractConnection _conn, RemoteObject _remote, Method _method, Object[] _args) throws DBusException {
         String name = DBusNamingUtil.getPropertyName(_method);
         Access access = PropertyRef.accessForMethod(_method);
 
@@ -78,7 +78,7 @@ public final class PropRefRemoteHandler {
         try {
             return Properties.class.getMethod(_method, _signature);
         } catch (NoSuchMethodException | SecurityException _ex) {
-            throw new RuntimeException("Unable to get methods of DBus Properties interface", _ex);
+            throw new DBusExecutionException("Unable to get methods of DBus Properties interface", _ex);
         }
     }
 }

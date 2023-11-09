@@ -77,19 +77,19 @@ public final class NetworkManagerExample3 {
                 ipv4Map.remove("gateway");
 
                 // Set the method and change properties
-                ipv4Map.put("method", new Variant<String>(method));
+                ipv4Map.put("method", new Variant<>(method));
 
                 if ("manual".equals(method)) {
                     // Add the static IP address, prefix and (optional) gateway
                     Map<String, Variant<?>> address = new HashMap<>();
-                    address.put("address", new Variant<String>(_args[2]));
-                    address.put("prefix", new Variant<UInt32>(new UInt32(_args[3])));
+                    address.put("address", new Variant<>(_args[2]));
+                    address.put("prefix", new Variant<>(new UInt32(_args[3])));
 
                     List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
                     ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
                     if (_args.length == 5) {
-                        ipv4Map.put("gateway", new Variant<String>(_args[4]));
+                        ipv4Map.put("gateway", new Variant<>(_args[4]));
                     }
                 }
 

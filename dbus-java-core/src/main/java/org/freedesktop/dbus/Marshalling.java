@@ -223,9 +223,7 @@ public final class Marshalling {
                 Type[] ts = p.getActualTypeArguments();
                 List<String> vs = new ArrayList<>();
                 for (Type t : ts) {
-                    for (String s : recursiveGetDBusType(_out, t, false, _level + 1)) {
-                        vs.add(s);
-                    }
+                    Collections.addAll(vs, recursiveGetDBusType(_out, t, false, _level + 1));
                 }
                 return vs.toArray(new String[0]);
             } else {
@@ -422,7 +420,7 @@ public final class Marshalling {
      * @throws DBusException Thrown if there is an error in converting the objects.
      */
     public static Object[] convertParameters(Object[] _parameters, Type[] _types, String[] _customSignatures, AbstractConnectionBase _conn) throws DBusException {
-        if (null == _parameters) {
+        if (_parameters == null) {
             return null;
         }
 
@@ -467,9 +465,8 @@ public final class Marshalling {
                 System.arraycopy(parameters, i + 1, exparams, i + newparams.length, parameters.length - i - 1);
                 parameters = exparams;
 
-                LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> {
-                    LOGGER.trace("New params: {}, new types: {}", Arrays.deepToString(exparams), Arrays.deepToString(expand));
-                });
+                LoggingHelper.logIf(LOGGER.isTraceEnabled(),
+                    () -> LOGGER.trace("New params: {}, new types: {}", Arrays.deepToString(exparams), Arrays.deepToString(expand)));
 
                 i--;
             } else if (types[i] instanceof TypeVariable && !(parameters[i] instanceof Variant)) {
@@ -536,10 +533,10 @@ public final class Marshalling {
         }
 
         // it should be a struct. create it
-        if (parameter instanceof Object[] && _type instanceof Class && Struct.class.isAssignableFrom((Class<?>) _type)) {
+        if (parameter instanceof Object[] objArr && _type instanceof Class && Struct.class.isAssignableFrom((Class<?>) _type)) {
             LOGGER.trace("Creating Struct {} from {}", _type, parameter);
             Type[] ts = Container.getTypeCache(_type);
-            if (null == ts) {
+            if (ts == null) {
                 Field[] fs = ((Class<?>) _type).getDeclaredFields();
                 ts = new Type[fs.length];
                 for (Field f : fs) {
@@ -553,10 +550,10 @@ public final class Marshalling {
             }
 
             // recurse over struct contents
-            parameter = deSerializeParameters((Object[]) parameter, ts, _conn);
+            parameter = deSerializeParameters(objArr, ts, _conn);
             for (Constructor<?> con : ((Class<?>) _type).getDeclaredConstructors()) {
                 try {
-                    parameter = con.newInstance((Object[]) parameter);
+                    parameter = con.newInstance(objArr);
                     break;
                 } catch (IllegalArgumentException _exIa) {
                     LOGGER.trace("Could not create new instance", _exIa);
@@ -611,11 +608,10 @@ public final class Marshalling {
                 parameter = ArrayFrob.convert(parameter, o.getClass());
             } else if (_type instanceof Class<?> clz && ((Class<?>) _type).isArray()) {
                 Class<?> cc = clz.getComponentType();
-                if ((cc.equals(Float.class) || cc.equals(Float.TYPE)) && parameter instanceof double[]) {
-                    double[] tmp1 = (double[]) parameter;
-                    float[] tmp2 = new float[tmp1.length];
-                    for (int i = 0; i < tmp1.length; i++) {
-                        tmp2[i] = (float) tmp1[i];
+                if ((cc.equals(Float.class) || cc.equals(Float.TYPE)) && parameter instanceof double[] dbArr) {
+                    float[] tmp2 = new float[dbArr.length];
+                    for (int i = 0; i < dbArr.length; i++) {
+                        tmp2[i] = (float) dbArr[i];
                     }
                     parameter = tmp2;
                 }
@@ -643,11 +639,11 @@ public final class Marshalling {
 
     static List<Object> deSerializeParameters(List<Object> _parameters, Type _type, AbstractConnectionBase _conn) throws Exception {
         LOGGER.trace("Deserializing from {} to {}", _parameters, _type);
-        if (null == _parameters) {
+        if (_parameters == null) {
             return null;
         }
         for (int i = 0; i < _parameters.size(); i++) {
-            if (null == _parameters.get(i)) {
+            if (_parameters.get(i) == null) {
                 continue;
             }
 
@@ -696,7 +692,7 @@ public final class Marshalling {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.error("Parameter length differs, expected {} but got {}", parameters.length, types.length);
                     for (int j = 0; j < parameters.length; j++) {
-                        LOGGER.error("Error, Parameters differ: {}, '{}'", j, parameters[j].toString());
+                        LOGGER.error("Error, Parameters differ: {}, '{}'", j, parameters[j]);
                     }
                 }
                 throw new DBusException("Error deserializing message: number of parameters didn't match receiving signature");

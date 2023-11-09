@@ -18,19 +18,19 @@ public class JUnixSocketMessageWriter extends AbstractOutputStreamMessageWriter 
 
     @Override
     protected void writeFileDescriptors(SocketChannel _outputChannel, List<org.freedesktop.dbus.FileDescriptor> _filedescriptors) throws IOException {
-        if (_outputChannel instanceof AFUNIXSocketChannel) {
+        if (_outputChannel instanceof AFUNIXSocketChannel afUnix) {
             if (_filedescriptors != null && !_filedescriptors.isEmpty()) {
                 try {
                     FileDescriptor[] fds = new FileDescriptor[_filedescriptors.size()];
                     for (int i = 0; i < _filedescriptors.size(); i++) {
                         fds[i] = _filedescriptors.get(i).toJavaFileDescriptor(getSocketProviderImpl());
                     }
-                    ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors(fds);
+                    afUnix.setOutboundFileDescriptors(fds);
                 } catch (MarshallingException _ex) {
                     throw new IOException("unable to marshall file descriptors", _ex);
                 }
             } else {
-                ((AFUNIXSocketChannel) _outputChannel).setOutboundFileDescriptors((FileDescriptor[]) null);
+                afUnix.setOutboundFileDescriptors((FileDescriptor[]) null);
             }
         }
     }

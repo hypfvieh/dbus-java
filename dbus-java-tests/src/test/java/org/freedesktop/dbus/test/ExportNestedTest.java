@@ -44,8 +44,8 @@ public class ExportNestedTest extends AbstractDBusBaseTest {
                 assertEquals(2, partNames.size());
 
                 // all names used in child objects
-                assertEquals(partNames.get(0), "ABC");
-                assertEquals(partNames.get(1), "DEF");
+                assertEquals("ABC", partNames.get(0));
+                assertEquals("DEF", partNames.get(1));
 
                 List<MyInterfacePart> parts = myObject.getParts();
                 assertEquals(2, parts.size());

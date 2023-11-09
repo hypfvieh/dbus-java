@@ -207,8 +207,8 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                             getLogger().trace("Running Callback for {}", _mr);
                             DBusCallInfo info = new DBusCallInfo(_mr);
                             getInfoMap().put(Thread.currentThread(), info);
-                            Object convertRV = RemoteInvocationHandler.convertRV(_mr.getSig(), _mr.getParameters(),
-                                    fasr.getMethod(), fasr.getConnection());
+                            Object convertRV = RemoteInvocationHandler.convertRV(_mr.getParameters(), fasr.getMethod(),
+                                    fasr.getConnection());
                             fcbh.handle(convertRV);
                             getInfoMap().remove(Thread.currentThread());
 
@@ -261,14 +261,14 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                 unExportObject(null);
                 exportObject = null;
             }
-            if (null != exportObject) {
+            if (exportObject != null) {
                 meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
             }
-            if (null != meth) {
+            if (meth != null) {
                 o = new GlobalHandler(this, _methodCall.getPath());
             }
         }
-        if (null == o) {
+        if (o == null) {
             // now check for specific exported functions
 
             exportObject = getExportedObjects().get(_methodCall.getPath());

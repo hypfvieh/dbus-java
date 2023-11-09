@@ -5,6 +5,7 @@ import org.freedesktop.dbus.types.DBusStructType;
 import org.freedesktop.dbus.types.Variant;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -100,7 +101,7 @@ public final class StructHelper {
         Class<?>[] constructorArgClasses = Arrays.stream(_structType.getDeclaredFields())
             .filter(f -> f.isAnnotationPresent(Position.class))
             .sorted((f1, f2) -> Integer.compare(f1.getAnnotation(Position.class).value(), f2.getAnnotation(Position.class).value()))
-            .map(f -> f.getType())
+            .map(Field::getType)
             .toArray(Class[]::new);
 
         for (Object[] object : _input) {
@@ -136,7 +137,7 @@ public final class StructHelper {
         }
 
         if (_variant.getType() instanceof DBusStructType && _variant.getValue() instanceof Object[]) {
-            Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(a -> a.getClass()).toArray(size -> new Class<?>[size]);
+            Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(Object::getClass).toArray(size -> new Class<?>[size]);
             return createStruct(argTypes, _variant.getValue(), _structClass);
         }
 

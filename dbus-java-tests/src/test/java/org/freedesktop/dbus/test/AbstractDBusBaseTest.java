@@ -18,7 +18,7 @@ import java.io.IOException;
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-14
  */
-public class AbstractDBusBaseTest extends AbstractBaseTest {
+public abstract class AbstractDBusBaseTest extends AbstractBaseTest {
 
     //CHECKSTYLE:OFF
     protected static EmbeddedDBusDaemon edbus;

@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -42,9 +43,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A replacement DBusDaemon
  */
 public class DBusDaemon extends Thread implements Closeable {
+
     public static final int                                                     QUEUE_POLL_WAIT = 500;
 
-    private static final String DBUS_BUSPATH = "/org/freedesktop/DBus";
+    private static final String                                                 DBUS_BUSPATH    = "/org/freedesktop/DBus";
+    private static final String                                                 DBUS_BUSNAME    = "org.freedesktop.DBus";
 
     private static final Logger                                                 LOGGER          =
             LoggerFactory.getLogger(DBusDaemon.class);
@@ -73,7 +76,7 @@ public class DBusDaemon extends Thread implements Closeable {
     public DBusDaemon(AbstractTransport _transport) {
         setName(getClass().getSimpleName() + "-Thread");
         transport = _transport;
-        names.put("org.freedesktop.DBus", null);
+        names.put(DBUS_BUSNAME, null);
     }
 
     private void send(ConnectionStruct _connStruct, Message _msg) {
@@ -120,9 +123,9 @@ public class DBusDaemon extends Thread implements Closeable {
                     logMessage("<inqueue> Got message {} from {}", m, connectionStruct.unique);
                     MessageFactory messageFactory = connectionStruct.connection.getMessageFactory();
                     // check if they have hello'd
-                    if (null == connectionStruct.unique && (!(m instanceof MethodCall) || !"org.freedesktop.DBus".equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
+                    if (null == connectionStruct.unique && (!(m instanceof MethodCall) || !DBUS_BUSNAME.equals(m.getDestination()) || !"Hello".equals(m.getName()))) {
                         send(connectionStruct,
-                            messageFactory.createError("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
+                            messageFactory.createError(DBUS_BUSNAME, null, "org.freedesktop.DBus.Error.AccessDenied", m.getSerial(), "s", "You must send a Hello message"));
                     } else {
                         try {
                             if (null != connectionStruct.unique) {
@@ -131,10 +134,10 @@ public class DBusDaemon extends Thread implements Closeable {
                             }
                         } catch (DBusException _ex) {
                             LOGGER.debug("Error setting source", _ex);
-                            send(connectionStruct, messageFactory.createError("org.freedesktop.DBus", null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
+                            send(connectionStruct, messageFactory.createError(DBUS_BUSNAME, null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
 
-                        if ("org.freedesktop.DBus".equals(m.getDestination())) {
+                        if (DBUS_BUSNAME.equals(m.getDestination())) {
                             dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
                             if (m instanceof DBusSignal) {
@@ -150,7 +153,7 @@ public class DBusDaemon extends Thread implements Closeable {
                                 ConnectionStruct dest = names.get(m.getDestination());
 
                                 if (null == dest) {
-                                    send(connectionStruct, messageFactory.createError("org.freedesktop.DBus", null,
+                                    send(connectionStruct, messageFactory.createError(DBUS_BUSNAME, null,
                                             "org.freedesktop.DBus.Error.ServiceUnknown", m.getSerial(), "s",
                                             String.format("The name `%s' does not exist", m.getDestination())));
                                 } else {
@@ -242,9 +245,9 @@ public class DBusDaemon extends Thread implements Closeable {
             List<String> toRemove = new ArrayList<>();
 
             // find connection by name
-            for (String name : names.keySet()) {
-                if (names.get(name) == _c) {
-                    toRemove.add(name);
+            for (Entry<String, ConnectionStruct> e : names.entrySet()) {
+                if (e.getValue() == _c) {
+                    toRemove.add(e.getKey());
                 }
             }
 
@@ -371,41 +374,11 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    /**
-     * Create a 'NameAcquired' signal manually.<br>
-     * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
-     *
-     * @param _connection connection
-     * @param _name name to announce
-     *
-     * @return signal
-     * @throws DBusException if signal creation fails
-     */
-    private DBusSignal generateNameAcquiredSignal(TransportConnection _connection, String _name) throws DBusException {
-        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", DBUS_BUSPATH, "org.freedesktop.DBus", "NameAcquired", "s", _name);
-    }
-
-    /**
-     * Create a 'NameOwnerChanged' signal manually. <br>
-     * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
-     *
-     * @param _connection connection
-     * @param _name name to announce
-     * @param _oldOwner previous owner
-     * @param _newOwner new owner
-     *
-     * @return signal
-     * @throws DBusException if signal creation fails
-     */
-    private DBusSignal generatedNameOwnerChangedSignal(TransportConnection _connection, String _name, String _oldOwner, String _newOwner) throws DBusException {
-        return _connection.getMessageFactory().createSignal("org.freedesktop.DBus", DBUS_BUSPATH, "org.freedesktop.DBus", "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
-    }
-
     public static class ConnectionStruct {
         private final TransportConnection       connection;
         private String                          unique;
 
-        ConnectionStruct(TransportConnection _c) throws IOException {
+        ConnectionStruct(TransportConnection _c) {
             connection = _c;
         }
 
@@ -422,6 +395,36 @@ public class DBusDaemon extends Thread implements Closeable {
 
         public DBusServer() {
             machineId = AddressBuilder.createMachineId();
+        }
+
+        /**
+         * Create a 'NameAcquired' signal manually.<br>
+         * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
+         *
+         * @param _connection connection
+         * @param _name name to announce
+         *
+         * @return signal
+         * @throws DBusException if signal creation fails
+         */
+        private DBusSignal generateNameAcquiredSignal(TransportConnection _connection, String _name) throws DBusException {
+            return _connection.getMessageFactory().createSignal(DBUS_BUSNAME, DBUS_BUSPATH, DBUS_BUSNAME, "NameAcquired", "s", _name);
+        }
+
+        /**
+         * Create a 'NameOwnerChanged' signal manually. <br>
+         * This is required because the implementation in DBusNameAquired is for receiving of this signal only.
+         *
+         * @param _connection connection
+         * @param _name name to announce
+         * @param _oldOwner previous owner
+         * @param _newOwner new owner
+         *
+         * @return signal
+         * @throws DBusException if signal creation fails
+         */
+        private DBusSignal generatedNameOwnerChangedSignal(TransportConnection _connection, String _name, String _oldOwner, String _newOwner) throws DBusException {
+            return _connection.getMessageFactory().createSignal(DBUS_BUSNAME, DBUS_BUSPATH, DBUS_BUSNAME, "NameOwnerChanged", "sss", _name, _oldOwner, _newOwner);
         }
 
         @Override
@@ -600,24 +603,24 @@ public class DBusDaemon extends Thread implements Closeable {
                     this.connStruct = _connStruct;
                     rv = meth.invoke(dbusServer, args);
                     if (null == rv) {
-                        send(_connStruct, messageFactory.createMethodReturn("org.freedesktop.DBus", (MethodCall) _msg, null), true);
+                        send(_connStruct, messageFactory.createMethodReturn(DBUS_BUSNAME, (MethodCall) _msg, null), true);
                     } else {
                         String sig = Marshalling.getDBusType(meth.getGenericReturnType())[0];
-                        send(_connStruct, messageFactory.createMethodReturn("org.freedesktop.DBus", (MethodCall) _msg, sig, rv), true);
+                        send(_connStruct, messageFactory.createMethodReturn(DBUS_BUSNAME, (MethodCall) _msg, sig, rv), true);
                     }
                 } catch (InvocationTargetException _exIte) {
                     LOGGER.debug("", _exIte);
-                    send(_connStruct, messageFactory.createError("org.freedesktop.DBus", _msg, _exIte.getCause()));
+                    send(_connStruct, messageFactory.createError(DBUS_BUSNAME, _msg, _exIte.getCause()));
                 } catch (DBusExecutionException _exDnEe) {
                    LOGGER.debug("", _exDnEe);
-                   send(_connStruct, messageFactory.createError("org.freedesktop.DBus", _msg, _exDnEe));
+                   send(_connStruct, messageFactory.createError(DBUS_BUSNAME, _msg, _exDnEe));
                 } catch (Exception _ex) {
                     LOGGER.debug("", _ex);
-                    send(_connStruct, messageFactory.createError("org.freedesktop.DBus", _connStruct.unique,
+                    send(_connStruct, messageFactory.createError(DBUS_BUSNAME, _connStruct.unique,
                             "org.freedesktop.DBus.Error.GeneralError", _msg.getSerial(), "s", "An error occurred while calling " + _msg.getName()));
                 }
             } catch (NoSuchMethodException _exNsm) {
-                send(_connStruct, messageFactory.createError("org.freedesktop.DBus", _connStruct.unique,
+                send(_connStruct, messageFactory.createError(DBUS_BUSNAME, _connStruct.unique,
                         "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
             }
 
@@ -712,6 +715,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public void Ping() {
+            // no-op
         }
 
         @Override
@@ -731,7 +735,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public void UpdateActivationEnvironment(Map<String, String>[] _environment) {
-
+            // no-op
         }
 
         @Override

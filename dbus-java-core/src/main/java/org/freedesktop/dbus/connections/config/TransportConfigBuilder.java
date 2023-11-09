@@ -99,7 +99,7 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * @since 5.0.0 - 2023-10-20
      */
     public X withAfterBindCallback(Consumer<AbstractTransport> _callback) {
-        config.setPreConnectCallback(_callback);
+        config.setAfterBindCallback(_callback);
         return self();
     }
 

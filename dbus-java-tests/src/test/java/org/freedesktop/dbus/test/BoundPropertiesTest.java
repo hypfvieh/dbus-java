@@ -56,10 +56,10 @@ public class BoundPropertiesTest extends AbstractDBusBaseTest {
                 myObject.setAList(Arrays.asList(999, 998, 997, 996));
                 myObject.setAMap(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2));
 
-                assertEquals(myObject.getMyProperty(), "New value");
+                assertEquals("New value", myObject.getMyProperty());
                 assertTrue(myObject.isMyOtherProperty());
-                assertEquals(myObject.getMyAltProperty(), 987);
-                assertEquals(myObject.getAnEnum(), AnEnum.DEF);
+                assertEquals(987, myObject.getMyAltProperty());
+                assertEquals(AnEnum.DEF, myObject.getAnEnum());
                 assertArrayEquals(new String[] {"Another Item A", "Another Item B", "Another Item C"}, myObject.getArrayOfStuff());
                 struct2 = myObject.getStruct();
                 assertEquals("XXXX", struct2.getStringValue());

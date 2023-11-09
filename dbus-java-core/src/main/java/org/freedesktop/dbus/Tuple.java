@@ -11,6 +11,4 @@ package org.freedesktop.dbus;
  * annotation, in the order they should appear to DBus.
  */
 public abstract class Tuple extends Container {
-    public Tuple() {
-    }
 }

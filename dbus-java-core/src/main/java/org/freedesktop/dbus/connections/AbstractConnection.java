@@ -366,10 +366,10 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             RemoteInvocationHandler.executeRemoteMethod(ro, me, this, RemoteInvocationHandler.CALL_TYPE_CALLBACK,
                     _callback, _parameters);
         } catch (DBusExecutionException _ex) {
-            getLogger().debug("", _ex);
+            getLogger().debug("Error calling callback", _ex);
             throw _ex;
         } catch (Exception _ex) {
-            getLogger().debug("", _ex);
+            getLogger().debug("Failed to call callback", _ex);
             throw new DBusExecutionException(_ex.getMessage());
         }
     }
@@ -399,10 +399,10 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             return (DBusAsyncReply<?>) RemoteInvocationHandler.executeRemoteMethod(ro, me, this,
                     RemoteInvocationHandler.CALL_TYPE_ASYNC, null, _parameters);
         } catch (DBusExecutionException _ex) {
-            getLogger().debug("", _ex);
+            getLogger().debug("Error calling async method", _ex);
             throw _ex;
         } catch (Exception _ex) {
-            getLogger().debug("", _ex);
+            getLogger().debug("Failed to execute async method", _ex);
             throw new DBusExecutionException(_ex.getMessage());
         }
     }

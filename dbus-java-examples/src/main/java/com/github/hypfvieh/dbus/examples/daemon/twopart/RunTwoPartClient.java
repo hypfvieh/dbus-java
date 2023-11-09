@@ -36,6 +36,7 @@ public final class RunTwoPartClient {
                     Thread.sleep(500L);
                 } catch (InterruptedException _ex) {
                     System.err.println("interrupted");
+                    Thread.currentThread().interrupt();
                 }
             }
 

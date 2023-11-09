@@ -2,11 +2,14 @@ package org.freedesktop.dbus.types;
 
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.utils.DBusObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A Wrapper class for Variant values.
@@ -26,9 +29,7 @@ public class Variant<T> {
     * @throws IllegalArgumentException If you try and wrap Null or an object of a non-basic type.
     */
     public Variant(T _value) throws IllegalArgumentException {
-        if (null == _value) {
-            throw new IllegalArgumentException("Can't wrap Null in a Variant");
-        }
+        DBusObjects.requireNotNull(_value, () -> new IllegalArgumentException("Can't wrap Null in a Variant"));
         type = _value.getClass();
         try {
             String[] ss = Marshalling.getDBusType(_value.getClass(), true);
@@ -37,7 +38,7 @@ public class Variant<T> {
             }
             this.sig = ss[0];
         } catch (DBusException _ex) {
-            logger.debug("", _ex);
+            logger.debug("Cannot create variant", _ex);
             throw new IllegalArgumentException(String.format("Can't wrap %s in an unqualified Variant (%s).", _value.getClass(), _ex.getMessage()));
         }
         this.value = _value;
@@ -50,9 +51,7 @@ public class Variant<T> {
     * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
     public Variant(T _value, Type _type) throws IllegalArgumentException {
-        if (null == _value) {
-            throw new IllegalArgumentException("Can't wrap Null in a Variant");
-        }
+        DBusObjects.requireNotNull(_value, () -> new IllegalArgumentException("Can't wrap Null in a Variant"));
         this.type = _type;
         try {
             String[] ss = Marshalling.getDBusType(_type);
@@ -61,7 +60,7 @@ public class Variant<T> {
             }
             this.sig = ss[0];
         } catch (DBusException _ex) {
-            logger.debug("", _ex);
+            logger.debug("Cannot create variant", _ex);
             throw new IllegalArgumentException(String.format("Can't wrap %s in an unqualified Variant (%s).", _type, _ex.getMessage()));
         }
         this.value = _value;
@@ -80,9 +79,7 @@ public class Variant<T> {
     * @throws IllegalArgumentException If you try and wrap Null or an object which cannot be sent over DBus.
     */
     public Variant(T _value, String _sig) throws IllegalArgumentException {
-        if (null == _value) {
-            throw new IllegalArgumentException("Can't wrap Null in a Variant");
-        }
+        DBusObjects.requireNotNull(_value, () -> new IllegalArgumentException("Can't wrap Null in a Variant"));
         this.sig = _sig;
         try {
             List<Type> ts = new ArrayList<>();
@@ -92,7 +89,7 @@ public class Variant<T> {
             }
             this.type = ts.get(0);
         } catch (DBusException _ex) {
-            logger.debug("", _ex);
+            logger.debug("Cannot create variant", _ex);
             throw new IllegalArgumentException(String.format("Can''t wrap %s in an unqualified Variant (%s).", _sig, _ex.getMessage()));
         }
         this.value = _value;

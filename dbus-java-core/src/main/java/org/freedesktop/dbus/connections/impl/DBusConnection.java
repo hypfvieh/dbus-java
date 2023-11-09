@@ -177,7 +177,7 @@ public final class DBusConnection extends AbstractConnection {
 
             return (T) newi;
         } catch (Exception _ex) {
-            logger.debug("", _ex);
+            logger.debug("Cannot create proxy object", _ex);
             throw new DBusException(
                     String.format("Failed to create proxy object for %s exported by %s. Reason: %s", _path,
                             _source, _ex.getMessage()));
@@ -222,7 +222,7 @@ public final class DBusConnection extends AbstractConnection {
         try {
             dbus.ReleaseName(_busname);
         } catch (DBusExecutionException _ex) {
-            logger.debug("", _ex);
+            logger.debug("Failed to release bus name", _ex);
             throw new DBusException(_ex.getMessage());
         }
 
@@ -248,7 +248,7 @@ public final class DBusConnection extends AbstractConnection {
             rv = dbus.RequestName(_busname,
                     new UInt32(DBus.DBUS_NAME_FLAG_REPLACE_EXISTING | DBus.DBUS_NAME_FLAG_DO_NOT_QUEUE));
         } catch (DBusExecutionException _exDb) {
-            logger.debug("", _exDb);
+            logger.debug("Failed to request bus name", _exDb);
             throw new DBusException(_exDb);
         }
 

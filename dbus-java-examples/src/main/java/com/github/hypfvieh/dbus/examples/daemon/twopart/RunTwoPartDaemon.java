@@ -83,7 +83,9 @@ public class RunTwoPartDaemon {
             while (true) {
                 try {
                     Thread.sleep(500L);
-                } catch (InterruptedException _ex) {}
+                } catch (InterruptedException _ex) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ import java.util.Optional;
  * @author hypfvieh
  * @since v4.0.0 - 2021-09-14
  */
-public class AbstractBaseTest extends Assertions {
+public abstract class AbstractBaseTest extends Assertions {
     /** Max wait time to wait for daemon to start. */
     protected static final long MAX_WAIT = Duration.ofSeconds(30).toMillis();
 

@@ -89,7 +89,7 @@ public class DirectConnection extends AbstractConnection {
             getImportedObjects().put(newi, ro);
             return (T) newi;
         } catch (Exception _ex) {
-            logger.debug("", _ex);
+            logger.debug("Error creating dynamic proxy", _ex);
             throw new DBusException(String.format("Failed to create proxy object for %s; reason: %s.", _path, _ex.getMessage()));
         }
     }
@@ -185,9 +185,9 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
         Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(_rule);
-        if (null != v) {
+        if (v != null) {
             v.remove(_handler);
-            if (0 == v.size()) {
+            if (v.isEmpty()) {
                 getHandledSignals().remove(_rule);
             }
         }
@@ -196,26 +196,18 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
         Queue<DBusSigHandler<? extends DBusSignal>> v =
-                getHandledSignals().computeIfAbsent(_rule, val -> {
-                    Queue<DBusSigHandler<? extends DBusSignal>> l = new ConcurrentLinkedQueue<>();
-                    return l;
-                });
+                getHandledSignals().computeIfAbsent(_rule, val -> new ConcurrentLinkedQueue<>());
 
         v.add(_handler);
-        return new AutoCloseable() {
-            @Override
-            public void close() throws Exception {
-                removeSigHandler(_rule, _handler);
-            }
-        };
+        return () -> removeSigHandler(_rule, _handler);
     }
 
     @Override
     protected void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(_rule);
-        if (null != v) {
+        if (v != null) {
             v.remove(_handler);
-            if (0 == v.size()) {
+            if (v.isEmpty()) {
                 getGenericHandledSignals().remove(_rule);
             }
         }
@@ -224,18 +216,10 @@ public class DirectConnection extends AbstractConnection {
     @Override
     protected AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
         Queue<DBusSigHandler<DBusSignal>> v =
-                getGenericHandledSignals().computeIfAbsent(_rule, val -> {
-                    Queue<DBusSigHandler<DBusSignal>> l = new ConcurrentLinkedQueue<>();
-                    return l;
-                });
+                getGenericHandledSignals().computeIfAbsent(_rule, val -> new ConcurrentLinkedQueue<>());
 
         v.add(_handler);
-        return new AutoCloseable() {
-            @Override
-            public void close() throws Exception {
-                removeGenericSigHandler(_rule, _handler);
-            }
-        };
+        return () -> removeGenericSigHandler(_rule, _handler);
     }
 
     @Override

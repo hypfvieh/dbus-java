@@ -110,8 +110,7 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @since 4.2.0 - 2022-07-18
      */
     public static DBusConnectionBuilder forAddress(BusAddress _address) {
-        DBusConnectionBuilder instance = new DBusConnectionBuilder(_address, getDbusMachineId(null));
-        return instance;
+        return new DBusConnectionBuilder(_address, getDbusMachineId(null));
     }
 
     /**

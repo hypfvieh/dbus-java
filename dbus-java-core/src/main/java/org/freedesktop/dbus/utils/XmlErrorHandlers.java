@@ -21,14 +21,17 @@ public class XmlErrorHandlers {
 
         @Override
         public void warning(SAXParseException _exception) throws SAXException {
+            // do nothing by default
         }
 
         @Override
         public void error(SAXParseException _exception) throws SAXException {
+            // do nothing by default
         }
 
         @Override
         public void fatalError(SAXParseException _exception) throws SAXException {
+            // do nothing by default
         }
 
     }

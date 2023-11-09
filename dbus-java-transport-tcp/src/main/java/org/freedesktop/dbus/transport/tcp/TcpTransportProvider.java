@@ -48,7 +48,7 @@ public class TcpTransportProvider implements ITransportProvider {
             s.bind(null);
             port = s.getLocalPort();
         } catch (Exception _ex) {
-            port = 32768 + (Math.abs(RANDOM.nextInt()) % 28232);
+            port = 32768 + (Math.abs(RANDOM.nextInt(0, Integer.MAX_VALUE)) % 28232);
         }
         address += ",port=" + port;
         if (_listeningSocket) {

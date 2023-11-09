@@ -17,6 +17,8 @@ import java.io.File;
  */
 public final class PulseAudioDbus {
 
+    private static final String ORG_PULSE_AUDIO_CORE1 = "org.PulseAudio.Core1";
+
     private PulseAudioDbus() {}
 
     public static void main(String[] _args) throws DBusException {
@@ -41,13 +43,13 @@ public final class PulseAudioDbus {
                     .back()
                     .build();
 
-            Properties core1Props = connection.getRemoteObject("org.PulseAudio.Core1", "/org/pulseaudio/core1", Properties.class);
-            System.out.println("PulseAudio Name: " + core1Props.Get("org.PulseAudio.Core1", "Name"));
-            System.out.println("PulseAudio Version: " + core1Props.Get("org.PulseAudio.Core1", "Version"));
+            Properties core1Props = connection.getRemoteObject(ORG_PULSE_AUDIO_CORE1, "/org/pulseaudio/core1", Properties.class);
+            System.out.println("PulseAudio Name: " + core1Props.Get(ORG_PULSE_AUDIO_CORE1, "Name"));
+            System.out.println("PulseAudio Version: " + core1Props.Get(ORG_PULSE_AUDIO_CORE1, "Version"));
 
             System.out.println("-----------------------------------------");
-            System.out.println("PulseAudio Hostname: " + core1Props.Get("org.PulseAudio.Core1", "Hostname"));
-            System.out.println("PulseAudio Username: " + core1Props.Get("org.PulseAudio.Core1", "Username"));
+            System.out.println("PulseAudio Hostname: " + core1Props.Get(ORG_PULSE_AUDIO_CORE1, "Hostname"));
+            System.out.println("PulseAudio Username: " + core1Props.Get(ORG_PULSE_AUDIO_CORE1, "Username"));
 
             connection.disconnect();
         }

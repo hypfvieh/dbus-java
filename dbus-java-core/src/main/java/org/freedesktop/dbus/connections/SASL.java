@@ -155,7 +155,7 @@ public class SASL {
         }
 
         // acquire lock
-        Util.waitFor("Lock file " + lock, () -> lock.createNewFile(), LOCK_TIMEOUT, 50);
+        Util.waitFor("Lock file " + lock, lock::createNewFile, LOCK_TIMEOUT, 50);
 
         // read old file
         List<String> lines = new ArrayList<>();
@@ -182,12 +182,19 @@ public class SASL {
 
         // atomically move to old file
         if (!temp.renameTo(cookiefile)) {
-            cookiefile.delete();
-            temp.renameTo(cookiefile);
+            if (!cookiefile.delete()) {
+                logger.warn("Unable to delete cookie file {}", cookiefile);
+            } else {
+                if (!temp.renameTo(cookiefile)) {
+                    logger.warn("Unable to rename cookie file {} to {}", temp, cookiefile);
+                }
+            }
         }
 
         // remove lock
-        lock.delete();
+        if (!lock.delete()) {
+            logger.error("Cannot delete lock file {}", lock);
+        }
     }
 
     /**
@@ -225,7 +232,7 @@ public class SASL {
     }
 
     public SASL.Command receive(SocketChannel _sock) throws IOException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         ByteBuffer buf = ByteBuffer.allocate(1); // only read one byte at a time to avoid reading to much (which would break the next message)
 
         boolean runLoop = true;
@@ -267,7 +274,7 @@ public class SASL {
     }
 
     public void send(SocketChannel _sock, SaslCommand _command, String... _data) throws IOException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(_command.name());
 
         for (String s : _data) {
@@ -284,7 +291,8 @@ public class SASL {
         switch (_auth) {
         case AUTH_SHA:
             String[] reply = stupidlyDecode(_c.getData()).split(" ");
-            logger.trace(Arrays.toString(reply));
+            LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Auth data: {}", Arrays.toString(reply)));
+
             if (3 != reply.length) {
                 logger.debug("Reply is not length 3");
                 return SaslResult.ERROR;
@@ -326,7 +334,9 @@ public class SASL {
             String response = serverchallenge + ":" + clientchallenge + ":" + lCookie;
             buf = md.digest(response.getBytes());
 
-            logger.trace("Response: {} hash: {}", response, Hexdump.format(buf));
+            if (logger.isTraceEnabled()) {
+                logger.trace("Response: {} hash: {}", response, Hexdump.format(buf));
+            }
 
             response = stupidlyEncode(buf);
             _c.setResponse(stupidlyEncode(clientchallenge + " " + response));
@@ -539,8 +549,7 @@ public class SASL {
                         send(_sock, BEGIN);
                         state = SaslAuthState.FINISHED;
                         break;
-                    case ERROR:
-                    case DATA:
+                    case ERROR, DATA:
                         send(_sock, CANCEL);
                         state = SaslAuthState.WAIT_REJECT;
                         break;
@@ -568,8 +577,7 @@ public class SASL {
                     break;
                 case WAIT_REJECT:
                     c = receive(_sock);
-                    switch (c.getCommand()) {
-                        case REJECTED:
+                    if (c.getCommand() == REJECTED) {
                             failed |= current;
                             int available = c.getMechs() & (~failed);
                             int retVal = handleReject(available, luid, _sock);
@@ -578,10 +586,8 @@ public class SASL {
                             } else {
                                 current = retVal;
                             }
-                        break;
-                        default:
+                        } else {
                             state = SaslAuthState.FAILED;
-                            break;
                     }
                     break;
                 default:
@@ -665,8 +671,7 @@ public class SASL {
                                 break;
                             }
                         break;
-                        case ERROR:
-                        case CANCEL:
+                        case ERROR, CANCEL:
                             send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                             state = SaslAuthState.WAIT_AUTH;
                         break;
@@ -681,8 +686,7 @@ public class SASL {
                     case WAIT_BEGIN:
                         c = receive(_sock);
                         switch (c.getCommand()) {
-                            case ERROR:
-                            case CANCEL:
+                            case ERROR, CANCEL:
                                 send(_sock, REJECTED, convertAuthTypes(saslConfig.getAuthMode()));
                                 state = SaslAuthState.WAIT_AUTH;
                             break;

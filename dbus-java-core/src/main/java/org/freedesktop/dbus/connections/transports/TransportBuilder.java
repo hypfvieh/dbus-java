@@ -29,7 +29,7 @@ public final class TransportBuilder {
 
     private TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
 
-    private TransportBuilder(TransportConfig _config) throws DBusException {
+    private TransportBuilder(TransportConfig _config) {
         transportConfigBuilder = new TransportConfigBuilder<>(() -> this);
         if (_config != null) {
             transportConfigBuilder.withConfig(_config);

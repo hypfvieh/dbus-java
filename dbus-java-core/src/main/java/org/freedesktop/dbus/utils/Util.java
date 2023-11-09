@@ -220,9 +220,7 @@ public final class Util {
             return _str;
         }
 
-        String abbr = _str.substring(0, _length - 3) + "...";
-
-        return abbr;
+        return _str.substring(0, _length - 3) + "...";
     }
 
     /**
@@ -281,8 +279,7 @@ public final class Util {
      * @return list containing text
      */
     public static List<String> readFileToList(String _fileName) {
-        List<String> localText = getTextfileFromUrl(_fileName, Charset.defaultCharset(), false);
-        return localText;
+        return getTextfileFromUrl(_fileName, Charset.defaultCharset(), false);
     }
 
     /**
@@ -516,9 +513,9 @@ public final class Util {
         String path = new File(System.getProperty("java.io.tmpdir"), "dbus-XXXXXXXXXX").getAbsolutePath();
 
         do {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 10; i++) {
-                sb.append((char) (Math.abs(RANDOM.nextInt()) % 26) + 65);
+                sb.append((char) (Math.abs(RANDOM.nextInt(0, Integer.MAX_VALUE)) % 26) + 65);
             }
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(Util.class).trace("Trying path {}", path);
@@ -575,6 +572,7 @@ public final class Util {
 
         if (userPrincipalLookupService == null) {
             LOGGER.error("Unable to set user/group permissions on {}", _path);
+            return;
         }
 
         if (!Util.isBlank(_fileOwner)) {
@@ -653,6 +651,7 @@ public final class Util {
                 Thread.sleep(_sleepTime);
             } catch (InterruptedException _ex) {
                 LOGGER.debug("Interrupted while waiting for {}", _lockName);
+                Thread.currentThread().interrupt();
                 break;
             }
             waited += _sleepTime;
@@ -668,8 +667,8 @@ public final class Util {
      */
     public static Type unwrapTypeRef(Class<?> _type) {
         return Arrays.stream(_type.getGenericInterfaces())
-            .filter(t -> t instanceof ParameterizedType)
-            .map(t -> (ParameterizedType) t)
+            .filter(ParameterizedType.class::isInstance)
+            .map(ParameterizedType.class::cast)
             .filter(t -> TypeRef.class.equals(t.getRawType()))
             .map(t -> t.getActualTypeArguments()[0]) // TypeRef has one generic argument
             .findFirst().orElse(null);

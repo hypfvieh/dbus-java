@@ -63,8 +63,8 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
 
     @Override
     public int getUid(SocketChannel _sock) throws IOException {
-        if (_sock instanceof AFUNIXSocketExtensions) {
-            AFUNIXSocketCredentials peerCredentials = ((AFUNIXSocketExtensions) _sock).getPeerCredentials();
+        if (_sock instanceof AFUNIXSocketExtensions afext) {
+            AFUNIXSocketCredentials peerCredentials = afext.getPeerCredentials();
             return (int) peerCredentials.getUid();
         }
 

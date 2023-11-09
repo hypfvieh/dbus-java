@@ -23,8 +23,8 @@ public class JUnixSocketTransportProvider implements ITransportProvider {
         }
 
         JUnixSocketBusAddress unixBusAddress;
-        if (_address instanceof JUnixSocketBusAddress) {
-            unixBusAddress = (JUnixSocketBusAddress) _address;
+        if (_address instanceof JUnixSocketBusAddress afUnixAddr) {
+            unixBusAddress = afUnixAddr;
         } else {
             unixBusAddress = new JUnixSocketBusAddress(_address);
         }

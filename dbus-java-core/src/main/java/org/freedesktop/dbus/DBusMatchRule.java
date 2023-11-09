@@ -31,19 +31,19 @@ public class DBusMatchRule {
 
     /** Equals operations used in {@link #matches(DBusMatchRule, boolean)} - do not change order! */
     private static final List<Function<DBusMatchRule, String>> MATCHRULE_EQUALS_OPERATIONS = List.of(
-            x -> x.getInterface(),
-            x -> x.getMember(),
-            x -> x.getObject(),
-            x -> x.getSource()
-            );
+        DBusMatchRule::getInterface,
+        DBusMatchRule::getMember,
+        DBusMatchRule::getObject,
+        DBusMatchRule::getSource
+    );
 
     /** Equals operations used in {@link #matches(DBusSignal, boolean)} - do not change order! */
     private static final List<Function<DBusSignal, String>> SIGNAL_EQUALS_OPERATIONS = List.of(
-            x -> x.getInterface(),
-            x -> x.getName(),
-            x -> x.getPath(),
-            x -> x.getSource()
-            );
+        DBusSignal::getInterface,
+        DBusSignal::getName,
+        DBusSignal::getPath,
+        DBusSignal::getSource
+    );
 
     /* signal, error, method_call, method_reply */
     private final String                                          type;
@@ -109,12 +109,7 @@ public class DBusMatchRule {
             member = _member != null ? _member : DBusNamingUtil.getSignalName(_c);
             SIGNALTYPEMAP.put(iface + '$' + member, (Class<? extends DBusSignal>) _c);
             type = _type != null ? _type : MSG_TYPE_SIGNAL;
-        } else if (Error.class.isAssignableFrom(_c)) {
-            iface = DBusNamingUtil.getInterfaceName(_c);
-            assertDBusInterface(iface);
-            member = _member != null ? _member : null;
-            type = _type != null ? _type : MSG_TYPE_ERROR;
-        } else if (DBusExecutionException.class.isAssignableFrom(_c)) {
+        } else if (Error.class.isAssignableFrom(_c) || DBusExecutionException.class.isAssignableFrom(_c)) {
             iface = DBusNamingUtil.getInterfaceName(_c);
             assertDBusInterface(iface);
             member = _member != null ? _member : null;

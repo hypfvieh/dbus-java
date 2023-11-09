@@ -60,7 +60,7 @@ public class TcpTransport extends AbstractTransport {
             serverSocket = ServerSocketChannel.open();
             serverSocket.configureBlocking(true);
             getLogger().debug("Binding to {} using local port {}", getAddress().getHost(),
-                getAddress().getPort(), getAddress().getPort());
+                getAddress().getPort());
 
             serverSocket.bind(socketAddress);
         }
@@ -90,7 +90,7 @@ public class TcpTransport extends AbstractTransport {
 
         getLogger().trace("Setting timeout to {} on Socket", timeout);
         socket.socket().connect(socketAddress, timeout);
-        getLogger().debug("Connected to {} using local port {}", getAddress().getHost(),
+        getLogger().debug("Connected to {} using local port {} and remote port {}", getAddress().getHost(),
             getAddress().getPort(), socket.socket().getLocalPort());
 
         return socket;

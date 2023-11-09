@@ -202,10 +202,10 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
         getLogger().debug("Disconnecting Abstract Connection");
 
-        disconnectCallback.ifPresent(cb -> {
+        disconnectCallback.ifPresent(cb ->
             Optional.ofNullable(_connectionError)
-                .ifPresentOrElse(ex -> cb.disconnectOnError(ex), () -> cb.requestedDisconnect(null));
-        });
+                .ifPresentOrElse(cb::disconnectOnError, () -> cb.requestedDisconnect(null))
+        );
 
         // stop reading new messages
         readerThread.terminate();

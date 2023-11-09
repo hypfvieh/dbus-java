@@ -38,7 +38,7 @@ public class DBusAsyncReply<T> {
                 error = err.getException();
             } else if (m instanceof MethodReturn) {
                 try {
-                    Object obj = RemoteInvocationHandler.convertRV(m.getSig(), m.getParameters(), me, conn);
+                    Object obj = RemoteInvocationHandler.convertRV(m.getParameters(), me, conn);
 
                     rval = (T) obj;
                 } catch (DBusExecutionException _ex) {
@@ -102,19 +102,4 @@ public class DBusAsyncReply<T> {
         return mc;
     }
 
-    /**
-    * Check if any of a set of asynchronous calls have had a reply.
-    * @param _replies A Collection of handles to replies to check.
-    * @return A Collection only containing those calls which have had replies.
-    */
-//    public static Collection<DBusAsyncReply<?>> hasReply(Collection<DBusAsyncReply<?>> _replies) {
-//        Collection<DBusAsyncReply<?>> c = new ArrayList<>(_replies);
-//        Iterator<DBusAsyncReply<?>> i = c.iterator();
-//        while (i.hasNext()) {
-//            if (!i.next().hasReply()) {
-//                i.remove();
-//            }
-//        }
-//        return c;
-//    }
 }

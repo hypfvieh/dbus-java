@@ -174,7 +174,7 @@ public abstract class AbstractTransport implements Closeable {
         if (getAddress().isListeningSocket()) {
             throw new InvalidBusAddressException("Cannot connect when using listening address (try use listen() instead)");
         }
-        transportConnection = internalConnect(() -> connectImpl());
+        transportConnection = internalConnect(this::connectImpl);
         return transportConnection.getChannel();
     }
 
@@ -212,7 +212,7 @@ public abstract class AbstractTransport implements Closeable {
             runCallback(config.getAfterBindCallback());
         }
 
-        transportConnection = internalConnect(() -> acceptImpl());
+        transportConnection = internalConnect(this::acceptImpl);
         return transportConnection;
     }
 

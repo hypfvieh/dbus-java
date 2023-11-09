@@ -25,7 +25,7 @@ public abstract class AbstractOutputStreamMessageWriter implements IMessageWrite
 
     private final ISocketProvider socketProviderImpl;
 
-    public AbstractOutputStreamMessageWriter(final SocketChannel _out, ISocketProvider _socketProviderImpl) {
+    protected AbstractOutputStreamMessageWriter(final SocketChannel _out, ISocketProvider _socketProviderImpl) {
         outputChannel = Objects.requireNonNull(_out, "SocketChannel required");
         socketProviderImpl = Objects.requireNonNull(_socketProviderImpl, "ISocketProvider implementation required");
     }

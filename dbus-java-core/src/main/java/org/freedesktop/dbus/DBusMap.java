@@ -127,19 +127,17 @@ public class DBusMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        String sb = "{"
+        return "{"
                 + Arrays.stream(entries).map(e -> e[0] + " => " + e[1])
                     .collect(Collectors.joining(","))
                 + "}";
-
-        return sb;
     }
 
     class Entry implements Map.Entry<K, V>, Comparable<Entry> {
-        private final int entry;
+        private final int entryPosition;
 
         Entry(int _i) {
-            this.entry = _i;
+            entryPosition = _i;
         }
 
         @SuppressWarnings("unchecked")
@@ -151,24 +149,24 @@ public class DBusMap<K, V> implements Map<K, V> {
             if (!(_o instanceof DBusMap.Entry)) {
                 return false;
             }
-            return this.entry == ((Entry) _o).entry;
+            return this.entryPosition == ((Entry) _o).entryPosition;
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public K getKey() {
-            return (K) entries[entry][0];
+            return (K) entries[entryPosition][0];
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public V getValue() {
-            return (V) entries[entry][1];
+            return (V) entries[entryPosition][1];
         }
 
         @Override
         public int hashCode() {
-            return entries[entry][0].hashCode();
+            return entries[entryPosition][0].hashCode();
         }
 
         @Override
@@ -178,7 +176,7 @@ public class DBusMap<K, V> implements Map<K, V> {
 
         @Override
         public int compareTo(Entry _e) {
-            return entry - _e.entry;
+            return entryPosition - _e.entryPosition;
         }
     }
 }

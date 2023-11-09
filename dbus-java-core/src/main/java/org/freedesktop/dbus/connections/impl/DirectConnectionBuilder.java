@@ -24,9 +24,7 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
      * @return this
      */
     public static DirectConnectionBuilder forAddress(String _address) {
-        BusAddress busAddress = BusAddress.of(_address);
-        DirectConnectionBuilder instance = new DirectConnectionBuilder(busAddress);
-        return instance;
+        return new DirectConnectionBuilder(BusAddress.of(_address));
     }
 
     /**

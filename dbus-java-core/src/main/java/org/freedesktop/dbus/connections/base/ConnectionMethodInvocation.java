@@ -91,7 +91,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
         if (Void.TYPE.equals(_me.getReturnType())) {
             reply = getMessageFactory().createMethodReturn(_methodCall, null);
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (String s : Marshalling.getDBusType(_me.getGenericReturnType())) {
                 sb.append(s);
             }

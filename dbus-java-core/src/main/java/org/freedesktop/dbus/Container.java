@@ -25,13 +25,13 @@ public abstract class Container {
 
         int diff = 0;
         for (Field f : fs) {
-            Position p = f.getAnnotation(Position.class);
-            f.setAccessible(true);
-
-            if (null == p) {
+            if (!f.isAnnotationPresent(Position.class)) {
                 diff++;
                 continue;
             }
+            Position p = f.getAnnotation(Position.class);
+            f.setAccessible(true);
+
             try {
                 args[p.value()] = f.get(this);
             } catch (IllegalAccessException _exIa) {
@@ -66,7 +66,7 @@ public abstract class Container {
         if (0 == parameters.length) {
             return sb.append(">").toString();
         }
-        sb.append(Arrays.stream(parameters).map(o -> Objects.toString(o)).collect(Collectors.joining(", ")));
+        sb.append(Arrays.stream(parameters).map(Objects::toString).collect(Collectors.joining(", ")));
         return sb.append(">").toString();
     }
 

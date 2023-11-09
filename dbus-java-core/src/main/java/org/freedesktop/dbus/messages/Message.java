@@ -4,22 +4,31 @@ import static org.freedesktop.dbus.messages.constants.ArgumentType.*;
 
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.MarshallingException;
+import org.freedesktop.dbus.exceptions.MessageFormatException;
+import org.freedesktop.dbus.exceptions.UnknownTypeCodeException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.Endian;
 import org.freedesktop.dbus.messages.constants.HeaderField;
-import org.freedesktop.dbus.types.*;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -161,7 +170,8 @@ public class Message {
 
         setSerial(extractedSerial);
 
-        bytecounter = msgBuf.length + headerBuf.length + bodyBuf.length;
+        // cast to ensure everything is upgraded to long
+        bytecounter = (long) msgBuf.length + headerBuf.length + bodyBuf.length;
 
         filedescriptors.clear();
         if (_descriptors != null) {
@@ -214,11 +224,7 @@ public class Message {
         serial = _serial;
     }
 
-    protected byte[][] getWiredata() {
-        return wiredata;
-    }
-
-    protected void setWiredata(byte[][] _wiredata) {
+    protected void setWireData(byte[][] _wiredata) {
         wiredata = _wiredata;
     }
 
@@ -372,7 +378,7 @@ public class Message {
      */
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(getClass().getSimpleName());
         sb.append('(');
         sb.append(flags);
@@ -550,11 +556,10 @@ public class Message {
                 break;
             case FILEDESCRIPTOR:
                 filedescriptors.add((FileDescriptor) _data);
-                appendint(filedescriptors.size() - 1, 4);
+                appendint(filedescriptors.size() - 1L, 4);
                 logger.debug("Just inserted {} as filedescriptor", filedescriptors.size() - 1);
                 break;
-            case STRING:
-            case OBJECT_PATH:
+            case STRING, OBJECT_PATH:
 
                 String payload;
                 // if the given data is an object, not a ObjectPath itself
@@ -566,13 +571,7 @@ public class Message {
                     payload = _data.toString();
                 }
 
-                byte[] payloadbytes = null;
-                try {
-                    payloadbytes = payload.getBytes("UTF-8");
-                } catch (UnsupportedEncodingException _ex) {
-                    logger.debug("System does not support UTF-8 encoding", _ex);
-                    throw new DBusException("System does not support UTF-8 encoding");
-                }
+                byte[] payloadbytes = payload.getBytes(StandardCharsets.UTF_8);
                 logger.trace("Appending String of length {}", payloadbytes.length);
                 appendint(payloadbytes.length, 4);
                 appendBytes(payloadbytes);
@@ -618,9 +617,7 @@ public class Message {
                         case BYTE:
                         primbuf = (byte[]) _data;
                         break;
-                    case INT16:
-                    case INT32:
-                    case INT64:
+                    case INT16, INT32, INT64:
                         primbuf = new byte[len * algn];
                         for (int j = 0, k = 0; j < len; j++, k += algn) {
                             marshallint(Array.getLong(_data, j), primbuf, k, algn);
@@ -901,11 +898,11 @@ public class Message {
             case DICT_ENTRY1:
                 Object[] decontents = new Object[2];
 
-                LoggingHelper.logIf(logger.isTraceEnabled(), () -> {
+                LoggingHelper.logIf(logger.isTraceEnabled(), () ->
                     logger.trace("Extracting Dict Entry ({}) from: {}",
                             Hexdump.toAscii(_signatureBuf, _offsets[OFFSET_SIG], _signatureBuf.length - _offsets[OFFSET_SIG]),
-                            Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA], true));
-                });
+                            Hexdump.toHex(_dataBuf, _offsets[OFFSET_DATA], _dataBuf.length - _offsets[OFFSET_DATA], true))
+                );
 
                 _offsets[OFFSET_SIG]++;
                 decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
@@ -924,12 +921,7 @@ public class Message {
             case STRING:
                 int length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
-                try {
-                    rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, "UTF-8");
-                } catch (UnsupportedEncodingException _ex) {
-                    logger.debug("System does not support UTF-8 encoding", _ex);
-                    throw new DBusException("System does not support UTF-8 encoding");
-                }
+                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8);
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case OBJECT_PATH:
@@ -1152,8 +1144,7 @@ public class Message {
             _offsets[OFFSET_SIG] += temp4;
             logger.trace("Aligned type: {} {} {}", temp3, temp4, _offsets[OFFSET_SIG]);
         }
-        int ofssave = _offsets[OFFSET_SIG];
-        return ofssave;
+        return _offsets[OFFSET_SIG];
     }
 
     /**
@@ -1275,7 +1266,7 @@ public class Message {
      *
      * @return the message serial.
      */
-    public long getSerial() {
+    public synchronized long getSerial() {
         return serial;
     }
 
@@ -1398,7 +1389,10 @@ public class Message {
     }
 
     public byte getEndianess() {
-        return endianWasSet ? big ? Endian.BIG : Endian.LITTLE : 0;
+        if (endianWasSet) {
+            return big ? Endian.BIG : Endian.LITTLE;
+        }
+        return 0;
     }
 
     /**
@@ -1441,7 +1435,7 @@ public class Message {
         }
         logger.trace("Appended body, type: {} start: {} end: {} size: {}", _sig, c, getByteCounter(), getByteCounter() - c);
         marshallint(getByteCounter() - c, blen, 0, 4);
-        logger.trace("marshalled size ({}): {}", blen, Hexdump.format(blen));
+        LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("marshalled size ({}): {}", blen, Hexdump.format(blen)));
     }
 
     /**

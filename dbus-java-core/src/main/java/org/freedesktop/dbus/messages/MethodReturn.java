@@ -38,7 +38,7 @@ public class MethodReturn extends MethodBase {
             setArgs(_args);
         }
 
-        appendFileDescriptors(hargs, _sig, _args);
+        appendFileDescriptors(hargs, _args);
         padAndMarshall(hargs, getSerial(), _sig, _args);
     }
 

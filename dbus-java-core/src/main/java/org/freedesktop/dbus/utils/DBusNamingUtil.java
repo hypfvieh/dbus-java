@@ -26,7 +26,7 @@ public final class DBusNamingUtil {
      * @see DBusInterfaceName
      */
     public static String getInterfaceName(Class<?> _clazz) {
-        Objects.requireNonNull(_clazz, "clazz must not be null");
+        Objects.requireNonNull(_clazz, "Class must not be null");
 
         if (_clazz.isAnnotationPresent(DBusInterfaceName.class)) {
             return _clazz.getAnnotation(DBusInterfaceName.class).value();
@@ -87,7 +87,7 @@ public final class DBusNamingUtil {
      * @see DBusMemberName
      */
     public static String getSignalName(Class<?> _clazz) {
-        Objects.requireNonNull(_clazz, "clazz must not be null");
+        Objects.requireNonNull(_clazz, "Class must not be null");
 
         if (_clazz.isAnnotationPresent(DBusMemberName.class)) {
             return _clazz.getAnnotation(DBusMemberName.class).value();
@@ -103,7 +103,7 @@ public final class DBusNamingUtil {
      * @see DBusInterfaceName
      */
     public static String getAnnotationName(Class<? extends Annotation> _clazz) {
-        Objects.requireNonNull(_clazz, "clazz must not be null");
+        Objects.requireNonNull(_clazz, "Class must not be null");
 
         if (_clazz.isAnnotationPresent(DBusInterfaceName.class)) {
             return _clazz.getAnnotation(DBusInterfaceName.class).value();

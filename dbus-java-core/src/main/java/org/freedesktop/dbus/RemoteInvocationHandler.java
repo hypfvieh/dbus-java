@@ -66,21 +66,27 @@ public class RemoteInvocationHandler implements InvocationHandler {
         } else if (_method.getName().equals("hashCode")) {
             return remote.hashCode();
         } else if (_method.getName().equals("notify")) {
-            remote.notify();
+            synchronized (remote) {
+                remote.notify();
+            }
             return null;
         } else if (_method.getName().equals("notifyAll")) {
-            remote.notifyAll();
+            synchronized (remote) {
+                remote.notifyAll();
+            }
             return null;
         } else if (_method.getName().equals("wait")) {
-            if (0 == _args.length) {
-                remote.wait();
-            } else if (1 == _args.length && _args[0] instanceof Long l) {
-                remote.wait(l);
-            } else if (2 == _args.length && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
-                remote.wait(l, i);
-            }
-            if (_args.length <= 2) {
-                return null;
+            synchronized (remote) {
+                if (_args.length == 0) {
+                    remote.wait();
+                } else if (_args.length == 1 && _args[0] instanceof Long l) {
+                    remote.wait(l);
+                } else if (_args.length == 2 && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
+                    remote.wait(l, i);
+                }
+                if (_args.length <= 2) {
+                    return null;
+                }
             }
         } else if (_method.getName().equals("toString")) {
             return remote.toString();
@@ -91,11 +97,11 @@ public class RemoteInvocationHandler implements InvocationHandler {
         return executeRemoteMethod(remote, _method, conn, CALL_TYPE_SYNC, null, _args);
     }
 
-    public static Object convertRV(String _sig, Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
-        return convertRV(_sig, _rp, new Type[] {_m.getGenericReturnType()}, _m, _conn);
+    public static Object convertRV(Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
+        return convertRV(_rp, new Type[] {_m.getGenericReturnType()}, _m, _conn);
     }
 
-    public static Object convertRV(String _sig, Object[] _rp, Type[] _types, Method _m, AbstractConnection _conn) throws DBusException {
+    public static Object convertRV(Object[] _rp, Type[] _types, Method _m, AbstractConnection _conn) throws DBusException {
         Class<? extends Object> c = _m.getReturnType();
         Object[] rp = _rp;
         if (rp == null) {
@@ -232,7 +238,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         try {
-            return convertRV(reply.getSig(), reply.getParameters(), _types, _m, _conn);
+            return convertRV(reply.getParameters(), _types, _m, _conn);
         } catch (DBusException _ex) {
             LOGGER.debug("", _ex);
             throw new DBusExecutionException(_ex.getMessage(), _ex);

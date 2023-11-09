@@ -20,8 +20,8 @@ public class JUnixSocketSocketProvider implements ISocketProvider {
         if (!AFSocket.supports(AFSocketCapability.CAPABILITY_UNIX_DOMAIN)) {
             return null;
         }
-        if (_socket instanceof AFUNIXSocketChannel) {
-            return new JUnixSocketMessageReader((AFUNIXSocketChannel) _socket, this);
+        if (_socket instanceof AFUNIXSocketChannel afUnix) {
+            return new JUnixSocketMessageReader(afUnix, this);
         }
         return null;
     }
@@ -31,8 +31,8 @@ public class JUnixSocketSocketProvider implements ISocketProvider {
         if (!AFSocket.supports(AFSocketCapability.CAPABILITY_UNIX_DOMAIN)) {
             return null;
         }
-        if (_socket instanceof AFUNIXSocketChannel) {
-            return new JUnixSocketMessageWriter((AFUNIXSocketChannel) _socket, this);
+        if (_socket instanceof AFUNIXSocketChannel afUnix) {
+            return new JUnixSocketMessageWriter(afUnix, this);
         }
         return null;
     }

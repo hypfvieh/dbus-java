@@ -58,7 +58,7 @@ public class MethodCall extends MethodBase {
             setArgs(_args);
         }
 
-        appendFileDescriptors(hargs, _sig, _args);
+        appendFileDescriptors(hargs, _args);
         padAndMarshall(hargs, getSerial(), _sig, _args);
     }
 
@@ -85,13 +85,14 @@ public class MethodCall extends MethodBase {
         if (null != reply) {
             return reply;
         }
+
         try {
             wait(_timeout);
-            return reply;
         } catch (InterruptedException _exI) {
             Thread.currentThread().interrupt(); // keep interrupted state
-            return reply;
         }
+
+        return reply;
     }
 
     /**

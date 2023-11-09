@@ -20,9 +20,9 @@ public class JUnixSocketMessageReader extends AbstractInputStreamMessageReader {
 
     @Override
     protected List<org.freedesktop.dbus.FileDescriptor> readFileDescriptors(SocketChannel _inputChannel) throws DBusException {
-        if (_inputChannel instanceof AFUNIXSocketChannel) {
+        if (_inputChannel instanceof AFUNIXSocketChannel afUnix) {
             try {
-                FileDescriptor[] receivedFileDescriptors = ((AFUNIXSocketChannel) _inputChannel).getReceivedFileDescriptors();
+                FileDescriptor[] receivedFileDescriptors = afUnix.getReceivedFileDescriptors();
                 if (receivedFileDescriptors.length == 0) {
                     return null;
                 } else {

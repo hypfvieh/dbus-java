@@ -21,14 +21,15 @@ public abstract class MethodBase extends Message {
      * Appends filedescriptors (if any).
      *
      * @param _hargs
-     * @param _sig
      * @param _args
      * @throws DBusException
      */
-    void appendFileDescriptors(List<Object> _hargs, String _sig, Object... _args) throws DBusException {
+    void appendFileDescriptors(List<Object> _hargs, Object... _args) throws DBusException {
         Objects.requireNonNull(_hargs);
 
-        int totalFileDes = _args == null ? 0 : Arrays.stream(_args).filter(x -> x instanceof FileDescriptor).mapToInt(i -> 1).sum();
+        long totalFileDes = _args == null ? 0 : Arrays.stream(_args)
+            .filter(FileDescriptor.class::isInstance)
+            .count();
 
         if (totalFileDes > 0) {
             _hargs.add(createHeaderArgs(HeaderField.UNIX_FDS, ArgumentType.UINT32_STRING, new UInt32(totalFileDes)));

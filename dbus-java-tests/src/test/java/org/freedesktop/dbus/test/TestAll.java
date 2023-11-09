@@ -1,25 +1,44 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.DBusMatchRule;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.errors.*;
+import org.freedesktop.dbus.errors.ServiceUnknown;
+import org.freedesktop.dbus.errors.UnknownMethod;
+import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.interfaces.*;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.test.helper.*;
+import org.freedesktop.dbus.test.helper.SampleClass;
+import org.freedesktop.dbus.test.helper.SampleException;
+import org.freedesktop.dbus.test.helper.SampleNewInterfaceClass;
+import org.freedesktop.dbus.test.helper.SampleSerializable;
 import org.freedesktop.dbus.test.helper.callbacks.handler.CallbackHandlerImpl;
-import org.freedesktop.dbus.test.helper.interfaces.*;
+import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
+import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals.*;
 import org.freedesktop.dbus.test.helper.signals.handler.*;
 import org.freedesktop.dbus.test.helper.structs.*;
-import org.freedesktop.dbus.types.*;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.TimeMeasure;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
 import java.text.Collator;
@@ -749,6 +768,22 @@ public class TestAll extends AbstractDBusBaseTest {
         assertIterableEquals(li, cbHandle.getRetval().get(0));
     }
 
+    @Test
+    public void testStructAsync() throws DBusException, InterruptedException {
+        SampleRemoteInterface2 tri2 =
+            clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
+        SampleStruct struct = new SampleStruct("fizbuzz", new UInt32(5248), new Variant<>(2234));
+
+        @SuppressWarnings("unchecked")
+        DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
+            struct);
+
+        // wait a bit to allow the async call to complete
+        Thread.sleep(500L);
+
+        assertEquals(struct, structReply.getReply(), "struct did not match");
+    }
+
     private final class NestedListCallbackHandler implements CallbackHandler<List<List<Integer>>> {
             private List<List<Integer>> retval;
 
@@ -763,22 +798,6 @@ public class TestAll extends AbstractDBusBaseTest {
 
             List<List<Integer>> getRetval() {
                 return retval;
-            }
-
-            @Test
-            public void testStructAsync() throws DBusException, InterruptedException {
-                SampleRemoteInterface2 tri2 =
-                        clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, SampleRemoteInterface2.class);
-                SampleStruct struct = new SampleStruct("fizbuzz", new UInt32(5248), new Variant<>(2234));
-
-                @SuppressWarnings("unchecked")
-                DBusAsyncReply<SampleStruct> structReply = (DBusAsyncReply<SampleStruct>) clientconn.callMethodAsync(tri2, "returnSamplestruct",
-                        struct);
-
-                // wait a bit to allow the async call to complete
-                Thread.sleep(500L);
-
-                assertEquals(struct, structReply.getReply(), "struct did not match");
             }
     }
 
