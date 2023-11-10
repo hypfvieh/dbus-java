@@ -24,7 +24,7 @@ public abstract class MethodBase extends Message {
      * @param _args
      * @throws DBusException
      */
-    void appendFileDescriptors(List<Object> _hargs, Object... _args) throws DBusException {
+    void appendFileDescriptors(List<Object> _hargs, Object... _args) {
         Objects.requireNonNull(_hargs);
 
         long totalFileDes = _args == null ? 0 : Arrays.stream(_args)

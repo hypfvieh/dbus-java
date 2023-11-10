@@ -171,13 +171,13 @@ public class TestAll extends AbstractDBusBaseTest {
         Thread.sleep(1000L);
 
         // ensure callback has been fired at least once
-        assertTrue(sigh.getActualTestRuns() == 1, "SignalHandler should have been called");
-        assertTrue(esh.getActualTestRuns() == 1, "EmptySignalHandler should have been called");
-        assertTrue(rsh.getActualTestRuns() == 1, "RenamedSignalHandler should have been called");
-        assertTrue(ash.getActualTestRuns() == 1, "ArraySignalHandler should have been called");
-        assertTrue(ensh.getActualTestRuns() == 1, "EnumSignalHandler should have been called");
-        assertTrue(psh.getActualTestRuns() == 1, "PathSignalHandler should have been called");
-        assertTrue(osh.getActualTestRuns() == 1, "ObjectSignalHandler should have been called");
+        assertEquals(1, sigh.getActualTestRuns(), "SignalHandler should have been called");
+        assertEquals(1, esh.getActualTestRuns(), "EmptySignalHandler should have been called");
+        assertEquals(1, rsh.getActualTestRuns(), "RenamedSignalHandler should have been called");
+        assertEquals(1, ash.getActualTestRuns(), "ArraySignalHandler should have been called");
+        assertEquals(1, ensh.getActualTestRuns(), "EnumSignalHandler should have been called");
+        assertEquals(1, psh.getActualTestRuns(), "PathSignalHandler should have been called");
+        assertEquals(1, osh.getActualTestRuns(), "ObjectSignalHandler should have been called");
 
         assertDoesNotThrow(() -> sigh.throwAssertionError());
         assertDoesNotThrow(() -> esh.throwAssertionError());
@@ -213,7 +213,7 @@ public class TestAll extends AbstractDBusBaseTest {
         Thread.sleep(1000L);
 
         // ensure callback has been fired at least once
-        assertTrue(genericHandler.getActualTestRuns() == 1, "GenericHandler should have been called");
+        assertEquals(1, genericHandler.getActualTestRuns(), "GenericHandler should have been called");
 
         clientconn.removeGenericSigHandler(signalRule, genericHandler);
     }
@@ -232,9 +232,12 @@ public class TestAll extends AbstractDBusBaseTest {
         // wait some time to receive signals
         Thread.sleep(1000L);
 
-        genericDecode.incomingSameAsExpected();
+        assertDoesNotThrow(() -> {
+            genericDecode.incomingSameAsExpected();
+            clientconn.removeGenericSigHandler(signalRule, genericDecode);
+        });
 
-        clientconn.removeGenericSigHandler(signalRule, genericDecode);
+        assertNull(genericDecode.getAssertionError());
     }
 
     @Test
@@ -250,9 +253,12 @@ public class TestAll extends AbstractDBusBaseTest {
         // wait some time to receive signals
         Thread.sleep(1000L);
 
-        genericDecode.incomingSameAsExpected();
+        assertDoesNotThrow(() -> {
+            genericDecode.incomingSameAsExpected();
+            clientconn.removeGenericSigHandler(signalRule, genericDecode);
+        });
 
-        clientconn.removeGenericSigHandler(signalRule, genericDecode);
+        assertNull(genericDecode.getAssertionError());
     }
 
     @Test
@@ -261,11 +267,13 @@ public class TestAll extends AbstractDBusBaseTest {
         Peer peer = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, Peer.class);
 
         TimeMeasure timeMeasure = new TimeMeasure();
-        for (int i = 0; i < 10; i++) {
-            timeMeasure.reset();
-            peer.Ping();
-            logger.debug("Ping returned in " + timeMeasure.getElapsed() + "ms.");
-        }
+        assertDoesNotThrow(() -> {
+            for (int i = 0; i < 10; i++) {
+                timeMeasure.reset();
+                peer.Ping();
+                logger.debug("Ping returned in " + timeMeasure.getElapsed() + "ms.");
+            }
+        });
 
     }
 
@@ -337,7 +345,7 @@ public class TestAll extends AbstractDBusBaseTest {
         logger.debug(pm.containsKey(p) + " " + pm.get(p) + " " + p.equals(pm.get(p)));
 
         assertTrue(pm.containsKey(path), "pathmaprv incorrect");
-        assertTrue(path.equals(pm.get(path)), "pathmaprv incorrect");
+        assertEquals(path, pm.get(path), "pathmaprv incorrect");
     }
 
     @Test
@@ -553,7 +561,7 @@ public class TestAll extends AbstractDBusBaseTest {
         DBusPath prv = (DBusPath) prop.Get("foo.bar", "foo");
         logger.debug("Got path " + prv);
 
-        assertEquals(prv.getPath(), "/nonexistant/path");
+        assertEquals("/nonexistant/path", prv.getPath());
 
     }
 

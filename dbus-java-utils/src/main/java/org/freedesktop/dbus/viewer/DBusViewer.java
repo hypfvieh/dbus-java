@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -68,27 +69,24 @@ public class DBusViewer {
     public DBusViewer(final Map<String, DBusBusType> _connectionTypes) {
         connections = new ArrayList<>(_connectionTypes.size());
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+        SwingUtilities.invokeLater(() -> {
 
-                final JTabbedPane tabbedPane = new JTabbedPane();
-                addTabs(tabbedPane, _connectionTypes);
-                final JFrame frame = new JFrame("Dbus Viewer");
-                frame.setContentPane(tabbedPane);
-                frame.setSize(600, 400);
-                frame.addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent _event) {
-                        frame.dispose();
-                        for (DBusConnection connection : connections) {
-                            connection.disconnect();
-                        }
-                        System.exit(0);
+            final JTabbedPane tabbedPane = new JTabbedPane();
+            addTabs(tabbedPane, _connectionTypes);
+            final JFrame frame = new JFrame("Dbus Viewer");
+            frame.setContentPane(tabbedPane);
+            frame.setSize(600, 400);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent _event) {
+                    frame.dispose();
+                    for (DBusConnection connection : connections) {
+                        connection.disconnect();
                     }
-                });
-                frame.setVisible(true);
-            }
+                    System.exit(0);
+                }
+            });
+            frame.setVisible(true);
         });
     }
 
@@ -108,50 +106,41 @@ public class DBusViewer {
             final JLabel label = new JLabel("Processing DBus for " + key);
             _tabbedPane.addTab(key, label);
         }
-        Runnable loader = new Runnable() {
-            @Override
-            public void run() {
-                boolean users = true;
-                boolean owners = true;
-                for (final String key : _connectionTypes.keySet()) {
-                    try {
-                        DBusConnection conn = DBusConnectionBuilder.forType(_connectionTypes.get(key)).build();
-                        connections.add(conn);
+        Runnable loader = () -> {
+            boolean users = true;
+            boolean owners = true;
+            for (final Entry<String, DBusBusType> entry : _connectionTypes.entrySet()) {
+                try {
+                    DBusConnection conn = DBusConnectionBuilder.forType(entry.getValue()).build();
+                    connections.add(conn);
 
-                        final TableModel tableModel = listDBusConnection(users, owners, conn);
+                    final TableModel tableModel = listDBusConnection(users, owners, conn);
 
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                int index = _tabbedPane.indexOfTab(key);
-                                final JTable table = new JTable(tableModel);
+                    SwingUtilities.invokeLater(() -> {
+                        int index = _tabbedPane.indexOfTab(entry.getKey());
+                        final JTable table = new JTable(tableModel);
 
-                                JScrollPane scrollPane = new JScrollPane(table);
+                        JScrollPane scrollPane = new JScrollPane(table);
 
-                                JPanel tab = new JPanel(new BorderLayout());
-                                tab.add(scrollPane, BorderLayout.CENTER);
+                        JPanel tab = new JPanel(new BorderLayout());
+                        tab.add(scrollPane, BorderLayout.CENTER);
 
-                                JPanel southPanel = new JPanel();
-                                final JButton button = new JButton(new IntrospectAction(table));
-                                southPanel.add(button);
+                        JPanel southPanel = new JPanel();
+                        final JButton button = new JButton(new IntrospectAction(table));
+                        southPanel.add(button);
 
-                                tab.add(southPanel, BorderLayout.SOUTH);
+                        tab.add(southPanel, BorderLayout.SOUTH);
 
-                                _tabbedPane.setComponentAt(index, tab);
+                        _tabbedPane.setComponentAt(index, tab);
 
-                            }
-                        });
-                    } catch (DBusExecutionException | DBusException _ex) {
-                        LoggerFactory.getLogger(getClass()).error("Error", _ex);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                int index = _tabbedPane.indexOfTab(key);
-                                JLabel label = (JLabel) _tabbedPane.getComponentAt(index);
-                                label.setText("Could not load Dbus information for " + key + ":" + _ex.getMessage());
-                            }
-                        });
-                    }
+                    });
+                } catch (DBusExecutionException | DBusException _ex) {
+                    LoggerFactory.getLogger(getClass()).error("Error", _ex);
+                    SwingUtilities.invokeLater(() -> {
+                        int index = _tabbedPane.indexOfTab(entry.getKey());
+                        JLabel label = (JLabel) _tabbedPane.getComponentAt(index);
+                        label.setText("Could not load Dbus information for " + entry + ":" + _ex.getMessage());
+                    });
                 }
             }
         };
@@ -170,10 +159,8 @@ public class DBusViewer {
         ParsingContext p = new ParsingContext(_conn);
 
         for (String name : names) {
-            List<DBusEntry> results = new ArrayList<>();
+            List<DBusEntry> results = null;
             try {
-                // String objectpath = '/' + name.replace('.', '/');
-
                 p.visitNode(name, "/");
             } catch (IOException | SAXException | DBusException | DBusExecutionException _ex) {
                 LoggerFactory.getLogger(getClass()).error("Error", _ex);

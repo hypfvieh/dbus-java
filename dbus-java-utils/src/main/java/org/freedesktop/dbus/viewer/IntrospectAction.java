@@ -96,21 +96,11 @@ final class IntrospectAction extends AbstractAction implements ListSelectionList
                         southPanel.add(new JButton(new SaveAllAction(tabbedPane)));
                         introspectionPanel.add(southPanel, BorderLayout.SOUTH);
 
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                JOptionPane.showMessageDialog(table, introspectionPanel, "Introspection", JOptionPane.PLAIN_MESSAGE);
-                            }
-                        });
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(table, introspectionPanel, "Introspection", JOptionPane.PLAIN_MESSAGE));
 
                     } catch (Exception _ex) {
                         LoggerFactory.getLogger(getClass()).error("Error", _ex);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                JOptionPane.showMessageDialog(table, _ex.getMessage(), "Introspection Failed", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(table, _ex.getMessage(), "Introspection Failed", JOptionPane.ERROR_MESSAGE));
                     }
                 }
 

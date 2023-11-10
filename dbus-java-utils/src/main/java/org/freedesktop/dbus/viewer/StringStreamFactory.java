@@ -32,7 +32,7 @@ final class StringStreamFactory extends PrintStreamFactory {
 
     @Override
     public void init(String _file, String _path) {
-
+        // output is stream, no need for files
     }
 
     @Override

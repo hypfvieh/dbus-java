@@ -71,18 +71,15 @@ public final class DBusTypeStringToJava {
     }
 
     private static void recursive(Type _t, int _indent) {
-        if (_t instanceof DBusListType) {
-            DBusListType l = (DBusListType) _t;
+        if (_t instanceof DBusListType l) {
             System.out.println(repeat(INDENT, _indent) + List.class.getName());
             Type type = l.getActualTypeArguments()[0];
             recursive(type, _indent + 1);
-        } else if (_t instanceof DBusMapType) {
-            DBusMapType m = (DBusMapType) _t;
+        } else if (_t instanceof DBusMapType m) {
             System.out.println(repeat(INDENT, _indent) + Map.class.getName());
             recursive(m.getActualTypeArguments()[0], _indent + 2);
             recursive(m.getActualTypeArguments()[1], _indent + 2);
-        } else if (_t instanceof DBusStructType) {
-            DBusStructType s = (DBusStructType) _t;
+        } else if (_t instanceof DBusStructType s) {
             System.out.println(repeat(INDENT, _indent) + Struct.class.getName());
             for (Type ty : s.getActualTypeArguments()) {
                 recursive(ty, _indent + 2);

@@ -9,7 +9,10 @@ import org.xml.sax.SAXParseException;
  *
  * @author hypfvieh
  */
-public class XmlErrorHandlers {
+public final class XmlErrorHandlers {
+    private XmlErrorHandlers() {
+
+    }
 
     /**
      * XML Error Handler which will silently ignore all thrown Exceptions.

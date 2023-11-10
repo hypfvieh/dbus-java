@@ -38,9 +38,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
     protected void queueInvokeMethod(final MethodCall _methodCall, Method _meth, final Object _ob) {
         getLogger().trace("Adding Runnable for method {}", _meth);
         boolean noReply = 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED);
-        getReceivingService().execMethodCallHandler(() -> {
-            setupAndInvoke(_methodCall, _meth, _ob, noReply);
-        });
+        getReceivingService().execMethodCallHandler(() -> setupAndInvoke(_methodCall, _meth, _ob, noReply));
     }
 
     protected Object setupAndInvoke(final MethodCall _methodCall, Method _meth, final Object _ob, final boolean _noReply) {
@@ -107,7 +105,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
     }
 
     protected Object invokeMethod(final MethodCall _methodCall, final Method _me, final Object _ob)
-            throws DBusException, IllegalAccessException, Throwable {
+            throws Throwable {
         DBusCallInfo info = new DBusCallInfo(_methodCall);
         getInfoMap().put(Thread.currentThread(), info);
         try {

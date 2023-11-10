@@ -141,7 +141,7 @@ public class DBusSignal extends Message {
                 hargs.add(createHeaderArgs(HeaderField.SIGNATURE, ArgumentType.SIGNATURE_STRING, sig));
                 setArgs(_args);
             } catch (Exception _ex) {
-                logger.debug("", _ex);
+                logger.debug("Error adding signal parameters", _ex);
                 throw new DBusException("Failed to add signal parameters: " + _ex.getMessage());
             }
         }
@@ -224,7 +224,7 @@ public class DBusSignal extends Message {
         // because the parameters are received on the bus and will be converted
         // in 'Message.extractOne' method which will always return Object and not primitives
         List<Class<?>> wantedArgs = Arrays.stream(parameters)
-                .map(p -> p.getClass())
+                .map(Object::getClass)
                 .collect(Collectors.toList());
 
         // find suitable constructor (by checking if parameter types are equal)

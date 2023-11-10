@@ -274,6 +274,7 @@ public class InterfaceCodeGenerator {
 
         List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
 
+        String methodElementName = _methodElement.getAttribute("name");
         if (_methodElement.hasChildNodes()) {
             List<Element> methodArgs = convertToElementList(XmlUtil.applyXpathExpressionToDocument("./arg", _methodElement));
 
@@ -289,7 +290,7 @@ public class InterfaceCodeGenerator {
 
                 if (argElm.getAttribute("type").contains("(")) { // this argument requires some sort of struct
                     String structPart = argElm.getAttribute("type").replaceAll("(\\(.+\\))", "$1");
-                    String parentType = buildStructClass(structPart, _methodElement.getAttribute("name") + "Struct", _clzBldr, additionalClasses);
+                    String parentType = buildStructClass(structPart, methodElementName + "Struct", _clzBldr, additionalClasses);
                     if (parentType != null) {
                         argType = parentType;
                     } else {
@@ -317,21 +318,21 @@ public class InterfaceCodeGenerator {
 
             String resultType;
             if (outputArgs.size() > 1) { // multi-value return
-                logger.debug("Found method with multiple return values: {}", _methodElement.getAttribute("name"));
-                resultType = createTuple(outputArgs, _methodElement.getAttribute("name") + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes);
+                logger.debug("Found method with multiple return values: {}", methodElementName);
+                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes);
             } else {
-                logger.debug("Found method with arguments: {}({})", _methodElement.getAttribute("name"), inputArgs);
+                logger.debug("Found method with arguments: {}({})", methodElementName, inputArgs);
                 resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
             }
 
-            ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), resultType, false);
+            ClassMethod classMethod = new ClassMethod(methodElementName, resultType, false);
             classMethod.getArguments().addAll(inputArgs);
 
             _clzBldr.getMethods().add(classMethod);
 
         } else { // method has no arguments
 
-            ClassMethod classMethod = new ClassMethod(_methodElement.getAttribute("name"), "void", false);
+            ClassMethod classMethod = new ClassMethod(methodElementName, "void", false);
             _clzBldr.getMethods().add(classMethod);
         }
 

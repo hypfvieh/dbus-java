@@ -25,7 +25,7 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
     /** File chooser component.
      * Make static so that previous save location is stored
      */
-    private static JFileChooser chooser;
+    private JFileChooser chooser;
     // CHECKSTYLE:OFF
     protected final JTabbedPane tabbedPane;
     // CHECKSTYLE:ON
@@ -51,8 +51,7 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
 
         final String fileName = getFileName(_index);
 
-        TextFile textFile = new TextFile(fileName, sourceCode);
-        return textFile;
+        return new TextFile(fileName, sourceCode);
     }
 
     /** Get the file name for the supplied index
@@ -80,9 +79,7 @@ abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextF
             File parentDirectory = chooser.getSelectedFile();
             if (parentDirectory.exists() || parentDirectory.mkdirs()) {
                 if (parentDirectory.canWrite()) {
-                    Runnable runnable = new FileSaver(tabbedPane, parentDirectory, this);
-
-                    new Thread(runnable).start();
+                    new Thread(new FileSaver(tabbedPane, parentDirectory, this)).start();
                 } else {
                     JOptionPane.showMessageDialog(tabbedPane, "Could not write to parent directory", "Invalid Parent Directory", JOptionPane.ERROR_MESSAGE);
                 }

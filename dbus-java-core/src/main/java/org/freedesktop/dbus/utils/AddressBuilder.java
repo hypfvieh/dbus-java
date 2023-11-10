@@ -133,7 +133,7 @@ public final class AddressBuilder {
                 "/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
         return locationPriorityList.stream()
                 .filter(s -> s != null)
-                .map(s -> new File(s))
+                .map(File::new)
                 .filter(f -> f.exists() && f.length() > 0)
                 .findFirst()
                 .orElse(null);

@@ -45,14 +45,13 @@ public class RunTwoPartDaemon {
         FileIoUtil.writeTextFile(new File(SystemUtil.getTempDir(), "twopartdaemon.address").getAbsolutePath(), newAddress, false);
     }
 
-    private void startDaemon() throws DBusException {
+    private void startDaemon() {
         if (daemon == null) {
 
             BusAddress listenBusAddress = BusAddress.of(newAddress);
-            String listenAddress = newAddress;
 
             if (!listenBusAddress.isListeningSocket()) {
-                listenAddress = newAddress + ",listen=true";
+                String listenAddress = newAddress + ",listen=true";
                 listenBusAddress = BusAddress.of(listenAddress);
             }
 
@@ -60,9 +59,7 @@ public class RunTwoPartDaemon {
             daemon = new EmbeddedDBusDaemon(listenBusAddress);
 
             // run daemon in non-daemon thread so application will not quit
-            new Thread(() -> {
-                daemon.startInForeground();
-            }).start();
+            new Thread(daemon::startInForeground).start();
 
             Util.waitFor("EmbeddedDbusDaemon", daemon::isRunning, MAX_WAIT, 200);
             log.info("Started embedded bus on address {}", listenBusAddress);

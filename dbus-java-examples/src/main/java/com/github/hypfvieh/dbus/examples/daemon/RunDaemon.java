@@ -35,14 +35,13 @@ public class RunDaemon {
         newAddress = TransportBuilder.createDynamicSession(_transportProtocol.name(), false);
     }
 
-    private void startDaemon() throws DBusException {
+    private void startDaemon() {
         if (daemon == null) {
 
             BusAddress listenBusAddress = BusAddress.of(newAddress);
-            String listenAddress = newAddress;
 
             if (!listenBusAddress.isListeningSocket()) {
-                listenAddress = newAddress + ",listen=true";
+                String listenAddress = newAddress + ",listen=true";
                 listenBusAddress = BusAddress.of(listenAddress);
             }
 

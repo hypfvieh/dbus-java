@@ -98,8 +98,8 @@ public class MarshallingTest extends AbstractBaseTest {
 
         assertTrue(params[0] instanceof MarkTuple, "First param is not a MarkTuple");
         MarkTuple mt = (MarkTuple) params[0];
-        assertEquals(mt.getSlotName(), "rootfs.1", "Slot name does not match after deSerialization");
-        assertEquals(mt.getMessage(), "marked slot rootfs.1 as good", "Message does not match after deSerialization");
+        assertEquals("rootfs.1", mt.getSlotName(), "Slot name does not match after deSerialization");
+        assertEquals("marked slot rootfs.1 as good", mt.getMessage(), "Message does not match after deSerialization");
     }
 
     /*

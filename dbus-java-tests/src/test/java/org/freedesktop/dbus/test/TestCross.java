@@ -79,10 +79,13 @@ public class TestCross extends AbstractDBusBaseTest {
         }
 
         assertTrue(cts.getNotdone().isEmpty(), "All tests should have been run, following failed: " + String.join(", ", cts.getNotdone()));
-
+        assertNull(serverThread.error);
     }
 
     private final class ServerThread extends Thread {
+
+        private Exception error;
+
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
@@ -108,7 +111,7 @@ public class TestCross extends AbstractDBusBaseTest {
                 conn.disconnect();
             } catch (DBusException | IOException _exDe) {
                 _exDe.printStackTrace();
-                fail("Exception while server running");
+                error = _exDe;
             }
         }
     }

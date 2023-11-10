@@ -156,9 +156,7 @@ public final class TypeConverter {
             Marshalling.getJavaType(_dbusType, dataType, 1);
 
             type = dataType.stream()
-                    .map(t -> {
-                        return t.getTypeName();
-                    })
+                    .map(Type::getTypeName)
                     .collect(Collectors.joining(""));
 
             _javaIncludes.add(type);

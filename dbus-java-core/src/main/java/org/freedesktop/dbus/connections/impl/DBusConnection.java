@@ -542,7 +542,7 @@ public final class DBusConnection extends AbstractConnection {
                 } catch (NotConnected _ex) {
                     logger.debug("No connection.", _ex);
                 } catch (DBusExecutionException _ex) {
-                    logger.debug("", _ex);
+                    logger.debug("Error removing signal", _ex);
                     throw new DBusException(_ex);
                 }
             }
@@ -711,7 +711,7 @@ public final class DBusConnection extends AbstractConnection {
                 // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
                 synchronized (busnames) {
                     List<String> lBusNames = busnames.stream()
-                        .filter(busName ->  DBusObjects.validateBusName(busName))
+                        .filter(DBusObjects::validateBusName)
                         .collect(Collectors.toList());
 
                     lBusNames.forEach(busName -> {
@@ -765,7 +765,7 @@ public final class DBusConnection extends AbstractConnection {
                 } catch (NotConnected _ex) {
                     logger.debug("No connection.", _ex);
                 } catch (DBusExecutionException _ex) {
-                    logger.debug("", _ex);
+                    logger.debug("Error removing generic signal", _ex);
                     throw new DBusException(_ex);
                 }
             }
@@ -790,7 +790,7 @@ public final class DBusConnection extends AbstractConnection {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
-                logger.debug("", _ex);
+                logger.debug("Error adding signal handler", _ex);
                 throw new DBusException(_ex.getMessage());
             }
         }

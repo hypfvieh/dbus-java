@@ -33,9 +33,7 @@ public class DBusPath implements Comparable<DBusPath> {
 
     @Override
     public int compareTo(DBusPath _that) {
-        if (getPath() == null) {
-            return 0;
-        } else if (_that == null) {
+        if (getPath() == null || _that == null) {
             return 0;
         }
         return getPath().compareTo(_that.getPath());

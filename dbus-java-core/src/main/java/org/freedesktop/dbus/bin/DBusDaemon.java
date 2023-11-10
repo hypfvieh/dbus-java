@@ -264,7 +264,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    void addSock(TransportConnection _s) throws IOException {
+    void addSock(TransportConnection _s) {
         LOGGER.debug("New Client");
 
         ConnectionStruct c = new ConnectionStruct(_s);

@@ -35,10 +35,8 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        BusAddress address = AddressBuilder.getSessionConnection(_machineIdFileLocation);
-        address = validateTransportAddress(address);
-        DBusConnectionBuilder instance = new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
-        return instance;
+        BusAddress address = validateTransportAddress(AddressBuilder.getSessionConnection(_machineIdFileLocation));
+        return new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
     }
 
     /**
@@ -47,8 +45,7 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSystemBus() {
-        BusAddress address = AddressBuilder.getSystemConnection();
-        address = validateTransportAddress(address);
+        BusAddress address = validateTransportAddress(AddressBuilder.getSystemConnection());
         return new DBusConnectionBuilder(address, getDbusMachineId(null));
     }
 
@@ -97,8 +94,7 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return this
      */
     public static DBusConnectionBuilder forAddress(String _address) {
-        DBusConnectionBuilder instance = new DBusConnectionBuilder(BusAddress.of(_address), getDbusMachineId(null));
-        return instance;
+        return new DBusConnectionBuilder(BusAddress.of(_address), getDbusMachineId(null));
     }
 
     /**

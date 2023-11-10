@@ -5,6 +5,7 @@ import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
@@ -74,10 +75,10 @@ public final class TransportBuilder {
      * @param _address address, never null
      *
      * @return new {@link TransportBuilder}
-     * @throws DBusException if invalid address provided
+     * @throws InvalidBusAddressException if invalid address provided
      *
      */
-    public static TransportBuilder create(String _address) throws DBusException {
+    public static TransportBuilder create(String _address) throws InvalidBusAddressException {
         TransportConfig cfg = new TransportConfig();
         cfg.setBusAddress(BusAddress.of(_address));
         return new TransportBuilder(cfg);
@@ -89,9 +90,9 @@ public final class TransportBuilder {
      * @param _config config, never null
      *
      * @return new {@link TransportBuilder}
-     * @throws DBusException if invalid address provided
+     * @throws InvalidBusAddressException if invalid address provided
      */
-    public static TransportBuilder create(TransportConfig _config) throws DBusException {
+    public static TransportBuilder create(TransportConfig _config) throws InvalidBusAddressException {
         return new TransportBuilder(_config);
     }
 
@@ -99,9 +100,8 @@ public final class TransportBuilder {
      * Creates a new {@link TransportBuilder} instance using a empty transport configuration.
      *
      * @return new {@link TransportBuilder}
-     * @throws DBusException if invalid address provided
      */
-    public static TransportBuilder create() throws DBusException {
+    public static TransportBuilder create() {
         return new TransportBuilder(null);
     }
 
@@ -113,7 +113,7 @@ public final class TransportBuilder {
      * @return new {@link TransportBuilder}
      * @throws DBusException if invalid address provided
      */
-    public static TransportBuilder create(BusAddress _address) throws DBusException {
+    public static TransportBuilder create(BusAddress _address) {
         Objects.requireNonNull(_address, "BusAddress required");
         return new TransportBuilder(new TransportConfig(_address));
     }

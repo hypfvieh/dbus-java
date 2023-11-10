@@ -421,14 +421,14 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
             if (!allPropertyMethods.isEmpty()) {
                 Object object = _exportObject.getObject().get();
                 Method meth = null;
-                if (meth == null && object instanceof DBusProperties) {
+                if (object instanceof DBusProperties) {
                     meth = _exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
                     if (null == meth) {
                         sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
                             "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
                         return true;
                     }
-                } else if (meth == null) {
+                } else {
                     try {
                         meth = Properties.class.getDeclaredMethod("GetAll", String.class);
                     } catch (NoSuchMethodException | SecurityException _ex) {
@@ -459,7 +459,7 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                     }
 
                     if (object instanceof DBusProperties) {
-                        resultMap.putAll((Map<? extends String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
+                        resultMap.putAll((Map<String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
                     }
 
                     try {

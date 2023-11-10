@@ -142,7 +142,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 try {
                     return cons.newInstance(rp);
                 } catch (Exception _ex) {
-                    LOGGER.debug("", _ex);
+                    LOGGER.debug("Error creating tuple instance using reflection", _ex);
                     throw new DBusException(_ex.getMessage());
                 }
         }
