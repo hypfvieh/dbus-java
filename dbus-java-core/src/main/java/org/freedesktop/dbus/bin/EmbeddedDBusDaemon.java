@@ -82,6 +82,7 @@ public class EmbeddedDBusDaemon implements Closeable {
      */
     public void startInForeground() {
         try {
+            closed.set(false);
             startListening();
         } catch (IOException | DBusException _ex) {
             if (!closed.get()) {
