@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
-public class TestCross extends AbstractDBusBaseTest {
+public class TestCross extends AbstractDBusDaemonBaseTest {
 
     private ServerThread serverThread;
     private CrossTestServer cts;

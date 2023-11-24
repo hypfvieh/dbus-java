@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class TestTwoPart extends AbstractDBusBaseTest {
+public class TestTwoPart extends AbstractDBusDaemonBaseTest {
 
     private volatile boolean serverReady = false;
 

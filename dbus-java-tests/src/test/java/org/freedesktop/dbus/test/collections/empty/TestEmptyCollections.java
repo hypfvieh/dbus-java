@@ -4,7 +4,7 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.test.AbstractDBusBaseTest;
+import org.freedesktop.dbus.test.AbstractDBusDaemonBaseTest;
 import org.freedesktop.dbus.test.collections.empty.structs.*;
 import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.utils.Util;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  * used to determine whether (de)serialization of non empty collection is executed correctly.
  *
  */
-class TestEmptyCollections extends AbstractDBusBaseTest {
+class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
 
     private DBusConnection serverconn;
     private DBusConnection clientconn;

@@ -8,7 +8,7 @@ import org.freedesktop.dbus.test.helper.SampleClass;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
 
-public class TestDisconnectStuff extends AbstractDBusBaseTest {
+public class TestDisconnectStuff extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testStuffAfterDisconnect() throws DBusException, InterruptedException {

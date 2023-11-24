@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class BoundPropertiesTest extends AbstractDBusBaseTest {
+public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testProperties() throws IOException, DBusException, InterruptedException {

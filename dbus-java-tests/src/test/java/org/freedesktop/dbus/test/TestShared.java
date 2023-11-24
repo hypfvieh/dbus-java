@@ -11,7 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestShared extends AbstractDBusBaseTest {
+public class TestShared extends AbstractDBusDaemonBaseTest {
 
     public static final String TEST_OBJECT_PATH = "/TestAll";
 

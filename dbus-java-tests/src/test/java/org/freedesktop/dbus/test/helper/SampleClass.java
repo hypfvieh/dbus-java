@@ -10,16 +10,11 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
-import org.freedesktop.dbus.test.TestAll;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum;
-import org.freedesktop.dbus.test.helper.structs.IntStruct;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct3;
-import org.freedesktop.dbus.test.helper.structs.SampleStruct4;
-import org.freedesktop.dbus.test.helper.structs.SampleTuple;
+import org.freedesktop.dbus.test.helper.structs.*;
 import org.freedesktop.dbus.types.UInt16;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
@@ -28,11 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings({"checkstyle:methodname"})
 public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties {
@@ -257,9 +248,9 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     }
 
     @Override
-    public String recursionTest() {
+    public String recursionTest(String _dbusName, String _path) {
         try {
-            SampleRemoteInterface tri = conn.getRemoteObject("foo.bar.Test", TestAll.TEST_OBJECT_PATH, SampleRemoteInterface.class);
+            SampleRemoteInterface tri = conn.getRemoteObject(_dbusName, _path, SampleRemoteInterface.class);
             return tri.getName();
         } catch (DBusException _ex) {
             fail("Failed with error: " + _ex);

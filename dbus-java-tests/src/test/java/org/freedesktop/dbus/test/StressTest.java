@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  *
  */
-public class StressTest extends AbstractDBusBaseTest {
+public class StressTest extends AbstractDBusDaemonBaseTest {
 
     private static final String OBJECT_PATH = "/org/freedesktop/dbus/test/RemoteObjectImpl";
 

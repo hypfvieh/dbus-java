@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 /**
  *
  */
-public class DBusConnectionTest extends AbstractDBusBaseTest {
+public class DBusConnectionTest extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testBusnamesShouldBeAutoReleasedOnCloseOfNonSharedConnection() throws Exception {

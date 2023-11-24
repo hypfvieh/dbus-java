@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 @EnabledIf(value = "isFileDescriptorSupported", disabledReason = "file descriptors not supported with the current transport")
-public class FileDescriptorsTest extends AbstractDBusBaseTest {
+public class FileDescriptorsTest extends AbstractDBusDaemonBaseTest {
     public static final String TEST_OBJECT_PATH = "/FileDescriptorsTest";
 
     private DBusConnection serverconn = null, clientconn = null;

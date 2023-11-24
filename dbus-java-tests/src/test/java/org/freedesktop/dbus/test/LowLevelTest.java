@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.text.ParseException;
 
-public class LowLevelTest extends AbstractDBusBaseTest {
+public class LowLevelTest extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testLowLevel() throws ParseException, IOException, DBusException, InterruptedException {

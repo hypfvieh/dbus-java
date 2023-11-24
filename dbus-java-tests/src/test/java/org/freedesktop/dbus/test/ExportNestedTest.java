@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExportNestedTest extends AbstractDBusBaseTest {
+public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testExportNested() throws IOException, DBusException {

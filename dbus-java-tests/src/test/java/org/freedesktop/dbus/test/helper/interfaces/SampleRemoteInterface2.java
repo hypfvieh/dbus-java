@@ -35,7 +35,7 @@ public interface SampleRemoteInterface2 extends DBusInterface {
     SampleSerializable<String> testSerializable(byte _b, SampleSerializable<String> _s, int _i);
 
     @IntrospectionDescription("Call another method on itself from within a call")
-    String recursionTest();
+    String recursionTest(String _dbusName, String _path);
 
     @IntrospectionDescription("Parameter-overloaded method (string)")
     int overload(String _s);

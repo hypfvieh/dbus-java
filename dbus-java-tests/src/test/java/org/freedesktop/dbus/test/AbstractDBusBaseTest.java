@@ -1,75 +1,60 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
-import org.freedesktop.dbus.config.DBusSysProps;
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.test.helper.SampleClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
- * Base test which will start a embedded DBus daemon if no UNIX transport is found.
- *
- * @author hypfvieh
- * @since v4.0.0 - 2021-09-14
+ * Base test providing server and client connection and some default exports.
  */
-public abstract class AbstractDBusBaseTest extends AbstractBaseTest {
+public abstract class AbstractDBusBaseTest extends AbstractDBusDaemonBaseTest {
+    // CHECKSTYLE:OFF
+    protected DBusConnection serverconn = null;
+    protected DBusConnection clientconn = null;
+    protected SampleClass tclass;
+    // CHECKSTYLE:ON
 
-    //CHECKSTYLE:OFF
-    protected static EmbeddedDBusDaemon edbus;
-    //CHECKSTYLE:ON
+    @BeforeEach
+    public void setUp() throws DBusException {
+        serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
+        clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
+        serverconn.requestBusName(getTestBusName());
 
-    /**
-     * Wait 500 ms if the current test uses TCP transport.
-     *
-     * @throws InterruptedException on interruption
-     */
-    protected static void waitIfTcp() throws InterruptedException {
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
-            Thread.sleep(500L);
-        }
+        tclass = new SampleClass(serverconn);
+
+        /** This exports an instance of the test class as the object /Test. */
+        serverconn.exportObject(getTestObjectPath(), tclass);
+        serverconn.addFallback(getTestObjectPath() + "FallbackTest", tclass);
     }
 
-    /**
-     * Start an embedded Dbus daemon (in background) if the test uses TCP transport.
-     *
-     * @throws DBusException if start of daemon failed
-     * @throws InterruptedException on interruption
-     */
-    @BeforeAll
-    public static void beforeAll() throws DBusException, InterruptedException {
-        Logger logger = LoggerFactory.getLogger(AbstractDBusBaseTest.class);
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
-            String busType = TransportBuilder.getRegisteredBusTypes().get(0);
-            String addr = TransportBuilder.createDynamicSession(busType, true);
-            BusAddress address = BusAddress.of(addr);
-
-            logger.info("Creating {} based DBus daemon on address {}", busType, addr);
-            edbus = new EmbeddedDBusDaemon(addr);
-            edbus.startInBackgroundAndWait(MAX_WAIT);
-
-            if (address.isBusType("TCP")) {
-                String addrStr  = address.removeParameter("listen").toString();
-                System.setProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS, addrStr);
-            }
-
+    @AfterEach
+    public void tearDown() throws Exception {
+        logger.debug("Checking for outstanding errors");
+        DBusExecutionException dbee = serverconn.getError();
+        if (null != dbee) {
+            throw dbee;
         }
+        dbee = clientconn.getError();
+        if (null != dbee) {
+            throw dbee;
+        }
+
+        logger.debug("Disconnecting");
+        /** Disconnect from the bus. */
+        clientconn.disconnect();
+        serverconn.releaseBusName(getTestBusName());
+        serverconn.disconnect();
     }
 
-    /**
-     * Shutdown embedded Dbus daemon after test (if any).
-     *
-     * @throws IOException shutdown failed
-     */
-    @AfterAll
-    public static void afterAll() throws IOException {
-        if (edbus != null) {
-            edbus.close();
-        }
+    protected String getTestObjectPath() {
+        return "/" + getClass().getSimpleName();
+    }
+
+    protected String getTestBusName() {
+        return getClass().getName();
     }
 }

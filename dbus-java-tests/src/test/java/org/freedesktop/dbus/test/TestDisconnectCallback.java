@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TestDisconnectCallback extends AbstractDBusBaseTest {
+public class TestDisconnectCallback extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testDisconnectCallback() throws DBusException, InterruptedException {

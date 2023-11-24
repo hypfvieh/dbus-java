@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapOfVariantTest extends AbstractDBusBaseTest {
+public class MapOfVariantTest extends AbstractDBusDaemonBaseTest {
 
     @Test
     public void testMapOfVariant() throws IOException, DBusException {
