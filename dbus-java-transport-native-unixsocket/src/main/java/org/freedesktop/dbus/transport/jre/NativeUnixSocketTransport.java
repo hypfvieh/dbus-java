@@ -10,6 +10,7 @@ import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
 
 /**
  * Transport type representing a transport connection to a unix socket.
@@ -102,7 +103,10 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
 
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
+            // remove socket file if server
+            Files.deleteIfExists(unixSocketAddress.getPath());
         }
+
     }
 
     @Override

@@ -13,6 +13,8 @@ import org.freedesktop.dbus.utils.Util;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Transport type representing a transport connection to a unix socket.
@@ -108,7 +110,14 @@ public class UnixSocketTransport extends AbstractUnixTransport {
 
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
+
+            // remove unix socket file if this is a server connection
+            String p = unixSocketAddress.humanReadablePath();
+            if (p != null && !p.startsWith("@")) { // not a abstract path
+                Files.deleteIfExists(Path.of(p));
+            }
         }
+
     }
 
     @Override

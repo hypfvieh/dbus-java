@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class JUnixSocketUnixTransport extends AbstractUnixTransport {
     private final AFUNIXSocketAddress unixSocketAddress;
@@ -105,6 +107,12 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
 
         if (serverSocket != null && serverSocket.isOpen()) {
             serverSocket.close();
+
+            // remove created unix socket file when running as server
+            String p = unixSocketAddress.getPath();
+            if (p != null && !p.startsWith("@")) { // not an abstract path
+                Files.deleteIfExists(Path.of(p));
+            }
         }
     }
 
