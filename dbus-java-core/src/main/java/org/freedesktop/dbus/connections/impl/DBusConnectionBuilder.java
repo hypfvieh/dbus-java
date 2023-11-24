@@ -168,7 +168,7 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
         if (shared) {
             synchronized (DBusConnection.CONNECTIONS) {
                 String busAddressStr = transportCfg.getBusAddress().toString();
-                c = DBusConnection.CONNECTIONS.get(busAddressStr);
+                c = getSharedConnection(busAddressStr);
                 if (c != null) {
                     c.concurrentConnections.incrementAndGet();
                     return c; // this connection already exists, do not change anything
@@ -187,4 +187,25 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
         return c;
     }
 
+    /**
+     * Retrieve a existing shared connection.
+     * Will remove existing shared connections when underlying transport is disconnected.
+     * @param _busAddr bus address
+     * @return connection if a valid shared connection found or
+     *      null if no connection found or found connection was invalid
+     */
+    private DBusConnection getSharedConnection(String _busAddr) {
+        synchronized (DBusConnection.CONNECTIONS) {
+            DBusConnection c = DBusConnection.CONNECTIONS.get(_busAddr);
+            if (c != null) {
+                if (!c.isConnected()) {
+                    DBusConnection.CONNECTIONS.remove(_busAddr);
+                    return null;
+                } else {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
 }
