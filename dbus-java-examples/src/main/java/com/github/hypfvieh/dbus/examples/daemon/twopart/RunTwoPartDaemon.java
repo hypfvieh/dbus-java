@@ -3,6 +3,7 @@ package com.github.hypfvieh.dbus.examples.daemon.twopart;
 import com.github.hypfvieh.util.FileIoUtil;
 import com.github.hypfvieh.util.SystemUtil;
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
+import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Sample for daemon usage.
@@ -45,7 +47,7 @@ public class RunTwoPartDaemon {
         FileIoUtil.writeTextFile(new File(SystemUtil.getTempDir(), "twopartdaemon.address").getAbsolutePath(), newAddress, false);
     }
 
-    private void startDaemon() {
+    public void startDaemon() {
         if (daemon == null) {
 
             BusAddress listenBusAddress = BusAddress.of(newAddress);
@@ -66,15 +68,24 @@ public class RunTwoPartDaemon {
         }
     }
 
-    private void connectSelf() throws DBusException, IOException {
+    /**
+     * Create the connection to the bus to export something.
+     * The exported object should be passed in by the provided function which in turn will receive the created connected.
+     *
+     * @param _objFunc function to supply object to export
+     * @param _exportBusName name to acquire on the bus
+     * @param _exportPath path for exporting object
+     * @throws DBusException when DBus operation fails
+     * @throws IOException when connection fails
+     */
+    public void connectSelf(Function<AbstractConnection, DBusInterface> _objFunc, String _exportBusName, String _exportPath) throws DBusException, IOException {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);
         try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
             log.info("Connected to embedded DBus {}", busAddress);
 
-            conn.requestBusName(EXPORT_NAME);
-            SomeExport someExport = new SomeExport();
-            conn.exportObject("/", someExport);
+            conn.requestBusName(_exportBusName);
+            conn.exportObject(_exportPath, _objFunc.apply(conn));
 
             // wait for clients
             while (true) {
@@ -85,6 +96,14 @@ public class RunTwoPartDaemon {
                 }
             }
         }
+    }
+
+    private void connectSelf() throws DBusException, IOException {
+        connectSelf(x -> new SomeExport(), EXPORT_NAME, "/");
+    }
+
+    public String getNewAddress() {
+        return newAddress;
     }
 
     public static void main(String[] _args) throws Exception {
@@ -103,7 +122,7 @@ public class RunTwoPartDaemon {
         runDaemon.connectSelf();
     }
 
-    enum TransportProtocol {
+    public enum TransportProtocol {
         TCP,
         UNIX
     }
