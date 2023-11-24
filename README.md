@@ -73,6 +73,9 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
+##### Maintenance Changes in 4.3.2 (not released yet):
+   - Fixed issue with shared connections did not work when underlying transport was disconnected due to end-point (daemon) was stopped/restarted ([#244](https://github.com/hypfvieh/dbus-java/issues/244)) 
+
 ##### Changes in 4.3.1 (not released yet):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))
    - Added missing `connect()` method to `AbstractTransport` to allow connecting the underlying transport manually, thanks to [brett-smith](https://github.com/brett-smith) ([#212](https://github.com/hypfvieh/dbus-java/issues/212))
