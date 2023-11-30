@@ -29,7 +29,7 @@
         <junit5.minor.version>10.0</junit5.minor.version>
         <pmd.version>6.55.0</pmd.version>
         <checkstyle.version>10.12.4</checkstyle.version>
-        <logback.version>1.4.11</logback.version>
+        <logback.version>1.4.12</logback.version>
         <slf4j.version>2.0.9</slf4j.version>
         <jnr-unixsocket.version>0.38.21</jnr-unixsocket.version>
         <junixsocket.version>2.8.1</junixsocket.version>
