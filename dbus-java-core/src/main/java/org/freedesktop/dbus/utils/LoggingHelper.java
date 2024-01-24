@@ -1,10 +1,6 @@
 package org.freedesktop.dbus.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Helper for some logging stuff, e.g. avoid call {@link Arrays#deepToString(Object[])} if loglevel is not enabled.
@@ -53,16 +49,44 @@ public final class LoggingHelper {
             if (object == null) {
                 result.add("(null)");
             } else if (object.getClass().isArray()) {
-                result.add(arraysVeryDeepStringRecursive((Object[]) object).toString());
+                if (object.getClass().getComponentType().isPrimitive()) {
+                    result.add(convertToString(object));
+                } else {
+                    result.add(convertToString(arraysVeryDeepStringRecursive((Object[]) object)));
+                }
             } else if (object instanceof Collection<?>) {
-                Collection<?> c = (Collection<?>) object;
-                result.add(arraysVeryDeepStringRecursive(c.toArray()).toString());
+                Collection<?> col = (Collection<?>) object;
+                result.add(convertToString(arraysVeryDeepStringRecursive(col.toArray())));
             } else {
-                result.add(Objects.toString(object));
+                result.add(convertToString(object));
             }
         }
 
         return result;
+    }
+
+    static String convertToString(Object _obj) {
+        if (_obj == null) {
+            return null;
+        } else if (_obj.getClass().isArray() && _obj.getClass().getComponentType().isPrimitive()) {
+            if (_obj.getClass().getComponentType() == Boolean.TYPE) {
+                return Arrays.toString(((boolean[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Character.TYPE) {
+                return Arrays.toString(((char[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Integer.TYPE) {
+                return Arrays.toString(((int[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Float.TYPE) {
+                return Arrays.toString(((float[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Double.TYPE) {
+                return Arrays.toString(((double[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Byte.TYPE) {
+                return Arrays.toString(((byte[]) _obj));
+            } else if (_obj.getClass().getComponentType() == Long.TYPE) {
+                return Arrays.toString(((long[]) _obj));
+            }
+        }
+
+        return Objects.toString(_obj);
     }
 
     /**
