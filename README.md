@@ -122,6 +122,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - DBusViewer: Remove DOCTYPE definition in introspection data using a regex which handles line breaks properly
    - Applied changes found by Sonarcloud static code analysis
    - Fixed issue with shared connections did not work when underlying transport was disconnected due to end-point (daemon) was stopped/restarted ([#244](https://github.com/hypfvieh/dbus-java/issues/244))
+   - Fixed class cast exception in LoggingHelper ([#247](https://github.com/hypfvieh/dbus-java/issues/247)), reported by [AsamK](https://github.com/AsamK)
 
 ##### Changes in 4.3.1 (2023-10-03):
    - Provide classloader to ServiceLoader in TransportBuilder (for loading actual transports) and AbstractTransport (for loading IMessageReader/Writer implementations), thanks to [cthbleachbit](https://github.com/cthbleachbit) ([#210](https://github.com/hypfvieh/dbus-java/issues/210), [PR#211](https://github.com/hypfvieh/dbus-java/issues/211))
