@@ -110,7 +110,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
-##### Changes in 5.0.0 (not released yet):
+##### Changes in 5.0.0 (2023-01-25):
    - **Updated minimum required Java version to 17**
    - Removed all classes and methods marked as deprecated in 4.x
    - Updated dependencies and maven plugins
