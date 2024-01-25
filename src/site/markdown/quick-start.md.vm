@@ -15,7 +15,7 @@ For maven this would look like this:
     <dependency>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
-        <version>{project.version}</version>
+        <version>${project.version}</version>
     </dependency>
 
     <!-- Alternative unixsocket support using junixsocket -->
