@@ -1,9 +1,11 @@
 com.github.hypfvieh.dbus.examples.daemon
 com.github.hypfvieh.dbus.examples.daemon.twopart
+com.github.hypfvieh.dbus.examples.export
 com.github.hypfvieh.dbus.examples.mpris
 com.github.hypfvieh.dbus.examples.nested
 com.github.hypfvieh.dbus.examples.nested.data
 com.github.hypfvieh.dbus.examples.networkmanager
+com.github.hypfvieh.dbus.examples.properties
 com.github.hypfvieh.dbus.examples.pulseaudio
 com.github.hypfvieh.dbus.examples.signal
 com.github.hypfvieh.dbus.examples.struct
