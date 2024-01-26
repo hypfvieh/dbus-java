@@ -439,8 +439,8 @@ public final class Util {
      */
     public static String getCurrentUser() {
         String[] sysPropParms = new String[] {"user.name", "USER", "USERNAME"};
-        for (int i = 0; i < sysPropParms.length; i++) {
-            String val = System.getProperty(sysPropParms[i]);
+        for (String sysPropParm : sysPropParms) {
+            String val = System.getProperty(sysPropParm);
             if (!isEmpty(val)) {
                 return val;
             }

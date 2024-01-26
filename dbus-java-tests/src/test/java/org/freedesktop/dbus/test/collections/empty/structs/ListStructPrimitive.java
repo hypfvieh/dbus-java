@@ -31,7 +31,7 @@ public final class ListStructPrimitive extends Struct implements IEmptyCollectio
 
     @Override
     public String getStringTestValue() {
-        return list.stream().map(i -> i.toString()).collect(Collectors.joining(","));
+        return list.stream().map(Object::toString).collect(Collectors.joining(","));
     }
 
     @Override

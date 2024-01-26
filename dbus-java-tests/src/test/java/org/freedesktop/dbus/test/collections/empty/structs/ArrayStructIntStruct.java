@@ -33,7 +33,7 @@ public final class ArrayStructIntStruct extends Struct implements IEmptyCollecti
     @Override
     public String getStringTestValue() {
         return Stream.of(list)
-                .map(i -> i.toSimpleString())
+                .map(IntStruct::toSimpleString)
                 .collect(Collectors.joining(","));
     }
 

@@ -94,7 +94,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @Override
     public <A> SampleTuple<String, List<Integer>, Boolean> show(A _in) {
         logger.debug("Showing Stuff: " + _in.getClass() + "(" + _in + ")");
-        if (!(_in instanceof Integer) || ((Integer) _in).intValue() != 234) {
+        if (!(_in instanceof Integer) || (Integer) _in != 234) {
             fail("show received the wrong arguments");
         }
         DBusCallInfo info = AbstractConnection.getCallInfo();
@@ -112,7 +112,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
                 || !(_foo.getInt32Value() instanceof UInt32) || !(_foo.getVariantValue() instanceof Variant)
                 || !"bar".equals(_foo.getStringValue()) || _foo.getInt32Value().intValue() != 52
                 || !(_foo.getVariantValue().getValue() instanceof Boolean)
-                || !((Boolean) _foo.getVariantValue().getValue()).booleanValue()) {
+                || !(Boolean) _foo.getVariantValue().getValue()) {
             fail("dostuff received the wrong arguments");
         }
         return (T) _foo.getVariantValue().getValue();
@@ -143,7 +143,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         for (Integer i : _is) {
             logger.debug("--" + i);
         }
-        if (_is.length != 4 || _is[0].intValue() != 1 || _is[1].intValue() != 5 || _is[2].intValue() != 7 || _is[3].intValue() != 9) {
+        if (_is.length != 4 || _is[0] != 1 || _is[1] != 5 || _is[2] != 7 || _is[3] != 9) {
             fail("sampleArray, Integer array contents incorrect");
         }
         logger.debug("Got an array:");

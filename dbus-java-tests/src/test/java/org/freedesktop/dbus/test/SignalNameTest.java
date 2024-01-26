@@ -9,7 +9,6 @@ import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -46,12 +45,7 @@ public class SignalNameTest extends AbstractBaseTest {
                 connection.requestBusName("d.e.f.Service");
                 connection.exportObject("/d/e/f/custom", new MyCustomImpl());
 
-                connection.addSigHandler(CustomService.CustomSignal.class, new DBusSigHandler<CustomService.CustomSignal>() {
-                    @Override
-                    public void handle(CustomService.CustomSignal _s) {
-                        logger.debug("Received signal: {}", _s.data);
-                    }
-                });
+                connection.addSigHandler(CustomService.CustomSignal.class, _s -> logger.debug("Received signal: {}", _s.data));
 
                 connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
                 // wait to deliver message

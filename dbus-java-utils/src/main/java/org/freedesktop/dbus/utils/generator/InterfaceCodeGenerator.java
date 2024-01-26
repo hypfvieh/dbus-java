@@ -171,15 +171,9 @@ public class InterfaceCodeGenerator {
         List<Element> interfaceElements = convertToElementList(_ife.getChildNodes());
         for (Element element : interfaceElements) {
             switch (element.getTagName().toLowerCase()) {
-            case "method":
-                additionalClasses.addAll(extractMethods(element, interfaceClass));
-                break;
-            case "property":
-                additionalClasses.addAll(extractProperties(element, interfaceClass));
-                break;
-            case "signal":
-                additionalClasses.addAll(extractSignals(element, interfaceClass));
-                break;
+                case "method"   -> additionalClasses.addAll(extractMethods(element, interfaceClass));
+                case "property" -> additionalClasses.addAll(extractProperties(element, interfaceClass));
+                case "signal"   -> additionalClasses.addAll(extractSignals(element, interfaceClass));
             }
         }
 

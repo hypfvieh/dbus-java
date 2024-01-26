@@ -33,7 +33,7 @@ public final class ListStructStruct extends Struct implements IEmptyCollectionSt
     @Override
     public String getStringTestValue() {
         return list.stream()
-                .map(i -> i.toSimpleString())
+                .map(IntStruct::toSimpleString)
                 .collect(Collectors.joining(","));
     }
 

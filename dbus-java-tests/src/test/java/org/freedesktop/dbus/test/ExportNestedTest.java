@@ -87,7 +87,7 @@ public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
 
         @Override
         public List<String> getPartNames() {
-            return parts.stream().map(i -> i.getVal1()).collect(Collectors.toList());
+            return parts.stream().map(MyInterfacePart::getVal1).collect(Collectors.toList());
         }
     }
 

@@ -128,7 +128,7 @@ public class StructTreeBuilder {
                 if (x != null) {
                     member.getGenerics().add(x.getClassName());
                 } else {
-                    member.getGenerics().addAll(temp.getMembers().stream().map(l -> l.getType()).collect(Collectors.toList()));
+                    member.getGenerics().addAll(temp.getMembers().stream().map(MemberOrArgument::getType).collect(Collectors.toList()));
                 }
                 root.getImports().addAll(temp.getImports());
 

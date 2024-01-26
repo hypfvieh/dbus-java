@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.util.Objects;
+
 /**
  * An exception while running a remote method within DBus.
  */
@@ -37,10 +39,6 @@ public class DBusExecutionException extends RuntimeException {
     * @return string
     */
     public String getType() {
-        if (null == type) {
-            return getClass().getName();
-        } else {
-            return type;
-        }
+        return Objects.requireNonNullElseGet(type, () -> getClass().getName());
     }
 }

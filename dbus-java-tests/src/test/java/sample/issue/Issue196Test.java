@@ -39,13 +39,7 @@ public class Issue196Test extends AbstractBaseTest {
                 RemoteInvocationHandler rih = null;
 
                 connection.requestBusName(source);
-                connection.exportObject(path, new TestInterfaceType() {
-
-                    @Override
-                    public String getObjectPath() {
-                        return path;
-                    }
-                });
+                connection.exportObject(path, (TestInterfaceType) () -> path);
 
                 dbi = connection.dynamicProxy(source, path, null);
                 assertNotNull(dbi);

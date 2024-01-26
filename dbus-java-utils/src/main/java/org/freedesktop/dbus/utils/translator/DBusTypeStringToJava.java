@@ -71,16 +71,17 @@ public final class DBusTypeStringToJava {
     }
 
     private static void recursive(Type _t, int _indent) {
+        String indent = INDENT.repeat(Math.max(0, _indent));
         if (_t instanceof DBusListType l) {
-            System.out.println(repeat(INDENT, _indent) + List.class.getName());
+            System.out.println(indent + List.class.getName());
             Type type = l.getActualTypeArguments()[0];
             recursive(type, _indent + 1);
         } else if (_t instanceof DBusMapType m) {
-            System.out.println(repeat(INDENT, _indent) + Map.class.getName());
+            System.out.println(indent + Map.class.getName());
             recursive(m.getActualTypeArguments()[0], _indent + 2);
             recursive(m.getActualTypeArguments()[1], _indent + 2);
         } else if (_t instanceof DBusStructType s) {
-            System.out.println(repeat(INDENT, _indent) + Struct.class.getName());
+            System.out.println(indent + Struct.class.getName());
             for (Type ty : s.getActualTypeArguments()) {
                 recursive(ty, _indent + 2);
             }
@@ -89,22 +90,7 @@ public final class DBusTypeStringToJava {
             if ("java.lang.CharSequence".equals(str)) {
                 str = String.class.getName();
             }
-            System.out.println(repeat(INDENT, _indent) + str);
+            System.out.println(indent + str);
         }
-    }
-
-    /**
-     * Repeat the given String given count times.
-     *
-     * @param _string string to repeat
-     * @param _cnt count
-     * @return repeated string
-     */
-    private static String repeat(String _string, int _cnt) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < _cnt; i++) {
-            sb.append(_string);
-        }
-        return sb.toString();
     }
 }
