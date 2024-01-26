@@ -18,15 +18,15 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        
+
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <check.skip-javadoc>false</check.skip-javadoc>
 
         <check.skip-checkstyle>false</check.skip-checkstyle>
         <check.skip-pmd>false</check.skip-pmd>
         <sonar.skip>true</sonar.skip>
-        
-        <junit5.minor.version>10.1</junit5.minor.version>
+
+        <junit5.version>5.10.1</junit5.version>
         <pmd.version>6.55.0</pmd.version>
         <checkstyle.version>10.12.7</checkstyle.version>
         <logback.version>1.4.14</logback.version>
@@ -56,22 +56,22 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
-                        
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -86,7 +86,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-						<phase>test-compile</phase> <!-- fail before we do testing -->
+                        <phase>test-compile</phase> <!-- fail before we do testing -->
                     </execution>
                 </executions>
             </plugin>
@@ -147,7 +147,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -167,7 +167,7 @@
                         </archive>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -180,7 +180,7 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -320,7 +320,7 @@
                      <version>3.1.0</version>
                 </plugin>
             </plugins>
-            
+
         </pluginManagement>
 
     </build>
@@ -344,14 +344,13 @@
                         </reports>
                     </reportSet>
                 </reportSets>
-            </plugin>            
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
             </plugin>
-        </plugins>    
+        </plugins>
     </reporting>
-
 
     <distributionManagement>
         <snapshotRepository>
@@ -362,10 +361,10 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-	    <site>
-	      <id>local</id>
-	      <url>file://${java.io.tmpdir}/site-prepared</url>
-	    </site>
+        <site>
+            <id>local</id>
+            <url>file://${java.io.tmpdir}/site-prepared</url>
+        </site>
     </distributionManagement>
 
     <dependencyManagement>
@@ -390,32 +389,15 @@
 
             <!-- JUnit testing framework. -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.${junit5.minor.version}</version>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit5.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>5.${junit5.minor.version}</version>
-            </dependency>
-
-            <!-- needed for IDE support -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.${junit5.minor.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-launcher</artifactId>
-                <version>1.${junit5.minor.version}</version>
-            </dependency>
-            
             <!-- Base dependencies for submodules -->
-            
+
             <dependency>
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
@@ -475,9 +457,9 @@
 
     <licenses>
         <license>
-	       <name>MIT License</name>
-	       <url>https://github.com/hypfvieh/dbus-java/blob/master/LICENSE</url>
-	   </license>
+           <name>MIT License</name>
+           <url>https://github.com/hypfvieh/dbus-java/blob/master/LICENSE</url>
+       </license>
     </licenses>
 
     <developers>
@@ -493,7 +475,7 @@
             <name>Matthew Johnson</name>
             <email>src@matthew.ath.cx</email>
         </contributor>
-    
+
         <contributor>
             <name>thjomnx</name>
             <url>https://github.com/thjomnx</url>
@@ -575,7 +557,7 @@
             </activation>
             <modules>
                 <module>dbus-java-transport-native-unixsocket</module>
-            </modules>            
+            </modules>
         </profile>
         <profile>
             <id>fast</id>
@@ -598,7 +580,7 @@
                 <check.skip-pmd>true</check.skip-pmd>
             </properties>
         </profile>
-        
+
         <profile>
             <id>sonarcloud</id>
             <activation>
@@ -608,7 +590,7 @@
                 <sonar.skip>false</sonar.skip>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.organization>hypfvieh</sonar.organization>
-                
+
                 <maven.test.skip>true</maven.test.skip>
                 <skipTests>true</skipTests>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
