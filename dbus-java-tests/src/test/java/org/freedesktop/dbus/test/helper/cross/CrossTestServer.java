@@ -308,11 +308,7 @@ public class CrossTestServer implements SamplesInterface, SingleSample, DBusSigH
         Map<String, List<String>> m = new HashMap<>();
         for (String s : _a.keySet()) {
             String b = _a.get(s);
-            List<String> l = m.get(b);
-            if (null == l) {
-                l = new ArrayList<>();
-                m.put(b, l);
-            }
+            List<String> l = m.computeIfAbsent(b, k -> new ArrayList<>());
             l.add(s);
         }
         return m;

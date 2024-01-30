@@ -572,13 +572,7 @@ public final class DBusConnection extends AbstractConnection {
             throws DBusException {
         validateSignal(_type, _source);
         addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
-        return new AutoCloseable() {
-
-            @Override
-            public void close() throws DBusException {
-                removeSigHandler(_type, _source, _handler);
-            }
-        };
+        return () -> removeSigHandler(_type, _source, _handler);
     }
 
     /**
@@ -609,12 +603,7 @@ public final class DBusConnection extends AbstractConnection {
         String objectPath = getImportedObjects().get(_object).getObjectPath();
         DBusObjects.requireObjectPath(objectPath);
         addSigHandler(new DBusMatchRule(_type, _source, objectPath), (DBusSigHandler<? extends DBusSignal>) _handler);
-        return new AutoCloseable() {
-            @Override
-            public void close() throws DBusException {
-                removeSigHandler(_type, _source, _object, _handler);
-            }
-        };
+        return () -> removeSigHandler(_type, _source, _object, _handler);
     }
 
     /**
@@ -664,12 +653,7 @@ public final class DBusConnection extends AbstractConnection {
                 throw new DBusException("Cannot add match rule.", _ex);
             }
         }
-        return new AutoCloseable() {
-            @Override
-            public void close() throws DBusException {
-                removeSigHandler(_rule, _handler);
-            }
-        };
+        return () -> removeSigHandler(_rule, _handler);
     }
 
     /**
@@ -728,7 +712,7 @@ public final class DBusConnection extends AbstractConnection {
                 // remove all exported objects before disconnecting
                 Map<String, ExportedObject> exportedObjects = getExportedObjects();
                 synchronized (exportedObjects) {
-                    List<String> exportedKeys = exportedObjects.keySet().stream().filter(f -> f != null).collect(Collectors.toList());
+                    List<String> exportedKeys = exportedObjects.keySet().stream().filter(Objects::nonNull).collect(Collectors.toList());
                     for (String key : exportedKeys) {
                         unExportObject(key);
                     }
@@ -794,12 +778,7 @@ public final class DBusConnection extends AbstractConnection {
                 throw new DBusException(_ex.getMessage());
             }
         }
-        return new AutoCloseable() {
-            @Override
-            public void close() throws DBusException {
-                removeGenericSigHandler(_rule, _handler);
-            }
-        };
+        return () -> removeGenericSigHandler(_rule, _handler);
     }
 
     private final class SigHandler implements DBusSigHandler<DBusSignal> {

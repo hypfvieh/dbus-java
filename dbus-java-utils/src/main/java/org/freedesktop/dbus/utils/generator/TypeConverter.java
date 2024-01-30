@@ -115,24 +115,16 @@ public final class TypeConverter {
      * @return primitive or original input
      */
     private static String convertJavaBoxedTypeToPrimitive(String _clazzName) {
-        switch (_clazzName) {
-        case "Boolean":
-            return "boolean";
-        case "Integer":
-            return "int";
-        case "Long":
-            return "long";
-        case "Double":
-            return "double";
-        case "Float":
-            return "float";
-        case "Byte":
-            return "byte";
-        case "Char":
-            return "char";
-        default:
-            return _clazzName;
-        }
+        return switch (_clazzName) {
+            case "Boolean" -> "boolean";
+            case "Integer" -> "int";
+            case "Long"    -> "long";
+            case "Double"  -> "double";
+            case "Float"   -> "float";
+            case "Byte"    -> "byte";
+            case "Char"    -> "char";
+            default        -> _clazzName;
+        };
     }
 
     /**

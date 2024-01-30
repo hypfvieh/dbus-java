@@ -56,7 +56,7 @@ public class DBusMap<K, V> implements Map<K, V> {
     @SuppressWarnings("unchecked")
     public V get(Object _key) {
         for (Object[] entry : entries) {
-            if (_key == entry[0] || _key != null && _key.equals(entry[0])) {
+            if (Objects.equals(_key, entry[0])) {
                 return (V) entry[1];
             }
         }

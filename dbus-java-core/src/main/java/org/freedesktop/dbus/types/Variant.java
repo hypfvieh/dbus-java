@@ -137,10 +137,9 @@ public class Variant<T> {
         if (this == _obj) {
             return true;
         }
-        if (!(_obj instanceof Variant<?>)) {
+        if (!(_obj instanceof Variant<?> other)) {
             return false;
         }
-        Variant<?> other = (Variant<?>) _obj;
         return  Objects.equals(value, other.value);
     }
 

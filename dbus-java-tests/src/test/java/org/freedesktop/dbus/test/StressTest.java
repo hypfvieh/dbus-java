@@ -30,7 +30,7 @@ public class StressTest extends AbstractDBusDaemonBaseTest {
     @AfterEach
     public void tearDown() throws Exception {
         Collections.reverse(closeables);
-        closeables.forEach(closeable -> runUnchecked(() -> closeable.close()));
+        closeables.forEach(closeable -> runUnchecked(closeable::close));
     }
 
     @Test

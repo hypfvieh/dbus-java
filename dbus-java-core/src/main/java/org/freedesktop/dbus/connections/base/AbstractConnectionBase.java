@@ -170,7 +170,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
             m = getTransport().readMessage();
         } catch (IOException _exIo) {
             if (_exIo instanceof EOFException || _exIo instanceof ClosedByInterruptException) {
-                disconnectCallback.ifPresent(cb -> cb.clientDisconnect());
+                disconnectCallback.ifPresent(IDisconnectCallback::clientDisconnect);
                 if (disconnecting // when we are already disconnecting, ignore further errors
                     || getBusAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which
                                                          // is no error

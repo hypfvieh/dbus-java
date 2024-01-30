@@ -178,7 +178,7 @@ public class ClassBuilderInfo {
             bgn += " extends " + getSimpleTypeClasses(getExtendClass());
         }
         if (!getImplementedInterfaces().isEmpty()) {
-            bgn += " implements " + getImplementedInterfaces().stream().map(e -> getClassName(e)).collect(Collectors.joining(", "));
+            bgn += " implements " + getImplementedInterfaces().stream().map(ClassBuilderInfo::getClassName).collect(Collectors.joining(", "));
             // add classes import if implements-arguments are not a java.lang. classes
             getImports().addAll(getImplementedInterfaces().stream().filter(s -> !s.startsWith("java.lang.")).collect(Collectors.toList()));
         }
@@ -228,7 +228,7 @@ public class ClassBuilderInfo {
                 String innerIndent = _staticClass ? "            " : "        ";
 
                 if (!constructor.getSuperArguments().isEmpty()) {
-                    content.add(innerIndent + "super(" + constructor.getSuperArguments().stream().map(c -> c.getName()).collect(Collectors.joining(", ")) + ");");
+                    content.add(innerIndent + "super(" + constructor.getSuperArguments().stream().map(MemberOrArgument::getName).collect(Collectors.joining(", ")) + ");");
                 }
 
                 if (!constructor.getArguments().isEmpty()) {
@@ -365,7 +365,7 @@ public class ClassBuilderInfo {
         if (_type == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Pattern compile = Pattern.compile("([^, <>?]+)");
         Matcher matcher = compile.matcher(_type);
         while (matcher.find()) {

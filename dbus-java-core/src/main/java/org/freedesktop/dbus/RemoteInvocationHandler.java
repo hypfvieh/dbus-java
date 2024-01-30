@@ -54,7 +54,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
         } else if (_method.getName().equals("equals")) {
             try {
                 if (1 == _args.length) {
-                    return Boolean.valueOf(_args[0] != null && remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(_args[0])).remote));
+                    return _args[0] != null && remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(_args[0])).remote);
                 }
             } catch (IllegalArgumentException _exIa) {
                 return Boolean.FALSE;
@@ -211,16 +211,16 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         switch (_syncmethod) {
-            case CALL_TYPE_ASYNC:
+            case CALL_TYPE_ASYNC -> {
                 _conn.sendMessage(call);
                 return new DBusAsyncReply<>(call, _m, _conn);
-            case CALL_TYPE_CALLBACK:
+            }
+            case CALL_TYPE_CALLBACK -> {
                 _conn.queueCallback(call, _m, _callback);
                 _conn.sendMessage(call);
                 return null;
-            case CALL_TYPE_SYNC:
-                _conn.sendMessage(call);
-                break;
+            }
+            case CALL_TYPE_SYNC -> _conn.sendMessage(call);
         }
 
         // get reply

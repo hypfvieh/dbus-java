@@ -869,10 +869,9 @@ public class DBusDaemon extends Thread implements Closeable {
             if (this == _obj) {
                 return true;
             }
-            if (!(_obj instanceof Pair)) {
+            if (!(_obj instanceof Pair<?, ?> other)) {
                 return false;
             }
-            Pair<?, ?> other = (Pair<?, ?>) _obj;
             return Objects.equals(first, other.first) && Objects.equals(second, other.second);
         }
 

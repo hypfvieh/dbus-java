@@ -34,14 +34,14 @@ public final class ListMapStruct extends Struct implements IEmptyCollectionStruc
     @Override
     public String getStringTestValue() {
         return list.stream()
-                .map(m -> toPrintableMap(m))
+                .map(this::toPrintableMap)
                 .collect(Collectors.toList())
                 .toString();
     }
 
     private Map<String, String> toPrintableMap(Map<String, IntStruct> _m) {
         return _m.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().toSimpleString()));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toSimpleString()));
     }
 
     @Override

@@ -100,7 +100,7 @@ public final class StructHelper {
 
         Class<?>[] constructorArgClasses = Arrays.stream(_structType.getDeclaredFields())
             .filter(f -> f.isAnnotationPresent(Position.class))
-            .sorted((f1, f2) -> Integer.compare(f1.getAnnotation(Position.class).value(), f2.getAnnotation(Position.class).value()))
+            .sorted(Comparator.comparingInt(f -> f.getAnnotation(Position.class).value()))
             .map(Field::getType)
             .toArray(Class[]::new);
 
@@ -137,7 +137,7 @@ public final class StructHelper {
         }
 
         if (_variant.getType() instanceof DBusStructType && _variant.getValue() instanceof Object[]) {
-            Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(Object::getClass).toArray(size -> new Class<?>[size]);
+            Class<?>[] argTypes = Arrays.stream((Object[]) _variant.getValue()).map(Object::getClass).toArray(Class<?>[]::new);
             return createStruct(argTypes, _variant.getValue(), _structClass);
         }
 

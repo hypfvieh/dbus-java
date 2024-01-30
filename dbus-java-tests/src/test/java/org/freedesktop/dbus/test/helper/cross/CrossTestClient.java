@@ -74,11 +74,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
 
     public void fail(String _test, String _reason) {
         String test = _test.replaceAll("[$]", ".");
-        List<String> reasons = failed.get(test);
-        if (null == reasons) {
-            reasons = new ArrayList<>();
-            failed.put(test, reasons);
-        }
+        List<String> reasons = failed.computeIfAbsent(test, k -> new ArrayList<>());
         reasons.add(_reason);
     }
 
@@ -135,15 +131,12 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
                     fail(_iface.getName() + "." + _method, msg);
                 }
             } else {
-                if (o == _rv || o != null && o.equals(_rv)) {
+                if (Objects.equals(o, _rv)) {
                     pass(_iface.getName() + "." + _method);
                 } else {
                     fail(_iface.getName() + "." + _method, msg);
                 }
             }
-        } catch (DBusExecutionException _exDbe) {
-            _exDbe.printStackTrace();
-            fail(_iface.getName() + "." + _method, "Error occurred during execution: " + _exDbe.getClass().getName() + " " + _exDbe.getMessage());
         } catch (InvocationTargetException _exIt) {
             _exIt.printStackTrace();
             fail(_iface.getName() + "." + _method, "Error occurred during execution: " + _exIt.getCause().getClass().getName() + " " + _exIt.getCause().getMessage());
@@ -302,7 +295,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
             fail("org.freedesktop.DBus.Introspectable.Introspect", "Got exception during introspection on / (" + _ex.getClass().getName() + "): " + _ex.getMessage());
         }
 
-        test(SamplesInterface.class, _tests, "Identity", new Variant<>(Integer.valueOf(1)), new Variant<>(Integer.valueOf(1)));
+        test(SamplesInterface.class, _tests, "Identity", new Variant<>(1), new Variant<>(1));
         test(SamplesInterface.class, _tests, "Identity", new Variant<>("Hello"), new Variant<>("Hello"));
 
         test(SamplesInterface.class, _tests, "IdentityBool", false, false);
@@ -420,8 +413,8 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
 
         test(SamplesInterface.class, _tests, "DeStruct",
                 new Binding.Triplet<>("hi", new UInt32(12),
-                        Short.valueOf((short) 99)), new CrossSampleStruct("hi", new UInt32(12),
-                                Short.valueOf((short) 99)));
+                        (short) 99), new CrossSampleStruct("hi", new UInt32(12),
+                        (short) 99));
 
         Map<String, String> in = new HashMap<>();
         Map<String, List<String>> out = new HashMap<>();
@@ -443,7 +436,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         out.put("out", l);
         test(SamplesInterface.class, _tests, "InvertMapping", out, in);
 
-        primitizeTest(_tests, Integer.valueOf(1));
+        primitizeTest(_tests, 1);
         primitizeTest(_tests, new Variant<>(new Variant<>(new Variant<>(new Variant<>("Hi")))));
         primitizeTest(_tests, new Variant<>(in, new DBusMapType(String.class, String.class)));
 

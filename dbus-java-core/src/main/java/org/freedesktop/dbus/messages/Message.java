@@ -520,7 +520,7 @@ public class Message {
                 appendByte(((Number) _data).byteValue());
                 break;
             case BOOLEAN:
-                appendint(((Boolean) _data).booleanValue() ? 1 : 0, 4);
+                appendint((Boolean) _data ? 1 : 0, 4);
                 break;
             case DOUBLE:
                 long l = Double.doubleToLongBits(((Number) _data).doubleValue());
@@ -614,41 +614,40 @@ public class Message {
                     int algn = getAlignment(_sigb[i]);
                     int len = Array.getLength(_data);
                     switch (_sigb[i]) {
-                        case BYTE:
-                        primbuf = (byte[]) _data;
-                        break;
-                    case INT16, INT32, INT64:
-                        primbuf = new byte[len * algn];
-                        for (int j = 0, k = 0; j < len; j++, k += algn) {
-                            marshallint(Array.getLong(_data, j), primbuf, k, algn);
+                        case BYTE -> {
+                            primbuf = (byte[]) _data;
                         }
-                        break;
-                    case BOOLEAN:
-                        primbuf = new byte[len * algn];
-                        for (int j = 0, k = 0; j < len; j++, k += algn) {
-                            marshallint(Array.getBoolean(_data, j) ? 1 : 0, primbuf, k, algn);
-                        }
-                        break;
-                    case DOUBLE:
-                        primbuf = new byte[len * algn];
-                        if (_data instanceof float[] fa) {
+                        case INT16, INT32, INT64 -> {
+                            primbuf = new byte[len * algn];
                             for (int j = 0, k = 0; j < len; j++, k += algn) {
-                                marshallint(Double.doubleToRawLongBits(fa[j]), primbuf, k, algn);
-                            }
-                        } else {
-                            for (int j = 0, k = 0; j < len; j++, k += algn) {
-                                marshallint(Double.doubleToRawLongBits(((double[]) _data)[j]), primbuf, k, algn);
+                                marshallint(Array.getLong(_data, j), primbuf, k, algn);
                             }
                         }
-                        break;
-                    case FLOAT:
-                        primbuf = new byte[len * algn];
-                        for (int j = 0, k = 0; j < len; j++, k += algn) {
-                            marshallint(Float.floatToRawIntBits(((float[]) _data)[j]), primbuf, k, algn);
+                        case BOOLEAN -> {
+                            primbuf = new byte[len * algn];
+                            for (int j = 0, k = 0; j < len; j++, k += algn) {
+                                marshallint(Array.getBoolean(_data, j) ? 1 : 0, primbuf, k, algn);
+                            }
                         }
-                        break;
-                    default:
-                        throw new MarshallingException("Primitive array being sent as non-primitive array.");
+                        case DOUBLE -> {
+                            primbuf = new byte[len * algn];
+                            if (_data instanceof float[] fa) {
+                                for (int j = 0, k = 0; j < len; j++, k += algn) {
+                                    marshallint(Double.doubleToRawLongBits(fa[j]), primbuf, k, algn);
+                                }
+                            } else {
+                                for (int j = 0, k = 0; j < len; j++, k += algn) {
+                                    marshallint(Double.doubleToRawLongBits(((double[]) _data)[j]), primbuf, k, algn);
+                                }
+                            }
+                        }
+                        case FLOAT -> {
+                            primbuf = new byte[len * algn];
+                            for (int j = 0, k = 0; j < len; j++, k += algn) {
+                                marshallint(Float.floatToRawIntBits(((float[]) _data)[j]), primbuf, k, algn);
+                            }
+                        }
+                        default -> throw new MarshallingException("Primitive array being sent as non-primitive array.");
                     }
                     appendBytes(primbuf);
                 } else if (_data instanceof List<?> lst) {

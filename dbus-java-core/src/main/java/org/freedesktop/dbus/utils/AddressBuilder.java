@@ -132,7 +132,7 @@ public final class AddressBuilder {
         List<String> locationPriorityList = Arrays.asList(System.getenv(DBusSysProps.DBUS_MACHINE_ID_SYS_VAR), _dbusMachineIdFile,
                 "/var/lib/dbus/machine-id", "/usr/local/var/lib/dbus/machine-id", "/etc/machine-id");
         return locationPriorityList.stream()
-                .filter(s -> s != null)
+                .filter(Objects::nonNull)
                 .map(File::new)
                 .filter(f -> f.exists() && f.length() > 0)
                 .findFirst()

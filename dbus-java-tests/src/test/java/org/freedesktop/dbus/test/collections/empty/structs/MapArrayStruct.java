@@ -34,12 +34,12 @@ public final class MapArrayStruct extends Struct implements IEmptyCollectionStru
     @Override
     public String getStringTestValue() {
         return map.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> toPrintableArray(e.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> toPrintableArray(e.getValue())))
                 .toString();
     }
 
     private String toPrintableArray(IntStruct[] _array) {
-        String values = Stream.of(_array).map(e -> e.toSimpleString())
+        String values = Stream.of(_array).map(IntStruct::toSimpleString)
                 .collect(Collectors.joining(","));
         return String.format("[%s]", values);
     }

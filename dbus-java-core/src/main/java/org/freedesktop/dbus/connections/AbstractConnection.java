@@ -412,7 +412,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             return null;
         }
         return Arrays.stream(_parameters)
-                .filter(p -> p != null) // do no try to convert null values to concrete class
+                .filter(Objects::nonNull) // do no try to convert null values to concrete class
                 .map(p -> {
                     if (List.class.isAssignableFrom(p.getClass())) { // turn possible List subclasses (e.g. ArrayList) to interface class List
                         return List.class;

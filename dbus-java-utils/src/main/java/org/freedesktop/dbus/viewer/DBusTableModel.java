@@ -74,16 +74,13 @@ class DBusTableModel extends AbstractTableModel {
         if (columnName.equals(NAME)) {
             return String.class;
         }
-        if (columnName.equals(PATH)) {
-            return String.class;
-        } else if (columnName.equals(USER)) {
-            return Object.class;
-        } else if (columnName.equals(OWNER)) {
-            return String.class;
-        } else if (columnName.equals(INTROSPECTABLE)) {
-            return Boolean.class;
-        }
-        return super.getColumnClass(_columnIndex);
+        return switch (columnName) {
+            case PATH  -> String.class;
+            case USER  -> Object.class;
+            case OWNER -> String.class;
+            case INTROSPECTABLE -> Boolean.class;
+            default -> super.getColumnClass(_columnIndex);
+        };
     }
 
     /** {@inheritDoc} */
@@ -94,16 +91,13 @@ class DBusTableModel extends AbstractTableModel {
         if (columnName.equals(NAME)) {
             return entry.getName();
         }
-        if (columnName.equals(PATH)) {
-            return entry.getPath();
-        } else if (columnName.equals(USER)) {
-            return entry.getUser();
-        } else if (columnName.equals(OWNER)) {
-            return entry.getOwner();
-        } else if (columnName.equals(INTROSPECTABLE)) {
-            return entry.getIntrospectable() != null;
-        }
-        return null;
+        return switch (columnName) {
+            case PATH  -> entry.getPath();
+            case USER  -> entry.getUser();
+            case OWNER -> entry.getOwner();
+            case INTROSPECTABLE -> entry.getIntrospectable() != null;
+            default -> null;
+        };
     }
 
 }

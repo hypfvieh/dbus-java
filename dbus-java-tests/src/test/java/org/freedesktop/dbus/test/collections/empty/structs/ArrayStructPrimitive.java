@@ -31,7 +31,7 @@ public final class ArrayStructPrimitive extends Struct implements IEmptyCollecti
 
     @Override
     public String getStringTestValue() {
-        return IntStream.of(list).mapToObj(i -> Integer.toString(i)).collect(Collectors.joining(","));
+        return IntStream.of(list).mapToObj(Integer::toString).collect(Collectors.joining(","));
     }
 
     @Override

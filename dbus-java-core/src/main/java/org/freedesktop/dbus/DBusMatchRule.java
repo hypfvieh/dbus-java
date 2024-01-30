@@ -255,10 +255,9 @@ public class DBusMatchRule {
         if (this == _obj) {
             return true;
         }
-        if (!(_obj instanceof DBusMatchRule)) {
+        if (!(_obj instanceof DBusMatchRule other)) {
             return false;
         }
-        DBusMatchRule other = (DBusMatchRule) _obj;
         return Objects.equals(iface, other.iface) && Objects.equals(member, other.member)
                 && Objects.equals(object, other.object) && Objects.equals(source, other.source)
                 && Objects.equals(type, other.type);
