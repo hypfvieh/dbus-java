@@ -227,7 +227,7 @@
                     <!-- http://maven.apache.org/plugins/maven-pmd-plugin/ -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.20.0</version>
+                    <version>3.21.2</version>
                     <dependencies>
                         <dependency>
                             <groupId>net.sourceforge.pmd</groupId>
