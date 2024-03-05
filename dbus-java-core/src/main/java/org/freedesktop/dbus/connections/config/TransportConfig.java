@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections.config;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
+import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.utils.Util;
 
 import java.nio.file.attribute.PosixFilePermission;
@@ -34,6 +35,9 @@ public final class TransportConfig {
 
     private byte                        endianess        = BaseConnectionBuilder.getSystemEndianness();
     private boolean                     registerSelf     = true;
+
+    private ClassLoader                 serviceLoaderClassLoader = TransportBuilder.class.getClassLoader();
+    private ModuleLayer                 serviceLoaderModuleLayer;
 
     /**
      * Unix file permissions to set on socket file if this is a server transport (ignored on Windows, does nothing if
@@ -167,6 +171,22 @@ public final class TransportConfig {
 
     public void setRegisterSelf(boolean _registerSelf) {
         registerSelf = _registerSelf;
+    }
+
+    public ClassLoader getServiceLoaderClassLoader() {
+        return serviceLoaderClassLoader;
+    }
+
+    public void setServiceLoaderClassLoader(ClassLoader _serviceLoaderClassLoader) {
+        serviceLoaderClassLoader = _serviceLoaderClassLoader;
+    }
+
+    public ModuleLayer getServiceLoaderModuleLayer() {
+        return serviceLoaderModuleLayer;
+    }
+
+    public void setServiceLoaderModuleLayer(ModuleLayer _serviceLoaderModuleLayer) {
+        serviceLoaderModuleLayer = _serviceLoaderModuleLayer;
     }
 
     /**

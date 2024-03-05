@@ -3,9 +3,11 @@ package org.freedesktop.dbus.connections.config;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.messages.constants.Endian;
+import org.freedesktop.dbus.spi.transport.ITransportProvider;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -237,6 +239,32 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      */
     public X withAdditionalConfig(String _key, Object _value) {
         config.getAdditionalConfig().put(_key, _value);
+        return self();
+    }
+
+    /**
+     * Configure parent class loader used for {@link ServiceLoader} to find {@link ITransportProvider} implementations.<br>
+     * If {@link #withServiceLoaderModuleLayer(ModuleLayer)} is also configured, {@link ModuleLayer} will take precedence.
+     * <br><br>
+     * Defaults to {@code TransportBuilder.class.getClassLoader()}.
+     * @param _ldr class loader
+     *
+     * @return this
+     */
+    public X withServiceLoaderClassLoader(ClassLoader _ldr) {
+        config.setServiceLoaderClassLoader(_ldr);
+        return self();
+    }
+
+    /**
+     * Configure {@link ModuleLayer} used for {@link ServiceLoader} to find {@link ITransportProvider} implementations.
+     *
+     * @param _layer module layer
+     *
+     * @return this
+     */
+    public X withServiceLoaderModuleLayer(ModuleLayer _layer) {
+        config.setServiceLoaderModuleLayer(_layer);
         return self();
     }
 

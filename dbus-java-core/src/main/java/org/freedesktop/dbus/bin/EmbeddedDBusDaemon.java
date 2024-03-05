@@ -9,6 +9,7 @@ import org.freedesktop.dbus.exceptions.AuthenticationException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.exceptions.SocketClosedException;
+import org.freedesktop.dbus.spi.transport.ITransportProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +43,9 @@ public class EmbeddedDBusDaemon implements Closeable {
     private String unixSocketFileGroup;
 
     private PosixFilePermission[] unixSocketFilePermissions;
+
+    private ClassLoader serviceLoaderClassLoader;
+    private ModuleLayer serviceLoaderModuleLayer;
 
     private Consumer<AbstractTransport> connectCallback;
     private Consumer<AbstractTransport> bindCallback;
@@ -216,6 +221,24 @@ public class EmbeddedDBusDaemon implements Closeable {
     }
 
     /**
+     * ClassLoader to use for {@link ServiceLoader} to find {@link ITransportProvider} implementations.
+     *
+     * @param _serviceLoaderClassLoader class loader
+     */
+    public void setServiceLoaderClassLoader(ClassLoader _serviceLoaderClassLoader) {
+        serviceLoaderClassLoader = _serviceLoaderClassLoader;
+    }
+
+    /**
+     * Module Layer to use for {@link ServiceLoader} to find {@link ITransportProvider} implementations.
+     *
+     * @param _serviceLoaderModuleLayer module layer
+     */
+    public void setServiceLoaderModuleLayer(ModuleLayer _serviceLoaderModuleLayer) {
+        serviceLoaderModuleLayer = _serviceLoaderModuleLayer;
+    }
+
+    /**
      * Configured pre-connect callback.
      * @return Consumer or null
      */
@@ -274,6 +297,8 @@ public class EmbeddedDBusDaemon implements Closeable {
                 .withUnixSocketFileGroup(unixSocketFileGroup)
                 .withUnixSocketFilePermissions(unixSocketFilePermissions)
                 .withPreConnectCallback(connectCallback)
+                .withServiceLoaderClassLoader(serviceLoaderClassLoader)
+                .withServiceLoaderModuleLayer(serviceLoaderModuleLayer)
                 .withAfterBindCallback(x -> {
                     if (bindCallback != null) {
                         bindCallback.accept(x);

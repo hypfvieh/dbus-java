@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Builder to create transports of different types.
@@ -25,22 +26,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TransportBuilder {
 
-    private static final Logger                          LOGGER      = LoggerFactory.getLogger(TransportBuilder.class);
-    private static final Map<String, ITransportProvider> PROVIDERS   = getTransportProvider();
+    private static final Logger                                       LOGGER      = LoggerFactory.getLogger(TransportBuilder.class);
+    private static final Map<Object, Map<String, ITransportProvider>> PROVIDERS   = new ConcurrentHashMap<>();
+
+    static {
+        findTransportProvider(TransportBuilder.class.getClassLoader(), null);
+    }
 
     private TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
 
     private TransportBuilder(TransportConfig _config) {
         transportConfigBuilder = new TransportConfigBuilder<>(() -> this);
         if (_config != null) {
+            findTransportProvider(_config.getServiceLoaderClassLoader(), _config.getServiceLoaderModuleLayer());
             transportConfigBuilder.withConfig(_config);
         }
     }
 
-    static Map<String, ITransportProvider> getTransportProvider() {
-        Map<String, ITransportProvider> providers = new ConcurrentHashMap<>();
+    static void findTransportProvider(ClassLoader _clzLoader, ModuleLayer _layer) {
+        Object key = _layer != null ? _layer : _clzLoader;
+        if (PROVIDERS.containsKey(key)) { // providers for current key already cached
+            return;
+        }
         try {
-            ServiceLoader<ITransportProvider> spiLoader = ServiceLoader.load(ITransportProvider.class, TransportBuilder.class.getClassLoader());
+            ServiceLoader<ITransportProvider> spiLoader = _layer != null
+                ? ServiceLoader.load(_layer, ITransportProvider.class)
+                : ServiceLoader.load(ITransportProvider.class, _clzLoader);
             for (ITransportProvider provider : spiLoader) {
                 String providerBusType = provider.getSupportedBusType();
                 if (providerBusType == null) { // invalid transport, ignore
@@ -51,22 +62,21 @@ public final class TransportBuilder {
 
                 LOGGER.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
 
-                if (providers.containsKey(providerBusType)) {
+                if (PROVIDERS.containsKey(key) && PROVIDERS.get(key).containsKey(providerBusType)) {
                     throw new TransportRegistrationException("Found transport "
-                            + providers.get(providerBusType).getClass().getName()
+                            + PROVIDERS.get(key).get(providerBusType).getClass().getName()
                             + " and "
                             + provider.getClass().getName() + " both providing transport for socket type "
                             + providerBusType + ", please only add one of them to classpath.");
                 }
-                providers.put(providerBusType, provider);
+                PROVIDERS.computeIfAbsent(key, x -> new HashMap<>()).put(providerBusType, provider);
             }
-            if (providers.isEmpty()) {
+            if (PROVIDERS.isEmpty()) {
                 throw new TransportRegistrationException("No dbus-java-transport found in classpath, please add a transport module");
             }
         } catch (ServiceConfigurationError _ex) {
             LOGGER.error("Could not initialize service provider.", _ex);
         }
-        return providers;
     }
 
     /**
@@ -172,7 +182,8 @@ public final class TransportBuilder {
         int configuredSaslAuthMode = config.getSaslConfig().getAuthMode();
 
         AbstractTransport transport = null;
-        ITransportProvider provider = PROVIDERS.get(config.getBusAddress().getBusType());
+        ITransportProvider provider = PROVIDERS.values().stream().map(e -> e.get(config.getBusAddress().getBusType())).filter(Objects::nonNull).findAny().get();
+
         if (provider == null) {
             throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
         } else {
@@ -247,7 +258,7 @@ public final class TransportBuilder {
      * @return {@link List}, maybe empty
      */
     public static List<String> getRegisteredBusTypes() {
-        return new ArrayList<>(PROVIDERS.keySet());
+        return PROVIDERS.values().stream().flatMap(d -> d.keySet().stream()).collect(Collectors.toList());
     }
 
     /**
@@ -260,7 +271,7 @@ public final class TransportBuilder {
      */
     public static String createDynamicSession(String _busType, boolean _listeningAddress) {
         Objects.requireNonNull(_busType, "Bustype required");
-        ITransportProvider provider = PROVIDERS.get(_busType.toUpperCase(Locale.US));
+        ITransportProvider provider = PROVIDERS.values().stream().map(e -> e.get(_busType)).filter(Objects::nonNull).findAny().get();
         if (provider != null) {
             return provider.createDynamicSessionAddress(_listeningAddress);
         }
