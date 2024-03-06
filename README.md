@@ -113,8 +113,9 @@ The library will remain open source and MIT licensed and can still be used, fork
 ##### Changes in 5.0.1 (not released yet):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))
    - More Java 17 syntactic sugar, thanks to [spannm](https://github.com/spannm) ([PR#249](https://github.com/hypfvieh/dbus-java/issues/249))
+   - Added support for custom ClassLoader/ModuleLayer when configuring Transport (allows usage of third party transports when e.g. using JPMS) ([#251](https://github.com/hypfvieh/dbus-java/issues/251))
 
-##### Changes in 5.0.0 (2023-01-25):
+##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**
    - Removed all classes and methods marked as deprecated in 4.x
    - Updated dependencies and maven plugins
