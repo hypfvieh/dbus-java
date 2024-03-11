@@ -9,6 +9,7 @@ import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.propertyref.PropertyRef;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.Util;
@@ -306,6 +307,17 @@ public class ExportedObject {
             if (interfaces.contains(DBusInterface.class)) {
                 // clazz is interface and directly extends the DBusInterface
                 result.add(clazz);
+            }
+
+            if (!checked.contains(Properties.class)) {
+                for (Method method : clazz.getDeclaredMethods()) {
+                    DBusBoundProperty propertyAnnot = method.getAnnotation(DBusBoundProperty.class);
+                    if (propertyAnnot != null) {
+                        // clazz is using @DBusBoundProperty, always exposed the properties interface
+                        toCheck.add(Properties.class);
+                        break;
+                    }
+                }
             }
 
             // iterate over the sub-interfaces and select the ones that extend DBusInterface
