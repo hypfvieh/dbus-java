@@ -65,13 +65,24 @@ public final class PropRefRemoteHandler {
 
         String[] variantType = type != null ? new String[] {Marshalling.getDBusType(type)} : null;
 
+        RemoteObject propertiesRemoteObj = new RemoteObject(_remote.getBusName(), _remote.getObjectPath(), Properties.class, _remote.isAutostart());
+
+        Object result = null;
+
         if (access == Access.READ) {
-            return RemoteInvocationHandler.executeRemoteMethod(_remote, PROP_GET_METHOD,
+            result = RemoteInvocationHandler.executeRemoteMethod(propertiesRemoteObj, PROP_GET_METHOD,
                    new Type[] {_method.getGenericReturnType()}, _conn, RemoteInvocationHandler.CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name);
         } else {
-            return RemoteInvocationHandler.executeRemoteMethod(_remote, PROP_SET_METHOD, variantType,
+            result = RemoteInvocationHandler.executeRemoteMethod(propertiesRemoteObj, PROP_SET_METHOD, variantType,
                    new Type[] {_method.getGenericReturnType()}, _conn, RemoteInvocationHandler.CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name, _args[0]);
         }
+
+        // requested return type is not Variant but the result is -> unwrap Variant
+        if (_method.getReturnType() != Variant.class && typeClass != Variant.class && result instanceof Variant<?> v) {
+            return v.getValue();
+        }
+
+        return result;
     }
 
     private static Method getPropertiesMethod(String _method, Class<?>... _signature) {
