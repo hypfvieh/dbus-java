@@ -309,16 +309,11 @@ public class ExportedObject {
                 result.add(clazz);
             }
 
-            if (!checked.contains(Properties.class)) {
-                for (Method method : clazz.getDeclaredMethods()) {
-                    DBusBoundProperty propertyAnnot = method.getAnnotation(DBusBoundProperty.class);
-                    if (propertyAnnot != null) {
-                        // clazz is using @DBusBoundProperty, always exposed the properties interface
-                        toCheck.add(Properties.class);
-                        break;
-                    }
-                }
-            }
+            // if clazz is using @DBusBoundProperty, always expose the Properties interface
+            Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(DBusBoundProperty.class))
+                .findAny()
+                .ifPresent(x -> toCheck.add(Properties.class));
 
             // iterate over the sub-interfaces and select the ones that extend DBusInterface
             // this is required especially for nested interfaces
