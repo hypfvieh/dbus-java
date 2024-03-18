@@ -10,6 +10,7 @@ import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.errors.UnknownProperty;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.FatalDBusException;
@@ -275,6 +276,20 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     public synchronized void disconnect() {
         getLogger().debug("Disconnect called");
         internalDisconnect(null);
+    }
+
+    /**
+     * Sends a reply on the bus to signal a non-existing property was requested.
+     *
+     * @param _methodCall method call
+     * @param _params params
+     *
+     * @throws DBusException when sending fails
+     */
+    protected void rejectUnknownProperty(final MethodCall _methodCall, Object[] _params) throws DBusException {
+        Object p = _params != null && _params.length >= 2 ? _params[1] : "unknown";
+        sendMessage(getMessageFactory().createError(_methodCall, new UnknownProperty(String.format(
+            "The property `%s' does not exist.", p))));
     }
 
     protected synchronized Map<String, ExportedObject> getExportedObjects() {

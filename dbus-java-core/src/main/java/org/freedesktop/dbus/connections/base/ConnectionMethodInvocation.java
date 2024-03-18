@@ -8,6 +8,7 @@ import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.messages.MethodReturn;
@@ -67,6 +68,11 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
     protected Object invokeMethodAndReply(final MethodCall _methodCall, final Method _me, final Object _ob, final boolean _noreply) {
         try {
             Object result = invokeMethod(_methodCall, _me, _ob);
+            if (_me.getDeclaringClass() == Properties.class && _me.getName().equals("Get") && result == null) {
+                rejectUnknownProperty(_methodCall, _methodCall.getParameters());
+                return null;
+            }
+
             if (!_noreply) {
                 invokedMethodReply(_methodCall, _me, result);
             }
@@ -75,7 +81,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
             getLogger().debug("Failed to invoke method call", _ex);
             handleException(_methodCall, _ex);
         } catch (Throwable _ex) {
-            getLogger().debug("Error invoking method call", _ex);
+            getLogger().debug("Error invoking method call {}", _methodCall, _ex);
             handleException(_methodCall,
                     new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
                             _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
@@ -121,7 +127,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
             Object[] params5 = _methodCall.getParameters();
             return _me.invoke(_ob, params5);
         } catch (InvocationTargetException _ex) {
-            getLogger().debug(_ex.getMessage(), _ex);
+            getLogger().debug("Unable to execute {}: {}", _methodCall, _ex.getMessage(), _ex);
             throw _ex.getCause();
         } finally {
             getInfoMap().remove(Thread.currentThread());

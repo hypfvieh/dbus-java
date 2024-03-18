@@ -27,6 +27,7 @@ public class ExportedObject {
     private final Map<PropertyRef, Method> propertyMethods;
     private final String                   introspectionData;
     private final Reference<DBusInterface> object;
+    private final Set<Class<?>>            implementedInterfaces;
 
     public ExportedObject(DBusInterface _object, boolean _weakreferences) throws DBusException {
         object = _weakreferences ? new WeakReference<>(_object) : new StrongReference<>(_object);
@@ -34,7 +35,7 @@ public class ExportedObject {
         methods = new HashMap<>();
         propertyMethods = new HashMap<>();
 
-        Set<Class<?>> implementedInterfaces = getDBusInterfaces(_object.getClass());
+        implementedInterfaces = getDBusInterfaces(_object.getClass());
         implementedInterfaces.add(Introspectable.class);
         implementedInterfaces.add(Peer.class);
 
@@ -371,6 +372,10 @@ public class ExportedObject {
 
     public String getIntrospectiondata() {
         return introspectionData;
+    }
+
+    public Set<Class<?>> getImplementedInterfaces() {
+        return implementedInterfaces;
     }
 
     @Override

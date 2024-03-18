@@ -8,15 +8,15 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
@@ -73,11 +73,108 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
         }
     }
 
+    @Test
+    public void testMixedProperties() throws IOException, DBusException, InterruptedException {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+            MixedPropObj obj = new MixedPropObj();
+
+            conn.requestBusName("com.acme.mixed");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                MixedProperties myObject = innerConn.getRemoteObject("com.acme.mixed", "/com/acme/mixed/MyMixedObject", MixedProperties.class);
+
+                assertEquals("Value by Annotation", myObject.getAnnotationProperty());
+                assertEquals("Mixed value", myObject.Get("com.acme.mixed.MixedProperties", "mixed"));
+
+                myObject.setAnnotationProperty("Another Value by Annotation");
+                myObject.Set("com.acme.mixed.MixedProperties", "mixed", "New mix");
+                myObject.Set("com.acme.mixed.MixedProperties", "more", "More mix");
+
+                assertEquals("Another Value by Annotation", myObject.getAnnotationProperty());
+
+                assertEquals("Mixed value", myObject.Get("com.acme.mixed.MixedProperties", "mixed")); // the key "mixed" is hard coded, so changing it above should not change output
+                assertEquals("More mix", myObject.Get("com.acme.mixed.MixedProperties", "more"));
+
+                List<Entry<String, Variant<String>>> expected = List.of(
+                    new AbstractMap.SimpleEntry<>("AnnotationProperty", new Variant<>("Another Value by Annotation")),
+                    new AbstractMap.SimpleEntry<>("more", new Variant<>("More mix"))
+                    );
+
+                Map<String, Variant<?>> all = myObject.GetAll("com.acme.mixed.MixedProperties");
+                for (Entry<String, Variant<String>> entry : expected) {
+                    assertTrue(all.containsKey(entry.getKey()), "Key not found: " + entry.getKey());
+                    assertEquals(entry.getValue(), all.get(entry.getKey()));
+                }
+
+            }
+        }
+    }
+
+    @DBusInterfaceName("com.acme.mixed.MixedProperties")
+    public interface MixedProperties extends DBusInterface, Properties {
+        @DBusBoundProperty(access = Access.READ, name = "AnnotationProperty")
+        String getAnnotationProperty();
+
+        @DBusBoundProperty(access = Access.WRITE, name = "AnnotationProperty")
+        void setAnnotationProperty(String _property);
+    }
+
+    public static class MixedPropObj implements MixedProperties {
+
+        private String annotPropVal = "Value by Annotation";
+        private Map<String, Variant<?>> propVals = new HashMap<>();
+
+        public MixedPropObj() {
+            propVals.put("mixed", new Variant<>("Mixed value"));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <A> A Get(String _interfaceName, String _propertyName) {
+            if ("mixed".equals(_propertyName)) {
+                return (A) "Mixed value";
+            }
+            return (A) propVals.get(_propertyName);
+        }
+
+        @Override
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
+            propVals.put(_propertyName, new Variant<>(_value));
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
+            return propVals;
+        }
+
+        @Override
+        public String getObjectPath() {
+            return "/com/acme/mixed/MyMixedObject";
+        }
+
+        @Override
+        public String getAnnotationProperty() {
+            return annotPropVal;
+        }
+
+        @Override
+        public void setAnnotationProperty(String _property) {
+            annotPropVal = _property;
+        }
+
+        @Override
+        public String toString() {
+            return "MixedPropObj [annotPropVal=" + annotPropVal + ", hash=" + hashCode() + "]";
+        }
+
+    }
+
     interface IntegerList extends TypeRef<List<Integer>> {
 
     }
 
-    interface LongMap  extends TypeRef<Map<String, Long>> {
+    interface LongMap extends TypeRef<Map<String, Long>> {
 
     }
 

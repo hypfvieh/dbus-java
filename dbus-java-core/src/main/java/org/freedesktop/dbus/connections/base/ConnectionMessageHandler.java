@@ -2,7 +2,6 @@ package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusProperties;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -15,6 +14,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.constants.Flags;
@@ -300,13 +300,20 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
             }
 
             Object[] params = _methodCall.getParameters();
-            if (handleDBusBoundProperties(exportObject, _methodCall, params)) {
-                return;
+            switch (handleDBusBoundProperties(exportObject, _methodCall, params)) {
+                case HANDLED:
+                    return;
+                case NO_PROPERTY:
+                    rejectUnknownProperty(_methodCall, params);
+                    return;
+                case NOT_HANDLED:
+                default:
+                    break;
             }
 
             if (meth == null) {
                 meth = exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
-                if (null == meth) {
+                if (meth == null) {
                     sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
                         "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
                     return;
@@ -334,12 +341,16 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
      * @param _methodCall method to call
      * @param _params parameter to pass to method
      *
-     * @return true if call was handled, false otherwise
+     * @return Any of:<br>
+     *
+     * {@link PropHandled#HANDLED} when property was defined by annotation and was handled by this method<br>
+     * {@link PropHandled#NOT_HANDLED} when object implements DBus Properties but the requested property was not defined by annotation<br>
+     * {@link PropHandled#NO_PROPERTY} when property is not defined by annotation and object does not implement DBus Properties<br>
      *
      * @throws DBusException when something fails
      */
     @SuppressWarnings("unchecked")
-    private boolean handleDBusBoundProperties(ExportedObject _exportObject, final MethodCall _methodCall, Object[] _params) throws DBusException {
+    private PropHandled handleDBusBoundProperties(ExportedObject _exportObject, final MethodCall _methodCall, Object[] _params) throws DBusException {
         if (_params.length == 2 && _params[0] instanceof String
             && _params[1] instanceof String
             && _methodCall.getName().equals("Get")) {
@@ -356,7 +367,11 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                     invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED));
                 });
 
-                return true;
+                return PropHandled.HANDLED;
+            } else if (_exportObject.getImplementedInterfaces().contains(Properties.class)) {
+                return PropHandled.NOT_HANDLED;
+            } else {
+                return PropHandled.NO_PROPERTY;
             }
         } else if (_params.length == 3
             && _params[0] instanceof String
@@ -407,11 +422,10 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                     } catch (Exception _ex) {
                         getLogger().debug("Failed to invoke method call on Properties", _ex);
                         handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
-                        return;
                     }
                 });
 
-                return true;
+                return PropHandled.HANDLED;
             }
         } else if (_params.length == 1 && _params[0] instanceof String
             && _methodCall.getName().equals("GetAll")) {
@@ -421,12 +435,12 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
             if (!allPropertyMethods.isEmpty()) {
                 Object object = _exportObject.getObject().get();
                 Method meth = null;
-                if (object instanceof DBusProperties) {
+                if (object instanceof Properties) {
                     meth = _exportObject.getMethods().get(new MethodTuple(_methodCall.getName(), _methodCall.getSig()));
                     if (null == meth) {
                         sendMessage(getMessageFactory().createError(_methodCall, new UnknownMethod(String.format(
                             "The method `%s.%s' does not exist on this object.", _methodCall.getInterface(), _methodCall.getName()))));
-                        return true;
+                        return PropHandled.HANDLED;
                     }
                 } else {
                     try {
@@ -451,14 +465,17 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                                 Object val =  invokeMethod(_methodCall, propMeth, object);
                                 resultMap.put(propEn.getKey().getName(), val);
                             } catch (Throwable _ex) {
-                                getLogger().debug("", _ex);
+                                getLogger().debug("Error executing method {} on method call {}", propMeth, _methodCall, _ex);
                                 handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
                                 return;
                             }
                         }
                     }
 
-                    if (object instanceof DBusProperties) {
+                    // this object implements Properties, so we have to query for these properties as well as
+                    // collecting the properties only available by annotations
+                    if (object instanceof Properties) {
+                        _methodCall.setArgs(new Object[] {_methodCall.getInterface()});
                         resultMap.putAll((Map<String, ? extends Variant<?>>) setupAndInvoke(_methodCall, originalMeth, object, true));
                     }
 
@@ -474,9 +491,18 @@ public abstract sealed class ConnectionMessageHandler extends ConnectionMethodIn
                             _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
                     }
                 });
-                return true;
+                return PropHandled.HANDLED;
             }
         }
-        return false;
+        return PropHandled.NOT_HANDLED;
+    }
+
+    public enum PropHandled {
+        /** Property request was handled. */
+        HANDLED,
+        /** Property request was not handled. */
+        NOT_HANDLED,
+        /** Property was not handled and Properties interface was not defined on exported object. */
+        NO_PROPERTY
     }
 }
