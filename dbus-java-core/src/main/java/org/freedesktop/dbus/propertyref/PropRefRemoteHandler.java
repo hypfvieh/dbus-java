@@ -85,7 +85,7 @@ public final class PropRefRemoteHandler {
         return result;
     }
 
-    private static Method getPropertiesMethod(String _method, Class<?>... _signature) {
+    public static Method getPropertiesMethod(String _method, Class<?>... _signature) {
         try {
             return Properties.class.getMethod(_method, _signature);
         } catch (NoSuchMethodException | SecurityException _ex) {

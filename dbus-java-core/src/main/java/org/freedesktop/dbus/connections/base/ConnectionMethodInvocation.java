@@ -23,12 +23,12 @@ import java.util.Arrays;
 /**
  * Abstract class containing most methods to invoke methods on a connection. <br>
  * Part of the {@link AbstractConnectionBase} &rarr;  {@link ConnectionMethodInvocation}
- * &rarr; {@link ConnectionMessageHandler} &rarr; {@link AbstractConnection} hierarchy.
+ * &rarr; {@link DBusBoundPropertyHandler} &rarr; {@link ConnectionMessageHandler} &rarr; {@link AbstractConnection} hierarchy.
  *
  * @author hypfvieh
  * @since 5.0.0 - 2023-10-23
  */
-public abstract sealed class ConnectionMethodInvocation extends AbstractConnectionBase permits ConnectionMessageHandler {
+public abstract sealed class ConnectionMethodInvocation extends AbstractConnectionBase permits DBusBoundPropertyHandler {
 
     protected ConnectionMethodInvocation(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_transportConfig, _rsCfg);
