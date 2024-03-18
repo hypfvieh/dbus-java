@@ -2,8 +2,12 @@ package org.freedesktop.dbus.utils;
 
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.InvalidBusNameException;
+import org.freedesktop.dbus.exceptions.InvalidInterfaceSignature;
 import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
 
+import java.lang.reflect.Modifier;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -214,5 +218,25 @@ public final class DBusObjects {
             throw _exception.get();
         }
         return _input;
+    }
+
+    /**
+     * Ensures that all interfaces found on the given object a public accessable.
+     *
+     * @param _object object to check
+     *
+     * @throws InvalidInterfaceSignature when there is any interface on the given object which is non public
+     */
+    public static void ensurePublicInterfaces(Object _object) throws InvalidInterfaceSignature {
+        Set<String> invalid = new LinkedHashSet<>();
+        for (Class<?> iClz : _object.getClass().getInterfaces()) {
+            if (!Modifier.isPublic(iClz.getModifiers())) {
+                invalid.add(iClz.getName());
+            }
+        }
+        if (!invalid.isEmpty()) {
+            throw new InvalidInterfaceSignature(invalid);
+        }
+
     }
 }

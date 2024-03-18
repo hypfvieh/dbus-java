@@ -166,7 +166,10 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
         if (null == _objectPath || _objectPath.isEmpty()) {
             throw new DBusException("Must Specify an Object Path");
         }
+
         DBusObjects.requireObjectPath(_objectPath);
+        DBusObjects.ensurePublicInterfaces(_object);
+
         synchronized (getExportedObjects()) {
             if (null != getExportedObjects().get(_objectPath)) {
                 throw new DBusException("Object already exported");
