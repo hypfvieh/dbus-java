@@ -693,4 +693,16 @@ public final class Util {
         }
         return ret;
     }
+
+    /**
+     * Return a default String if input is null.
+     *
+     * @param _input input string
+     * @param _default default to use if input is null
+     *
+     * @return input string or default
+     */
+    public static String defaultString(String _input, String _default) {
+        return _input == null ? _default : _input;
+    }
 }

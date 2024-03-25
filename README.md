@@ -115,6 +115,8 @@ The library will remain open source and MIT licensed and can still be used, fork
    - More Java 17 syntactic sugar, thanks to [spannm](https://github.com/spannm) ([PR#249](https://github.com/hypfvieh/dbus-java/issues/249))
    - Added support for custom ClassLoader/ModuleLayer when configuring Transport (allows usage of third party transports when e.g. using JPMS) ([#251](https://github.com/hypfvieh/dbus-java/issues/251))
    - Improved handling of `@DBusBoundProperty` annotation ([#253](https://github.com/hypfvieh/dbus-java/issues/253)), ([PR#252](https://github.com/hypfvieh/dbus-java/issues/252))
+   - Improved InterfaceCodeGenerator to handle generated struct class names properly ([#254](https://github.com/hypfvieh/dbus-java/issues/254))
+   - Improved InterfaceCodeGenerator to add parameter/argument name to created struct class name (e.g. MyMethod(something) => MyMethodSomethingStruct)
 
 ##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**

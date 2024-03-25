@@ -70,11 +70,37 @@ class InterfaceCodeGeneratorTest {
 
         assertEquals(2, analyze.size()); // class with method and struct class expected
 
-        String clzContent = analyze.get(new File("org", "ExampleMethodStruct.java"));
+        String clzContent = analyze.get(new File("org", "ExampleMethodExampleArgStruct.java"));
 
         assertTrue(clzContent.contains("@Position(0)"), "Position annotation expected");
         assertTrue(clzContent.contains("private final List<Integer> member0;"), "Final List<Integer> member expected");
-        assertTrue(clzContent.contains("public ExampleMethodStruct(List<Integer> member0)"), "Constructor using List<Integer> expected");
+        assertTrue(clzContent.contains("public ExampleMethodExampleArgStruct(List<Integer> member0)"), "Constructor using List<Integer> expected");
         assertTrue(clzContent.contains("public List<Integer> getMember0()"), "Getter for Member of type List<Integer> expected");
+    }
+
+    @Test
+    void testCreateStructNames() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
+            new File("src/test/resources/CreateInterface/systemd/org.freedesktop.systemd1.Manager.xml"),
+            "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager");
+    Map<File, String> analyze = ci2.analyze(true);
+
+    assertEquals(4, analyze.size());
+
+    String managerFileContent = analyze.get(new File("org/freedesktop/systemd1/Manager.java"));
+    assertTrue(managerFileContent.contains("public void StartTransientUnit(List<StartTransientUnitPropertiesStruct> properties, List<StartTransientUnitAuxStruct> aux);"));
+
+    String auxStructFileContent = analyze.get(new File("org/freedesktop/systemd1/StartTransientUnitAuxStruct.java"));
+    assertTrue(auxStructFileContent.contains("private final String member0;"));
+    assertTrue(auxStructFileContent.contains("private final List<StartTransientUnitAuxStructStruct> member1;"));
+
+    String auxStructStructFileContent = analyze.get(new File("org/freedesktop/systemd1/StartTransientUnitAuxStructStruct.java"));
+    assertTrue(auxStructStructFileContent.contains("private final String member0;"));
+    assertTrue(auxStructStructFileContent.contains("private final Variant<?> member1;"));
+
+    String propertiesStructFileContent = analyze.get(new File("org/freedesktop/systemd1/StartTransientUnitPropertiesStruct.java"));
+    assertTrue(propertiesStructFileContent.contains("private final String member0;"));
+    assertTrue(propertiesStructFileContent.contains("private final Variant<?> member1;"));
+
     }
 }

@@ -53,6 +53,8 @@ public class InterfaceCodeGenerator {
     private final String                 forcePackageName;
     private final boolean                propertyMethods;
 
+    private final Set<String>            generatedStructClassNames;
+
     public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName, String _packageName, boolean _propertyMethods) {
         disableFilter = _disableFilter;
         introspectionData = _introspectionData;
@@ -60,7 +62,8 @@ public class InterfaceCodeGenerator {
         busName = Util.isBlank(_busName) ? "*" : _busName;
         forcePackageName = _packageName;
         propertyMethods = _propertyMethods;
-        System.out.println(forcePackageName + "/" + propertyMethods);
+        generatedStructClassNames = new LinkedHashSet<>();
+        logger.debug("ForcePackageName: {} / PropertyMethods: {}", forcePackageName, propertyMethods);
     }
 
     /**
@@ -284,7 +287,8 @@ public class InterfaceCodeGenerator {
 
                 if (argElm.getAttribute("type").contains("(")) { // this argument requires some sort of struct
                     String structPart = argElm.getAttribute("type").replaceAll("(\\(.+\\))", "$1");
-                    String parentType = buildStructClass(structPart, methodElementName + "Struct", _clzBldr, additionalClasses);
+                    String paramName = Util.defaultString(Util.upperCaseFirstChar(Util.snakeToCamelCase(argName)), "");
+                    String parentType = buildStructClass(structPart, methodElementName + paramName + "Struct", _clzBldr, additionalClasses);
                     if (parentType != null) {
                         argType = parentType;
                     } else {
@@ -486,7 +490,17 @@ public class InterfaceCodeGenerator {
      * @throws DBusException on Error
      */
     private String buildStructClass(String _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
-        return new StructTreeBuilder().buildStructClasses(_dbusTypeStr, _structName, _packageName, _structClasses);
+        String structFqcn = _packageName.getPackageName() + "." + _structName;
+        String structName = _structName;
+        if (generatedStructClassNames.contains(structFqcn)) {
+            while (generatedStructClassNames.contains(structFqcn)) {
+                structFqcn += "Struct";
+                structName += "Struct";
+            }
+        }
+        String structClassName = new StructTreeBuilder().buildStructClasses(_dbusTypeStr, structName, _packageName, _structClasses);
+        generatedStructClassNames.add(structFqcn);
+        return structClassName;
     }
 
     /**
