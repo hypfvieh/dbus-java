@@ -1,0 +1,11 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection
+ 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+ <node>
+  <interface name="org.freedesktop.systemd1.Manager">
+   <method name="StartTransientUnit">
+    <arg type="a(sv)" name="properties" direction="in"/>
+    <arg type="a(sa(sv))" name="aux" direction="in"/>
+   </method>
+  </interface>
+ </node>
