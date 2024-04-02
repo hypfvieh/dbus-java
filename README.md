@@ -117,6 +117,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Improved handling of `@DBusBoundProperty` annotation ([#253](https://github.com/hypfvieh/dbus-java/issues/253)), ([PR#252](https://github.com/hypfvieh/dbus-java/issues/252))
    - Improved InterfaceCodeGenerator to handle generated struct class names properly ([#254](https://github.com/hypfvieh/dbus-java/issues/254))
    - Improved InterfaceCodeGenerator to add parameter/argument name to created struct class name (e.g. MyMethod(something) => MyMethodSomethingStruct)
+   - Added dbus-java-transport-junixsocket to BOM ([#255](https://github.com/hypfvieh/dbus-java/issues/255))
 
 ##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**

@@ -54,6 +54,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+			<dependency>
+                <groupId>com.github.hypfvieh</groupId>
+                <artifactId>dbus-java-transport-junixsocket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.hypfvieh</groupId>
                 <artifactId>dbus-java-transport-tcp</artifactId>
