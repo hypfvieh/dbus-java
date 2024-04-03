@@ -20,6 +20,8 @@
 
     <properties>
         <parentDir>${project.parent.basedir}</parentDir>
+        <project.build.outputTimestamp>${git.commit.time}</project.build.outputTimestamp>
+        <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
     
     <dependencyManagement>

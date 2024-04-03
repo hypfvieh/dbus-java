@@ -14,18 +14,7 @@
     <description>DBus-Java library module parent</description>
 
     <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <maven.javadoc.skip>false</maven.javadoc.skip>
-        <check.skip-javadoc>false</check.skip-javadoc>
-
-        <check.skip-checkstyle>false</check.skip-checkstyle>
-        <check.skip-pmd>false</check.skip-pmd>
-        <sonar.skip>true</sonar.skip>
-
+        <!-- Dependency versions -->
         <junit5.version>5.10.1</junit5.version>
         <pmd.version>6.55.0</pmd.version>
         <checkstyle.version>10.12.7</checkstyle.version>
@@ -34,7 +23,43 @@
         <jnr-unixsocket.version>0.38.21</jnr-unixsocket.version>
         <junixsocket.version>2.8.3</junixsocket.version>
 
+        <!-- Plugin versions -->
+        <mvn.git.commit.id.maven.plugin>8.0.2</mvn.git.commit.id.maven.plugin>
+        <mvn.maven.bundle.plugin.version>5.1.9</mvn.maven.bundle.plugin.version>
+        <mvn.maven.checkstyle.plugin>3.3.1</mvn.maven.checkstyle.plugin>
+        <mvn.maven.clean.plugin>3.3.2</mvn.maven.clean.plugin>
+        <mvn.maven.compiler.plugin>3.13.0</mvn.maven.compiler.plugin>
+        <mvn.maven.deploy.plugin>3.1.1</mvn.maven.deploy.plugin>
+        <mvn.maven.enforcer.plugin>3.4.1</mvn.maven.enforcer.plugin>
+        <mvn.maven.gpg.plugin>3.2.2</mvn.maven.gpg.plugin>
+        <mvn.maven.install.plugin>3.1.1</mvn.maven.install.plugin>
+        <mvn.maven.jar.plugin>3.3.0</mvn.maven.jar.plugin>
+        <mvn.maven.javadoc.plugin>3.6.3</mvn.maven.javadoc.plugin>
+        <mvn.maven.pmd.plugin>3.21.2</mvn.maven.pmd.plugin>
+        <mvn.maven.project.info.reports.plugin>3.5.0</mvn.maven.project.info.reports.plugin>
+        <mvn.maven.release.plugin>3.0.1</mvn.maven.release.plugin>
+        <mvn.maven.resource.plugin>3.3.1</mvn.maven.resource.plugin>
+        <mvn.maven.site.plugin>3.12.1</mvn.maven.site.plugin>
+        <mvn.maven.source.plugin>3.3.0</mvn.maven.source.plugin>
+        <mvn.maven.surefire.plugin>3.2.5</mvn.maven.surefire.plugin>
+        <mvn.sonar.maven.plugin>3.11.0.3922</mvn.sonar.maven.plugin>
+        <mvn.versions.maven.plugin>2.16.2</mvn.versions.maven.plugin>
+
+        <!-- Code analysis -->
+        <check.skip-javadoc>false</check.skip-javadoc>
+        <check.skip-checkstyle>false</check.skip-checkstyle>
+        <check.skip-pmd>false</check.skip-pmd>
+        <check.skip-sonar>true</check.skip-sonar>
+
+        <!-- Build properties -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
         <parentDir>${project.basedir}</parentDir>
+        <project.build.outputTimestamp>${git.commit.time}</project.build.outputTimestamp>
+        <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
 
     <modules>
@@ -90,6 +115,12 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+            </plugin>
+
         </plugins>
 
         <pluginManagement>
@@ -97,13 +128,13 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.15.0</version>
+                    <version>${mvn.versions.maven.plugin}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>${mvn.maven.javadoc.plugin}</version>
                     <configuration>
                         <skip>${check.skip-javadoc}</skip>
                         <doclint>none</doclint>
@@ -124,7 +155,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>${mvn.maven.enforcer.plugin}</version>
                     <executions>
                         <execution>
                             <id>enforce-maven</id>
@@ -134,7 +165,7 @@
                             <configuration>
                                 <rules>
                                     <requireMavenVersion>
-                                        <version>3.5.0</version>
+                                        <version>3.6.3</version>
                                     </requireMavenVersion>
                                     <requireJavaVersion>
                                         <version>${maven.compiler.release}</version>
@@ -151,7 +182,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>${mvn.maven.jar.plugin}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -164,6 +195,11 @@
                             <manifest>
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
+                            <manifestEntries>
+								<Build-Time>${git.commit.time}</Build-Time>
+								<Git-Revision>${git.commit.id.abbrev}</Git-Revision>
+								<Git-Author>${git.commit.user.name} &lt;${git.commit.user.email}&gt;</Git-Author>
+                            </manifestEntries>
                         </archive>
                     </configuration>
                 </plugin>
@@ -171,7 +207,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${mvn.maven.surefire.plugin}</version>
                     <configuration>
                         <forkCount>1</forkCount>
                         <reuseForks>false</reuseForks>
@@ -184,7 +220,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
+                    <version>${mvn.maven.compiler.plugin}</version>
                     <executions>
                         <execution>
                             <id>compile</id>
@@ -200,7 +236,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${mvn.maven.release.plugin}</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <releaseProfiles>release</releaseProfiles>
@@ -212,7 +248,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>${mvn.maven.source.plugin}</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -227,7 +263,7 @@
                     <!-- http://maven.apache.org/plugins/maven-pmd-plugin/ -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.21.2</version>
+                    <version>${mvn.maven.pmd.plugin}</version>
                     <dependencies>
                         <dependency>
                             <groupId>net.sourceforge.pmd</groupId>
@@ -268,7 +304,7 @@
                     <!-- Documentation: http://maven.apache.org/plugins/maven-checkstyle-plugin/ -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>${mvn.maven.checkstyle.plugin}</version>
                     <configuration>
                         <skip>${check.skip-checkstyle}</skip>
                         <failOnViolation>true</failOnViolation>
@@ -289,35 +325,54 @@
                 </plugin>
 
                 <plugin>
+                    <groupId>io.github.git-commit-id</groupId>
+                    <artifactId>git-commit-id-maven-plugin</artifactId>
+                    <version>${mvn.git.commit.id.maven.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>get-the-git-infos</id>
+                            <goals>
+                                <goal>revision</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                        <injectAllReactorProjects>true</injectAllReactorProjects>
+                    </configuration>
+                </plugin>
+
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>${mvn.maven.deploy.plugin}</version>
                 </plugin>
 
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-site-plugin</artifactId>
-                     <version>3.12.0</version>
+                     <version>${mvn.maven.site.plugin}</version>
                 </plugin>
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-project-info-reports-plugin</artifactId>
-                     <version>3.4.2</version>
+                     <version>${mvn.maven.project.info.reports.plugin}</version>
                 </plugin>
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-clean-plugin</artifactId>
-                     <version>3.2.0</version>
+                     <version>${mvn.maven.clean.plugin}</version>
                 </plugin>
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-resources-plugin</artifactId>
-                     <version>3.3.0</version>
+                     <version>${mvn.maven.resource.plugin}</version>
                 </plugin>
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-install-plugin</artifactId>
-                     <version>3.1.0</version>
+                     <version>${mvn.maven.install.plugin}</version>
                 </plugin>
             </plugins>
 
@@ -536,7 +591,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>${mvn.maven.gpg.plugin}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -572,7 +627,6 @@
                 <skipTests>true</skipTests>
 
                 <!-- skip Javadoc generation -->
-                <maven.javadoc.skip>true</maven.javadoc.skip>
                 <check.skip-javadoc>true</check.skip-javadoc>
 
                 <!-- skip time-consuming static code analysis -->
@@ -587,13 +641,12 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <sonar.skip>false</sonar.skip>
+                <check.skip-sonar>false</check.skip-sonar>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.organization>hypfvieh</sonar.organization>
 
                 <maven.test.skip>true</maven.test.skip>
                 <skipTests>true</skipTests>
-                <maven.javadoc.skip>true</maven.javadoc.skip>
                 <check.skip-javadoc>true</check.skip-javadoc>
             </properties>
             <build>
@@ -601,7 +654,7 @@
                     <plugin>
                         <groupId>org.sonarsource.scanner.maven</groupId>
                         <artifactId>sonar-maven-plugin</artifactId>
-                        <version>3.10.0.2594</version>
+                        <version>${mvn.sonar.maven.plugin}</version>
                         <executions>
                             <execution>
                                 <goals>

@@ -21,6 +21,8 @@
 
     <properties>
         <parentDir>${project.parent.basedir}</parentDir>
+        <project.build.outputTimestamp>${git.commit.time}</project.build.outputTimestamp>
+        <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
 
     <build>
@@ -34,7 +36,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.1</version>
+                <version>${mvn.maven.bundle.plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <manifestLocation>META-INF</manifestLocation>

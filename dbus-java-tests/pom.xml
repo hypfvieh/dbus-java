@@ -22,6 +22,8 @@
         <!-- Disable native transport tests by default (will be enabled by profile if JDK 16+ is present) -->
         <jdk16.not.found>true</jdk16.not.found>
         <parentDir>${project.parent.basedir}</parentDir>
+        <project.build.outputTimestamp>${git.commit.time}</project.build.outputTimestamp>
+        <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
 
     <build>
