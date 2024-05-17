@@ -368,6 +368,7 @@ public class InterfaceCodeGenerator {
         _clzBldr.getImports().add(DBusProperty.Access.class.getCanonicalName());
 
         String type;
+        boolean isStruct = false;
         if ("av".equals(attrType)) {
             // raw type list
             type = List.class.getName();
@@ -380,6 +381,7 @@ public class InterfaceCodeGenerator {
             // contains structure
             String structPart = attrType.replaceAll("(\\(.+\\))", "$1");
             type = buildStructClass(structPart, "Property" + attrName + "Struct", _clzBldr, additionalClasses);
+            isStruct = true;
         } else {
             type = TypeConverter.getJavaTypeFromDBusType(attrType, _clzBldr.getImports());
         }
@@ -390,12 +392,15 @@ public class InterfaceCodeGenerator {
         boolean isComplex = type.contains("<");
 
         String clzzName;
+        ClassBuilderInfo propertyTypeRef = null;
+        String origType = null;
         if (!isComplex) {
             clzzName = ClassBuilderInfo.getClassName(type);
         } else {
+            origType = type;
             type = TypeRef.class.getName() + "<" + type + ">";
             String typeRefInterfaceName = "Property" + attrName + "Type";
-            ClassBuilderInfo propertyTypeRef = new ClassBuilderInfo();
+            propertyTypeRef = new ClassBuilderInfo();
             propertyTypeRef.setClassType(ClassType.INTERFACE);
             propertyTypeRef.setClassName(typeRefInterfaceName);
             propertyTypeRef.setExtendClass(type);
@@ -403,17 +408,23 @@ public class InterfaceCodeGenerator {
             clzzName = _clzBldr.getClassName() + "." + typeRefInterfaceName;
         }
 
-        String annotationParams = "name = \"" + attrName + "\", "
-                + "type = " + clzzName + ".class, "
-                + "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
-
         if (propertyMethods) {
             if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
+
+                String rtnType = origType != null ? origType : clzzName;
+
                 ClassMethod classMethod = new ClassMethod(
-                   ("boolean".equalsIgnoreCase(clzzName) ? "is" :  "get") + attrName, clzzName, false);
-                    _clzBldr.getMethods().add(classMethod);
-                classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+                    ("boolean".equalsIgnoreCase(clzzName) ? "is" : "get") + attrName, rtnType, false);
+                _clzBldr.getMethods().add(classMethod);
+
+                if (propertyTypeRef != null) {
+                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName() + "(type = " + propertyTypeRef.getClassName() + ".class)");
+                } else if (isStruct) {
+                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName() + "(type = " + clzzName + ".class)");
+                } else {
+                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+                }
                 _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
 
@@ -426,6 +437,10 @@ public class InterfaceCodeGenerator {
                 _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
         } else {
+            String annotationParams = "name = \"" + attrName + "\", "
+                + "type = " + clzzName + ".class, "
+                + "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
+
             AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
             _clzBldr.getAnnotations().add(annotationInfo);
         }
