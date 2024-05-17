@@ -20,10 +20,14 @@ import org.freedesktop.dbus.utils.XmlUtil;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
@@ -461,10 +465,8 @@ public class InterfaceCodeGenerator {
         }
 
         for (String outputType : _dbusOutputArgTypes) {
-            if (outputType.contains("<")) {
-                info.getImports().add(outputType.replaceAll("([^<]+).+", "$1"));
-            } else {
-                info.getImports().add(outputType);
+            for (String part : outputType.replace(" ", "").replace(">", "").split("<|,")) {
+                info.getImports().add(part);
             }
         }
 
