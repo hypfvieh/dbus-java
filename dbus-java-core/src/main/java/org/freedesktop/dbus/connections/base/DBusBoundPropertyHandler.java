@@ -122,6 +122,13 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                         try {
                             _methodCall.setArgs(new Object[0]);
                             Object val = invokeMethod(_methodCall, propMeth, object);
+
+                            // when the value is a collection or map, wrap them in a proper variant type
+                            if (Collection.class.isInstance(val) || (Map.class.isInstance(val))) {
+                                String[] dataType = Marshalling.getDBusType(propEn.getValue().getGenericReturnType());
+                                val = new Variant<>(val, String.join("", dataType));
+                            }
+
                             resultMap.put(propEn.getKey().getName(), val);
                         } catch (Throwable _ex) {
                             getLogger().debug("Error executing method {} on method call {}", propMeth, _methodCall, _ex);
