@@ -1,9 +1,6 @@
 package org.freedesktop.dbus.propertyref;
 
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.RemoteInvocationHandler;
-import org.freedesktop.dbus.RemoteObject;
-import org.freedesktop.dbus.TypeRef;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -14,6 +11,7 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.Util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Optional;
@@ -79,7 +77,18 @@ public final class PropRefRemoteHandler {
 
         // requested return type is not Variant but the result is -> unwrap Variant
         if (_method.getReturnType() != Variant.class && typeClass != Variant.class && result instanceof Variant<?> v) {
-            return v.getValue();
+            result = v.getValue();
+        }
+
+        // if this is a Struct, convert it to the proper class
+        if (Struct.class.isAssignableFrom(typeClass)) {
+            Constructor<? extends Object> cons = typeClass.getConstructors()[0];
+            try {
+                result = cons.newInstance((Object[]) result);
+            } catch (Exception _ex) {
+                throw new DBusException(_ex.getMessage());
+            }
+
         }
 
         return result;
