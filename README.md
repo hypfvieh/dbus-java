@@ -110,7 +110,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
-##### Changes in 5.0.1 (not released yet):
+##### Changes in 5.1.0 (not released yet):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))
    - More Java 17 syntactic sugar, thanks to [spannm](https://github.com/spannm) ([PR#249](https://github.com/hypfvieh/dbus-java/issues/249))
    - Added support for custom ClassLoader/ModuleLayer when configuring Transport (allows usage of third party transports when e.g. using JPMS) ([#251](https://github.com/hypfvieh/dbus-java/issues/251))
@@ -118,6 +118,9 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Improved InterfaceCodeGenerator to handle generated struct class names properly ([#254](https://github.com/hypfvieh/dbus-java/issues/254))
    - Improved InterfaceCodeGenerator to add parameter/argument name to created struct class name (e.g. MyMethod(something) => MyMethodSomethingStruct)
    - Added dbus-java-transport-junixsocket to BOM ([#255](https://github.com/hypfvieh/dbus-java/issues/255))
+   - Fixed issues in InterfaceCodeGenerator regarding missing imports or wrong annotation content ([#257](https://github.com/hypfvieh/dbus-java/issues/257))
+   - Fixed issues with `GetAll` on Properites using Annotations ([#258](https://github.com/hypfvieh/dbus-java/issues/258))
+   - Changed behavior of de-serialization on Variants containing Collections (Lists). Collections which contained a object which also has a primitive representation the collection was always converted to an array of primitives (e.g. Variant<List<Integer>> got Variant<int[]> on de-serialization). This is usually not expected. When defining a Variant<List<Integer>> it is expected to return that same type when de-serialized. The wrong behavior also caused issues when using `GetAll` method in `Properties` interface. [More information](https://hypfvieh.github.io/dbus-java/variant-handling.html) 
 
 ##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**

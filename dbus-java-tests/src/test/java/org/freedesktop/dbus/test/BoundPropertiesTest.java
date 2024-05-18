@@ -20,6 +20,47 @@ import java.util.Map.Entry;
 
 public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGetAllProperties() throws IOException, DBusException, InterruptedException {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+            MyObject obj = new MyObject();
+
+            conn.requestBusName("com.acme");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                Properties remotePropObj = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", Properties.class);
+
+                Map<String, Variant<?>> allProps = remotePropObj.GetAll("com.acme");
+
+                assertIterableEquals(List.of(1, 3, 5, 7, 11), (List<Integer>) allProps.get("AList").getValue());
+                assertEquals(new TreeMap<>(Map.of("Key 1", 123L, "Key 2", Long.MAX_VALUE, "Key 3", Long.MIN_VALUE)), allProps.get("AMap").getValue());
+
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGetAllPropertiesFromMixed() throws IOException, DBusException, InterruptedException {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+            MixedPropObj obj = new MixedPropObj();
+
+            conn.requestBusName("com.acme.mixed");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                Properties remotePropObj = innerConn.getRemoteObject("com.acme.mixed", "/com/acme/mixed/MyMixedObject", Properties.class);
+
+                Map<String, Variant<?>> allProps = remotePropObj.GetAll("com.acme.mixed");
+
+                assertIterableEquals(List.of("x", "y"), (List<String>) allProps.get("list").getValue());
+                assertIterableEquals(List.of(5, 6, 7), (List<Integer>) allProps.get("intlist").getValue());
+            }
+        }
+    }
+
     @Test
     public void testProperties() throws IOException, DBusException, InterruptedException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
@@ -68,7 +109,6 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
                 assertEquals(Arrays.asList(999, 998, 997, 996), myObject.getAList());
                 assertEquals(Map.of("Key 4", 567L, "Key 5", Long.MAX_VALUE / 2, "Key 6", Long.MIN_VALUE / 2), myObject.getAMap());
-
             }
         }
     }
@@ -127,6 +167,8 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
         public MixedPropObj() {
             propVals.put("mixed", new Variant<>("Mixed value"));
+            propVals.put("list", new Variant<>(List.of("x", "y"), "as"));
+            propVals.put("intlist", new Variant<>(List.of(5, 6, 7), "ai"));
         }
 
         @SuppressWarnings("unchecked")
@@ -244,8 +286,8 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
         private AnEnum anEnum = AnEnum.ABC;
         private SampleStruct struct = new SampleStruct("A", new UInt32(123), new Variant<>(true));
         private String[] arrayOfStuff = new String[] {"Item 1", "Item 2"};
-        private Map<String, Long> aMap = Map.of("Key 1", 123L, "Key 2", Long.MAX_VALUE, "Key 3", Long.MIN_VALUE);
-        private List<Integer> aList = Arrays.asList(1, 3, 5, 7, 11);
+        private Map<String, Long> aMap = new TreeMap<>(Map.of("Key 1", 123L, "Key 2", Long.MAX_VALUE, "Key 3", Long.MIN_VALUE));
+        private List<Integer> aList = List.of(1, 3, 5, 7, 11);
 
         @Override
         public List<Integer> getAList() {

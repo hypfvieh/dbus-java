@@ -3,7 +3,7 @@ package org.freedesktop.dbus.exceptions;
 import java.util.Collection;
 
 /**
- * @since 5.0.1 - 2024-03-18
+ * @since 5.1.0 - 2024-03-18
  * @author hypfvieh
  */
 public class InvalidInterfaceSignature extends DBusException {

@@ -38,17 +38,20 @@ import java.util.stream.Collectors;
  * This class deals with all the marshalling to/from the wire format.
  */
 public class Message {
-    public static final int  MAXIMUM_ARRAY_LENGTH   = 67108864;
-    public static final int  MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
-    public static final int  MAXIMUM_NUM_UNIX_FDS   = MAXIMUM_MESSAGE_LENGTH / 4;
+    public static final int             MAXIMUM_ARRAY_LENGTH   = 67108864;
+    public static final int             MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
+    public static final int             MAXIMUM_NUM_UNIX_FDS   = MAXIMUM_MESSAGE_LENGTH / 4;
 
     /** The current protocol major version. */
-    public static final byte PROTOCOL               = 1;
+    public static final byte            PROTOCOL               = 1;
+
+    /** Default extraction options. */
+    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, false);
 
     /** Position of data offset in int array. */
-    private static final int OFFSET_DATA            = 1;
+    private static final int            OFFSET_DATA            = 1;
     /** Position of signature offset in int array. */
-    private static final int OFFSET_SIG             = 0;
+    private static final int            OFFSET_SIG             = 0;
 
     /** Keep a static reference to each size of padding array to prevent allocation. */
     private static byte[][]  padding;
@@ -162,9 +165,9 @@ public class Message {
         wiredata[2] = bodyBuf;
         body = bodyBuf;
         bufferuse = 3;
-        bodylen = ((Number) extract(UINT32_STRING, msgBuf, 4)[0]).longValue();
+        bodylen = ((Number) extract(UINT32_STRING, msgBuf, 4, DEFAULT_OPTIONS)[0]).longValue();
 
-        long extractedSerial = ((Number) extract(UINT32_STRING, msgBuf, 8)[0]).longValue();
+        long extractedSerial = ((Number) extract(UINT32_STRING, msgBuf, 8, DEFAULT_OPTIONS)[0]).longValue();
 
         logger.debug("Received message of type {} with serial {}", type, extractedSerial);
 
@@ -516,7 +519,7 @@ public class Message {
             // pad to the alignment of this type.
             pad(_sigb[i]);
             switch (_sigb[i]) {
-                case BYTE:
+            case BYTE:
                 appendByte(((Number) _data).byteValue());
                 break;
             case BOOLEAN:
@@ -778,7 +781,7 @@ public class Message {
                 0, 0
         };
 
-        return extract("a(yv)", _headers, offsets, this::readHeaderVariants);
+        return extract("a(yv)", _headers, offsets, DEFAULT_OPTIONS, this::readHeaderVariants);
     }
 
     /**
@@ -788,25 +791,25 @@ public class Message {
      * @param _signatureBuf DBus signature string as byte array
      * @param _dataBuf buffer with header data
      * @param _offsets current offsets
-     * @param _contained boolean to indicate if nested lists should be resolved (false usually)
+     * @param _options additional options
      *
      * @return Object
      *
      * @throws DBusException when parsing fails
      */
-    private Object readHeaderVariants(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained) throws DBusException {
+    private Object readHeaderVariants(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options) throws DBusException {
         // correct the offsets before extracting values
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
 
         Object result = null;
         if (_signatureBuf[_offsets[OFFSET_SIG]] == ARRAY) {
-            result = extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::readHeaderVariants);
+            result = extractArray(_signatureBuf, _dataBuf, _offsets, _options, this::readHeaderVariants);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == BYTE) {
             result = extractByte(_dataBuf, _offsets);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == VARIANT) {
-            result = extractVariant(_dataBuf, _offsets, (sig, obj) -> obj);
+            result = extractVariant(_dataBuf, _offsets, DEFAULT_OPTIONS, (sig, obj) -> obj);
         } else if (_signatureBuf[_offsets[OFFSET_SIG]] == STRUCT1) {
-            result = extractStruct(_signatureBuf, _dataBuf, _offsets, this::readHeaderVariants);
+            result = extractStruct(_signatureBuf, _dataBuf, _offsets, DEFAULT_OPTIONS, this::readHeaderVariants);
         } else {
             throw new MessageFormatException("Unsupported data type in header: " + _signatureBuf[_offsets[OFFSET_SIG]]);
         }
@@ -823,10 +826,10 @@ public class Message {
      * @param _dataBuf The buffer to demarshall from.
      * @param _offsets An array of two ints, which holds the position of the current signature offset and the current
      *            offset of the data buffer.
-     * @param _contained converts nested arrays to Lists
+     * @param _options extract options
      * @return The demarshalled value.
      */
-    private Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained)
+    private Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options)
             throws DBusException {
 
         logger.trace("Extracting type: {} from offset {}", (char) _signatureBuf[_offsets[OFFSET_SIG]],
@@ -889,10 +892,10 @@ public class Message {
                 rv = (1 == rf) ? Boolean.TRUE : Boolean.FALSE;
                 break;
             case ARRAY:
-                rv = extractArray(_signatureBuf, _dataBuf, _offsets, _contained, this::extractOne);
+                rv = extractArray(_signatureBuf, _dataBuf, _offsets, _options, this::extractOne);
                 break;
             case STRUCT1:
-                rv = extractStruct(_signatureBuf, _dataBuf, _offsets, this::extractOne);
+                rv = extractStruct(_signatureBuf, _dataBuf, _offsets, _options, this::extractOne);
                 break;
             case DICT_ENTRY1:
                 Object[] decontents = new Object[2];
@@ -904,14 +907,18 @@ public class Message {
                 );
 
                 _offsets[OFFSET_SIG]++;
-                decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
+                decontents[0] = extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true));
                 _offsets[OFFSET_SIG]++;
-                decontents[1] = extractOne(_signatureBuf, _dataBuf, _offsets, true);
+                decontents[1] = extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true));
                 _offsets[OFFSET_SIG]++;
                 rv = decontents;
                 break;
             case VARIANT:
-                rv = extractVariant(_dataBuf, _offsets, (sig, obj) -> new Variant<>(obj, sig));
+                ExtractOptions opts = new ExtractOptions(_options.contained(), false);
+                rv = extractVariant(_dataBuf, _offsets, opts, (sig, obj) -> {
+                    logger.trace("Creating Variant with SIG: {} - Value: {}", sig, obj);
+                    return new Variant<>(obj, sig);
+                });
                 break;
             case FILEDESCRIPTOR:
                 rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
@@ -969,17 +976,18 @@ public class Message {
      * @param _signatureBuf signature (as byte array) defining the struct content
      * @param _dataBuf buffer containing the struct
      * @param _offsets offset position in buffer (will be updated)
+     * @param _options extract options
      * @param _extractMethod method to be called for every entry contained of the struct
      *
      * @return Object
      *
      * @throws DBusException when parsing fails
      */
-    private Object extractStruct(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractMethod _extractMethod) throws DBusException {
+    private Object extractStruct(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options, ExtractMethod _extractMethod) throws DBusException {
         Object rv;
         List<Object> contents = new ArrayList<>();
         while (_signatureBuf[++_offsets[OFFSET_SIG]] != STRUCT2) {
-            contents.add(_extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, true));
+            contents.add(_extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true)));
         }
         rv = contents.toArray();
         return rv;
@@ -991,7 +999,7 @@ public class Message {
      * @param _signatureBuf signature string (as byte array) of the content of the array
      * @param _dataBuf buffer containing the array to read
      * @param _offsets current offsets in the buffer (will be updated)
-     * @param _contained resolve nested lists
+     * @param _options additional options
      * @param _extractMethod method to be called for every entry contained in the array
      *
      * @return Object
@@ -999,7 +1007,7 @@ public class Message {
      * @throws MarshallingException when Array is too large
      * @throws DBusException when parsing fails
      */
-    private Object extractArray(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained, ExtractMethod _extractMethod)
+    private Object extractArray(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options, ExtractMethod _extractMethod)
             throws MarshallingException, DBusException {
         Object rv;
         long size = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
@@ -1013,9 +1021,9 @@ public class Message {
             throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
         }
 
-        rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _extractMethod);
+        rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
 
-        if (_contained && !(rv instanceof List) && !(rv instanceof Map)) {
+        if (_options.contained() && !(rv instanceof List) && !(rv instanceof Map)) {
             rv = ArrayFrob.listify(rv);
         }
         return rv;
@@ -1026,21 +1034,23 @@ public class Message {
      *
      * @param _dataBuf buffer containing the variant
      * @param _offsets current offsets in the buffer (will be updated)
+     * @param _options extract options
      * @param _variantFactory method to create new {@link Variant} objects (or other object types)
      *
      * @return Object / Variant
      *
      * @throws DBusException when parsing fails
      */
-    private Object extractVariant(byte[] _dataBuf, int[] _offsets, BiFunction<String, Object, Object> _variantFactory) throws DBusException {
+    private Object extractVariant(byte[] _dataBuf, int[] _offsets, ExtractOptions _options, BiFunction<String, Object, Object> _variantFactory) throws DBusException {
         Object rv;
         int[] newofs = new int[] {
                 0, _offsets[OFFSET_DATA]
         };
-        String sig = (String) extract(SIGNATURE_STRING, _dataBuf, newofs)[0];
+        String sig = (String) extract(SIGNATURE_STRING, _dataBuf, newofs, _options)[0];
         newofs[OFFSET_SIG] = 0;
-        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs)[0]);
+        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs, _options)[0]);
         _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
+
         return rv;
     }
 
@@ -1056,6 +1066,7 @@ public class Message {
      * @param _size size of a byte
      * @param _algn data offset padding width when reading primitives (except byte)
      * @param _length length of the array
+     * @param _options extract options
      * @param _extractMethod method to be called for every entry contained in the array if not primitive array
      *
      * @return Object array
@@ -1063,70 +1074,77 @@ public class Message {
      * @throws DBusException when parsing fails
      */
     private Object optimizePrimitives(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, long _size, byte _algn,
-            int _length, ExtractMethod _extractMethod)
+            int _length, ExtractOptions _options, ExtractMethod _extractMethod)
             throws DBusException {
-        Object rv;
-        switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
-            case BYTE:
-                rv = new byte[_length];
-                System.arraycopy(_dataBuf, _offsets[OFFSET_DATA], rv, 0, _length);
-                _offsets[OFFSET_DATA] += _size;
-                break;
-            case INT16:
-                rv = new short[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((short[]) rv)[j] = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
-                }
-                break;
-            case INT32:
-                rv = new int[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((int[]) rv)[j] = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
-                }
-                break;
-            case INT64:
-                rv = new long[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((long[]) rv)[j] = demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
-                }
-                break;
-            case BOOLEAN:
-                rv = new boolean[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((boolean[]) rv)[j] = 1 == demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
-                }
-                break;
-            case FLOAT:
-                rv = new float[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((float[]) rv)[j] = Float.intBitsToFloat((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
-                }
-                break;
-            case DOUBLE:
-                rv = new double[_length];
-                for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
-                    ((double[]) rv)[j] = Double.longBitsToDouble(demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
-                }
-                break;
-            case DICT_ENTRY1:
-                int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
-                long end = _offsets[OFFSET_DATA] + _size;
-                List<Object[]> entries = new ArrayList<>();
-                while (_offsets[OFFSET_DATA] < end) {
-                    _offsets[OFFSET_SIG] = ofssave;
-                    entries.add((Object[]) _extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, true));
-                }
-                rv = new DBusMap<>(entries.toArray(new Object[0][]));
-                break;
-            default:
-                ofssave = prepareCollection(_signatureBuf, _offsets, _size);
-                end = _offsets[OFFSET_DATA] + _size;
-                List<Object> contents = new ArrayList<>();
-                while (_offsets[OFFSET_DATA] < end) {
-                    _offsets[OFFSET_SIG] = ofssave;
-                    contents.add(_extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, true));
-                }
-                rv = contents;
+        Object rv = null;
+
+        if (_options.primitiveListToArray()) {
+            switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
+                case BYTE:
+                    rv = new byte[_length];
+                    System.arraycopy(_dataBuf, _offsets[OFFSET_DATA], rv, 0, _length);
+                    _offsets[OFFSET_DATA] += _size;
+                    break;
+                case INT16:
+                    rv = new short[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((short[]) rv)[j] = (short) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
+                    }
+                    break;
+                case INT32:
+                    rv = new int[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((int[]) rv)[j] = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
+                    }
+                    break;
+                case INT64:
+                    rv = new long[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((long[]) rv)[j] = demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
+                    }
+                    break;
+                case BOOLEAN:
+                    rv = new boolean[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((boolean[]) rv)[j] = 1 == demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn);
+                    }
+                    break;
+                case FLOAT:
+                    rv = new float[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((float[]) rv)[j] = Float.intBitsToFloat((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
+                    }
+                    break;
+                case DOUBLE:
+                    rv = new double[_length];
+                    for (int j = 0; j < _length; j++, _offsets[OFFSET_DATA] += _algn) {
+                        ((double[]) rv)[j] = Double.longBitsToDouble(demarshallint(_dataBuf, _offsets[OFFSET_DATA], _algn));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (_signatureBuf[_offsets[OFFSET_SIG]] == DICT_ENTRY1) {
+            int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
+            long end = _offsets[OFFSET_DATA] + _size;
+            List<Object[]> entries = new ArrayList<>();
+            while (_offsets[OFFSET_DATA] < end) {
+                _offsets[OFFSET_SIG] = ofssave;
+                entries.add((Object[]) _extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true)));
+            }
+            rv = new DBusMap<>(entries.toArray(new Object[0][]));
+        }
+
+        if (rv == null) {
+            int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
+            long end = _offsets[OFFSET_DATA] + _size;
+            List<Object> contents = new ArrayList<>();
+            while (_offsets[OFFSET_DATA] < end) {
+                _offsets[OFFSET_SIG] = ofssave;
+                contents.add(_extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true)));
+            }
+            rv = contents;
         }
         return rv;
     }
@@ -1152,14 +1170,15 @@ public class Message {
      * @param _signature The D-Bus signature(s) of the value(s).
      * @param _dataBuf The buffer to demarshall from.
      * @param _offsets The offset into the data buffer to start.
+     * @param _options additional options
      * @return The demarshalled value(s).
      *
      * @throws DBusException on error
      */
-    protected Object[] extract(String _signature, byte[] _dataBuf, int _offsets) throws DBusException {
+    protected Object[] extract(String _signature, byte[] _dataBuf, int _offsets, ExtractOptions _options) throws DBusException {
         return extract(_signature, _dataBuf, new int[] {
                 0, _offsets
-        });
+        }, _options);
     }
 
     /**
@@ -1170,22 +1189,25 @@ public class Message {
      * @param _offsets An array of two ints, which holds the position of the current signature offset and the current
      *            offset of the data buffer. These values will be updated to the start of the next value after
      *            demarshalling.
+     * @param _options additional options
+     *
      * @return The demarshalled value(s).
      *
      * @throws DBusException on error
      */
-    protected Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets) throws DBusException {
-        return extract(_signature, _dataBuf, _offsets, this::extractOne);
+    protected Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets, ExtractOptions _options) throws DBusException {
+        return extract(_signature, _dataBuf, _offsets, _options, this::extractOne);
     }
 
-    Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets, ExtractMethod _method) throws DBusException {
+    Object[] extract(String _signature, byte[] _dataBuf, int[] _offsets, ExtractOptions _options, ExtractMethod _method) throws DBusException {
         logger.trace("extract({},#{}, {{},{}}", _signature, _dataBuf.length, _offsets[OFFSET_SIG],
                 _offsets[OFFSET_DATA]);
         List<Object> rv = new ArrayList<>();
         byte[] sigb = _signature.getBytes();
         for (int[] i = _offsets; i[OFFSET_SIG] < sigb.length; i[OFFSET_SIG]++) {
-            rv.add(_method.extractOne(sigb, _dataBuf, i, false));
+            rv.add(_method.extractOne(sigb, _dataBuf, i, ExtractOptions.copyWithContainedFlag(_options, false)));
         }
+
         return rv.toArray();
     }
 
@@ -1292,7 +1314,7 @@ public class Message {
         if (null == args && null != body) {
             String sig = getSig();
             if (null != sig && 0 != body.length) {
-                args = extract(sig, body, 0);
+                args = extract(sig, body, 0, DEFAULT_OPTIONS);
             } else {
                 args = new Object[0];
             }
@@ -1563,7 +1585,25 @@ public class Message {
      */
     @FunctionalInterface
     interface ExtractMethod {
-        Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, boolean _contained)
+        Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options)
                 throws DBusException;
     }
+
+    /**
+     * Additional options to optimize value extraction.
+     *
+     * @since 5.1.0 - 2024-05-18
+     */
+    record ExtractOptions(
+        /** boolean to indicate if nested lists should be resolved (false usually). */
+        boolean contained,
+        /** Convert List of Object-Wrapper types to primitive arrays (e.g. List&lt;Integer> to int[]). */
+        boolean primitiveListToArray
+        ) {
+
+        static ExtractOptions copyWithContainedFlag(ExtractOptions _toCopy, boolean _containedFlag) {
+            return new ExtractOptions(_containedFlag, _toCopy.primitiveListToArray());
+        }
+    }
+
 }

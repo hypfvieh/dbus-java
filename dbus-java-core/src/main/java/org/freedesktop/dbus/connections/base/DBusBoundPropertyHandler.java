@@ -27,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class containing methods for handling DBus properties and {@link DBusBoundProperty} annotation. <br>
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * &rarr; {@link DBusBoundPropertyHandler} &rarr; {@link ConnectionMessageHandler} &rarr; {@link AbstractConnection} hierarchy.
  *
  * @author hypfvieh
- * @since 5.0.1 - 2024-03-18
+ * @since 5.1.0 - 2024-03-18
  */
 public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodInvocation permits ConnectionMessageHandler {
 
@@ -123,10 +124,12 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                             _methodCall.setArgs(new Object[0]);
                             Object val = invokeMethod(_methodCall, propMeth, object);
 
-                            // when the value is a collection or map, wrap them in a proper variant type
-                            if (Collection.class.isInstance(val) || (Map.class.isInstance(val))) {
+                            // when the value is a collection, array or map, wrap them in a proper variant type
+                            if (val != null && val.getClass().isArray() || Collection.class.isInstance(val) || Map.class.isInstance(val)) {
                                 String[] dataType = Marshalling.getDBusType(propEn.getValue().getGenericReturnType());
-                                val = new Variant<>(val, String.join("", dataType));
+                                String dataTypeStr = Arrays.stream(dataType).collect(Collectors.joining());
+                                getLogger().trace("Creating embedded Array/Collection/Map of type {}", dataTypeStr);
+                                val = new Variant<>(val, dataTypeStr);
                             }
 
                             resultMap.put(propEn.getKey().getName(), val);

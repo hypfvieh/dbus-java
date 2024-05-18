@@ -102,6 +102,23 @@ public class MarshallingTest extends AbstractBaseTest {
         assertEquals("marked slot rootfs.1 as good", mt.getMessage(), "Message does not match after deSerialization");
     }
 
+    @Test
+    public void testDeserializeParametersVariant() throws Exception {
+        var varList = new Variant<>(List.of(1, 2, 3), "ai");
+        Type[] types = new Type[] {varList.getType()};
+
+        Object[] convertParameters = Marshalling.convertParameters(new Object[] {varList}, types, new String[] {"v"}, null);
+
+        Object[] params = Marshalling.deSerializeParameters(convertParameters, types, null);
+
+        assertTrue(params[0] instanceof Variant, "Variant expected");
+        @SuppressWarnings("unchecked")
+        Variant<List<Integer>> mt = (Variant<List<Integer>>) params[0];
+        assertEquals(1, mt.getValue().get(0), "1 expected");
+        assertEquals(2, mt.getValue().get(1), "2 expected");
+        assertEquals(3, mt.getValue().get(2), "3 expected");
+    }
+
     /*
      ******************************************
      *

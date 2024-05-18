@@ -383,9 +383,9 @@ public final class Marshalling {
                     _resultValue.add(Type[].class);
                     break;
                 case ArgumentType.DICT_ENTRY1:
-                    _resultValue.add(Map.Entry.class);
                     contained = new ArrayList<>();
                     javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);
+                    _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
                     idx += javaType + 1;
                     break;
                 default:
