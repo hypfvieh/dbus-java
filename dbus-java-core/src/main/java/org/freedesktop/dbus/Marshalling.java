@@ -636,7 +636,7 @@ public final class Marshalling {
         }
 
         // make sure arrays are in the correct format
-        if (parameter instanceof Object[] || parameter instanceof List || parameter.getClass().isArray()) {
+        if (parameter instanceof Object[] || parameter instanceof List<?> || parameter.getClass().isArray()) {
             if (_type instanceof ParameterizedType pt) {
                 parameter = ArrayFrob.convert(parameter, (Class<? extends Object>) pt.getRawType());
             } else if (_type instanceof GenericArrayType gat) {
@@ -663,7 +663,7 @@ public final class Marshalling {
                 parameter = ArrayFrob.convert(parameter, o.getClass());
             }
         }
-        if (parameter instanceof DBusMap<?, ?> dmap) {
+        if (parameter instanceof Map<?, ?> dmap) {
             LOGGER.trace("Deserializing a Map");
 
             Type[] maptypes;
@@ -673,10 +673,13 @@ public final class Marshalling {
                 maptypes = parameter.getClass().getTypeParameters();
             }
 
-            for (int i = 0; i < dmap.entries.length; i++) {
-                dmap.entries[i][0] = deSerializeParameter(dmap.entries[i][0], maptypes[0], _conn);
-                dmap.entries[i][1] = deSerializeParameter(dmap.entries[i][1], maptypes[1], _conn);
+            Map<Object, Object> map = new LinkedHashMap<>();
+            for (Entry<?, ?> e : dmap.entrySet()) {
+                map.put(deSerializeParameter(e.getKey(), maptypes[0], _conn),
+                    deSerializeParameter(e.getValue(), maptypes[1], _conn));
             }
+
+            parameter = map;
         }
         return parameter;
     }

@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusMap;
 import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.impl.BaseConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -24,10 +23,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,7 +54,7 @@ class VariantTest extends AbstractBaseTest {
 
     static List<VariantData> createTestData() {
         return List.of(
-            new VariantData(new Variant<>(Map.of("val1", 1, "val2", 2), "a{si}"), "String Int Map", DBusMapType.class, DBusMap.class, Map.of("val1", 1, "val2", 2)),
+            new VariantData(new Variant<>(Map.of("val1", 1, "val2", 2), "a{si}"), "String Int Map", DBusMapType.class, LinkedHashMap.class, Map.of("val1", 1, "val2", 2)),
             new VariantData(new Variant<>(List.of("str", "ing"), "as"), "String List Variant", DBusListType.class, ArrayList.class, List.of("str", "ing")),
             new VariantData(new Variant<>(List.of(1, 2), "ai"), "Integer List Variant", DBusListType.class, ArrayList.class, List.of(1, 2)),
             new VariantData(new Variant<>(List.of(true, true, false), "ab"), "Boolean List Variant", DBusListType.class, ArrayList.class, List.of(true, true, false))

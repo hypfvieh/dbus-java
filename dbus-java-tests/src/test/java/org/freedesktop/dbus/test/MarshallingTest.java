@@ -25,8 +25,10 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class MarshallingTest extends AbstractBaseTest {
 
@@ -140,6 +142,31 @@ public class MarshallingTest extends AbstractBaseTest {
         assertEquals(1, mt.getValue().get(0), "1 expected");
         assertEquals(2, mt.getValue().get(1), "2 expected");
         assertEquals(3, mt.getValue().get(2), "3 expected");
+    }
+
+    @Test
+    public void testDeserializeMap() throws Exception {
+        DBusPath key = new DBusPath("/foo");
+        DBusPath val = new DBusPath("/bar");
+        Map<DBusPath, DBusPath> testMap = Map.of(key, val);
+
+        Type[] types = new Type[] {testMap.getClass()};
+
+        Object[] deSerializeParameters = Marshalling.deSerializeParameters(new Object[] {testMap}, types, null);
+
+        assertNotNull(deSerializeParameters);
+
+        Map<?, ?> deserializedMap = (Map<?, ?>) deSerializeParameters[0];
+
+        assertFalse(testMap == deserializedMap, "Expected new object");
+        assertEquals(LinkedHashMap.class, deserializedMap.getClass(), "Expected new LinkedHashMap");
+
+        Entry<?, ?> next = deserializedMap.entrySet().iterator().next();
+
+        assertEquals(key, next.getKey());
+        assertEquals(val, next.getValue());
+
+        assertTrue(deserializedMap.containsKey(key));
     }
 
     /*

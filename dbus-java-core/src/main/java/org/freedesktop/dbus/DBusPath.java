@@ -19,16 +19,18 @@ public class DBusPath implements Comparable<DBusPath> {
     }
 
     @Override
-    public boolean equals(Object _other) {
-        return _other instanceof DBusPath dp && getPath() != null && getPath().equals(dp.getPath());
+    public int hashCode() {
+        return Objects.hash(path);
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + Objects.hash(path);
-        return result;
+    public boolean equals(Object _obj) {
+        if (this == _obj) {
+            return true;
+        } else if (_obj == null || getClass() != _obj.getClass()) {
+            return false;
+        }
+        return Objects.equals(path, ((DBusPath) _obj).path);
     }
 
     @Override

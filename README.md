@@ -30,6 +30,20 @@ If you need file descriptors as well you also have to add a proper implementatio
 
 If you don't know what abstract unixsockets are and you don't need file descriptors you'll probably you can use native-unixsockets.
 
+### Upgrade notes for 5.1.0
+Upgrading to 5.1.0 should be no problem in most cases.
+
+Beginning with 5.1.0 the behavior of `Variant<?>` has been altered to get a more consistent behavior.
+More about that can be found [here](https://hypfvieh.github.io/dbus-java/variant-handling.html) .
+
+If you used `DBusMap` before, you should use `LinkedHashMap` instead.
+
+All methods previously returned instances of `DBusMap` will now return `LinkedHashMap`.
+This is transparent if you didn't use `DBusMap` directly but using `Map` interface instead.
+
+In this version the broken `hashCode()` implementation has been fixed in `DBusPath` allowing proper usage
+of `DBusPath` as `Map` key. Before equal objects did not create the same `hashCode()` breaking the contract of `hashCode()` and `equals()`.
+
 ### Note to SPI providers
 If you have used the SPI to extend the MessageReader/Writer of dbus-java before dbus-java 4.x, you have to update your code.
 Old providers will not work with dbus-java 4.x/5.x because of changed SPI interfaces (sorry!).
@@ -121,7 +135,9 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed issues in InterfaceCodeGenerator regarding missing imports or wrong annotation content ([#257](https://github.com/hypfvieh/dbus-java/issues/257))
    - Fixed issues with `GetAll` on Properites using Annotations ([#258](https://github.com/hypfvieh/dbus-java/issues/258))
    - Changed behavior of de-serialization on Variants containing Collections (Lists). Collections which contained a object which also has a primitive representation the collection was always converted to an array of primitives (e.g. Variant<List<Integer>> got Variant<int[]> on de-serialization). This is usually not expected. When defining a Variant<List<Integer>> it is expected to return that same type when de-serialized. The wrong behavior also caused issues when using `GetAll` method in `Properties` interface. [More information](https://hypfvieh.github.io/dbus-java/variant-handling.html) 
-
+   - Deprecated `DBusMap` - all methods previously used or returned `DBusMap` will now return a `LinkedHashMap`
+   - Fixed `hashCode()` and `equals()` method in `DBusPath` (`hashCode()` was completely wrong and violating the `hashCode()` contract when e.g. used as key in maps)
+ 
 ##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**
    - Removed all classes and methods marked as deprecated in 4.x

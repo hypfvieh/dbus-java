@@ -25,10 +25,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -1128,12 +1125,16 @@ public class Message {
         if (_signatureBuf[_offsets[OFFSET_SIG]] == DICT_ENTRY1) {
             int ofssave = prepareCollection(_signatureBuf, _offsets, _size);
             long end = _offsets[OFFSET_DATA] + _size;
-            List<Object[]> entries = new ArrayList<>();
+
+            Map<Object, Object> map = new LinkedHashMap<>();
             while (_offsets[OFFSET_DATA] < end) {
                 _offsets[OFFSET_SIG] = ofssave;
-                entries.add((Object[]) _extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true)));
+                Object[] data = (Object[]) _extractMethod.extractOne(_signatureBuf, _dataBuf, _offsets, ExtractOptions.copyWithContainedFlag(_options, true));
+
+                map.put(data[0], data[1]);
             }
-            rv = new DBusMap<>(entries.toArray(new Object[0][]));
+
+            rv = map;
         }
 
         if (rv == null) {

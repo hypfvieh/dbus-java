@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Deprecated(forRemoval = true, since = "5.1.0 - 2024-05-19")
 public class DBusMap<K, V> implements Map<K, V> {
     // CHECKSTYLE:OFF
     Object[][] entries;

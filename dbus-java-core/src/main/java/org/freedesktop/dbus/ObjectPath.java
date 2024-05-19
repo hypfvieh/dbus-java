@@ -30,15 +30,10 @@ public class ObjectPath extends DBusPath {
     public boolean equals(Object _obj) {
         if (this == _obj) {
             return true;
-        }
-        if (!super.equals(_obj)) {
+        } else if (!super.equals(_obj) || getClass() != _obj.getClass()) {
             return false;
         }
-        if (getClass() != _obj.getClass()) {
-            return false;
-        }
-        ObjectPath other = (ObjectPath) _obj;
-        return Objects.equals(source, other.source);
+        return Objects.equals(source, ((ObjectPath) _obj).source);
     }
 
 }

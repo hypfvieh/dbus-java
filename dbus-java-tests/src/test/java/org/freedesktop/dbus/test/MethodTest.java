@@ -46,12 +46,17 @@ public class MethodTest extends AbstractDBusBaseTest {
         pathm.put(path, path);
         Map<DBusPath, DBusPath> pm = tri.pathmaprv(pathm);
 
-        logger.debug(pathm.toString() + " => " + pm.toString());
-        logger.debug(pm.containsKey(path) + " " + pm.get(path) + " " + path.equals(pm.get(path)));
-        logger.debug(pm.containsKey(p) + " " + pm.get(p) + " " + p.equals(pm.get(p)));
+        assertNotEquals(pathm.getClass(), pm.getClass(), "Expected different map implementations");
 
-        assertTrue(pm.containsKey(path), "pathmaprv incorrect");
-        assertEquals(path, pm.get(path), "pathmaprv incorrect");
+        logger.debug("{} => {}", pathm, pm);
+        logger.debug("{} {} {}", pm.containsKey(path), pm.get(path), path.equals(pm.get(path)));
+        logger.debug("{} {} {}", pm.containsKey(p), pm.get(p), p.equals(pm.get(p)));
+
+        System.out.println("path hashcode: " + path.hashCode());
+        System.out.println("pm key hashcode: " + pm.keySet().iterator().next().hashCode());
+
+        assertTrue(pm.containsKey(path), "pathmaprv missing in map");
+        assertEquals(path, pm.get(path), "pathmaprv incorrect value");
     }
 
     @Test
