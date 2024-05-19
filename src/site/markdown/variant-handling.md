@@ -5,13 +5,14 @@
 The `Variant<?>` class is a wrapper type used on DBus when an arbitrary type can be returned.
 Like the `Object` type in Java `Variant<?>` can be any kind of data, starting from primitive types like
 `int`, `boolean`, `double` etc. to more complex types like `String`.
+To achieve this the `Variant` class is parameterized and will store the actual data type used inside of the `Variant<?>`.  
 
 One example usage of the `Variant<?>` type is the DBus `Properties` interface. In that case a property key
 is mapped to a `Variant<?>` which allows mapping the key to any value.
 
 ## Constraints using `Variant`
 
-Using `Variant<?>` allows to wrap an arbitrary type. As fancy as this sounds it introduces some problems
+Using `Variant<?>` allows to wrap an arbitrary type. As good as this sounds it introduces some problems
 regarding the usage of `Variant<?>` in Java.
 
 When wrapping simple types, `Variant<?>` works like expected.
@@ -30,6 +31,33 @@ the Variant will contain an array of int (`int[]`) and not a `List<Integer>`.
 The same result will be produced when using a `Variant<int[]>` - but in this case the de-serialized value
 of `int[]` is the expected value.
 
+## How to put a Collection / Map into a `Variant<?>`
+
+Putting `List<?>`, `Set<?>` or `Map<?, ?>` into a `Variant<?>` does not work without a little help because of type erasure of Java.
+While you know the actual data type of Collections or Maps while writing the code it is not available during runtime. 
+Therefore determining the data type used inside of the Collection/Map passed to the `Variant<?>` constructor is impossible.
+
+To get around this limitation, you have to use another `Variant<?>` constructor which expects the "signature" as second
+argument. The signature is the signature string as defined by the DBus protocol.
+
+Some examples:
+`List<String>` -> "as"
+`Set<Integer>` -> "ai"
+`Map<String, Boolean>` -> "a{sb}"
+
+As nobody can remember all of those protocol details, there is a utility `org.freedesktop.dbus.Marshalling.convertJavaClassesToSignature(Class<?>...)` method which will convert the given classes to the appropriate DBus signature value. 
+
+Sample usage:
+`Marshalling.convertJavaClassesToSignature(List.class, String.class)` -> "as"
+`Marshalling.convertJavaClassesToSignature(Set.class, Integer.class)` -> "ai"
+`Marshalling.convertJavaClassesToSignature(Map.class, String.class, Boolean.class)` -> "a{sb}"
+
+Usage with `Variant<?>` constructor:
+
+`new Variant<>(List.of("foo", "bar"), Marshalling.convertJavaClassesToSignature(List.class, String.class))`;
+`new Variant<>(Set.of(1, 2, 3), Marshalling.convertJavaClassesToSignature(Set.class, Integer.class))`;
+`new Variant<>(Map.of("foo", true, "bar", false), Marshalling.convertJavaClassesToSignature(Map.class, String.class, Boolean.class));`
+
 ## Changes introduced with dbus-java 5.1.0
 
 Starting with dbus-java 5.1.0 the behavior of `Variant<?>` has been changed regarding the support of Collections and arrays.
@@ -39,3 +67,6 @@ requested.
 This means if a method or property is specified to return a Variant of int array it will be converted to a `Variant<List<Integer>>`.
 
 This change may conflict with older code but allows a more consistent way to deal with `Variant<?>` containing Collections.
+
+Therefore de-serialzation will never create a `Variant<?>` containing any type of array. **Arrays will always be**
+**represented as** `List`.

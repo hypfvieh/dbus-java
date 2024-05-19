@@ -4,6 +4,7 @@ import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusTypeConversationRuntimeException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSerializable;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
@@ -77,9 +78,9 @@ public final class Marshalling {
     * Will return the DBus type corresponding to the given Java type.
     * Note, container type should have their ParameterizedType not their
     * Class passed in here.
+    *
     * @param _javaType The Java types.
     * @return The DBus types.
-    * @throws DBusException If the given type cannot be converted to a DBus type.
     */
     public static String getDBusType(Type[] _javaType) throws DBusException {
         StringBuilder sb = new StringBuilder();
@@ -89,6 +90,49 @@ public final class Marshalling {
             }
         }
         return sb.toString();
+    }
+
+    /**
+    * Will return the DBus type corresponding to the given Java type.
+    * Note, container type should have their ParameterizedType not their
+    * Class passed in here.
+    *
+    * @param _javaType The Java types.
+    * @return The DBus types
+    *
+    * @throws DBusTypeConversationRuntimeException when conversation fails
+    *
+    * @since 5.1.0 - 2024-05-19
+    */
+    public static String convertJavaClassesToSignature(Class<?>... _javaType) throws DBusTypeConversationRuntimeException {
+        if (_javaType == null || _javaType.length == 0) {
+            throw new DBusTypeConversationRuntimeException("No types to convert given");
+        }
+        try {
+            StringBuilder sig = new StringBuilder();
+            boolean wasMap = false;
+            if (Collection.class.isAssignableFrom(_javaType[0])) {
+                sig.append(ArgumentType.ARRAY_STRING);
+            } else if (Map.class.isAssignableFrom(_javaType[0])) {
+                sig.append(ArgumentType.ARRAY_STRING).append(ArgumentType.DICT_ENTRY1_STRING);
+                wasMap = true;
+            }
+
+            Type[] remaining = _javaType;
+            if (!sig.isEmpty()) {
+                remaining = new Type[_javaType.length - 1];
+                System.arraycopy(_javaType, 1, remaining, 0, remaining.length);
+            }
+
+            sig.append(getDBusType(remaining));
+            if (wasMap) {
+                sig.append(ArgumentType.DICT_ENTRY2_STRING);
+            }
+
+            return sig.toString();
+        } catch (DBusException _ex) {
+            throw new DBusTypeConversationRuntimeException("Failed to convert types", _ex);
+        }
     }
 
     /**

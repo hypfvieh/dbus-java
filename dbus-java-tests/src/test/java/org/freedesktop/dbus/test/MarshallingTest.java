@@ -6,6 +6,7 @@ import org.freedesktop.dbus.ObjectPath;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusTypeConversationRuntimeException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
@@ -16,6 +17,8 @@ import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +29,26 @@ import java.util.List;
 import java.util.Map;
 
 public class MarshallingTest extends AbstractBaseTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("createClassToSigData")
+    public void testJavaClassToDBusSignature(ClassToSigData _data) {
+        assertThrows(DBusTypeConversationRuntimeException.class, () -> Marshalling.convertJavaClassesToSignature());
+
+        assertEquals(_data.signature(), Marshalling.convertJavaClassesToSignature(_data.classes().toArray(Class[]::new)));
+    }
+
+    static List<ClassToSigData> createClassToSigData() {
+        return List.of(
+            new ClassToSigData("as", List.of(List.class, String.class), "List of String"),
+            new ClassToSigData("ai", List.of(List.class, Integer.class), "List of Integer"),
+            new ClassToSigData("as", List.of(List.class, String.class), "Set of String"),
+            new ClassToSigData("ai", List.of(List.class, Integer.class), "Set of Integer"),
+            new ClassToSigData("a{si}", List.of(Map.class, String.class, Integer.class), "Map of String<>Integer"),
+            new ClassToSigData("a{ii}", List.of(Map.class, Integer.class, Integer.class), "Map of Integer<>Integer"),
+            new ClassToSigData("a{bv}", List.of(Map.class, Boolean.class, Variant.class), "Map of Boolean<>Variant")
+        );
+    }
 
     @Test
     public void parseComplexMessageReturnsCorrectTypes() throws DBusException {
@@ -166,5 +189,12 @@ public class MarshallingTest extends AbstractBaseTest {
     @SuppressWarnings("checkstyle:methodname")
     public interface Installer extends DBusInterface {
         MarkTuple Mark(String _state, String _slotIdentifier);
+    }
+
+    record ClassToSigData(String signature, List<Class<?>> classes, String description) {
+        @Override
+        public String toString() {
+            return description;
+        }
     }
 }
