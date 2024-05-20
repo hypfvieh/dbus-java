@@ -108,31 +108,45 @@ public final class Marshalling {
         if (_javaType == null || _javaType.length == 0) {
             throw new DBusTypeConversationRuntimeException("No types to convert given");
         }
-        try {
-            StringBuilder sig = new StringBuilder();
-            boolean wasMap = false;
-            if (Collection.class.isAssignableFrom(_javaType[0])) {
-                sig.append(ArgumentType.ARRAY_STRING);
-            } else if (Map.class.isAssignableFrom(_javaType[0])) {
-                sig.append(ArgumentType.ARRAY_STRING).append(ArgumentType.DICT_ENTRY1_STRING);
-                wasMap = true;
+        StringBuilder sig = new StringBuilder();
+        convertToSig(sig, 0, _javaType);
+
+        return sig.toString();
+    }
+
+    private static int convertToSig(StringBuilder _sig, int _idx, Class<?>... _javaType) {
+        for (int i = _idx; i < _javaType.length; i++) {
+            Class<?> clz = _javaType[i];
+            if (Collection.class.isAssignableFrom(clz)) {
+                _sig.append(ArgumentType.ARRAY_STRING);
+            } else if (Map.class.isAssignableFrom(clz)) {
+                _sig.append(ArgumentType.ARRAY_STRING).append(ArgumentType.DICT_ENTRY1_STRING);
+                i = convertToSig(_sig, i + 1, _javaType) - 1;
+                _sig.append(ArgumentType.DICT_ENTRY2_STRING);
+                return i;
+            } else if (CharSequence.class.isAssignableFrom(clz)) {
+                _sig.append(ArgumentType.STRING_STRING);
+            } else if (Struct.class.isAssignableFrom(clz)) {
+                _sig.append(ArgumentType.STRUCT1_STRING);
+
+                Class<?>[] structure = Arrays.stream(clz.getDeclaredFields())
+                    .map(f -> f.getType())
+                    .toArray(Class<?>[]::new);
+
+                convertToSig(_sig, 0, structure);
+                _sig.append(ArgumentType.STRUCT2_STRING);
+                return i;
+            } else if (Tuple.class.isAssignableFrom(clz)) {
+                continue; // simply ignore Tuple types
+            } else if (CLASS_TO_ARGUMENTTYPE.containsKey(clz)) {
+                char val = ((char) CLASS_TO_ARGUMENTTYPE.get(clz).byteValue());
+                _sig.append(val);
+            } else {
+                throw new DBusTypeConversationRuntimeException("Unsupported class type " + clz);
             }
 
-            Type[] remaining = _javaType;
-            if (!sig.isEmpty()) {
-                remaining = new Type[_javaType.length - 1];
-                System.arraycopy(_javaType, 1, remaining, 0, remaining.length);
-            }
-
-            sig.append(getDBusType(remaining));
-            if (wasMap) {
-                sig.append(ArgumentType.DICT_ENTRY2_STRING);
-            }
-
-            return sig.toString();
-        } catch (DBusException _ex) {
-            throw new DBusTypeConversationRuntimeException("Failed to convert types", _ex);
         }
+        return 0;
     }
 
     /**

@@ -13,6 +13,8 @@ import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
 import org.freedesktop.dbus.messages.constants.MessageType;
 import org.freedesktop.dbus.test.helper.structs.MarkTuple;
+import org.freedesktop.dbus.test.helper.structs.SampleStruct;
+import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Assertions;
@@ -24,10 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class MarshallingTest extends AbstractBaseTest {
@@ -44,8 +43,14 @@ public class MarshallingTest extends AbstractBaseTest {
         return List.of(
             new ClassToSigData("as", List.of(List.class, String.class), "List of String"),
             new ClassToSigData("ai", List.of(List.class, Integer.class), "List of Integer"),
-            new ClassToSigData("as", List.of(List.class, String.class), "Set of String"),
-            new ClassToSigData("ai", List.of(List.class, Integer.class), "Set of Integer"),
+            new ClassToSigData("as", List.of(Set.class, String.class), "Set of String"),
+            new ClassToSigData("ai", List.of(Set.class, Integer.class), "Set of Integer"),
+            new ClassToSigData("av", List.of(List.class, Variant.class), "List of Variant"),
+            new ClassToSigData("a(suv)", List.of(List.class, SampleStruct.class), "List of SampleStruct"),
+            new ClassToSigData("a", List.of(List.class, SampleTuple.class), "List of SampleTuple"),
+
+            new ClassToSigData("aas", List.of(List.class, List.class, String.class), "List of List String"),
+            new ClassToSigData("aai", List.of(List.class, List.class, Integer.class), "List of List Integer"),
             new ClassToSigData("a{si}", List.of(Map.class, String.class, Integer.class), "Map of String<>Integer"),
             new ClassToSigData("a{ii}", List.of(Map.class, Integer.class, Integer.class), "Map of Integer<>Integer"),
             new ClassToSigData("a{bv}", List.of(Map.class, Boolean.class, Variant.class), "Map of Boolean<>Variant")
