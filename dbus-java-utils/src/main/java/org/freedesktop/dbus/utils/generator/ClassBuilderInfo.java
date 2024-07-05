@@ -494,8 +494,8 @@ public class ClassBuilderInfo {
         private final List<String> annotations = new ArrayList<>();
 
         public MemberOrArgument(String _name, String _type, boolean _finalMember) {
-            // repair reserved words by adding 'Param' as appendix
-            name = IdentifierMangler.isReservedWord(_name) ? _name + "param" : _name;
+            // repair reserved words by adding 'Param' as appendix, and when start with _ too
+            name = (IdentifierMangler.isReservedWord(_name) || IdentifierMangler.isReservedWord(_name.replaceFirst("^_(.+)", "$1"))) ? _name + "param" : _name;
             type = _type;
             finalArg = _finalMember;
         }
