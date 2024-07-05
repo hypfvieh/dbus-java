@@ -79,7 +79,7 @@ public class StructTreeBuilder {
             // _clzBldr.getImports().addAll(info.getImports());
         }
 
-        return parentType == null ? _clzBldr.getPackageName() + "." + _structName : parentType;
+        return parentType == null ? _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName) : parentType;
 
     }
 

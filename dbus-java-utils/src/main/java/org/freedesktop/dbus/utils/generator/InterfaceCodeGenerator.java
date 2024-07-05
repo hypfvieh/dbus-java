@@ -507,7 +507,7 @@ public class InterfaceCodeGenerator {
      * @throws DBusException on Error
      */
     private String buildStructClass(String _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
-        String structFqcn = _packageName.getPackageName() + "." + _structName;
+        String structFqcn = _packageName.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
         String structName = _structName;
         if (generatedStructClassNames.contains(structFqcn)) {
             while (generatedStructClassNames.contains(structFqcn)) {
