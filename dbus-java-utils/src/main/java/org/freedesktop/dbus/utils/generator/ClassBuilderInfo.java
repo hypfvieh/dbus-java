@@ -135,8 +135,8 @@ public class ClassBuilderInfo {
     private List<String> createClassFileContent(boolean _staticClass, Set<String> _otherImports) {
         List<String> content = new ArrayList<>();
 
-        String classIndent = _staticClass ? "    " : "";
-        String memberIndent = _staticClass ? "        " : "    ";
+        final String classIndent = _staticClass ? "    " : "";
+        final String memberIndent = _staticClass ? "        " : "    ";
 
         Set<String> allImports = new TreeSet<>();
         allImports.addAll(getImports());
