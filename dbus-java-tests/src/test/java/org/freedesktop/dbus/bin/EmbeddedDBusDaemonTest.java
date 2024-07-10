@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
     @Test
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
         String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);

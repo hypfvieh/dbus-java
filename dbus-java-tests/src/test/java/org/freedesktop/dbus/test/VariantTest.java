@@ -131,7 +131,7 @@ class VariantTest extends AbstractBaseTest {
             Message message = in.readMessage();
             logger.debug("Receiving <-- {}", message);
 
-            var t = ((Variant<?>) message.getParameters()[0]);
+            Variant<?> t = (Variant<?>) message.getParameters()[0];
 
             assertEquals(_data.expectedType(), t.getType().getClass());
             assertEquals(_data.expectedValueClass(), t.getValue().getClass());

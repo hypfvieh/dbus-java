@@ -33,7 +33,7 @@ public final class TransportBuilder {
         findTransportProvider(TransportBuilder.class.getClassLoader(), null);
     }
 
-    private TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
+    private final TransportConfigBuilder<TransportConfigBuilder<?, TransportBuilder>, TransportBuilder> transportConfigBuilder;
 
     private TransportBuilder(TransportConfig _config) {
         transportConfigBuilder = new TransportConfigBuilder<>(() -> this);

@@ -139,7 +139,7 @@ public final class Marshalling {
             } else if (Tuple.class.isAssignableFrom(clz)) {
                 continue; // simply ignore Tuple types
             } else if (CLASS_TO_ARGUMENTTYPE.containsKey(clz)) {
-                char val = ((char) CLASS_TO_ARGUMENTTYPE.get(clz).byteValue());
+                char val = (char) CLASS_TO_ARGUMENTTYPE.get(clz).byteValue();
                 _sig.append(val);
             } else {
                 throw new DBusTypeConversationRuntimeException("Unsupported class type " + clz);
@@ -724,7 +724,8 @@ public final class Marshalling {
         Object[] parameters = _parameters;
         Type[] types = _types;
 
-        if (types.length == 1 && types[0] instanceof ParameterizedType pt && Tuple.class.isAssignableFrom((Class<?>) (pt).getRawType())) {
+        if (types.length == 1 && types[0] instanceof ParameterizedType pt
+            && Tuple.class.isAssignableFrom((Class<?>) pt.getRawType())) {
             types = pt.getActualTypeArguments();
         }
 

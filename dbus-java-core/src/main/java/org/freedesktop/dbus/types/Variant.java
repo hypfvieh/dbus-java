@@ -134,13 +134,7 @@ public class Variant<T> {
      */
     @Override
     public boolean equals(Object _obj) {
-        if (this == _obj) {
-            return true;
-        }
-        if (!(_obj instanceof Variant<?> other)) {
-            return false;
-        }
-        return  Objects.equals(value, other.value);
+        return this == _obj || (_obj instanceof Variant<?> other) && Objects.equals(value, other.value);
     }
 
 }

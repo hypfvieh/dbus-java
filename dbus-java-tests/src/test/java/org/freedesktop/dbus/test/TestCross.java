@@ -86,6 +86,7 @@ public class TestCross extends AbstractDBusDaemonBaseTest {
 
         private Exception error;
 
+        @SuppressWarnings("PMD.EmptyCatchBlock")
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
@@ -98,8 +99,9 @@ public class TestCross extends AbstractDBusDaemonBaseTest {
                 while (cts.isRun()) {
                     try {
                         //cts.wait();
-                        Thread.sleep(500L);
+                        sleep(500L);
                     } catch (InterruptedException _exIe) {
+                        // ignored
                     }
                 }
                 for (String s : cts.getDone()) {

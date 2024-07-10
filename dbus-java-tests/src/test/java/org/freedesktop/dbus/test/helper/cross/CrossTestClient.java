@@ -264,6 +264,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         }
     }
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     public void doTests(Peer _peer, Introspectable _intro, Introspectable _rootintro, SamplesInterface _tests, Binding.SingleSample _singletests) {
         final Random r = new Random();
 

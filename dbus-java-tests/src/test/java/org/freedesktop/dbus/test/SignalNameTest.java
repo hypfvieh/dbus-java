@@ -45,7 +45,7 @@ public class SignalNameTest extends AbstractBaseTest {
                 connection.requestBusName("d.e.f.Service");
                 connection.exportObject("/d/e/f/custom", new MyCustomImpl());
 
-                connection.addSigHandler(CustomService.CustomSignal.class, _s -> logger.debug("Received signal: {}", _s.data));
+                connection.addSigHandler(CustomService.CustomSignal.class, s -> logger.debug("Received signal: {}", s.data));
 
                 connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
                 // wait to deliver message

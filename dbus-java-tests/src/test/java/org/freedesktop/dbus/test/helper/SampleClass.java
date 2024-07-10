@@ -81,6 +81,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         }
     }
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     @Override
     public void waitawhile() {
         logger.debug("Sleeping.");
@@ -178,6 +179,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         return false;
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     @Override
     public <T> int frobnicate(List<Long> _n, Map<String, Map<UInt16, Short>> _m, T _v) {
         if (null == _n) {
@@ -236,6 +238,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         throw new SampleException("test");
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     @Override
     public SampleSerializable<String> testSerializable(byte _b, SampleSerializable<String> _s, int _i) {
         logger.debug("Recieving TestSerializable: " + _s);

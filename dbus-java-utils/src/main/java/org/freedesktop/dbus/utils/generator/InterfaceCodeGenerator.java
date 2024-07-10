@@ -702,12 +702,12 @@ public class InterfaceCodeGenerator {
 
             Map<DbusInterfaceToFqcn, String> map = new LinkedHashMap<>();
 
-            map.put(DbusInterfaceToFqcn.CLASSNAME, Util.upperCaseFirstChar(className));
-            map.put(DbusInterfaceToFqcn.PACKAGENAME, packageName.toLowerCase());
+            map.put(CLASSNAME, Util.upperCaseFirstChar(className));
+            map.put(PACKAGENAME, packageName.toLowerCase());
 
             if (!packageName.equals(packageName.toLowerCase())) {
-                map.put(DbusInterfaceToFqcn.ORIG_PKGNAME, packageName);
-                map.put(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME, packageName + "." + className);
+                map.put(ORIG_PKGNAME, packageName);
+                map.put(DBUS_INTERFACE_NAME, packageName + "." + className);
             }
             return map;
         }

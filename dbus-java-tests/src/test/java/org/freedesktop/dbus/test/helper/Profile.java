@@ -44,6 +44,7 @@ public final class Profile {
 
     }
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     public static void main(String[] _args) {
         try {
             if (0 == _args.length) {
@@ -244,7 +245,7 @@ public final class Profile {
                     count++;
                 } while (count < 10000);
                 long end = System.currentTimeMillis();
-                System.out.println("No payload: " + ((count * 1000) / (end - start)) + " RT/second");
+                System.out.println("No payload: " + (count * 1000 / (end - start)) + " RT/second");
                 start = System.currentTimeMillis();
                 count = 0;
                 do {
@@ -253,7 +254,7 @@ public final class Profile {
                 } while (count < 10000);
                 peer.Ping();
                 end = System.currentTimeMillis();
-                System.out.println("No payload, One way: " + ((count * 1000) / (end - start)) + " /second");
+                System.out.println("No payload, One way: " + (count * 1000 / (end - start)) + " /second");
                 int len = 256;
                 while (len <= 32768) {
                     byte[] bs = new byte[len];
@@ -265,8 +266,8 @@ public final class Profile {
                     } while (count < 1000);
                     end = System.currentTimeMillis();
                     long ms = end - start;
-                    double cps = (count * 1000) / ms;
-                    double rate = (len * cps) / (1024.0 * 1024.0);
+                    double cps = count * 1000 / ms;
+                    double rate = len * cps / 1024.0 * 1024.0;
                     System.out.println(len + " byte array) " + (count * len) + " bytes in " + ms + "ms (in " + count + " calls / " + (int) cps + " CPS): " + rate + "MB/s");
                     len <<= 1;
                 }
@@ -282,8 +283,8 @@ public final class Profile {
                         count++;
                     } while (count < 1000);
                     long ms = end - start;
-                    double cps = (count * 1000) / ms;
-                    double rate = (len * cps) / (1024.0 * 1024.0);
+                    double cps = count * 1000 / ms;
+                    double rate = len * cps / 1024.0 * 1024.0;
                     System.out.println(len + " string) " + (count * len) + " bytes in " + ms + "ms (in " + count + " calls / " + (int) cps + " CPS): " + rate + "MB/s");
                     len <<= 1;
                 }
@@ -333,7 +334,7 @@ public final class Profile {
 
         @Override
         public void handle(Profiler.ProfileSignal _s) {
-            if (0 == count++ % Profile.SIGNAL_INNER) {
+            if (0 == count++ % SIGNAL_INNER) {
                 System.out.print("-");
             }
         }
@@ -344,9 +345,9 @@ public final class Profile {
     }
 
     public static class Log {
-        private long  last;
-        private int[] deltas;
-        private int   current = 0;
+        private final int[] deltas;
+        private int         current = 0;
+        private long        last;
 
         public Log(int _size) {
             deltas = new int[_size];

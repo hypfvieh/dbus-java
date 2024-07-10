@@ -31,8 +31,8 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
 
     protected BaseConnectionBuilder(Class<R> _returnType, BusAddress _address) {
         returnType = _returnType;
-        rsConfigBuilder = new ReceivingServiceConfigBuilder<>(BaseConnectionBuilder.this::self);
-        transportConfigBuilder = new TransportConfigBuilder<>(BaseConnectionBuilder.this::self);
+        rsConfigBuilder = new ReceivingServiceConfigBuilder<>(this::self);
+        transportConfigBuilder = new TransportConfigBuilder<>(this::self);
         transportConfigBuilder.withBusAddress(_address);
     }
 

@@ -73,7 +73,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
                 dc.listen();
 
                 while (!finished) {
-                    Thread.sleep(500L);
+                    sleep(500L);
                 }
             } catch (IOException | DBusException | InterruptedException  _ex) {
                 fail("Exception in server", _ex);

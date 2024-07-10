@@ -162,8 +162,8 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
     public static class MixedPropObj implements MixedProperties {
 
-        private String annotPropVal = "Value by Annotation";
-        private Map<String, Variant<?>> propVals = new HashMap<>();
+        private final Map<String, Variant<?>> propVals     = new HashMap<>();
+        private String                        annotPropVal = "Value by Annotation";
 
         public MixedPropObj() {
             propVals.put("mixed", new Variant<>("Mixed value"));

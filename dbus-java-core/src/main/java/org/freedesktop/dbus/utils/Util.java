@@ -99,11 +99,7 @@ public final class Util {
      * @return true if string is blank or null, false otherwise
      */
     public static boolean isBlank(String _str) {
-        if (_str == null) {
-            return true;
-        }
-
-        return _str.isBlank();
+        return _str == null || _str.isBlank();
     }
 
     /**
@@ -137,11 +133,7 @@ public final class Util {
      * @return true if string is empty or null, false otherwise
      */
     public static boolean isEmpty(String _str) {
-        if (_str == null) {
-            return true;
-        }
-
-        return _str.isEmpty();
+        return _str == null || _str.isEmpty();
     }
 
     /**
@@ -244,10 +236,7 @@ public final class Util {
      * @return true if valid port, false otherwise
      */
     public static boolean isValidNetworkPort(String _str, boolean _allowWellKnown) {
-        if (isInteger(_str, false)) {
-            return isValidNetworkPort(Integer.parseInt(_str), _allowWellKnown);
-        }
-        return false;
+        return isInteger(_str, false) && isValidNetworkPort(Integer.parseInt(_str), _allowWellKnown);
     }
 
     /**
@@ -531,7 +520,7 @@ public final class Util {
             address += ",listen=true";
         }
 
-        address += ",guid=" + Util.genGUID();
+        address += ",guid=" + genGUID();
 
         LoggerFactory.getLogger(Util.class).debug("Created Session address: {}", address);
 
@@ -575,7 +564,7 @@ public final class Util {
             return;
         }
 
-        if (!Util.isBlank(_fileOwner)) {
+        if (!isBlank(_fileOwner)) {
             try {
                 UserPrincipal userPrincipal = userPrincipalLookupService.lookupPrincipalByName(_fileOwner);
                 if (userPrincipal != null) {
@@ -586,7 +575,7 @@ public final class Util {
             }
         }
 
-        if (!Util.isBlank(_fileGroup)) {
+        if (!isBlank(_fileGroup)) {
             try {
                 GroupPrincipal groupPrincipal = userPrincipalLookupService.lookupPrincipalByGroupName(_fileGroup);
                 if (groupPrincipal != null) {
@@ -597,7 +586,7 @@ public final class Util {
             }
         }
 
-        if (!Util.isWindows() && _fileUnixPermissions != null) {
+        if (!isWindows() && _fileUnixPermissions != null) {
             try {
                 Files.setPosixFilePermissions(_path, _fileUnixPermissions);
             } catch (Exception _ex) {

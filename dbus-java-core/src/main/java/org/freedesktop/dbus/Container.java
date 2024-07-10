@@ -80,11 +80,7 @@ public abstract class Container {
         }
 
         if (_other instanceof Container cont) {
-            if (this.getClass().equals(cont.getClass())) {
-                return Arrays.equals(this.getParameters(), cont.getParameters());
-            } else {
-                return false;
-            }
+            return this.getClass().equals(cont.getClass()) && Arrays.equals(this.getParameters(), cont.getParameters());
         } else {
             return false;
         }

@@ -15,6 +15,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
 
     private volatile boolean serverReady = false;
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     @Test
     public void testTwoPart() throws InterruptedException {
         TwoPartServer twoPartServer = new TwoPartServer();
@@ -71,6 +72,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
             setDaemon(true);
         }
 
+        @SuppressWarnings("PMD.EmptyCatchBlock")
         @Override
         public void run() {
             try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
@@ -82,7 +84,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
                 serverReady = true;
                 do {
                     try {
-                        Thread.sleep(200L);
+                        sleep(200L);
                     } catch (InterruptedException _ex) {
                     }
                 } while (server.getSignalSerial() == 0);

@@ -107,7 +107,7 @@ public class Message {
         flags = _flags;
         preallocate(4);
         endianWasSet = _endian != (byte) 0;
-        append("yyyy", _endian, _type, _flags, Message.PROTOCOL);
+        append("yyyy", _endian, _type, _flags, PROTOCOL);
     }
 
     /**
@@ -761,7 +761,7 @@ public class Message {
         if (0 == _current % a) {
             return _current;
         }
-        return _current + (a - (_current % a));
+        return _current + a - _current % a;
     }
 
     /**

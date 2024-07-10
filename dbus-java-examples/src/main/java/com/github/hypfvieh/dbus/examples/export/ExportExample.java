@@ -15,8 +15,8 @@ import java.util.concurrent.CountDownLatch;
  */
 public class ExportExample implements ISampleExport {
 
-    private DBusConnection dbusConn;
-    private CountDownLatch waitClose;
+    private final DBusConnection dbusConn;
+    private final CountDownLatch waitClose;
 
     ExportExample() throws DBusException, InterruptedException {
         waitClose = new CountDownLatch(1);

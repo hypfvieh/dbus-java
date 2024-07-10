@@ -13,7 +13,6 @@ package org.freedesktop.dbus.viewer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.swing.Action;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -39,7 +38,7 @@ final class SaveFileAction extends TabbedSaveAction implements ChangeListener {
     void enableAndSetName() {
         int selectedIndex = tabbedPane.getSelectedIndex();
         boolean enabled = selectedIndex > -1;
-        putValue(Action.NAME, "Save " + getFileName(selectedIndex) + "...");
+        putValue(NAME, "Save " + getFileName(selectedIndex) + "...");
         setEnabled(enabled);
     }
 

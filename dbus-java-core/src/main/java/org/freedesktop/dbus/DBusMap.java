@@ -115,7 +115,7 @@ public class DBusMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "PMD.SimplifyBooleanReturns"})
     public boolean equals(Object _o) {
         if (null == _o) {
             return false;
@@ -141,7 +141,7 @@ public class DBusMap<K, V> implements Map<K, V> {
             entryPosition = _i;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "PMD.SimplifyBooleanReturns"})
         @Override
         public boolean equals(Object _o) {
             if (null == _o) {

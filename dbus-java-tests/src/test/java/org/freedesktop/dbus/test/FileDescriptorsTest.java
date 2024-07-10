@@ -8,7 +8,6 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -20,7 +19,8 @@ import java.util.stream.Stream;
 public class FileDescriptorsTest extends AbstractDBusDaemonBaseTest {
     public static final String TEST_OBJECT_PATH = "/FileDescriptorsTest";
 
-    private DBusConnection serverconn = null, clientconn = null;
+    private DBusConnection serverconn = null;
+    private DBusConnection clientconn = null;
 
     @BeforeEach
     public void setUp() throws DBusException {
@@ -63,7 +63,7 @@ public class FileDescriptorsTest extends AbstractDBusDaemonBaseTest {
         FDPassing remoteObject = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, FDPassing.class);
         Stream.of(0, 1, 2).map(FileDescriptor::new).forEach(fd -> {
             // that's not a mistake of using NotEquals here, as fd passing make a new copy with a new value
-            Assertions.assertNotEquals(fd.getIntFileDescriptor(), remoteObject.doNothing(fd).getIntFileDescriptor());
+            assertNotEquals(fd.getIntFileDescriptor(), remoteObject.doNothing(fd).getIntFileDescriptor());
         });
     }
 

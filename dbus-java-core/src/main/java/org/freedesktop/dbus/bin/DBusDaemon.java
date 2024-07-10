@@ -503,12 +503,12 @@ public class DBusDaemon extends Thread implements Closeable {
 
             int rv;
             if (exists) {
-                rv = DBus.DBUS_REQUEST_NAME_REPLY_EXISTS;
+                rv = DBUS_REQUEST_NAME_REPLY_EXISTS;
             } else {
 
                 LOGGER.info("Client {} acquired name {}", connStruct.unique, _name);
 
-                rv = DBus.DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
+                rv = DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER;
                 try {
                     send(connStruct, generateNameAcquiredSignal(connStruct.connection, _name));
                     send(null, generatedNameOwnerChangedSignal(connStruct.connection, _name, "", connStruct.unique));
@@ -531,10 +531,10 @@ public class DBusDaemon extends Thread implements Closeable {
 
             int rv;
             if (!exists) {
-                rv = DBus.DBUS_RELEASE_NAME_REPLY_NON_EXISTANT;
+                rv = DBUS_RELEASE_NAME_REPLY_NON_EXISTANT;
             } else {
                 LOGGER.info("Client {} acquired name {}", connStruct.unique, _name);
-                rv = DBus.DBUS_RELEASE_NAME_REPLY_RELEASED;
+                rv = DBUS_RELEASE_NAME_REPLY_RELEASED;
                 try {
                     send(connStruct, new NameLost(DBUS_BUSPATH, _name));
                     send(null, new NameOwnerChanged(DBUS_BUSPATH, _name, connStruct.unique, ""));
@@ -792,7 +792,7 @@ public class DBusDaemon extends Thread implements Closeable {
                     }
                 } catch (InterruptedException _ex) {
                     logger.debug("Got interrupted", _ex);
-                    Thread.currentThread().interrupt();
+                    currentThread().interrupt();
                 }
             }
             logger.debug(">>>> Sender Thread terminated <<<<");

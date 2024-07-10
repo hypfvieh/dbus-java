@@ -25,7 +25,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     private static final ReceivingServiceConfig DEFAULT_CFG = new ReceivingServiceConfig();
 
     private static final IThreadPoolRetryHandler DEFAULT_RETRYHANDLER = new IThreadPoolRetryHandler() {
-        private AtomicInteger retries = new AtomicInteger(0);
+        private final AtomicInteger retries = new AtomicInteger(0);
         @Override
         public boolean handle(ExecutorNames _executor, Exception _ex) {
             if (retries.incrementAndGet() < DEFAULT_HANDLER_RETRIES) {

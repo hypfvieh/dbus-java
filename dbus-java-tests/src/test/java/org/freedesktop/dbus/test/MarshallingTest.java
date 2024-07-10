@@ -17,7 +17,6 @@ import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
 import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.Variant;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -62,9 +61,9 @@ public class MarshallingTest extends AbstractBaseTest {
         List<Type> temp = new ArrayList<>();
         Marshalling.getJavaType("a(oa{sv})ao", temp, -1);
 
-        Assertions.assertEquals(2, temp.size(), "result must contain two types");
-        Assertions.assertTrue(temp.get(0) instanceof DBusListType);
-        Assertions.assertTrue(temp.get(1) instanceof DBusListType);
+        assertEquals(2, temp.size(), "result must contain two types");
+        assertTrue(temp.get(0) instanceof DBusListType);
+        assertTrue(temp.get(1) instanceof DBusListType);
     }
 
     @Test
@@ -72,7 +71,7 @@ public class MarshallingTest extends AbstractBaseTest {
         List<Type> temp = new ArrayList<>();
         int parsedCharsCount = Marshalling.getJavaType("(oa{sv})ao", temp, 1);
 
-        Assertions.assertEquals(8, parsedCharsCount);
+        assertEquals(8, parsedCharsCount);
     }
 
     private static byte[] streamReader(String _file) throws IOException {

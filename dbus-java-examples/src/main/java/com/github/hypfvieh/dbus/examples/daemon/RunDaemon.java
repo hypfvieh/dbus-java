@@ -54,6 +54,7 @@ public class RunDaemon {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     private void connectSelf() throws DBusException, IOException {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);

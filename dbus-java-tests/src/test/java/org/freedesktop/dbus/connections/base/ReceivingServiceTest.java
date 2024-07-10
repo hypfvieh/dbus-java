@@ -89,7 +89,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
      */
     @Test
     void testRetryHandlerHardLimit() {
-        IThreadPoolRetryHandler handler = (_executor, _ex) -> true;
+        IThreadPoolRetryHandler handler = (executor, ex) -> true;
 
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
 
@@ -134,7 +134,8 @@ class ReceivingServiceTest extends AbstractBaseTest {
     @Test
     void testRetryHandlerNotCalledBecauseNoFailure() {
         AtomicBoolean handlerWasCalled = new AtomicBoolean();
-        IThreadPoolRetryHandler handler = (_executor, _ex) -> {
+
+        IThreadPoolRetryHandler handler = (executor, ex) -> {
             handlerWasCalled.set(true);
             return true;
         };

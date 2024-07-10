@@ -198,9 +198,9 @@ public class DBusViewer {
     }
 
     class ParsingContext {
-        private final DBusConnection conn;
-        private DocumentBuilder      builder;
-        private List<DBusEntry>      result;
+        private final DBusConnection  conn;
+        private final DocumentBuilder builder;
+        private List<DBusEntry>       result;
 
         ParsingContext(DBusConnection _conn) {
             this.conn = _conn;

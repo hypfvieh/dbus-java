@@ -75,19 +75,19 @@ public final class LoggingHelper {
             return null;
         } else if (_obj.getClass().isArray() && _obj.getClass().getComponentType().isPrimitive()) {
             if (_obj.getClass().getComponentType() == Boolean.TYPE) {
-                return Arrays.toString(((boolean[]) _obj));
+                return Arrays.toString((boolean[]) _obj);
             } else if (_obj.getClass().getComponentType() == Character.TYPE) {
-                return Arrays.toString(((char[]) _obj));
+                return Arrays.toString((char[]) _obj);
             } else if (_obj.getClass().getComponentType() == Integer.TYPE) {
-                return Arrays.toString(((int[]) _obj));
+                return Arrays.toString((int[]) _obj);
             } else if (_obj.getClass().getComponentType() == Float.TYPE) {
-                return Arrays.toString(((float[]) _obj));
+                return Arrays.toString((float[]) _obj);
             } else if (_obj.getClass().getComponentType() == Double.TYPE) {
-                return Arrays.toString(((double[]) _obj));
+                return Arrays.toString((double[]) _obj);
             } else if (_obj.getClass().getComponentType() == Byte.TYPE) {
-                return Arrays.toString(((byte[]) _obj));
+                return Arrays.toString((byte[]) _obj);
             } else if (_obj.getClass().getComponentType() == Long.TYPE) {
-                return Arrays.toString(((long[]) _obj));
+                return Arrays.toString((long[]) _obj);
             }
         }
 

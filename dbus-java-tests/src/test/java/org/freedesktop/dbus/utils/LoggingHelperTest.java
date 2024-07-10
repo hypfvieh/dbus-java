@@ -69,8 +69,8 @@ public class LoggingHelperTest extends AbstractBaseTest {
     }
 
     private static class TestValues {
-        private Object input;
-        private String expected;
+        private final Object input;
+        private final String expected;
 
         TestValues(Object _input, String _expected) {
             input = _input;
