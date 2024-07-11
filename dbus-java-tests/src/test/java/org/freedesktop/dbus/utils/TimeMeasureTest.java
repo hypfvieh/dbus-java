@@ -27,7 +27,7 @@ public class TimeMeasureTest extends AbstractBaseTest {
         elapsed = tm.getElapsed();
         assertTrue(elapsed >= 10000, "Elapsed was " + elapsed);
         String toStringResult = tm.toString();
-        assertTrue(toStringResult.matches("^[0-9]+\\.[0-9]s$"), "toString() returned " + toStringResult);
+        assertTrue(toStringResult.matches("^[0-9]+\\.[0-9]+s$"), "toString() returned " + toStringResult);
     }
 
     @Test
