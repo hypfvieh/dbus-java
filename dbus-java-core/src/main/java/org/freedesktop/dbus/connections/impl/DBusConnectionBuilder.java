@@ -161,9 +161,9 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      */
     @Override
     public DBusConnection build() throws DBusException {
-        ReceivingServiceConfig cfg = buildThreadConfig();
+        ReceivingServiceConfig rcvSvcCfg = buildThreadConfig();
         TransportConfig transportCfg = buildTransportConfig();
-
+        ConnectionConfig connectionConfig = getConnectionConfig();
         DBusConnection c;
         if (shared) {
             synchronized (DBusConnection.CONNECTIONS) {
@@ -173,16 +173,14 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
                     c.concurrentConnections.incrementAndGet();
                     return c; // this connection already exists, do not change anything
                 } else {
-                    c = new DBusConnection(shared, machineId, transportCfg, cfg);
+                    c = new DBusConnection(shared, machineId, connectionConfig, transportCfg, rcvSvcCfg);
                     DBusConnection.CONNECTIONS.put(busAddressStr, c);
                 }
             }
         } else {
-            c = new DBusConnection(shared, machineId, transportCfg, cfg);
+            c = new DBusConnection(shared, machineId, connectionConfig, transportCfg, rcvSvcCfg);
         }
 
-        c.setDisconnectCallback(getDisconnectCallback());
-        c.setWeakReferences(isWeakReference());
         c.connectImpl();
         return c;
     }

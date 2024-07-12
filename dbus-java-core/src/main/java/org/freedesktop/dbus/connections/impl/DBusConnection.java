@@ -68,8 +68,8 @@ public final class DBusConnection extends AbstractConnection {
      */
     private final boolean shared;
 
-    DBusConnection(boolean _shared, String _machineId, TransportConfig _tranportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_tranportCfg, _rsCfg);
+    DBusConnection(boolean _shared, String _machineId, ConnectionConfig _conCfg, TransportConfig _tranportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _tranportCfg, _rsCfg);
         busnames = new ArrayList<>();
         machineId = _machineId;
         shared = _shared;

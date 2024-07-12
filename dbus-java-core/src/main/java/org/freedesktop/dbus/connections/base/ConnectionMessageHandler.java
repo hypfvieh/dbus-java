@@ -4,6 +4,7 @@ import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -28,8 +29,9 @@ import java.util.Queue;
  * @since 5.0.0 - 2023-10-23
  */
 public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyHandler permits AbstractConnection {
-    protected ConnectionMessageHandler(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportConfig, _rsCfg);
+
+    protected ConnectionMessageHandler(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _transportConfig, _rsCfg);
     }
 
     @Override

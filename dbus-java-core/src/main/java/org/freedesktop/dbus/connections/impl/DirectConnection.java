@@ -38,8 +38,8 @@ public class DirectConnection extends AbstractConnection {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String machineId;
 
-    DirectConnection(TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportCfg, _rsCfg);
+    DirectConnection(ConnectionConfig _conCfg, TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _transportCfg, _rsCfg);
         machineId = AddressBuilder.createMachineId();
         if (!getAddress().isServer()) {
             try {

@@ -8,6 +8,7 @@ import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.UnknownProperty;
@@ -67,21 +68,21 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     private final BusAddress                                                      busAddress;
 
     private final MessageFactory                                                  messageFactory;
+    private final ConnectionConfig                                                connectionConfig;
 
     private AbstractTransport                                                     transport;
 
-    private Optional<IDisconnectCallback>                                         disconnectCallback;
-
     private volatile boolean                                                      disconnecting;
 
-    protected AbstractConnectionBase(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
+    protected AbstractConnectionBase(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
+        connectionConfig = Objects.requireNonNull(_conCfg, "Connection configuration required");
+
         exportedObjects = Collections.synchronizedMap(new HashMap<>());
-        importedObjects = new ConcurrentHashMap<>();
+        importedObjects = connectionConfig.isImportWeakReferences() ? Collections.synchronizedMap(new WeakHashMap<>()) : new ConcurrentHashMap<>();
 
         getExportedObjects().put(null, new ExportedObject(new GlobalHandler(this), false));
 
-        disconnectCallback = Optional.ofNullable(null);
         disconnecting = false;
 
         handledSignals = new ConcurrentHashMap<>();
@@ -171,7 +172,8 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
             m = getTransport().readMessage();
         } catch (IOException _exIo) {
             if (_exIo instanceof EOFException || _exIo instanceof ClosedByInterruptException) {
-                disconnectCallback.ifPresent(IDisconnectCallback::clientDisconnect);
+
+                Optional.ofNullable(getDisconnectCallback()).ifPresent(IDisconnectCallback::clientDisconnect);
                 if (disconnecting // when we are already disconnecting, ignore further errors
                     || getBusAddress().isListeningSocket()) { // when we are listener, a client may disconnect any time which
                                                          // is no error
@@ -203,7 +205,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
         getLogger().debug("Disconnecting Abstract Connection");
 
-        disconnectCallback.ifPresent(cb ->
+        Optional.ofNullable(getDisconnectCallback()).ifPresent(cb ->
             Optional.ofNullable(_connectionError)
                 .ifPresentOrElse(cb::disconnectOnError, () -> cb.requestedDisconnect(null))
         );
@@ -522,6 +524,10 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
         return INFOMAP;
     }
 
+    protected ConnectionConfig getConnectionConfig() {
+        return connectionConfig;
+    }
+
     /**
      * Stop Exporting an object
      *
@@ -550,7 +556,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      * @return callback or null if no callback registered
      */
     public IDisconnectCallback getDisconnectCallback() {
-        return disconnectCallback.orElse(null);
+        return connectionConfig.getDisconnectCallback() == null ? null : connectionConfig.getDisconnectCallback();
     }
 
     /**
@@ -558,9 +564,11 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      * Use null to remove.
      *
      * @param _disconnectCallback callback to execute or null to remove
+     * @deprecated should be set on construction using the builder
      */
+    @Deprecated(since = "5.1.0 - 2024-07-12", forRemoval = true)
     public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
-        disconnectCallback = Optional.ofNullable(_disconnectCallback);
+        connectionConfig.setDisconnectCallback(_disconnectCallback);
     }
 
     /**

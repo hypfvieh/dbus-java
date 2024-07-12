@@ -8,6 +8,7 @@ import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.errors.InvalidMethodArgument;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -41,8 +42,8 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
 
     private static final Method PROP_GETALL_METHOD = PropRefRemoteHandler.getPropertiesMethod("GetAll", String.class);
 
-    protected DBusBoundPropertyHandler(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportConfig, _rsCfg);
+    protected DBusBoundPropertyHandler(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _transportConfig, _rsCfg);
     }
 
     /**

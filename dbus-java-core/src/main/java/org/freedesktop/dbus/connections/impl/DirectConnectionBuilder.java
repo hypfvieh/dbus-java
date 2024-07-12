@@ -37,12 +37,9 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
     public DirectConnection build() throws DBusException {
         ReceivingServiceConfig rsCfg = buildThreadConfig();
         TransportConfig transportCfg = buildTransportConfig();
+        ConnectionConfig connectionConfig = getConnectionConfig();
 
-        DirectConnection c = new DirectConnection(transportCfg, rsCfg);
-        c.setDisconnectCallback(getDisconnectCallback());
-        c.setWeakReferences(isWeakReference());
-
-        return c;
+        return new DirectConnection(connectionConfig, transportCfg, rsCfg);
     }
 
 }

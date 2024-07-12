@@ -137,6 +137,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Changed behavior of de-serialization on Variants containing Collections (Lists). Collections which contained a object which also has a primitive representation the collection was always converted to an array of primitives (e.g. Variant<List<Integer>> got Variant<int[]> on de-serialization). This is usually not expected. When defining a Variant<List<Integer>> it is expected to return that same type when de-serialized. The wrong behavior also caused issues when using `GetAll` method in `Properties` interface. [More information](https://hypfvieh.github.io/dbus-java/variant-handling.html) 
    - Deprecated `DBusMap` - all methods previously used or returned `DBusMap` will now return a `LinkedHashMap`
    - Fixed `hashCode()` and `equals()` method in `DBusPath` (`hashCode()` was completely wrong and violating the `hashCode()` contract when e.g. used as key in maps)
+   - Added possibility to use `WeakHashMap` for imported objects (configurable by `DBusConnectionBuilder`), default behavior of using a `ConcurrentHashMap` is not changed (yet) ([#261](https://github.com/hypfvieh/dbus-java/issues/261))
  
 ##### Changes in 5.0.0 (2024-01-25):
    - **Updated minimum required Java version to 17**

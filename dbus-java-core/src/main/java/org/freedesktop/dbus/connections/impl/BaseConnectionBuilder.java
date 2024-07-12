@@ -21,16 +21,15 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
 
     private final Class<R>                         returnType;
 
-    private boolean                                weakReference = false;
-
-    private IDisconnectCallback                    disconnectCallback;
-
     private final ReceivingServiceConfigBuilder<R> rsConfigBuilder;
 
     private final TransportConfigBuilder<?, R>     transportConfigBuilder;
 
+    private final ConnectionConfig                 connectionConfig;
+
     protected BaseConnectionBuilder(Class<R> _returnType, BusAddress _address) {
         returnType = _returnType;
+        connectionConfig = new ConnectionConfig();
         rsConfigBuilder = new ReceivingServiceConfigBuilder<>(this::self);
         transportConfigBuilder = new TransportConfigBuilder<>(this::self);
         transportConfigBuilder.withBusAddress(_address);
@@ -62,12 +61,12 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
         return transportConfigBuilder.build();
     }
 
-    protected boolean isWeakReference() {
-        return weakReference;
-    }
-
-    protected IDisconnectCallback getDisconnectCallback() {
-        return disconnectCallback;
+    /**
+     * Returns the currently configured connection configuration.
+     * @return config
+     */
+    protected ConnectionConfig getConnectionConfig() {
+        return connectionConfig;
     }
 
     /**
@@ -92,9 +91,61 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      *
      * @param _weakRef true to enable
      * @return this
+     * @deprecated use {@link #withExportWeakReferences(boolean)} instead
      */
+    @Deprecated(forRemoval = true, since = "5.1.0 - 2024-07-12")
     public R withWeakReferences(boolean _weakRef) {
-        weakReference = _weakRef;
+        return withExportWeakReferences(_weakRef);
+    }
+
+    /**
+     * Enable/Disable usage of weak references for exported objects.
+     * <p>
+     * Exported objects are objects provided by the application to
+     * DBus and are used through DBus by other applications.
+     * </p>
+     * <p>
+     * Using weak references may allow the Garbage Collector to remove exported objects
+     * when they are no longer reachable.
+     * Enabling this feature may cause dbus-java to be forced to re-create exported objects
+     * because the GC already cleaned up the old references.
+     * <br>
+     * <b>Use with caution!</b>
+     * </p>
+     *
+     * Default is false.
+     *
+     * @param _weakRef true to enable
+     * @return this
+     */
+    public R withExportWeakReferences(boolean _weakRef) {
+        connectionConfig.setExportWeakReferences(_weakRef);
+        return self();
+    }
+
+    /**
+     * Enable/Disable usage of weak references for imported objects.
+     * <p>
+     * Imported objects are all objects which are created when calling interfaces which belong to any object provided by DBus.<br>
+     * E.g. when you want to use Bluetooth, you will query the bluez interfaces on the bus which will create a proxy object in dbus-java.<br>
+     * These objects are stored in an internal Map so re-querying the same object will return the cached object instead of creating a new proxy.
+     * </p>
+     * <p>
+     * Usually all imported objects are dropped when the connection gets closed (by either side).<br>
+     * If the application will not close the connection and run for a long time the default behavior may cause high memory usage.<br>
+     * Enabling weak references may allow the Garbage Collector to remove imported objects when they are no longer reachable.<br>
+     * This will free up memory when no other references are kept on the remote imported object.
+     * </p>
+     * <p>
+     * The current default is false.<br>
+     * Anyway it is considered to enable weak references for imported objects as default in the future.
+     * </p>
+     *
+     * @param _weakRef true to enable
+     * @return this
+     */
+    public R withImportWeakReferences(boolean _weakRef) {
+        connectionConfig.setImportWeakReferences(_weakRef);
         return self();
     }
 
@@ -105,7 +156,7 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      * @return this
      */
     public R withDisconnectCallback(IDisconnectCallback _disconnectCallback) {
-        disconnectCallback = _disconnectCallback;
+        connectionConfig.setDisconnectCallback(_disconnectCallback);
         return self();
     }
 

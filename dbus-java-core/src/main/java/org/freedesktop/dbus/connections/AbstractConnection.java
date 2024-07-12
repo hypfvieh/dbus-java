@@ -8,6 +8,7 @@ import org.freedesktop.dbus.connections.base.ConnectionMessageHandler;
 import org.freedesktop.dbus.connections.base.IncomingMessageThread;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.InvalidSignalException;
@@ -35,10 +36,8 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
     public static final int          MAX_ARRAY_LENGTH       = 67108864;
     public static final int          MAX_NAME_LENGTH        = 255;
 
-    private boolean                                weakreferences       = false;
-
-    protected AbstractConnection(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportConfig, _rsCfg);
+    protected AbstractConnection(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _transportConfig, _rsCfg);
     }
 
     @Override
@@ -145,9 +144,11 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      * explicitly unexported before they will be garbage collected.
      *
      * @param _weakreferences reference
+     * @deprecated should be set during construction time (using the builder), will be removed in future
      */
+    @Deprecated(since = "5.1.0 - 2024-07-12", forRemoval = true)
     public void setWeakReferences(boolean _weakreferences) {
-        this.weakreferences = _weakreferences;
+        getConnectionConfig().setExportWeakReferences(_weakreferences);
     }
 
     /**
@@ -174,7 +175,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             if (null != getExportedObjects().get(_objectPath)) {
                 throw new DBusException("Object already exported");
             }
-            ExportedObject eo = new ExportedObject(_object, weakreferences);
+            ExportedObject eo = new ExportedObject(_object, getConnectionConfig().isExportWeakReferences());
             getExportedObjects().put(_objectPath, eo);
             synchronized (getObjectTree()) {
                 getObjectTree().add(_objectPath, eo, eo.getIntrospectiondata());
@@ -211,7 +212,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      */
     public void addFallback(String _objectPrefix, DBusInterface _object) throws DBusException {
         DBusObjects.requireObjectPath(_objectPrefix);
-        ExportedObject eo = new ExportedObject(_object, weakreferences);
+        ExportedObject eo = new ExportedObject(_object, getConnectionConfig().isExportWeakReferences());
         getFallbackContainer().add(_objectPrefix, eo);
     }
 

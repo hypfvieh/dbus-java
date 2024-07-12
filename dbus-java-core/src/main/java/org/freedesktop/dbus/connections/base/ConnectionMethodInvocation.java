@@ -5,6 +5,7 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -30,8 +31,8 @@ import java.util.Arrays;
  */
 public abstract sealed class ConnectionMethodInvocation extends AbstractConnectionBase permits DBusBoundPropertyHandler {
 
-    protected ConnectionMethodInvocation(TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
-        super(_transportConfig, _rsCfg);
+    protected ConnectionMethodInvocation(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
+        super(_conCfg, _transportConfig, _rsCfg);
     }
 
     protected abstract void handleException(Message _methodOrSignal, DBusExecutionException _exception);
