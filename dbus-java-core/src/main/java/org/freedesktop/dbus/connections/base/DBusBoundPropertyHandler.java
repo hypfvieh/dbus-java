@@ -51,7 +51,6 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
      * It takes care of proper method calling (calling Get/Set stuff on DBus Properties interface)<br>
      * and will also take care of converting wrapped Variant types.
      *
-     * @param _conn connection
      * @param _exportObject exported object
      * @param _methodCall method to call
      * @param _params parameter to pass to method
