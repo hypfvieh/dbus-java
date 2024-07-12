@@ -13,13 +13,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        cache-dependency-path: |
+            dbus-java-core/pom.xml
+            dbus-java-examples/pom.xml
+            dbus-java-osgi/pom.xml
+            dbus-java-tests/pom.xml
+            dbus-java-transport-jnr-unixsocket/pom.xml
+            dbus-java-transport-junixsocket/pom.xml
+            dbus-java-transport-native-unixsocket/pom.xml
+            dbus-java-transport-tcp/pom.xml
+            dbus-java-utils/pom.xml
     - name: Build with Maven
       run: |
         dbus-daemon --session --fork --address unix:path=/tmp/dbustest,guid=$(echo $RANDOM | md5sum | cut -d ' ' -f 1)
