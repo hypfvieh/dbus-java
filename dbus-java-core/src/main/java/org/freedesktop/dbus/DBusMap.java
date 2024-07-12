@@ -10,6 +10,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated use any other Map implementation like HashMap, LinkedHashMap etc
+ */
 @Deprecated(forRemoval = true, since = "5.1.0 - 2024-05-19")
 public class DBusMap<K, V> implements Map<K, V> {
     // CHECKSTYLE:OFF

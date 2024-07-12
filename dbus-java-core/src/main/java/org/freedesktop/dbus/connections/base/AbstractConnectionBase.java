@@ -21,6 +21,8 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.constants.Flags;
+import org.freedesktop.dbus.utils.IThrowingConsumer;
+import org.freedesktop.dbus.utils.IThrowingFunction;
 import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +83,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
         exportedObjects = Collections.synchronizedMap(new HashMap<>());
         importedObjects = connectionConfig.isImportWeakReferences() ? Collections.synchronizedMap(new WeakHashMap<>()) : new ConcurrentHashMap<>();
 
-        getExportedObjects().put(null, new ExportedObject(new GlobalHandler(this), false));
+        doWithExportedObjects(DBusException.class, eos -> eos.put(null, new ExportedObject(new GlobalHandler(this), false)));
 
         disconnecting = false;
 
@@ -210,6 +212,8 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
                 .ifPresentOrElse(cb::disconnectOnError, () -> cb.requestedDisconnect(null))
         );
 
+        getImportedObjects().clear();
+
         // stop reading new messages
         readerThread.terminate();
 
@@ -294,8 +298,40 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
             "The property `%s' does not exist.", p))));
     }
 
-    protected synchronized Map<String, ExportedObject> getExportedObjects() {
-        return exportedObjects;
+    /**
+     * Do some action with the currently exported objects in a synchronized manor.
+     *
+     * @param _exClz exception type which may be thrown
+     * @param _action action to execute
+     * @param <X> type of exception
+     *
+     * @return whatever the action returns
+     *
+     * @throws X thrown when action throws
+     */
+    protected <T, X extends Throwable> T doWithExportedObjectsAndReturn(Class<X> _exClz, IThrowingFunction<Map<String, ExportedObject>, T, X> _action) throws X {
+        if (_action == null) {
+            return null;
+        }
+        synchronized (exportedObjects) {
+            return _action.apply(exportedObjects);
+        }
+    }
+
+    /**
+     * Do some action with the currently exported objects in a synchronized manor.
+     * @param _exClz exception type which may be thrown
+     * @param _action action to execute
+     * @param <X> type of exception
+     * @throws X thrown when action throws
+     */
+    protected <X extends Throwable> void doWithExportedObjects(Class<X> _exClz, IThrowingConsumer<Map<String, ExportedObject>, X> _action) throws X {
+        if (_action == null) {
+            return;
+        }
+        synchronized (exportedObjects) {
+            _action.accept(exportedObjects);
+        }
     }
 
     protected Logger getLogger() {
@@ -387,7 +423,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
                 try {
                     getLogger().info("Setting reply to {} as an error", _message);
                     mc.setReply(
-                        getMessageFactory().createError(_message, new DBusExecutionException("Message Failed to Send: " + _ex.getMessage())));
+                        getMessageFactory().createError(_message, new DBusExecutionException("Message Failed to Send: " + _ex.getMessage(), _ex)));
                 } catch (DBusException _exDe) {
                     getLogger().trace("Could not set message reply", _exDe);
                 }
@@ -407,10 +443,12 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
-        Optional<Entry<String, ExportedObject>> foundInterface =
-                getExportedObjects().entrySet().stream()
-                    .filter(e -> _interface.equals(e.getValue().getObject().get()))
-                    .findFirst();
+        Optional<Entry<String, ExportedObject>> foundInterface = doWithExportedObjectsAndReturn(DBusException.class, eos -> {
+            return eos.entrySet().stream()
+                .filter(e -> _interface.equals(e.getValue().getObject().get()))
+                .findFirst();
+        });
+
         if (foundInterface.isPresent()) {
             return foundInterface.get().getKey();
         } else {
@@ -535,10 +573,10 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      *            The objectpath to stop exporting.
      */
     public void unExportObject(String _objectpath) {
-        synchronized (getExportedObjects()) {
-            getExportedObjects().remove(_objectpath);
+        doWithExportedObjects(null, eos -> {
+            eos.remove(_objectpath);
             getObjectTree().remove(_objectpath);
-        }
+        });
     }
 
     /**

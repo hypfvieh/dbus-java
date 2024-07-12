@@ -92,7 +92,7 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
                 } catch (DBusException _ex) {
                     getLogger().warn("Exception while running signal handler '{}' for signal '{}':", h, _signal, _ex);
                     handleException(_signal, new DBusExecutionException("Error handling signal " + _signal.getInterface()
-                            + "." + _signal.getName() + ": " + _ex.getMessage()));
+                            + "." + _signal.getName() + ": " + _ex.getMessage(), _ex));
                 }
             };
             if (_useThreadPool) {
@@ -248,7 +248,7 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
 
         if (null == _methodCall.getInterface() || _methodCall.getInterface().equals("org.freedesktop.DBus.Peer")
                 || _methodCall.getInterface().equals("org.freedesktop.DBus.Introspectable")) {
-            exportObject = getExportedObjects().get(null);
+            exportObject = doWithExportedObjectsAndReturn(DBusException.class, eos -> eos.get(null));
             if (null != exportObject && null == exportObject.getObject().get()) {
                 unExportObject(null);
                 exportObject = null;
@@ -263,7 +263,7 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
         if (o == null) {
             // now check for specific exported functions
 
-            exportObject = getExportedObjects().get(_methodCall.getPath());
+            exportObject = doWithExportedObjectsAndReturn(DBusException.class, eos -> eos.get(_methodCall.getPath()));
             getLogger().debug("Found exported object: {}", exportObject == null ? "<no object found>" : exportObject);
 
             if (exportObject != null && exportObject.getObject().get() == null) {

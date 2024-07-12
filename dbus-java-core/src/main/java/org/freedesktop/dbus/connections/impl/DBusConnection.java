@@ -29,7 +29,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Handles a connection to DBus.
@@ -99,6 +100,7 @@ public final class DBusConnection extends AbstractConnection {
         // register ourselves if not disabled
         if (getTransportConfig().isRegisterSelf() && getTransport().isConnected()) {
             register();
+            getLogger().debug("");
         }
     }
 
@@ -118,12 +120,50 @@ public final class DBusConnection extends AbstractConnection {
         dbus = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
 
         try {
-            busnames.add(dbus.Hello());
-            registered = true;
+            doWithBusNames(bn -> {
+                bn.add(dbus.Hello());
+                registered = true;
+            });
         } catch (DBusExecutionException _ex) {
             logger.debug("Error while doing 'Hello' handshake", _ex);
             throw new DBusException(_ex.getMessage(), _ex);
         }
+    }
+
+    /**
+     * Do some action with the currently registered names in a synchronized manor.
+     *
+     * @param _exClz exception type which may be thrown
+     * @param _action action to execute
+     * @param <X> type of exception
+     *
+     * @return whatever the action returns
+     *
+     * @throws X thrown when action throws
+     */
+    private <T> T doWithBusNamesAndReturn(Function<List<String>, T> _action) {
+        if (_action == null) {
+            return null;
+        }
+        synchronized (busnames) {
+            return _action.apply(busnames);
+        }
+    }
+
+    /**
+     * Do some action with the currently registered names in a synchronized manor.
+     *
+     * @param _exClz exception type which may be thrown
+     * @param _action action to execute
+     * @param <X> type of exception
+     *
+     * @throws X thrown when action throws
+     */
+    private void doWithBusNames(Consumer<List<String>> _action) {
+        doWithBusNamesAndReturn(bn -> {
+            _action.accept(bn);
+            return null;
+        });
     }
 
     /**
@@ -161,7 +201,7 @@ public final class DBusConnection extends AbstractConnection {
                     }
                     return i;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
             List<Class<?>> ifcs = findMatchingTypes(_type, ifaces);
 
@@ -187,10 +227,7 @@ public final class DBusConnection extends AbstractConnection {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends DBusInterface> T getExportedObject(String _source, String _path, Class<T> _type) throws DBusException {
-        ExportedObject o;
-        synchronized (getExportedObjects()) {
-            o = getExportedObjects().get(_path);
-        }
+        ExportedObject o = doWithExportedObjectsAndReturn(DBusException.class, eo -> eo.get(_path));
         if (null != o && o.getObject().get() == null) {
             unExportObject(_path);
             o = null;
@@ -226,9 +263,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException(_ex.getMessage());
         }
 
-        synchronized (this.busnames) {
-            this.busnames.remove(_busname);
-        }
+        doWithBusNames(bn -> bn.remove(_busname));
     }
 
     /**
@@ -257,9 +292,7 @@ public final class DBusConnection extends AbstractConnection {
             throw new DBusException("Failed to register bus name");
         }
 
-        synchronized (this.busnames) {
-            this.busnames.add(_busname);
-        }
+        doWithBusNames(bn -> bn.add(_busname));
     }
 
     /**
@@ -268,7 +301,7 @@ public final class DBusConnection extends AbstractConnection {
      * @return unique name
      */
     public String getUniqueName() {
-        return busnames.get(0);
+        return doWithBusNamesAndReturn(bn -> bn.get(0));
     }
 
     /**
@@ -277,9 +310,11 @@ public final class DBusConnection extends AbstractConnection {
      * @return connection names
      */
     public String[] getNames() {
-        Set<String> names = new TreeSet<>();
-        names.addAll(busnames);
-        return names.toArray(String[]::new);
+        return doWithBusNamesAndReturn(bn -> {
+            Set<String> names = new TreeSet<>();
+            names.addAll(bn);
+            return names;
+        }).toArray(String[]::new);
     }
 
     public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type)
@@ -691,12 +726,13 @@ public final class DBusConnection extends AbstractConnection {
 
                 // get all busnames from the list which matches the usual pattern
                 // this is required as the list also contains internal names like ":1.11"
+
                 // it is also required to put the results in a new list, otherwise we would get a
-                // concurrent modification exception later (calling releaseBusName() will modify the busnames List)
-                synchronized (busnames) {
-                    List<String> lBusNames = busnames.stream()
+                // concurrent modification exception later (calling releaseBusName() or unExportObject() will modify the busnames List)
+                doWithBusNames(bn -> {
+                    List<String> lBusNames = bn.stream()
                         .filter(DBusObjects::validateBusName)
-                        .collect(Collectors.toList());
+                        .toList();
 
                     lBusNames.forEach(busName -> {
                             try {
@@ -707,16 +743,15 @@ public final class DBusConnection extends AbstractConnection {
                             }
 
                         });
-                }
+                });
 
                 // remove all exported objects before disconnecting
-                Map<String, ExportedObject> exportedObjects = getExportedObjects();
-                synchronized (exportedObjects) {
-                    List<String> exportedKeys = exportedObjects.keySet().stream().filter(Objects::nonNull).collect(Collectors.toList());
+                doWithExportedObjects(null, eos -> {
+                    List<String> exportedKeys = eos.keySet().stream().filter(Objects::nonNull).toList();
                     for (String key : exportedKeys) {
                         unExportObject(key);
                     }
-                }
+                });
 
             };
 
@@ -785,9 +820,7 @@ public final class DBusConnection extends AbstractConnection {
         @Override
         public void handle(DBusSignal _signal) {
             if (_signal instanceof DBus.NameAcquired na) {
-                synchronized (busnames) {
-                    busnames.add(na.name);
-                }
+                doWithBusNames(bn -> bn.add(na.name));
             }
         }
     }

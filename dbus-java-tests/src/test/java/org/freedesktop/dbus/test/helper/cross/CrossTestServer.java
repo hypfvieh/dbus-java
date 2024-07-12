@@ -346,7 +346,7 @@ public class CrossTestServer implements SamplesInterface, SingleSample, DBusSigH
         try {
             conn.sendMessage(new Binding.SampleSignals.Triggered(_a, _b));
         } catch (DBusException _exD) {
-            throw new DBusExecutionException(_exD.getMessage());
+            throw new DBusExecutionException(_exD.getMessage(), _exD);
         }
     }
 
@@ -368,7 +368,7 @@ public class CrossTestServer implements SamplesInterface, SingleSample, DBusSigH
             Binding.SampleClient cb = conn.getRemoteObject(_t.getSource(), "/TestClient", Binding.SampleClient.class);
             cb.Response(_t.getSampleUint16(), _t.getSampleDouble());
         } catch (DBusException _exD) {
-            throw new DBusExecutionException(_exD.getMessage());
+            throw new DBusExecutionException(_exD.getMessage(), _exD);
         }
     }
 

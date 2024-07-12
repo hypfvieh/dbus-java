@@ -180,7 +180,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 sig = Marshalling.getDBusType(ts);
                 args = Marshalling.convertParameters(args, ts, _customSignatures, _conn);
             } catch (DBusException _ex) {
-                throw new DBusExecutionException("Failed to construct D-Bus type: " + _ex.getMessage());
+                throw new DBusExecutionException("Failed to construct D-Bus type: " + _ex.getMessage(), _ex);
             }
         }
         MethodCall call;
@@ -204,7 +204,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
             }
         } catch (DBusException _ex) {
             LOGGER.debug("Failed to construct outgoing method call.", _ex);
-            throw new DBusExecutionException("Failed to construct outgoing method call: " + _ex.getMessage());
+            throw new DBusExecutionException("Failed to construct outgoing method call: " + _ex.getMessage(), _ex);
         }
         if (!_conn.isConnected()) {
             throw new NotConnected("Not Connected");
@@ -220,7 +220,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 _conn.sendMessage(call);
                 return null;
             }
-            case CALL_TYPE_SYNC -> _conn.sendMessage(call);
+             case CALL_TYPE_SYNC -> _conn.sendMessage(call);
+             default -> throw new UnsupportedOperationException("Unsupported Method call type: " + _syncmethod);
         }
 
         // get reply

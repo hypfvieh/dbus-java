@@ -67,8 +67,7 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
     public void testIntrospection() throws DBusException {
         logger.debug("Getting our introspection data");
         /** This gets a remote object matching our bus name and exported object path. */
-        Introspectable intro = clientconn.getRemoteObject(getTestBusName(), "/", Introspectable.class);
-        intro = clientconn.getRemoteObject(getTestBusName(), getTestObjectPath(), Introspectable.class);
+        Introspectable intro = clientconn.getRemoteObject(getTestBusName(), getTestObjectPath(), Introspectable.class);
         /** Get introspection data */
         String data = intro.Introspect();
         assertNotNull(data);
@@ -106,18 +105,8 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
     public void testException() throws DBusException {
         SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject(getTestBusName(), getTestObjectPath());
 
-        /** call something that throws */
-        try {
-            logger.debug("Throwing stuff");
-            tri.throwme();
-            fail("Method Execution should have failed");
-        } catch (SampleException _ex) {
-            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
-            if (!_ex.getMessage().equals("test")) {
-                fail("Error message was not correct");
-            }
-        }
-
+        SampleException ex = assertThrows(SampleException.class, () -> tri.throwme());
+        assertEquals("test", ex.getMessage(), "Remote Method Failed with: " + ex.getClass().getName() + " " + ex.getMessage());
     }
 
     @Test

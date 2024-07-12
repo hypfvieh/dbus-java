@@ -96,10 +96,8 @@ public class DirectConnection extends AbstractConnection {
 
     @SuppressWarnings("unchecked")
     <T extends DBusInterface> T getExportedObject(String _path, Class<T> _type) throws DBusException {
-        ExportedObject o = null;
-        synchronized (getExportedObjects()) {
-            o = getExportedObjects().get(_path);
-        }
+        ExportedObject o = doWithExportedObjectsAndReturn(DBusException.class, eos -> eos.get(_path));
+
         if (null != o && null == o.getObject().get()) {
             unExportObject(_path);
             o = null;

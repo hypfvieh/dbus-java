@@ -7,7 +7,7 @@ import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.ObjectPath;
 import org.junit.jupiter.api.Test;
 
-public class DBusPathTest {
+class DBusPathTest {
 
     @Test
     void testEquals() {

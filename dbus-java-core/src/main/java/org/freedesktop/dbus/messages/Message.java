@@ -738,6 +738,7 @@ public class Message {
                     appendOne(sig.getBytes(), 0, _data);
                 }
                 break;
+            default:
             }
             return i;
         } catch (ClassCastException _ex) {

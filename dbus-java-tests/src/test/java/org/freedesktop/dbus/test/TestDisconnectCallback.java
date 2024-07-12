@@ -20,12 +20,12 @@ public class TestDisconnectCallback extends AbstractDBusDaemonBaseTest {
 
         DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus()
                 .withDisconnectCallback(callback)
-                .withWeakReferences(true)
+                .withExportWeakReferences(true)
                 .build();
 
         DBusConnection clientConnection = DBusConnectionBuilder.forSessionBus()
                 .withDisconnectCallback(callback)
-                .withWeakReferences(true)
+                .withExportWeakReferences(true)
                 .build();
 
         serverConnection.requestBusName("foo.bar.why.again.disconnect.Test");
@@ -73,7 +73,7 @@ public class TestDisconnectCallback extends AbstractDBusDaemonBaseTest {
             if (integer == null) {
                 expectedCounter.put(_connectionId, 1);
             } else {
-                expectedCounter.put(_connectionId, integer++);
+                expectedCounter.put(_connectionId, ++integer);
             }
         }
     }

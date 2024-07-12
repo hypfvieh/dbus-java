@@ -157,7 +157,7 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                     getLogger().debug("Failed to invoke method call", _ex);
                     handleException(_methodCall,
                         new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                        _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+                        _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage()), _ex));
                 }
             });
             return PropHandled.HANDLED;

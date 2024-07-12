@@ -35,7 +35,7 @@ public final class ListMapStruct extends Struct implements IEmptyCollectionStruc
     public String getStringTestValue() {
         return list.stream()
                 .map(this::toPrintableMap)
-                .collect(Collectors.toList())
+                .toList()
                 .toString();
     }
 

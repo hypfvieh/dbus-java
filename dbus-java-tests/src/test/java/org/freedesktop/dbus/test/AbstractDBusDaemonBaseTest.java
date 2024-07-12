@@ -4,7 +4,6 @@ import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
-import org.freedesktop.dbus.exceptions.DBusException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
@@ -38,11 +37,10 @@ public abstract class AbstractDBusDaemonBaseTest extends AbstractBaseTest {
     /**
      * Start an embedded Dbus daemon (in background) if the test uses TCP transport.
      *
-     * @throws DBusException if start of daemon failed
      * @throws InterruptedException on interruption
      */
     @BeforeAll
-    public static void beforeAll() throws DBusException, InterruptedException {
+    public static void beforeAll() {
         Logger logger = LoggerFactory.getLogger(AbstractDBusDaemonBaseTest.class);
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
             String busType = TransportBuilder.getRegisteredBusTypes().get(0);

@@ -55,13 +55,10 @@ class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
             clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
             Util.waitFor(getShortTestMethodName() + "Client", () -> clientconn.isConnected(), 5000, 100);
 
-            serverconn.setWeakReferences(true);
-            clientconn.setWeakReferences(true);
-
             /** This exports an instance of the test class as the object /Test. */
             ISampleCollectionInterface serverImpl = new SampleCollectionImpl();
 
-            LoggerFactory.getLogger(TestEmptyCollections.class).debug("Exporting sample collection");
+            LoggerFactory.getLogger(TestEmptyCollections.class).debug("Exporting sample collection on {}", serverconn.getUniqueName());
             serverconn.exportObject(serverImpl.getObjectPath(), serverImpl);
             waitIfTcp();
 
@@ -83,6 +80,7 @@ class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
         if (null != dbee) {
             throw dbee;
         }
+
         clientconn.disconnect();
         waitIfTcp();
         serverconn.disconnect();

@@ -212,9 +212,7 @@ public interface DBus extends DBusInterface {
         public final String newOwner;
 
         public NameOwnerChanged(String _path, String _name, String _oldOwner, String _newOwner) throws DBusException {
-            super(_path, new Object[] {
-                    _name, _oldOwner, _newOwner
-            });
+            super(_path, _name, _oldOwner, _newOwner);
             name = _name;
             oldOwner = _oldOwner;
             newOwner = _newOwner;

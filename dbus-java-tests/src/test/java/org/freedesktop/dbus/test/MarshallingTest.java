@@ -28,11 +28,11 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class MarshallingTest extends AbstractBaseTest {
+class MarshallingTest extends AbstractBaseTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("createClassToSigData")
-    public void testJavaClassToDBusSignature(ClassToSigData _data) {
+    void testJavaClassToDBusSignature(ClassToSigData _data) {
         assertThrows(DBusTypeConversationRuntimeException.class, () -> Marshalling.convertJavaClassesToSignature());
 
         assertEquals(_data.signature(), Marshalling.convertJavaClassesToSignature(_data.classes().toArray(Class[]::new)));
@@ -57,7 +57,7 @@ public class MarshallingTest extends AbstractBaseTest {
     }
 
     @Test
-    public void parseComplexMessageReturnsCorrectTypes() throws DBusException {
+    void parseComplexMessageReturnsCorrectTypes() throws DBusException {
         List<Type> temp = new ArrayList<>();
         Marshalling.getJavaType("a(oa{sv})ao", temp, -1);
 
@@ -67,7 +67,7 @@ public class MarshallingTest extends AbstractBaseTest {
     }
 
     @Test
-    public void parseStructReturnsCorrectParsedCharsCount() throws Exception {
+    void parseStructReturnsCorrectParsedCharsCount() throws Exception {
         List<Type> temp = new ArrayList<>();
         int parsedCharsCount = Marshalling.getJavaType("(oa{sv})ao", temp, 1);
 
@@ -80,7 +80,7 @@ public class MarshallingTest extends AbstractBaseTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testMarshalling() throws Exception {
+    void testMarshalling() throws Exception {
 
         // create an array with the required parameters of ServicesChanged signal (required to create a proper list of objects by reflection later on)
         Type[] types = null;
@@ -116,7 +116,7 @@ public class MarshallingTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testDeserializeParametersWithTuple() throws Exception {
+    void testDeserializeParametersWithTuple() throws Exception {
         Object[] ob = {
                 "rootfs.1", "marked slot rootfs.1 as good"
         };
@@ -132,7 +132,7 @@ public class MarshallingTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testDeserializeParametersVariant() throws Exception {
+    void testDeserializeParametersVariant() throws Exception {
         var varList = new Variant<>(List.of(1, 2, 3), "ai");
         Type[] types = new Type[] {varList.getType()};
 
@@ -149,7 +149,7 @@ public class MarshallingTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testDeserializeMap() throws Exception {
+    void testDeserializeMap() throws Exception {
         DBusPath key = new DBusPath("/foo");
         DBusPath val = new DBusPath("/bar");
         Map<DBusPath, DBusPath> testMap = Map.of(key, val);
@@ -162,7 +162,7 @@ public class MarshallingTest extends AbstractBaseTest {
 
         Map<?, ?> deserializedMap = (Map<?, ?>) deSerializeParameters[0];
 
-        assertFalse(testMap == deserializedMap, "Expected new object");
+        assertNotSame(testMap, deserializedMap, "Expected new object");
         assertEquals(LinkedHashMap.class, deserializedMap.getClass(), "Expected new LinkedHashMap");
 
         Entry<?, ?> next = deserializedMap.entrySet().iterator().next();
@@ -187,10 +187,10 @@ public class MarshallingTest extends AbstractBaseTest {
 
          class ServicesChanged extends DBusSignal {
 
-            public final String  objectPath;
+            final String  objectPath;
 
-            public final List<SomeData> changed;
-            public final List<ObjectPath> removed;
+            final List<SomeData> changed;
+            final List<ObjectPath> removed;
 
             ServicesChanged(String _objectPath, List<SomeData> _k, List<ObjectPath> _removedItems) throws DBusException {
                 super(_objectPath, _k, _removedItems);
@@ -200,15 +200,15 @@ public class MarshallingTest extends AbstractBaseTest {
                 removed = _removedItems;
             }
 
-            public String getObjectPath() {
+            String getObjectPath() {
                 return objectPath;
             }
 
-            public List<SomeData> getChanged() {
+            List<SomeData> getChanged() {
                 return changed;
             }
 
-            public List<ObjectPath> getRemoved() {
+            List<ObjectPath> getRemoved() {
                 return removed;
             }
 
@@ -222,7 +222,7 @@ public class MarshallingTest extends AbstractBaseTest {
         MarkTuple Mark(String _state, String _slotIdentifier);
     }
 
-    record ClassToSigData(String signature, List<Class<?>> classes, String description) {
+    public record ClassToSigData(String signature, List<Class<?>> classes, String description) {
         @Override
         public String toString() {
             return description;

@@ -20,8 +20,8 @@ public abstract class AbstractDBusBaseTest extends AbstractDBusDaemonBaseTest {
 
     @BeforeEach
     public void setUp() throws DBusException {
-        serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
-        clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).withWeakReferences(true).build();
+        serverconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
+        clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
         serverconn.requestBusName(getTestBusName());
 
         tclass = new SampleClass(serverconn);

@@ -294,7 +294,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         try {
             conn.exportObject("/new", n);
         } catch (DBusException _ex) {
-            throw new DBusExecutionException(_ex.getMessage());
+            throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
         return n;
     }

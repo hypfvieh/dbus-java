@@ -98,7 +98,6 @@ public class TestCross extends AbstractDBusDaemonBaseTest {
                 serverReady = true;
                 while (cts.isRun()) {
                     try {
-                        //cts.wait();
                         sleep(500L);
                     } catch (InterruptedException _exIe) {
                         // ignored

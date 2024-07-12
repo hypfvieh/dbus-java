@@ -26,33 +26,35 @@ public class SignalNameTest extends AbstractBaseTest {
      * @throws Exception
      */
     @Test
-    public void testSignalNameAlias() throws Exception {
-        String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
-        BusAddress busAddress = TransportBuilder.
-                createWithDynamicSession(protocolType)
-                .configure().build().getBusAddress();
+    void testSignalNameAlias() {
+        assertDoesNotThrow(() -> {
+            String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+            BusAddress busAddress = TransportBuilder.
+                    createWithDynamicSession(protocolType)
+                    .configure().build().getBusAddress();
 
-        BusAddress listenBusAddress = BusAddress.of(busAddress).getListenerAddress();
+            BusAddress listenBusAddress = BusAddress.of(busAddress).getListenerAddress();
 
-        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
-            daemon.startInBackgroundAndWait(MAX_WAIT);
-            logger.debug("Started embedded bus on address {}", listenBusAddress);
+            try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
+                daemon.startInBackgroundAndWait(MAX_WAIT);
+                logger.debug("Started embedded bus on address {}", listenBusAddress);
 
-            // connect to started daemon process
-            logger.info("Connecting to embedded DBus {}", busAddress);
+                // connect to started daemon process
+                logger.info("Connecting to embedded DBus {}", busAddress);
 
-            try (DBusConnection connection = DBusConnectionBuilder.forAddress(busAddress).build()) {
-                connection.requestBusName("d.e.f.Service");
-                connection.exportObject("/d/e/f/custom", new MyCustomImpl());
+                try (DBusConnection connection = DBusConnectionBuilder.forAddress(busAddress).build()) {
+                    connection.requestBusName("d.e.f.Service");
+                    connection.exportObject("/d/e/f/custom", new MyCustomImpl());
 
-                connection.addSigHandler(CustomService.CustomSignal.class, s -> logger.debug("Received signal: {}", s.data));
+                    connection.addSigHandler(CustomService.CustomSignal.class, s -> logger.debug("Received signal: {}", s.data));
 
-                connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
-                // wait to deliver message
-                Thread.sleep(1000);
+                    connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
+                    // wait to deliver message
+                    Thread.sleep(1000);
 
+                }
             }
-        }
+        });
     }
 
     @DBusInterfaceName("d.e.f.Custom")

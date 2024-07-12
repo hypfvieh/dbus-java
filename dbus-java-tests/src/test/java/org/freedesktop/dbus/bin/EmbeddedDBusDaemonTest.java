@@ -16,11 +16,11 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  *
  */
-public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
+class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
     @Test
     @SuppressWarnings("PMD.UnusedLocalVariable")
-    public void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
+    void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
         String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
@@ -48,7 +48,7 @@ public class EmbeddedDBusDaemonTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testStartStop() throws Exception {
+    void testStartStop() throws Exception {
 
         for (int i = 0; i < 2; i++) {
             String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), true);

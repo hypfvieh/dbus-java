@@ -44,8 +44,8 @@ public class DBusAsyncReply<T> {
                 } catch (DBusExecutionException _ex) {
                     error = _ex;
                 } catch (DBusException _ex) {
-                    logger.debug("", _ex);
-                    error = new DBusExecutionException(_ex.getMessage());
+                    logger.debug("RemoteInvocationHandler failed", _ex);
+                    error = new DBusExecutionException(_ex.getMessage(), _ex);
                 }
             }
         }

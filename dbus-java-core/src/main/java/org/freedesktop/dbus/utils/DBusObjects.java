@@ -61,7 +61,20 @@ public final class DBusObjects {
      * @throws InvalidObjectPathException when input is not a valid object path
      */
     public static String requireObjectPath(String _objectPath) throws InvalidObjectPathException {
-        return requireBase(_objectPath, DBusObjects::validateObjectPath, InvalidObjectPathException::new, null);
+        return requireObjectPath(_objectPath, null);
+    }
+
+    /**
+     * Ensures given string is a valid object path.
+     *
+     * @param _objectPath string to check
+     * @param _customMsg custom error message
+     * @return input string if valid
+     *
+     * @throws InvalidObjectPathException when input is not a valid object path
+     */
+    public static String requireObjectPath(String _objectPath, String _customMsg) throws InvalidObjectPathException {
+        return requireBase(_objectPath, DBusObjects::validateObjectPath, InvalidObjectPathException::new, _customMsg);
     }
 
     /**

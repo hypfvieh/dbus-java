@@ -4,7 +4,9 @@ import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_EXTRACT_PA
 import static org.freedesktop.dbus.utils.CommonRegexPattern.EXCEPTION_PARTIAL_PATTERN;
 
 import org.freedesktop.dbus.connections.AbstractConnection;
-import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.messages.constants.MessageType;
@@ -110,7 +112,6 @@ public class Error extends Message {
             } else {
                 ex = con.newInstance(Arrays.stream(args).map(Objects::toString).collect(Collectors.joining(" ")).trim());
             }
-            ex.setType(getName());
             return ex;
         } catch (Exception _ex1) {
             logger.debug("", _ex1);
@@ -126,7 +127,6 @@ public class Error extends Message {
             } else {
                 ex = new DBusExecutionException(Arrays.stream(args).map(Objects::toString).collect(Collectors.joining(" ")).trim());
             }
-            ex.setType(getName());
             return ex;
         }
     }

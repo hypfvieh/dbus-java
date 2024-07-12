@@ -449,7 +449,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
 
             LOGGER.debug("", _ex);
 
-            throw new DBusExecutionException(_ex.getMessage());
+            throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
 
         try {

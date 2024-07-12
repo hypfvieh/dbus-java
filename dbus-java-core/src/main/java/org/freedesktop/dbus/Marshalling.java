@@ -130,7 +130,7 @@ public final class Marshalling {
                 _sig.append(ArgumentType.STRUCT1_STRING);
 
                 Class<?>[] structure = Arrays.stream(clz.getDeclaredFields())
-                    .map(f -> f.getType())
+                    .map(Field::getType)
                     .toArray(Class<?>[]::new);
 
                 convertToSig(_sig, 0, structure);

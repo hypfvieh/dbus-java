@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -26,6 +27,8 @@ import java.util.regex.Pattern;
  * @since v3.2.5 - 2020-12-28
  */
 public final class Util {
+    private static final String SYSPROP_OS_NAME = "os.name";
+
     private static final Random RANDOM = new Random();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
@@ -442,12 +445,12 @@ public final class Util {
      * @return true if MacOS (or MacOS X), false otherwise
      */
     public static boolean isMacOs() {
-        String osName = System.getProperty("os.name");
+        String osName = System.getProperty(SYSPROP_OS_NAME);
         return osName != null && osName.toLowerCase(Locale.US).startsWith("mac");
     }
 
     public static boolean isFreeBsd() {
-        String osName = System.getProperty("os.name");
+        String osName = System.getProperty(SYSPROP_OS_NAME);
         return osName != null && osName.toLowerCase(Locale.US).startsWith("freebsd");
     }
 
@@ -456,7 +459,7 @@ public final class Util {
      * @return true if Windows, false otherwise
      */
     public static boolean isWindows() {
-        String osName = System.getProperty("os.name");
+        String osName = System.getProperty(SYSPROP_OS_NAME);
         return osName != null && osName.toLowerCase(Locale.US).startsWith("windows");
     }
 
@@ -693,5 +696,23 @@ public final class Util {
      */
     public static String defaultString(String _input, String _default) {
         return _input == null ? _default : _input;
+    }
+
+    /**
+     * Tries to find a constructor of the given class with the given signature.
+     * Will catch all exceptions and return <code>null</code> in doubt.
+     *
+     * @param _clz class to query for constructor
+     * @param _args parameter classes used in constructor
+     * @param <C> type of input class
+     *
+     * @return constructor matching given pattern or <code>null</code>
+     */
+    public static <C> Constructor<? extends C> getConstructor(Class<? extends C> _clz, Class<?>... _args) {
+        try {
+            return _clz.getConstructor(_args);
+        } catch (NoSuchMethodException | SecurityException _ex) {
+            return null;
+        }
     }
 }

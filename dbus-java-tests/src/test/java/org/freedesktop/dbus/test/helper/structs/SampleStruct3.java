@@ -2,7 +2,6 @@ package org.freedesktop.dbus.test.helper.structs;
 
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
-import org.freedesktop.dbus.exceptions.DBusException;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ public final class SampleStruct3 extends Struct {
     @Position(1)
     private final List<List<Integer>> innerListOfLists;
 
-    public SampleStruct3(SampleStruct2 _a, List<List<Integer>> _b) throws DBusException {
+    public SampleStruct3(SampleStruct2 _a, List<List<Integer>> _b) {
         this.innerStruct = _a;
         this.innerListOfLists = _b;
     }

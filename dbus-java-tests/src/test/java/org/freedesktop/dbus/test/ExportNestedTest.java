@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
 
@@ -87,7 +86,7 @@ public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
 
         @Override
         public List<String> getPartNames() {
-            return parts.stream().map(MyInterfacePart::getVal1).collect(Collectors.toList());
+            return parts.stream().map(MyInterfacePart::getVal1).toList();
         }
     }
 

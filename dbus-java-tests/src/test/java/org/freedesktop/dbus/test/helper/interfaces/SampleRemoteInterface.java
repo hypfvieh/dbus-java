@@ -29,7 +29,7 @@ public interface SampleRemoteInterface extends DBusInterface {
     @IntrospectionDescription("Test of nested maps")
     <T> int frobnicate(List<Long> _n, Map<String, Map<UInt16, Short>> _m, T _v);
 
-    @IntrospectionDescription("Throws a TestException when called")
+    @IntrospectionDescription("Throws a SampleException when called")
     void throwme() throws SampleException;
 
     @IntrospectionDescription("Waits then doesn't return")

@@ -85,7 +85,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
             getLogger().debug("Error invoking method call {}", _methodCall, _ex);
             handleException(_methodCall,
                     new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
-                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage())));
+                            _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage()), _ex));
         }
         return null;
     }

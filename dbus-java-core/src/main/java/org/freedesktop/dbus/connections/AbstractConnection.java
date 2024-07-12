@@ -164,23 +164,20 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If the objectpath is already exporting an object. or if objectpath is incorrectly formatted,
      */
     public void exportObject(String _objectPath, DBusInterface _object) throws DBusException {
-        if (null == _objectPath || _objectPath.isEmpty()) {
-            throw new DBusException("Must Specify an Object Path");
-        }
 
-        DBusObjects.requireObjectPath(_objectPath);
+        DBusObjects.requireObjectPath(_objectPath, "Must Specify an Object Path");
         DBusObjects.ensurePublicInterfaces(_object);
 
-        synchronized (getExportedObjects()) {
-            if (null != getExportedObjects().get(_objectPath)) {
+        doWithExportedObjects(DBusException.class, eos -> {
+            if (null != eos.get(_objectPath)) {
                 throw new DBusException("Object already exported");
             }
             ExportedObject eo = new ExportedObject(_object, getConnectionConfig().isExportWeakReferences());
-            getExportedObjects().put(_objectPath, eo);
+            eos.put(_objectPath, eo);
             synchronized (getObjectTree()) {
                 getObjectTree().add(_objectPath, eo, eo.getIntrospectiondata());
             }
-        }
+        });
     }
 
     /**
@@ -374,7 +371,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             throw _ex;
         } catch (Exception _ex) {
             getLogger().debug("Failed to call callback", _ex);
-            throw new DBusExecutionException(_ex.getMessage());
+            throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
     }
 
@@ -407,7 +404,7 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
             throw _ex;
         } catch (Exception _ex) {
             getLogger().debug("Failed to execute async method", _ex);
-            throw new DBusExecutionException(_ex.getMessage());
+            throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
     }
 

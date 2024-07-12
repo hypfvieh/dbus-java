@@ -182,7 +182,10 @@ public final class TransportBuilder {
         int configuredSaslAuthMode = config.getSaslConfig().getAuthMode();
 
         AbstractTransport transport = null;
-        ITransportProvider provider = PROVIDERS.values().stream().map(e -> e.get(config.getBusAddress().getBusType())).filter(Objects::nonNull).findAny().get();
+        ITransportProvider provider = PROVIDERS.values().stream()
+            .map(e -> e.get(config.getBusAddress().getBusType()))
+            .filter(Objects::nonNull)
+            .findAny().orElse(null);
 
         if (provider == null) {
             throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
@@ -271,7 +274,11 @@ public final class TransportBuilder {
      */
     public static String createDynamicSession(String _busType, boolean _listeningAddress) {
         Objects.requireNonNull(_busType, "Bustype required");
-        ITransportProvider provider = PROVIDERS.values().stream().map(e -> e.get(_busType)).filter(Objects::nonNull).findAny().get();
+        ITransportProvider provider = PROVIDERS.values().stream()
+            .map(e -> e.get(_busType))
+            .filter(Objects::nonNull)
+            .findAny().orElse(null);
+
         if (provider != null) {
             return provider.createDynamicSessionAddress(_listeningAddress);
         }
