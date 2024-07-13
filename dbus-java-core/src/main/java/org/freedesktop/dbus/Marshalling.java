@@ -366,7 +366,6 @@ public final class Marshalling {
         try {
             int idx = 0;
             for (; idx < _dbusType.length() && (-1 == _limit || _limit > _resultValue.size()); idx++) {
-                int javaType;
                 switch (_dbusType.charAt(idx)) {
                 case ArgumentType.STRUCT1:
                     int structIdx = idx + 1;
@@ -379,19 +378,19 @@ public final class Marshalling {
                     }
 
                     List<Type> contained = new ArrayList<>();
-                    javaType = getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
+                    getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
                     _resultValue.add(new DBusStructType(contained.toArray(new Type[0])));
                     idx = structIdx - 1; //-1 because j already points to the next signature char
                     break;
                 case ArgumentType.ARRAY:
                     if (ArgumentType.DICT_ENTRY1 == _dbusType.charAt(idx + 1)) {
                         contained = new ArrayList<>();
-                        javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
+                        int javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
                         _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
                         idx += javaType + 2;
                     } else {
                         contained = new ArrayList<>();
-                        javaType = getJavaType(_dbusType.substring(idx + 1), contained, 1);
+                        int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 1);
                         _resultValue.add(new DBusListType(contained.get(0)));
                         idx += javaType;
                     }
@@ -443,7 +442,7 @@ public final class Marshalling {
                     break;
                 case ArgumentType.DICT_ENTRY1:
                     contained = new ArrayList<>();
-                    javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);
+                    int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);
                     _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
                     idx += javaType + 1;
                     break;

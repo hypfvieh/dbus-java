@@ -241,7 +241,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     @SuppressWarnings("PMD.UselessParentheses")
     @Override
     public SampleSerializable<String> testSerializable(byte _b, SampleSerializable<String> _s, int _i) {
-        logger.debug("Recieving TestSerializable: " + _s);
+        logger.debug("Recieving TestSerializable: {}", _s);
         if (_b != 12 || _i != 13 || !(_s.getInt() == 1) || !(_s.getString().equals("woo"))
                 || !(_s.getList().size() == 3) || !(_s.getList().get(0) == 1)
                 || !(_s.getList().get(1) == 2) || !(_s.getList().get(2) == 3)) {

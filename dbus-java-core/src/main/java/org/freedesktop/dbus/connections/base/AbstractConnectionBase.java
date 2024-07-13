@@ -443,11 +443,12 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
     public String getExportedObject(DBusInterface _interface) throws DBusException {
 
-        Optional<Entry<String, ExportedObject>> foundInterface = doWithExportedObjectsAndReturn(DBusException.class, eos -> {
-            return eos.entrySet().stream()
-                .filter(e -> _interface.equals(e.getValue().getObject().get()))
-                .findFirst();
-        });
+        Optional<Entry<String, ExportedObject>> foundInterface = doWithExportedObjectsAndReturn(DBusException.class,
+            eos ->
+                eos.entrySet().stream()
+                    .filter(e -> _interface.equals(e.getValue().getObject().get()))
+                    .findFirst()
+        );
 
         if (foundInterface.isPresent()) {
             return foundInterface.get().getKey();
