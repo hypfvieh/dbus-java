@@ -644,6 +644,7 @@
                 <check.skip-sonar>false</check.skip-sonar>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.organization>hypfvieh</sonar.organization>
+                <sonar.projectKey>com.github.hypfvieh:dbus-java-parent</sonar.projectKey>
 
                 <maven.test.skip>true</maven.test.skip>
                 <skipTests>true</skipTests>
@@ -677,6 +678,7 @@
                 <check.skip-sonar>false</check.skip-sonar>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.organization>hypfvieh</sonar.organization>
+                <sonar.projectKey>com.github.hypfvieh:dbus-java-parent</sonar.projectKey>
             </properties>
             <build>
                 <plugins>
