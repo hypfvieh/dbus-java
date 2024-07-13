@@ -119,7 +119,7 @@ public class P2pTestServer implements SampleRemoteInterface {
 
     @Override
     public float testfloat(float[] _f) {
-        logger.debug("got float: " + Arrays.toString(_f));
+        logger.debug("got float: {}", Arrays.toString(_f));
         return _f[0];
     }
 

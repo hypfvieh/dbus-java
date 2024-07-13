@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.text.Collator;
 import java.util.*;
 
@@ -54,7 +55,7 @@ public class SASL {
     // stop reading when reaching ~1MByte of data
     private static final int      MAX_READ_BYTES              = 1024 * 1024;
 
-    private static final Random   RANDOM                      = new Random();
+    private static final Random   RANDOM                      = new SecureRandom();
 
     private static final Collator COL = Collator.getInstance();
     static {
