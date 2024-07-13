@@ -30,4 +30,4 @@ jobs:
             dbus-java-transport-tcp/pom.xml
             dbus-java-utils/pom.xml
     - name: SonarCloud Scan
-      run: mvn -B clean verify -Psonarcloud -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      run: mvn -B clean verify -Psonarcloud -Dsonar.token=${{ secrets.SONAR_TOKEN }}
