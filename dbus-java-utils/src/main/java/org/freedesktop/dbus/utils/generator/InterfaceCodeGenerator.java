@@ -94,7 +94,10 @@ public class InterfaceCodeGenerator {
         Element root = document.getDocumentElement();
 
         if (!Util.isBlank(nodeName) && !Util.isBlank(root.getAttribute("name")) && !nodeName.equals(root.getAttribute("name"))) {
-            logger.error("Retrieved node '{}' does not match requested node name '{}'!", root.getAttribute("name"), nodeName);
+            logger.atError()
+                .addArgument(() -> root.getAttribute("name"))
+                .addArgument(nodeName)
+                .log("Retrieved node '{}' does not match requested node name '{}'!");
             return null;
         }
 

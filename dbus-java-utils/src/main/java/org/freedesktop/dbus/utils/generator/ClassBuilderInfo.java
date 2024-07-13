@@ -180,7 +180,7 @@ public class ClassBuilderInfo {
         if (!getImplementedInterfaces().isEmpty()) {
             bgn += " implements " + getImplementedInterfaces().stream().map(ClassBuilderInfo::getClassName).collect(Collectors.joining(", "));
             // add classes import if implements-arguments are not a java.lang. classes
-            getImports().addAll(getImplementedInterfaces().stream().filter(s -> !s.startsWith("java.lang.")).collect(Collectors.toList()));
+            getImports().addAll(getImplementedInterfaces().stream().filter(s -> !s.startsWith("java.lang.")).toList());
         }
 
         bgn += " {";
@@ -193,7 +193,7 @@ public class ClassBuilderInfo {
         // add member fields
         for (MemberOrArgument member : members) {
             if (!member.getAnnotations().isEmpty()) {
-                content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).collect(Collectors.toList()));
+                content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).toList());
             }
             content.add(memberIndent + "private " + member.asOneLineString(allImports, false) + ";");
         }
@@ -269,7 +269,7 @@ public class ClassBuilderInfo {
         for (ClassMethod mth : getMethods()) {
 
             if (!mth.getAnnotations().isEmpty()) {
-                content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).collect(Collectors.toList()));
+                content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).toList());
             }
 
             String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
@@ -297,7 +297,7 @@ public class ClassBuilderInfo {
                     .filter(l -> !l.startsWith("java.lang.")) // do not include imports for 'java.lang'
                     .filter(l -> !l.replaceFirst("(.+)\\..+", "$1").equals(getPackageName())) // do not add imports for classes in same package
                     .map(l -> "import " + l + ";")
-                    .collect(Collectors.toList()));
+                    .toList());
         }
 
         return content;

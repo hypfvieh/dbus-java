@@ -94,7 +94,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
 
     @Override
     public <A> SampleTuple<String, List<Integer>, Boolean> show(A _in) {
-        logger.debug("Showing Stuff: " + _in.getClass() + "(" + _in + ")");
+        logger.debug("Showing Stuff: {} ({})", _in.getClass(), _in);
         if (!(_in instanceof Integer) || (Integer) _in != 234) {
             fail("show received the wrong arguments");
         }
@@ -135,21 +135,21 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public List<Integer> sampleArray(List<String> _ss, Integer[] _is, long[] _ls) {
         logger.debug("Got an array:");
         for (String s : _ss) {
-            logger.debug("--" + s);
+            logger.debug("--{}", s);
         }
         if (_ss.size() != 5 || !"hi".equals(_ss.get(0)) || !"hello".equals(_ss.get(1)) || !"hej".equals(_ss.get(2)) || !"hey".equals(_ss.get(3)) || !"aloha".equals(_ss.get(4))) {
             fail("sampleArray, String array contents incorrect");
         }
         logger.debug("Got an array:");
         for (Integer i : _is) {
-            logger.debug("--" + i);
+            logger.debug("--{}", i);
         }
         if (_is.length != 4 || _is[0] != 1 || _is[1] != 5 || _is[2] != 7 || _is[3] != 9) {
             fail("sampleArray, Integer array contents incorrect");
         }
         logger.debug("Got an array:");
         for (long l : _ls) {
-            logger.debug("--" + l);
+            logger.debug("--{}", l);
         }
         if (_ls.length != 4 || _ls[0] != 2 || _ls[1] != 6 || _ls[2] != 8 || _ls[3] != 12) {
             fail("sampleArray, Integer array contents incorrect");

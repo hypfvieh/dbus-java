@@ -3,7 +3,6 @@ package org.freedesktop.dbus.messages;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.types.UInt32;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class MessageTest extends AbstractBaseTest {
 
         for (Object object : objectList) {
             Object[] o = (Object[]) object;
-            LoggerFactory.getLogger(getClass()).debug(String.valueOf(o[0]) + " ---> " + o[1]);
+            logger.debug("{} ---> {}", String.valueOf(o[0]), o[1]);
         }
 
         Object[] entry1 = (Object[]) objectList.get(0);

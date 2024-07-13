@@ -39,7 +39,7 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
     }
 
     @Test
-    public void testDbusNames() throws DBusException, InterruptedException {
+    public void testDbusNames() throws DBusException {
         DBus dbus = clientconn.getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", DBus.class);
 
         String[] names = dbus.ListNames();
@@ -117,30 +117,30 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
         try {
             logger.debug("Calling Method2");
             tri = clientconn.getRemoteObject("foo.bar.NotATest", "/Moofle", SampleRemoteInterface.class);
-            logger.debug("Got Remote Name: " + tri.getName());
-            fail("Method Execution should have failed");
+            logger.debug("(mth2) Got Remote Name: {}", tri.getName());
+            fail("(mth2) Method Execution should have failed");
         } catch (ServiceUnknown _ex) {
-            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
+            logger.debug("(mth2) Remote Method Failed with: {} {}", _ex.getClass().getName(), _ex.getMessage());
         }
 
         /** Try and call an invalid remote object */
         try {
             logger.debug("Calling Method3");
             tri = clientconn.getRemoteObject(getTestBusName(), "/Moofle", SampleRemoteInterface.class);
-            logger.debug("Got Remote Name: " + tri.getName());
+            logger.debug("(mth3) Got Remote Name: {}", tri.getName());
             fail("Method Execution should have failed");
         } catch (UnknownObject _ex) {
-            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
+            logger.debug("(mth3) Remote Method Failed with: {} {}", _ex.getClass().getName(), _ex.getMessage());
         }
 
         /** Try and call an explicitly unexported object */
         try {
             logger.debug("Calling Method4");
             tri = clientconn.getRemoteObject(getTestBusName(), "/BadTest", SampleRemoteInterface.class);
-            logger.debug("Got Remote Name: " + tri.getName());
+            logger.debug("(mth4) Got Remote Name: {}", tri.getName());
             fail("Method Execution should have failed");
         } catch (UnknownObject _ex) {
-            logger.debug("Remote Method Failed with: " + _ex.getClass().getName() + " " + _ex.getMessage());
+            logger.debug("(mth4) Remote Method Failed with: {} {}", _ex.getClass().getName(), _ex.getMessage());
         }
 
     }

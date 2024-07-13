@@ -24,7 +24,7 @@ public class CallbackHandlerImpl implements CallbackHandler<String> {
     public void handle(String _r) {
         testHandleCalls.incrementAndGet();
 
-        LoggerFactory.getLogger(getClass()).debug("Handling callback: " + _r);
+        LoggerFactory.getLogger(getClass()).debug("Handling callback: {}", _r);
         Collator col = Collator.getInstance();
         col.setDecomposition(Collator.FULL_DECOMPOSITION);
         col.setStrength(Collator.PRIMARY);
@@ -37,7 +37,7 @@ public class CallbackHandlerImpl implements CallbackHandler<String> {
     public void handleError(DBusExecutionException _e) {
         testErrorCalls.incrementAndGet();
 
-        LoggerFactory.getLogger(getClass()).debug("Handling error callback: " + _e + " message = '" + _e.getMessage() + "'");
+        LoggerFactory.getLogger(getClass()).debug("Handling error callback: {} message = '{}'", _e, _e.getMessage());
         if (!(_e instanceof SampleException)) {
             fail("Exception is of the wrong sort");
         }

@@ -5,12 +5,16 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.Util;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Helper to create a DBus struct class.
@@ -76,7 +80,6 @@ public class StructTreeBuilder {
             if (!treeItem.getSubType().isEmpty()) {
                 createNested(treeItem.getSubType(), root, _generatedClasses);
             }
-            // _clzBldr.getImports().addAll(info.getImports());
         }
 
         return parentType == null ? _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName) : parentType;
@@ -128,7 +131,7 @@ public class StructTreeBuilder {
                 if (x != null) {
                     member.getGenerics().add(x.getClassName());
                 } else {
-                    member.getGenerics().addAll(temp.getMembers().stream().map(MemberOrArgument::getType).collect(Collectors.toList()));
+                    member.getGenerics().addAll(temp.getMembers().stream().map(MemberOrArgument::getType).toList());
                 }
                 root.getImports().addAll(temp.getImports());
 

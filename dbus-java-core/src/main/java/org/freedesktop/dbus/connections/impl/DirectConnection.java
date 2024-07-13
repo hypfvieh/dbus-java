@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
 
 /**
  * Handles a peer to peer connection between two applications without a bus daemon.
@@ -76,7 +75,7 @@ public class DirectConnection extends AbstractConnection {
 
             List<String> ifaces = Arrays.stream(tags).filter(t -> t.startsWith("interface"))
                 .map(t -> IFACE_PATTERN.matcher(t).replaceAll("$1"))
-                .collect(Collectors.toList());
+                .toList();
 
             List<Class<?>> ifcs = findMatchingTypes(_type, ifaces);
 

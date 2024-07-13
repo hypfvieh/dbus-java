@@ -37,7 +37,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
 
         setFailed(getExpectedRuns() > getActualTestRuns(), "Signal received to often.");
 
-        logger.debug(getClass().getSimpleName() + " running");
+        logger.debug("{} running", getClass().getSimpleName());
 
         handleImpl(_s);
     }

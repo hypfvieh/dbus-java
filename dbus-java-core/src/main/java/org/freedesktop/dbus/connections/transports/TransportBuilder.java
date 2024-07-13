@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Builder to create transports of different types.
@@ -261,7 +260,7 @@ public final class TransportBuilder {
      * @return {@link List}, maybe empty
      */
     public static List<String> getRegisteredBusTypes() {
-        return PROVIDERS.values().stream().flatMap(d -> d.keySet().stream()).collect(Collectors.toList());
+        return PROVIDERS.values().stream().flatMap(d -> d.keySet().stream()).toList();
     }
 
     /**

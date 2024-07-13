@@ -163,7 +163,7 @@ class MarshallingTest extends AbstractBaseTest {
         Map<?, ?> deserializedMap = (Map<?, ?>) deSerializeParameters[0];
 
         assertNotSame(testMap, deserializedMap, "Expected new object");
-        assertEquals(LinkedHashMap.class, deserializedMap.getClass(), "Expected new LinkedHashMap");
+        assertSame(LinkedHashMap.class, deserializedMap.getClass(), "Expected new LinkedHashMap");
 
         Entry<?, ?> next = deserializedMap.entrySet().iterator().next();
 

@@ -22,7 +22,7 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testGetAllProperties() throws IOException, DBusException, InterruptedException {
+    public void testGetAllProperties() throws IOException, DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             MyObject obj = new MyObject();
 
@@ -43,7 +43,7 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testGetAllPropertiesFromMixed() throws IOException, DBusException, InterruptedException {
+    public void testGetAllPropertiesFromMixed() throws IOException, DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             MixedPropObj obj = new MixedPropObj();
 
@@ -62,7 +62,7 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
     }
 
     @Test
-    public void testProperties() throws IOException, DBusException, InterruptedException {
+    public void testProperties() throws IOException, DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             MyObject obj = new MyObject();
 
@@ -114,7 +114,7 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
     }
 
     @Test
-    public void testMixedProperties() throws IOException, DBusException, InterruptedException {
+    public void testMixedProperties() throws IOException, DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             MixedPropObj obj = new MixedPropObj();
 

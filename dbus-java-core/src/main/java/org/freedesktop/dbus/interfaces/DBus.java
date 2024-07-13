@@ -217,6 +217,12 @@ public interface DBus extends DBusInterface {
             oldOwner = _oldOwner;
             newOwner = _newOwner;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [name=" + name + ", oldOwner=" + oldOwner + ", newOwner=" + newOwner + "]";
+        }
+
     }
 
     /**
@@ -230,6 +236,12 @@ public interface DBus extends DBusInterface {
             super(_path, _name);
             name = _name;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [name=" + name + "]";
+        }
+
     }
 
     /**
@@ -243,6 +255,12 @@ public interface DBus extends DBusInterface {
             super(_path, _name);
             name = _name;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [name=" + name + "]";
+        }
+
     }
 
 }

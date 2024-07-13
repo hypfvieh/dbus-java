@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class TestDisconnectStuff extends AbstractDBusDaemonBaseTest {
 
     @Test
-    public void testStuffAfterDisconnect() throws DBusException, InterruptedException {
+    public void testStuffAfterDisconnect() throws DBusException {
 
         DBusConnection serverConnection = DBusConnectionBuilder.forSessionBus()
                 .withExportWeakReferences(true).withShared(false).build();

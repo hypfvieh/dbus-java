@@ -366,6 +366,7 @@ public final class Marshalling {
         try {
             int idx = 0;
             for (; idx < _dbusType.length() && (-1 == _limit || _limit > _resultValue.size()); idx++) {
+                int javaType;
                 switch (_dbusType.charAt(idx)) {
                 case ArgumentType.STRUCT1:
                     int structIdx = idx + 1;
@@ -378,7 +379,7 @@ public final class Marshalling {
                     }
 
                     List<Type> contained = new ArrayList<>();
-                    int javaType = getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
+                    javaType = getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
                     _resultValue.add(new DBusStructType(contained.toArray(new Type[0])));
                     idx = structIdx - 1; //-1 because j already points to the next signature char
                     break;
@@ -752,9 +753,9 @@ public final class Marshalling {
             // CHECK IF ARRAYS HAVE THE SAME LENGTH <-- has to happen after expanding parameters
             if (i >= types.length) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.error("Parameter length differs, expected {} but got {}", parameters.length, types.length);
+                    LOGGER.debug("Parameter length differs, expected {} but got {}", parameters.length, types.length);
                     for (int j = 0; j < parameters.length; j++) {
-                        LOGGER.error("Error, Parameters differ: {}, '{}'", j, parameters[j]);
+                        LOGGER.debug("Error, Parameters differ: {}, '{}'", j, parameters[j]);
                     }
                 }
                 throw new DBusException("Error deserializing message: number of parameters didn't match receiving signature");

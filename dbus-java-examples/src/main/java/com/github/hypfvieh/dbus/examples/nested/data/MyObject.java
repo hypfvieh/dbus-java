@@ -2,7 +2,6 @@ package com.github.hypfvieh.dbus.examples.nested.data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MyObject implements MyInterface {
 
@@ -25,6 +24,6 @@ public class MyObject implements MyInterface {
 
     @Override
     public List<String> getPartNames() {
-        return parts.stream().map(MyInterfacePart::getVal1).collect(Collectors.toList());
+        return parts.stream().map(MyInterfacePart::getVal1).toList();
     }
 }

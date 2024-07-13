@@ -28,6 +28,7 @@ public class ComplexTest extends AbstractDBusBaseTest {
         assertThrowsExactly(UnknownMethod.class, tri::thisShouldBeIgnored);
     }
 
+    @Test
     public void testFrob() throws DBusException {
         final SampleRemoteInterface tri = (SampleRemoteInterface) clientconn.getPeerRemoteObject(getTestBusName(), getTestObjectPath());
         logger.debug("frobnicating");
@@ -112,17 +113,19 @@ public class ComplexTest extends AbstractDBusBaseTest {
     }
 
     @Test
-    public void testRegression13291() throws DBusException {
-        SampleRemoteInterface tri = clientconn.getRemoteObject(getTestBusName(), getTestObjectPath(), SampleRemoteInterface.class);
+    public void testRegression13291() {
+        assertDoesNotThrow(() -> {
+            SampleRemoteInterface tri = clientconn.getRemoteObject(getTestBusName(), getTestObjectPath(), SampleRemoteInterface.class);
 
-        logger.debug("reg13291...");
-        byte[] as = new byte[10];
-        for (int i = 0; i < 10; i++) {
-            as[i] = (byte) (100 - i);
-        }
+            logger.debug("reg13291...");
+            byte[] as = new byte[10];
+            for (int i = 0; i < 10; i++) {
+                as[i] = (byte) (100 - i);
+            }
 
-        tri.reg13291(as, as);
-        logger.debug("done");
+            tri.reg13291(as, as);
+            logger.debug("done");
+        });
     }
 
     @Test

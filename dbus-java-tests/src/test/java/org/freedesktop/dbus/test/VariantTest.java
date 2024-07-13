@@ -133,8 +133,8 @@ class VariantTest extends AbstractBaseTest {
 
             Variant<?> t = (Variant<?>) message.getParameters()[0];
 
-            assertEquals(_data.expectedType(), t.getType().getClass());
-            assertEquals(_data.expectedValueClass(), t.getValue().getClass());
+            assertSame(_data.expectedType(), t.getType().getClass());
+            assertSame(_data.expectedValueClass(), t.getValue().getClass());
             assertEquals(_data.expected(), t.getValue());
 
             readWait.countDown();
