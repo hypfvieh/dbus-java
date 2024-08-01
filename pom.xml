@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>5.1.0</version>
+    <version>5.1.1-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/dbus-java</url>
@@ -58,7 +58,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <parentDir>${project.basedir}</parentDir>
-        <project.build.outputTimestamp>2024-08-01T04:52:12Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
 
@@ -507,7 +507,7 @@
         <connection>scm:git:https://github.com/hypfvieh/dbus-java.git</connection>
         <developerConnection>scm:git:https://github.com/hypfvieh/dbus-java.git</developerConnection>
         <url>https://github.com/hypfvieh/dbus-java.git</url>
-        <tag>dbus-java-parent-5.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>

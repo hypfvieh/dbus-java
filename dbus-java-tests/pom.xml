@@ -15,14 +15,14 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>5.1.0</version>
+        <version>5.1.1-SNAPSHOT</version>
     </parent>
 
     <properties>
         <!-- Disable native transport tests by default (will be enabled by profile if JDK 16+ is present) -->
         <jdk16.not.found>true</jdk16.not.found>
         <parentDir>${project.parent.basedir}</parentDir>
-        <project.build.outputTimestamp>2024-08-01T04:52:12Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
 
