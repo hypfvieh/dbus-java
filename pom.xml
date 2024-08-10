@@ -65,6 +65,7 @@
     <modules>
         <module>dbus-java-core</module>
         <module>dbus-java-osgi</module>
+        <module>dbus-java-graal-native</module>
         <module>dbus-java-utils</module>
         <module>dbus-java-transport-jnr-unixsocket</module>
         <module>dbus-java-transport-junixsocket</module>
@@ -173,6 +174,63 @@
                                     <requireOS>
                                         <family>unix</family>
                                     </requireOS>
+                                </rules>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>file-check</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <inherited>false</inherited>
+                            <configuration>
+                                <rules>
+                                    <evaluateBeanshell>
+                                        <message>Unable to find all required files</message>
+                                        <condition>
+                                            BufferedReader reader = null;
+                                            boolean result = false;
+                                            try {
+                                                reader = new BufferedReader(new FileReader(new File("${project.basedir}",
+                                                    "dbus-java-graal-native/src/main/resources/required_interfaces.txt".replace("/", "${file.separator}"))));
+                                                String line = null;
+                                                result = true;
+                                                do {
+                                                    line = reader.readLine();
+                                                    if (line != null) {
+                                                        if (line.isBlank()) {
+                                                            continue;
+                                                        }
+                                                        if (line.trim().startsWith("#")) {
+                                                            continue;
+                                                        }
+                                    
+                                                        String s = "dbus-java-core/src/main/java/" + line.replace(".", "/") + ".java";
+                                                        File p = new File("${project.basedir}", s.replace("/", "${file.separator}"));
+                                                        if (!p.exists()) {
+                                                            print("File " + p + " not found");
+                                                            result = false;
+                                                            break;
+                                                        }
+                                                    }
+                                                } while (line != null);
+                                            } catch (IOException _ex) {
+                                                return false;
+                                                _ex.printStackTrace();
+                                                print("Error " + _ex);
+                                            } finally {
+                                                if (reader != null) {
+                                                    try {
+                                                        reader.close();
+                                                    } catch (IOException _ex) {
+                                                        _ex.printStackTrace();
+                                                        print("Error closing reader");
+                                                    }
+                                                }
+                                            }
+                                            return result;
+                                        </condition>
+                                    </evaluateBeanshell>
                                 </rules>
                             </configuration>
                         </execution>

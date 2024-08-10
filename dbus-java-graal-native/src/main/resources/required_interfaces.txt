@@ -1,0 +1,3 @@
+org.freedesktop.dbus.interfaces.DBusInterface
+org.freedesktop.dbus.Container
+org.freedesktop.dbus.interfaces.DBusSigHandler
