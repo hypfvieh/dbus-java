@@ -125,7 +125,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 #### Changes
 
 ##### Changes in 5.1.1 (not released yet):
-   - Nothing yet
+   - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))

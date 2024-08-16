@@ -240,7 +240,8 @@ public final class Marshalling {
             return sigs;
         } else if (_dataType instanceof ParameterizedType p) {
             if (p.getRawType().equals(Map.class)) {
-                _out[_level].append("a{");
+                _out[_level].append(ArgumentType.ARRAY_STRING)
+                    .append(ArgumentType.DICT_ENTRY1_STRING);
                 Type[] t = p.getActualTypeArguments();
                 try {
                     String[] s = recursiveGetDBusType(_out, t[0], true, _level + 1);
@@ -257,7 +258,7 @@ public final class Marshalling {
                     LOGGER.debug("", _ex);
                     throw new DBusException("Map must have 2 parameters");
                 }
-                _out[_level].append('}');
+                _out[_level].append(ArgumentType.DICT_ENTRY2_STRING);
             } else if (List.class.isAssignableFrom((Class<?>) p.getRawType())) {
                 for (Type t : p.getActualTypeArguments()) {
                     if (Type.class.equals(t)) {
@@ -323,7 +324,7 @@ public final class Marshalling {
                         }
                     }
                 }
-                _out[_level].append(')');
+                _out[_level].append(ArgumentType.STRUCT2_STRING);
 
             } else if (Enum.class.isAssignableFrom(dataTypeClazz)) {
                 _out[_level].append((char) ArgumentType.STRING);
