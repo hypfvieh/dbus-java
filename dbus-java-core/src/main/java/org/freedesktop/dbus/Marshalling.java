@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Contains static methods for marshalling values.
  */
 public final class Marshalling {
+    /** Used as initial and incremental size of StringBuffer array when resolving DBusTypes recursively. */
+    private static final int INITIAL_BUFFER_SZ = 10;
+
     private static final String MTH_NAME_DESERIALIZE = "deserialize";
     private static final String ERROR_MULTI_VALUED_ARRAY = "Multi-valued array types not permitted";
 
@@ -177,13 +180,13 @@ public final class Marshalling {
     * @throws DBusException If the given type cannot be converted to a DBus type.
     */
     public static String[] getDBusType(Type _dataType, boolean _basic) throws DBusException {
-        return recursiveGetDBusType(new StringBuffer[10], _dataType, _basic, 0);
+        return recursiveGetDBusType(new StringBuffer[INITIAL_BUFFER_SZ], _dataType, _basic, 0);
     }
 
     @SuppressWarnings("checkstyle:parameterassignment")
     private static String[] recursiveGetDBusType(StringBuffer[] _out, Type _dataType, boolean _basic, int _level) throws DBusException {
         if (_out.length <= _level) {
-            StringBuffer[] newout = new StringBuffer[_out.length];
+            StringBuffer[] newout = new StringBuffer[_level + INITIAL_BUFFER_SZ];
             System.arraycopy(_out, 0, newout, 0, _out.length);
             _out = newout;
         }
