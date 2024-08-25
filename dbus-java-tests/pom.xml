@@ -19,8 +19,6 @@
     </parent>
 
     <properties>
-        <!-- Disable native transport tests by default (will be enabled by profile if JDK 16+ is present) -->
-        <jdk16.not.found>true</jdk16.not.found>
         <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
@@ -42,7 +40,6 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <skip>${jdk16.not.found}</skip> <!-- skip if not JDK 16+ -->
                             <skipAfterFailureCount>1</skipAfterFailureCount>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>${project.groupId}:dbus-java-transport-tcp</classpathDependencyExclude>
@@ -136,6 +133,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-native-unixsocket</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <scope>test</scope>
@@ -147,47 +151,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>jdk-16-available</id>
-            <activation>
-                <jdk>[16,)</jdk> <!-- requires JDK 16 or higher -->
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>compile</id>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                                <configuration>
-                                    <release>16</release>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.hypfvieh</groupId>
-                    <artifactId>dbus-java-transport-native-unixsocket</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-
-            <properties>
-                <!-- Setting this to false will enable native-transport tests -->
-                <jdk16.not.found>false</jdk16.not.found>
-            </properties>
-        </profile>
-    </profiles>
     
 </project>
