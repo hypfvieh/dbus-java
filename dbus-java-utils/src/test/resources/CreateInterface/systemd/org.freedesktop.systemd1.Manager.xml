@@ -7,5 +7,13 @@
     <arg type="a(sv)" name="properties" direction="in"/>
     <arg type="a(sa(sv))" name="aux" direction="in"/>
    </method>
+   <!-- For https://github.com/hypfvieh/dbus-java/issues/264 -->
+   <method name="PresetUnitFiles">
+    <arg type="as" name="files" direction="in"/>
+    <arg type="b" name="runtime" direction="in"/>
+    <arg type="b" name="force" direction="in"/>
+    <arg type="b" name="carries_install_info" direction="out"/>
+    <arg type="a(sss)" name="changes" direction="out"/>
+   </method>
   </interface>
  </node>
