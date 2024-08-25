@@ -128,6 +128,10 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments
    - Fixed wrong/missing increment when resolving nested structs or deeply nested objects in `Marshalling.getDBusType` ([#265](https://github.com/hypfvieh/dbus-java/issues/265))
    - Fixed wrong import when generating Tuple containing Struct ([#264](https://github.com/hypfvieh/dbus-java/issues/264))
+   - Added support for argument prefix for methods and constructors in `InterfaceCodeGenerator` (to e. g. allow generating code using similar code style like dbus-java with prefixing every argument with `_`)
+   - Fixed printed version information in `InterfaceCodeGenerator` was always `null`
+   - Smaller code cleanup in `InterfaceCodeGenerator` to prevent creating multiple empty lines
+   - Dependency updates
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))

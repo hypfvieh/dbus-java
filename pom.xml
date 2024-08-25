@@ -15,11 +15,11 @@
 
     <properties>
         <!-- Dependency versions -->
-        <junit5.version>5.10.3</junit5.version>
-        <pmd.version>7.3.0</pmd.version>
+        <junit5.version>5.11.0</junit5.version>
+        <pmd.version>7.4.0</pmd.version>
         <checkstyle.version>10.17.0</checkstyle.version>
-        <logback.version>1.5.6</logback.version>
-        <slf4j.version>2.0.13</slf4j.version>
+        <logback.version>1.5.7</logback.version>
+        <slf4j.version>2.0.16</slf4j.version>
         <jnr-unixsocket.version>0.38.22</jnr-unixsocket.version>
         <junixsocket.version>2.10.0</junixsocket.version>
 
@@ -605,15 +605,7 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>build-native-transport</id>
-            <activation>
-                <jdk>[16,)</jdk>
-            </activation>
-            <modules>
-                <module>dbus-java-transport-native-unixsocket</module>
-            </modules>
-        </profile>
+
         <profile>
             <id>fast</id>
             <!-- Profile to skip time-consuming steps but not tests. -->

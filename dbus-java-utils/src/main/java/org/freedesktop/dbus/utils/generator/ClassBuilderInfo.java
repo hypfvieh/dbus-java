@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
  */
 public class ClassBuilderInfo {
 
+    private static final String DEFAULT_INDENT = "    ";
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
     /** Annotations of this class. */
@@ -34,6 +35,9 @@ public class ClassBuilderInfo {
     /** Constructors for this class. */
     private final List<ClassConstructor> constructors          = new ArrayList<>();
 
+    /** Prefix to prepend to method/constructor arguments. */
+    private final String                 argumentPrefix;
+
     /** Name of this class. */
     private String                       className;
     /** Package of this class. */
@@ -46,6 +50,21 @@ public class ClassBuilderInfo {
     private ClassType                    classType;
     /** Class which this class may extend. */
     private String                       extendClass;
+
+    /**
+     * Create new instance without argument prefix.
+     */
+    public ClassBuilderInfo() {
+        this(null);
+    }
+
+    /**
+     * Create new instance.
+     * @param _argumentPrefix prepend given prefix to all method/constructor arguments
+     */
+    public ClassBuilderInfo(String _argumentPrefix) {
+        argumentPrefix = _argumentPrefix;
+    }
 
     public Set<String> getImports() {
         return imports;
@@ -118,6 +137,7 @@ public class ClassBuilderInfo {
     /**
      * Create the Java source for the class information provided.
      *
+     * @param _argumentPrefix use given prefix for generated method arguments (null/blank if not needed)
      * @return String
      */
     public String createClassFileContent() {
@@ -129,14 +149,15 @@ public class ClassBuilderInfo {
      * Create the Java source for the class information provided.
      *
      * @param _staticClass this is static inner class
+     * @param _argumentPrefix use given prefix for generated method arguments (null/blank if not needed)
      * @param _otherImports this class needs additional imports (e.g. due to inner class)
      * @return
      */
     private List<String> createClassFileContent(boolean _staticClass, Set<String> _otherImports) {
         List<String> content = new ArrayList<>();
 
-        final String classIndent = _staticClass ? "    " : "";
-        final String memberIndent = _staticClass ? "        " : "    ";
+        final String classIndent = _staticClass ? DEFAULT_INDENT : "";
+        final String memberIndent = _staticClass ? DEFAULT_INDENT.repeat(2) : DEFAULT_INDENT;
 
         Set<String> allImports = new TreeSet<>();
         allImports.addAll(getImports());
@@ -152,7 +173,7 @@ public class ClassBuilderInfo {
             content.add(" */");
 
         } else {
-            content.add("");
+            addEmptyLineIfNeeded(content);
         }
 
         if (getDbusPackageName() != null) {
@@ -187,7 +208,7 @@ public class ClassBuilderInfo {
 
         content.add(bgn);
         if (_staticClass) {
-            content.add("");
+            addEmptyLineIfNeeded(content);
         }
 
         // add member fields
@@ -195,98 +216,35 @@ public class ClassBuilderInfo {
             if (!member.getAnnotations().isEmpty()) {
                 content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).toList());
             }
-            content.add(memberIndent + "private " + member.asOneLineString(allImports, false) + ";");
+            content.add(memberIndent + "private " + member.asOneLineString(allImports, "", false) + ";");
         }
 
         if (!getConstructors().isEmpty()) {
-            content.add("");
             for (ClassConstructor constructor : getConstructors()) {
-                String outerIndent = _staticClass ? "        " : "    ";
-                String cstr = outerIndent + "public " + getClassName() + "(";
-
-                List<ClassBuilderInfo.MemberOrArgument> filteredSuperArguments = new ArrayList<>(constructor.getSuperArguments());
-                filteredSuperArguments.removeIf(e -> constructor.getArguments().contains(e));
-                if (!filteredSuperArguments.isEmpty()) {
-                    cstr += filteredSuperArguments.stream().map(e -> e.asOneLineString(allImports, false)).collect(Collectors.joining(", "));
-                    if (!constructor.getArguments().isEmpty()) {
-                        cstr += ", ";
-                    }
-                }
-
-                if (!constructor.getArguments().isEmpty()) {
-                    cstr += constructor.argumentsAsString(allImports);
-                }
-
-                if (constructor.getThrowArguments().isEmpty()) {
-                    cstr += ") {";
-                } else {
-                    cstr += ") throws " + String.join(", ", constructor.getThrowArguments()) + " {";
-                }
-
-                content.add(cstr);
-
-                String innerIndent = _staticClass ? "            " : "        ";
-
-                if (!constructor.getSuperArguments().isEmpty()) {
-                    content.add(innerIndent + "super(" + constructor.getSuperArguments().stream().map(MemberOrArgument::getName).collect(Collectors.joining(", ")) + ");");
-                }
-
-                if (!constructor.getArguments().isEmpty()) {
-                    for (MemberOrArgument e : constructor.getArguments()) {
-                        content.add(innerIndent + "this." + e.getName().replaceFirst("^_(.+)", "$1") + " = " + e.getName() + ";");
-                    }
-                }
-
-                content.add(outerIndent + "}");
+                addEmptyLineIfNeeded(content);
+                String outerIndent = _staticClass ? DEFAULT_INDENT.repeat(2) : DEFAULT_INDENT;
+                content.addAll(constructor.generatedCode(outerIndent, getClassName(), argumentPrefix, allImports));
             }
         }
-
-        content.add("");
 
         // add getter and setter
         for (MemberOrArgument member : members) {
-            String memberType = TypeConverter.getProperJavaClass(member.getType(), allImports);
-
-            if (!member.getGenerics().isEmpty()) {
-                memberType += "<" + member.getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")) + ">";
-            }
-
-            String getterSetterName = Util.snakeToCamelCase(Util.upperCaseFirstChar(member.getName()));
-            if (!member.isFinalArg()) {
-                content.add(memberIndent + "public void set" + getterSetterName + "("
-                        + memberType + " arg) {");
-                content.add(memberIndent + "    " + member.getName() + " = arg;");
-                content.add(memberIndent + "}");
-            }
-            content.add("");
-            content.add(memberIndent + "public " + memberType + " get" + getterSetterName + "() {");
-            content.add(memberIndent + "    return " + member.getName() + ";");
-            content.add(memberIndent + "}");
+            addEmptyLineIfNeeded(content);
+            content.addAll(member.generateCode(memberIndent, argumentPrefix, allImports));
         }
-
-        content.add("");
 
         for (ClassMethod mth : getMethods()) {
-
-            if (!mth.getAnnotations().isEmpty()) {
-                content.addAll(mth.getAnnotations().stream().map(a -> memberIndent + a).toList());
-            }
-
-            String clzMth = memberIndent + "public " + (mth.getReturnType() == null ? "void " : TypeConverter.getProperJavaClass(mth.getReturnType(), allImports) + " ");
-            clzMth += mth.getName() + "(";
-            if (!mth.getArguments().isEmpty()) {
-                clzMth += mth.getArguments().stream().map(e -> e.asOneLineString(allImports, true))
-                        .collect(Collectors.joining(", "));
-            }
-            clzMth += ");";
-            content.add(clzMth);
+            addEmptyLineIfNeeded(content);
+            content.addAll(mth.generateCode(getClassType() == ClassType.INTERFACE, argumentPrefix, memberIndent, allImports));
         }
-        content.add("");
 
         for (ClassBuilderInfo inner : getInnerClasses()) {
+            addEmptyLineIfNeeded(content);
             content.addAll(inner.createClassFileContent(true, allImports));
             allImports.addAll(inner.getImports()); // collect additional imports which may have been added by inner class
         }
+
+        addEmptyLineIfNeeded(content);
 
         content.add(classIndent + "}");
 
@@ -302,6 +260,21 @@ public class ClassBuilderInfo {
         }
 
         return content;
+    }
+
+    private static String maybePrefix(String _arg, String _prefix) {
+        return Util.isBlank(_prefix) ? _arg : _prefix + _arg;
+    }
+
+    private static void addEmptyLineIfNeeded(List<String> _content) {
+        if (_content == null || _content.isEmpty()) {
+            return;
+        }
+
+        String lastLine = _content.get(_content.size() - 1);
+        if (!Util.isBlank(lastLine)) {
+            _content.add("");
+        }
     }
 
     /**
@@ -437,6 +410,11 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassMethod {
+
+        private static final String METHOD_TEMPL = """
+            %s%s %s(%s);
+            """;
+
         /** Name of this method. */
         private final String                 name;
         /** Return value of the method. */
@@ -474,6 +452,28 @@ public class ClassBuilderInfo {
             return annotations;
         }
 
+        public List<String> generateCode(boolean _isInterface, String _argumentPrefix, String _indent, Set<String> _allImports) {
+            List<String> result = new ArrayList<>();
+            if (!getAnnotations().isEmpty()) {
+                result.addAll(getAnnotations().stream().map(a -> _indent + a).toList());
+            }
+
+            String publicModifier = !_isInterface ? "public " : "";
+            String mthReturnType = (getReturnType() == null ? "void"
+                : TypeConverter.getProperJavaClass(getReturnType(), _allImports));
+            String args = "";
+            if (!getArguments().isEmpty()) {
+                args += getArguments().stream()
+                    .map(e -> e.asOneLineString(_allImports, _argumentPrefix, true))
+                        .collect(Collectors.joining(", "));
+            }
+
+            METHOD_TEMPL.formatted(publicModifier, mthReturnType, getName(), args)
+                .lines().map(l -> _indent + l).forEach(result::add);
+
+            return result;
+        }
+
     }
 
     /**
@@ -483,6 +483,19 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class MemberOrArgument {
+
+        private static final String GETTER_TEMPL = """
+            public %s get%s() {
+            %sreturn %s;
+            }
+            """;
+
+        private static final String SETTER_TEMPL = """
+            public void set%s(%s %s) {
+            %s%s = %s;
+            }
+            """;
+
         /** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
@@ -538,7 +551,7 @@ public class ClassBuilderInfo {
             return sb.toString();
         }
 
-        public String asOneLineString(Set<String> _allImports, boolean _includeAnnotations) {
+        public String asOneLineString(Set<String> _allImports, String _prefix, boolean _includeAnnotations) {
             StringBuilder sb = new StringBuilder();
 
             if (isFinalArg()) {
@@ -554,9 +567,31 @@ public class ClassBuilderInfo {
 
             sb.append(" ");
 
-            sb.append(getName());
+            sb.append(maybePrefix(getName(), _prefix));
 
             return sb.toString();
+        }
+
+        public List<String> generateCode(String _indent, String _prefix, Set<String> _allImports) {
+            List<String> result = new ArrayList<>();
+            String memberType = TypeConverter.getProperJavaClass(getType(), _allImports);
+
+            if (!getGenerics().isEmpty()) {
+                memberType += "<" + getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")) + ">";
+            }
+
+            String getterSetterName = Util.snakeToCamelCase(Util.upperCaseFirstChar(getName()));
+            if (!isFinalArg()) {
+                SETTER_TEMPL.formatted(getterSetterName, memberType,
+                    maybePrefix("arg", _prefix), DEFAULT_INDENT, getName(), maybePrefix("arg", _prefix))
+                        .lines().map(l -> _indent + l).forEach(result::add);
+            }
+
+            addEmptyLineIfNeeded(result);
+            GETTER_TEMPL.formatted(memberType, getterSetterName, DEFAULT_INDENT, getName())
+                .lines().map(l -> _indent + l).forEach(result::add);
+
+            return result;
         }
 
         @Override
@@ -574,6 +609,12 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class ClassConstructor {
+        private static final String          CONSTRUCTOR_TEMPL = """
+            public %s(%s)%s {
+            %s
+            }
+            """;
+
         /** Map of arguments for the constructor. Key is argument name, value is argument type. */
         private final List<MemberOrArgument> arguments      = new ArrayList<>();
         /** Map of arguments for the super-constructor. Key is argument name, value is argument type. */
@@ -594,8 +635,46 @@ public class ClassBuilderInfo {
             return superArguments;
         }
 
-        public String argumentsAsString(Set<String> _allImports) {
-            return getArguments().stream().map(a -> a.asOneLineString(_allImports, true)).collect(Collectors.joining(", "));
+        public String argumentsAsString(Set<String> _allImports, String _prefix) {
+            return getArguments().stream().map(a -> a.asOneLineString(_allImports, _prefix, true)).collect(Collectors.joining(", "));
+        }
+
+        public List<String> generatedCode(String _indent, String _className, String _argumentPrefix, Set<String> _allImports) {
+
+            List<ClassBuilderInfo.MemberOrArgument> filteredSuperArguments = new ArrayList<>(getSuperArguments());
+            filteredSuperArguments.removeIf(e -> getArguments().contains(e));
+            String constructorArgs = "";
+
+            if (!filteredSuperArguments.isEmpty()) {
+                constructorArgs += filteredSuperArguments.stream().map(e -> e.asOneLineString(_allImports, _argumentPrefix, false)).collect(Collectors.joining(", "));
+                if (!getArguments().isEmpty()) {
+                    constructorArgs += ", ";
+                }
+            }
+
+            if (!getArguments().isEmpty()) {
+                constructorArgs += argumentsAsString(_allImports, _argumentPrefix);
+            }
+
+            String throwArgs = getThrowArguments().isEmpty() ? "" : (" throws " + String.join(", ", getThrowArguments()));
+
+            String assignments = "";
+
+            if (!getSuperArguments().isEmpty()) {
+                assignments = _indent + "super(" + getSuperArguments().stream().map(MemberOrArgument::getName).collect(Collectors.joining(", ")) + ");";
+            }
+
+            if (!getArguments().isEmpty()) {
+                List<String> assigns = new ArrayList<>();
+                for (MemberOrArgument e : getArguments()) {
+                    assigns.add(_indent + "this." + e.getName().replaceFirst("^_(.+)", "$1") + " = " + maybePrefix(e.getName(), _argumentPrefix) + ";");
+                }
+                assignments += String.join(System.lineSeparator(), assigns);
+            }
+
+            return CONSTRUCTOR_TEMPL.formatted(_className, constructorArgs, throwArgs, assignments)
+                .lines().map(l -> _indent + l).toList();
+
         }
 
         @Override

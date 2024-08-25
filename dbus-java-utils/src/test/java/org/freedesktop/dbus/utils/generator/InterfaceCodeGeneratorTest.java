@@ -19,7 +19,7 @@ class InterfaceCodeGeneratorTest {
         if (!StringUtils.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
 
-            return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, false);
+            return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, false, null);
         } else {
             fail("No valid busName given");
         }
@@ -87,7 +87,7 @@ class InterfaceCodeGeneratorTest {
         assertEquals(6, analyze.size());
 
         String managerFileContent = analyze.get(new File("org/freedesktop/systemd1/Manager.java"));
-        assertTrue(managerFileContent.contains("public void StartTransientUnit(List<StartTransientUnitPropertiesStruct> properties, List<StartTransientUnitAuxStruct> aux);"));
+        assertTrue(managerFileContent.contains("void StartTransientUnit(List<StartTransientUnitPropertiesStruct> properties, List<StartTransientUnitAuxStruct> aux);"));
 
         String auxStructFileContent = analyze.get(new File("org/freedesktop/systemd1/StartTransientUnitAuxStruct.java"));
         assertTrue(auxStructFileContent.contains("private final String member0;"));

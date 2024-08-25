@@ -59,11 +59,13 @@ public class InterfaceCodeGenerator {
     private final boolean                propertyMethods;
 
     private final Set<String>            generatedStructClassNames;
+    private final String                 argumentPrefix;
 
-    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName, String _packageName, boolean _propertyMethods) {
+    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName, String _packageName, boolean _propertyMethods, String _argumentPrefix) {
         disableFilter = _disableFilter;
         introspectionData = _introspectionData;
         nodeName = _objectPath;
+        argumentPrefix = _argumentPrefix;
         busName = Util.isBlank(_busName) ? "*" : _busName;
         forcePackageName = _packageName;
         propertyMethods = _propertyMethods;
@@ -166,7 +168,7 @@ public class InterfaceCodeGenerator {
 
         final Map<File, String> filesToCreate = new LinkedHashMap<>();
 
-        ClassBuilderInfo interfaceClass = new ClassBuilderInfo();
+        ClassBuilderInfo interfaceClass = new ClassBuilderInfo(argumentPrefix);
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
         interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
@@ -219,7 +221,7 @@ public class InterfaceCodeGenerator {
             className = className.substring(className.lastIndexOf('.'));
         }
 
-        ClassBuilderInfo innerClass = new ClassBuilderInfo();
+        ClassBuilderInfo innerClass = new ClassBuilderInfo(argumentPrefix);
         innerClass.setClassType(ClassType.CLASS);
         innerClass.setExtendClass(DBusSignal.class.getName());
         innerClass.getImports().add(DBusSignal.class.getName());
@@ -404,7 +406,7 @@ public class InterfaceCodeGenerator {
             origType = type;
             type = TypeRef.class.getName() + "<" + type + ">";
             String typeRefInterfaceName = "Property" + attrName + "Type";
-            propertyTypeRef = new ClassBuilderInfo();
+            propertyTypeRef = new ClassBuilderInfo(argumentPrefix);
             propertyTypeRef.setClassType(ClassType.INTERFACE);
             propertyTypeRef.setClassName(typeRefInterfaceName);
             propertyTypeRef.setExtendClass(type);
@@ -467,7 +469,7 @@ public class InterfaceCodeGenerator {
             return null;
         }
 
-        ClassBuilderInfo info = new ClassBuilderInfo();
+        ClassBuilderInfo info = new ClassBuilderInfo(argumentPrefix);
         info.setClassName(_className);
         info.setPackageName(_parentClzBldr.getPackageName());
         info.setExtendClass(Tuple.class.getName());
@@ -519,7 +521,7 @@ public class InterfaceCodeGenerator {
                 structName += "Struct";
             }
         }
-        String structClassName = new StructTreeBuilder().buildStructClasses(_dbusTypeStr, structName, _packageName, _structClasses);
+        String structClassName = new StructTreeBuilder(argumentPrefix).buildStructClasses(_dbusTypeStr, structName, _packageName, _structClasses);
         generatedStructClassNames.add(structFqcn);
         return structClassName;
     }
@@ -557,6 +559,7 @@ public class InterfaceCodeGenerator {
         boolean noFilter = false;
         boolean propertyMethods = false;
         String forcePackageName = null;
+        String argumentPrefix = null;
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
@@ -571,6 +574,13 @@ public class InterfaceCodeGenerator {
                 System.exit(0);
             } else if ("--all".equals(p) || "-a".equals(p)) {
                 noFilter = true;
+            } else if ("--argumentPrefix".equals(p)) {
+                if (_args.length > i) {
+                    argumentPrefix = _args[++i];
+                } else {
+                    printHelp();
+                    System.exit(0);
+                }
             } else if ("--propertyMethods".equals(p) || "-m".equals(p)) {
                 propertyMethods = true;
             } else if ("--package".equals(p) || "-p".equals(p)) {
@@ -647,7 +657,8 @@ public class InterfaceCodeGenerator {
             System.exit(1);
         }
 
-        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath, busName, forcePackageName, propertyMethods);
+        InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath,
+            busName, forcePackageName, propertyMethods, argumentPrefix);
         try {
 
             Map<File, String> analyze = ci2.analyze(ignoreDtd);
@@ -678,7 +689,7 @@ public class InterfaceCodeGenerator {
         } catch (IOException _ex) {
         }
 
-        System.out.println("Java D-Bus Version: " + version + ", revision: " + rev);
+        System.out.println("DBus-Java Utils Version: " + version + ", revision: " + rev);
         System.exit(1);
     }
 
@@ -693,9 +704,11 @@ public class InterfaceCodeGenerator {
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
         System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
         System.out.println("");
-        System.out.println("        --enable-dtd-validation          Enable DTD validation of introspection XML");
-        System.out.println("        --version                        Show version information");
-        System.out.println("        --help                           Show this help");
+        System.out.println("        --argumentPrefix                  Prepend the given prefix to generated method arguments/parameters");
+        System.out.println("");
+        System.out.println("        --enable-dtd-validation           Enable DTD validation of introspection XML");
+        System.out.println("        --version                         Show version information");
+        System.out.println("        --help                            Show this help");
         System.out.println("");
         System.out.println("If --inputFile is given busname object argument can be skipped (or * can be used), that will force the util to extract all interfaces found in the given file.");
         System.out.println("If busname (not empty, blank and not '*') is given, then only interfaces starting with the given busname will be extracted.");

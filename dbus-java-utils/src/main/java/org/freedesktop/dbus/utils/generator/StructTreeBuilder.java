@@ -26,6 +26,16 @@ import java.util.Map;
  */
 public class StructTreeBuilder {
 
+    private final String argumentPrefix;
+
+    StructTreeBuilder(String _argumentPrefix) {
+        argumentPrefix = _argumentPrefix;
+    }
+
+    StructTreeBuilder() {
+        this(null);
+    }
+
     /**
      * Builds the struct(s) found in _dbusSig.
      * If the struct is wrapped in a {@link Collection}, it will be unwrapped.
@@ -62,7 +72,7 @@ public class StructTreeBuilder {
 
         int cnt = 0;
         for (StructTree treeItem : structTree) {
-            ClassBuilderInfo root = new ClassBuilderInfo();
+            ClassBuilderInfo root = new ClassBuilderInfo(argumentPrefix);
             root.setClassName(Util.upperCaseFirstChar(_structName));
             root.setPackageName(_clzBldr.getPackageName());
             root.setExtendClass(Struct.class.getName());
@@ -111,7 +121,7 @@ public class StructTreeBuilder {
             position++;
 
             if (Struct.class.isAssignableFrom(inTree.getDataType())) {
-                ClassBuilderInfo temp = new ClassBuilderInfo();
+                ClassBuilderInfo temp = new ClassBuilderInfo(argumentPrefix);
                 temp.setClassName(Util.upperCaseFirstChar(_root.getClassName()) + "Struct");
                 temp.setPackageName(_root.getPackageName());
                 temp.setExtendClass(Struct.class.getName());
@@ -123,7 +133,7 @@ public class StructTreeBuilder {
                 _classes.add(temp);
                 retval = temp;
             } else if (Collection.class.isAssignableFrom(inTree.getDataType()) || Map.class.isAssignableFrom(inTree.getDataType())) {
-                ClassBuilderInfo temp = new ClassBuilderInfo();
+                ClassBuilderInfo temp = new ClassBuilderInfo(argumentPrefix);
 
                 temp.setClassName(root.getClassName());
                 temp.setPackageName(root.getPackageName());
