@@ -127,6 +127,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 ##### Changes in 5.1.1 (not released yet):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments
    - Fixed wrong/missing increment when resolving nested structs or deeply nested objects in `Marshalling.getDBusType` ([#265](https://github.com/hypfvieh/dbus-java/issues/265))
+   - Fixed wrong import when generating Tuple containing Struct ([#264](https://github.com/hypfvieh/dbus-java/issues/264))
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))

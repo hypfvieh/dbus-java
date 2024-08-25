@@ -103,10 +103,9 @@ class InterfaceCodeGeneratorTest {
 
         /* For https://github.com/hypfvieh/dbus-java/issues/264  */
         String presetUnitFilesTupleContent = analyze.get(new File("org/freedesktop/systemd1/PresetUnitFilesTuple.java"));
-        assertEquals("import org.freedesktop.systemd1.PresetUnitFilesChangesStruct;", presetUnitFilesTupleContent
+        assertTrue(presetUnitFilesTupleContent
             .lines()
-            .filter(s -> s.contains("PresetUnitFilesChangesStruct"))
-            .findFirst()
-            .orElseThrow());
+            .noneMatch(s -> s.contains("import PresetUnitFilesChangesStruct")),
+            "Did not expect an import for a class of same package");
     }
 }

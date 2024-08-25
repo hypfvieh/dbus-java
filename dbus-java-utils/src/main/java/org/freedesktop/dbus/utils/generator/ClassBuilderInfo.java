@@ -296,6 +296,7 @@ public class ClassBuilderInfo {
             content.addAll(2, allImports.stream()
                     .filter(l -> !l.startsWith("java.lang.")) // do not include imports for 'java.lang'
                     .filter(l -> !l.replaceFirst("(.+)\\..+", "$1").equals(getPackageName())) // do not add imports for classes in same package
+                    .filter(l -> l.contains(".")) // no dots in name means this is only a class name so we are in same package and don't need to import
                     .map(l -> "import " + l + ";")
                     .toList());
         }
