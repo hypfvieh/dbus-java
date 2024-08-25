@@ -60,8 +60,6 @@
         <parentDir>${maven.multiModuleProjectDirectory}</parentDir>
         <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
-        <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
-   		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss.SSS</maven.build.timestamp.format>
     </properties>
 
     <modules>
@@ -78,16 +76,6 @@
     </modules>
 
     <build>
-        <resources>
-	        <resource>
-	            <directory>${parentDir}/src/main/resources/</directory>
-	            <filtering>true</filtering>
-	            <includes>
-	                <include>**/dbus-java.version</include>
-	            </includes>
-	        </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -208,9 +196,9 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                             <manifestEntries>
-								<Build-Time>${git.commit.time}</Build-Time>
-								<Git-Revision>${git.commit.id.abbrev}</Git-Revision>
-								<Git-Author>${git.commit.user.name} &lt;${git.commit.user.email}&gt;</Git-Author>
+                                <Build-Time>${git.commit.time}</Build-Time>
+                                <Git-Revision>${git.commit.id.abbrev}</Git-Revision>
+                                <Git-Author>${git.commit.user.name} &lt;${git.commit.user.email}&gt;</Git-Author>
                             </manifestEntries>
                         </archive>
                     </configuration>

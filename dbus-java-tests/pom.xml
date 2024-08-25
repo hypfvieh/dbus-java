@@ -19,6 +19,7 @@
     </parent>
 
     <properties>
+        <parentDir>${project.parent.basedir}</parentDir>
         <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
@@ -26,10 +27,10 @@
     <build>
         <plugins>
             <plugin>
-				<!--
-					For debugging with maven:
-					mvn clean test-compile surefire:test@native-tests -Dtest=TestAll -Dmaven.surefire.debug 
-				-->
+                <!--
+                    For debugging with maven:
+                    mvn clean test-compile surefire:test@native-tests -Dtest=TestAll -Dmaven.surefire.debug 
+                -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <executions>

@@ -1,5 +1,4 @@
 version=${project.version}
 revision=${git.commit.id.abbrev}
-built=${buildTimestamp}
 user=${git.build.user.name}
 jdk=${java.vm.version}
