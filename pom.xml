@@ -57,9 +57,11 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <parentDir>${project.basedir}</parentDir>
+        <parentDir>${maven.multiModuleProjectDirectory}</parentDir>
         <project.build.outputTimestamp>2024-08-01T04:58:15Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
+        <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+   		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss.SSS</maven.build.timestamp.format>
     </properties>
 
     <modules>
@@ -76,6 +78,16 @@
     </modules>
 
     <build>
+        <resources>
+	        <resource>
+	            <directory>${parentDir}/src/main/resources/</directory>
+	            <filtering>true</filtering>
+	            <includes>
+	                <include>**/dbus-java.version</include>
+	            </includes>
+	        </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -665,7 +666,19 @@ public class InterfaceCodeGenerator {
     }
 
     private static void version() {
-        System.out.println("Java D-Bus Version " + System.getProperty("Version"));
+        String version = "unknown";
+        String rev = "?";
+        try (InputStream resourceAsStream = InterfaceCodeGenerator.class.getResourceAsStream("/dbus-java.version")) {
+            if (resourceAsStream != null) {
+                Properties properties = new Properties();
+                properties.load(resourceAsStream);
+                version = properties.getProperty("version");
+                rev = properties.getProperty("revision");
+            }
+        } catch (IOException _ex) {
+        }
+
+        System.out.println("Java D-Bus Version: " + version + ", revision: " + rev);
         System.exit(1);
     }
 
