@@ -74,4 +74,20 @@ public @interface DBusProperty {
             return accessName;
         }
     }
+
+    /**
+     * Property emitChangeSignal
+     *
+     * @return emitChangeSignal
+     */
+    EmitChangeSignal emitChangeSignal() default EmitChangeSignal.TRUE;
+
+    enum EmitChangeSignal {
+        TRUE, INVALIDATES, CONST, FALSE;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
+    }
 }

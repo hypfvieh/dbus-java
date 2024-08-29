@@ -3,6 +3,7 @@ package org.freedesktop.dbus.propertyref;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -20,16 +21,26 @@ public final  class PropertyRef {
     private final String name;
     private final Class<?> type;
     private final DBusProperty.Access access;
+    private final DBusProperty.EmitChangeSignal emitChangeSignal;
 
     public PropertyRef(String _name, Class<?> _type, Access _access) {
         super();
         this.name = _name;
         this.type = _type;
         this.access = _access;
+        this.emitChangeSignal = EmitChangeSignal.TRUE;
+    }
+
+    public PropertyRef(String _name, Class<?> _type, Access _access, EmitChangeSignal _emitChangeSignal) {
+        super();
+        this.name = _name;
+        this.type = _type;
+        this.access = _access;
+        this.emitChangeSignal = _emitChangeSignal;
     }
 
     public PropertyRef(DBusProperty _property) {
-        this(_property.name(), _property.type(), _property.access());
+        this(_property.name(), _property.type(), _property.access(), _property.emitChangeSignal());
     }
 
     @Override
@@ -64,6 +75,10 @@ public final  class PropertyRef {
         return access;
     }
 
+    public DBusProperty.EmitChangeSignal getEmitChangeSignal() {
+        return emitChangeSignal;
+    }
+
     public static Access accessForMethod(Method _method) {
         DBusBoundProperty annotation = _method.getAnnotation(DBusBoundProperty.class);
         Access access = _method.getName().toLowerCase().startsWith("set") ? Access.WRITE : Access.READ;
@@ -95,4 +110,5 @@ public final  class PropertyRef {
             throw new IllegalArgumentException("WRITE properties must have exactly 1 parameter, and return void.");
         }
     }
+
 }

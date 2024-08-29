@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.annotations;
 
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
 import org.freedesktop.dbus.interfaces.Properties;
 
 import java.lang.annotation.ElementType;
@@ -79,4 +80,26 @@ public @interface DBusBoundProperty {
      */
     Access access() default Access.READ_WRITE;
 
+    /**
+     * Annotation org.freedesktop.DBus.Property.EmitsChangedSignal.
+     * <b>From <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces">DBUS Specification</a>:</b><br>
+     * If set to false, the org.freedesktop.DBus.Properties.PropertiesChanged signal,<br>
+     * see the section called “org.freedesktop.DBus.Properties” is not guaranteed to be emitted if the property changes.<br>
+     * <br>
+     * If set to const the property never changes value during the lifetime of the object it belongs to, <br>
+     * and hence the signal is never emitted for it. <br>
+     * <br>
+     * If set to invalidates the signal is emitted but the value is not included in the signal.<br>
+     * <br>
+     * If set to true the signal is emitted with the value included. <br>
+     * The value for the annotation defaults to true if the enclosing interface element does not specify the annotation.
+     * Otherwise it defaults to the value specified in the enclosing interface element.<br>
+     * <br>
+     * This annotation is intended to be used by code generators to implement client-side caching of property values. <br>
+     * For all properties for which the annotation is set to const, invalidates or true the client may unconditionally <br>
+     * cache the values as the properties don't change or notifications are generated for them if they do.
+     *
+     * @return emitChangeSignal
+     */
+    EmitChangeSignal emitChangeSignal() default EmitChangeSignal.TRUE;
 }

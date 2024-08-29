@@ -3,6 +3,7 @@ package org.freedesktop.dbus.messages;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.annotations.*;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -62,9 +63,7 @@ public class ExportedObject {
             String value = "";
             try {
                 Method m = t.getMethod("value");
-                if (m != null) {
-                    value = m.invoke(a).toString();
-                }
+                value = m.invoke(a).toString();
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException _ex) {
                 LoggerFactory.getLogger(getClass()).trace("Could not find value", _ex);
             }
@@ -84,7 +83,7 @@ public class ExportedObject {
      * @throws DBusException in case of unknown data types
      */
     protected String generatePropertyXml(DBusProperty _property) throws DBusException {
-        return generatePropertyXml(_property.name(), _property.type(), _property.access());
+        return generatePropertyXml(_property.name(), _property.type(), _property.access(), _property.emitChangeSignal());
     }
 
     /**
@@ -96,7 +95,7 @@ public class ExportedObject {
      * @return xml with property definition
      * @throws DBusException in case of unknown data types
      */
-    protected String generatePropertyXml(String _propertyName, Class<?> _propertyTypeClass, Access _access) throws DBusException {
+    protected String generatePropertyXml(String _propertyName, Class<?> _propertyTypeClass, Access _access, EmitChangeSignal _emitChangeSignal) throws DBusException {
         String propertyTypeString;
         if (TypeRef.class.isAssignableFrom(_propertyTypeClass)) {
             Type actualType = Optional.ofNullable(Util.unwrapTypeRef(_propertyTypeClass))
@@ -115,6 +114,11 @@ public class ExportedObject {
         }
 
         String access = _access.getAccessName();
+        if (_emitChangeSignal != EmitChangeSignal.TRUE) {
+            return "<property name=\"" + _propertyName + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\">"
+                    + "\n    <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"" + _emitChangeSignal.name().toLowerCase()
+                    + "\"/>\n  </property>\n";
+        }
         return "<property name=\"" + _propertyName + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\" />";
     }
 
@@ -163,7 +167,7 @@ public class ExportedObject {
                         throw new DBusException(MessageFormat.format(
                             "Property ''{0}'' has access mode ''{1}'' defined multiple times.", name, access));
                     } else {
-                        map.put(name, new PropertyRef(name, type, Access.READ_WRITE));
+                        map.put(name, new PropertyRef(name, type, Access.READ_WRITE, propertyAnnot.emitChangeSignal()));
                     }
                 } else {
                     map.put(name, ref);
@@ -172,7 +176,7 @@ public class ExportedObject {
         }
 
         for (var ref : map.values()) {
-            xml.append("  ").append(generatePropertyXml(ref.getName(), ref.getType(), ref.getAccess())).append("\n");
+            xml.append("  ").append(generatePropertyXml(ref.getName(), ref.getType(), ref.getAccess(), ref.getEmitChangeSignal())).append("\n");
         }
 
         return xml.toString();
