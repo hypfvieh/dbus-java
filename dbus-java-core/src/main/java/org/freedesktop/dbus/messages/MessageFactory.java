@@ -28,7 +28,7 @@ public final class MessageFactory {
     }
 
     public DBusSignal createSignal(String _objectPath, Object... _args) throws DBusException {
-        var sig = new DBusSignal(_objectPath, _args);
+        DBusSignal sig = new DBusSignal(_objectPath, _args);
         sig.updateEndianess(endianess);
         return sig;
     }

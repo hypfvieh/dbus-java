@@ -40,9 +40,9 @@ public class VariantBuilderTest extends AbstractBaseTest {
 
     public static class VbStruct extends Struct {
         @Position(0)
-        private String val1;
+        private final String val1;
         @Position(1)
-        private boolean val2;
+        private final boolean val2;
 
         public VbStruct(String _val1, boolean _val2) {
             super();

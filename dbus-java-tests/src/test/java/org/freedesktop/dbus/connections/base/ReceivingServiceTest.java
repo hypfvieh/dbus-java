@@ -182,7 +182,7 @@ class ReceivingServiceTest extends AbstractBaseTest {
     @Test
     void testExecutorShutdownOrTerminated() {
         ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
-        var exec = new NoOpExecutorService();
+        NoOpExecutorService exec = new NoOpExecutorService();
         exec.shutdown = true;
 
         ReceivingService service = new ReceivingService("", build) {

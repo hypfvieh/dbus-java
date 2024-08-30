@@ -17,15 +17,15 @@ public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
     @Test
     public void testExportNested() throws IOException, DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
-            var part1 = new MyObjectPart();
+            MyObjectPart part1 = new MyObjectPart();
             part1.setVal1("ABC");
             part1.setVal2("123");
 
-            var part2 = new MyObjectPart();
+            MyObjectPart part2 = new MyObjectPart();
             part2.setVal1("DEF");
             part2.setVal2("456");
 
-            var myIface = new MyObject();
+            MyObject myIface = new MyObject();
             myIface.getParts().addAll(Arrays.asList(part1, part2));
 
             conn.requestBusName("com.acme");
@@ -34,7 +34,7 @@ public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
             conn.exportObject(myIface);
 
             try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().build()) {
-                var myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
+                MyInterface myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
 
                 // hello from 'parent' object
                 assertEquals("Hello!", myObject.sayHello());

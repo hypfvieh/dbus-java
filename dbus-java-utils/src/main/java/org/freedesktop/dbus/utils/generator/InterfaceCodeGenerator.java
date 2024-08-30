@@ -687,6 +687,7 @@ public class InterfaceCodeGenerator {
                 rev = properties.getProperty("revision");
             }
         } catch (IOException _ex) {
+            LoggerFactory.getLogger(InterfaceCodeGenerator.class).debug("Unable to load version information", _ex);
         }
 
         System.out.println("DBus-Java Utils Version: " + version + ", revision: " + rev);

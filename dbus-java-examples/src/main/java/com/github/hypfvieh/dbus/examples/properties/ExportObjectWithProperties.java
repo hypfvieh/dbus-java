@@ -20,7 +20,7 @@ public final class ExportObjectWithProperties {
     private ExportObjectWithProperties() {}
 
     public static void main(String[] _args) throws Exception {
-        try (var conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             // create object
             ObjectWithProperties obj = new ObjectWithProperties();
             obj.setMyProperty("My property value");

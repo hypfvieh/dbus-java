@@ -103,15 +103,15 @@ class VariantTest extends AbstractBaseTest {
         Path unixPath = Path.of(System.getProperty("java.io.tmpdir"), getShortTestMethodName());
         Files.deleteIfExists(unixPath);
 
-        var usx = UnixDomainSocketAddress.of(unixPath);
+        UnixDomainSocketAddress usx = UnixDomainSocketAddress.of(unixPath);
 
         CountDownLatch readWait = new CountDownLatch(1);
         CountDownLatch writeWait = new CountDownLatch(1);
 
         AtomicReference<Exception> ref = new AtomicReference<>();
         Thread thread = new Thread(() -> {
-            try (var chan = ServerSocketChannel.open(StandardProtocolFamily.UNIX).bind(usx);
-                var out = new OutputStreamMessageWriter(chan.accept())) {
+            try (ServerSocketChannel chan = ServerSocketChannel.open(StandardProtocolFamily.UNIX).bind(usx);
+                OutputStreamMessageWriter out = new OutputStreamMessageWriter(chan.accept())) {
 
                 logger.debug("Sending --> {}", methodReturn);
 
@@ -126,7 +126,7 @@ class VariantTest extends AbstractBaseTest {
         thread.start();
 
         Thread.sleep(300);
-        try (var chan = SocketChannel.open(usx); var in = new InputStreamMessageReader(chan)) {
+        try (SocketChannel chan = SocketChannel.open(usx); InputStreamMessageReader in = new InputStreamMessageReader(chan)) {
             writeWait.await(10, TimeUnit.SECONDS);
             Message message = in.readMessage();
             logger.debug("Receiving <-- {}", message);

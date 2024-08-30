@@ -132,6 +132,9 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed printed version information in `InterfaceCodeGenerator` was always `null`
    - Smaller code cleanup in `InterfaceCodeGenerator` to prevent creating multiple empty lines
    - Dependency updates
+   - Added support for `EmitsChangedSignal` ([PR#267](https://github.com/hypfvieh/dbus-java/issues/267)), thanks to [GeVa2072](https://github.com/GeVa2072)
+   - Tighten PMD rules to disallow usage of `var` keyword
+   - Updated Maven plugins
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))

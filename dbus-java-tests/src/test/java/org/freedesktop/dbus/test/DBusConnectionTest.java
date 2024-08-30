@@ -37,7 +37,7 @@ public class DBusConnectionTest extends AbstractDBusDaemonBaseTest {
      */
     @Test
     public void testExportOnlyAllPublic() throws Exception {
-        try (var conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
             ExportedObj exportedObj = new ExportedObj();
             conn.requestBusName(getClass().getName());
             assertThrows(InvalidInterfaceSignature.class, () -> conn.exportObject(exportedObj));

@@ -20,7 +20,7 @@ public final class PropertiesChangedSignalSample {
         // Open connection to the system bus.
         try (DBusConnection connection = DBusConnectionBuilder.forSystemBus().build()) {
             // Add a signal handler.
-            final var token = connection.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
+            final AutoCloseable token = connection.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
 
             // Pause to see events written to stdout (your code would differ).
             System.out.println("sleeping");

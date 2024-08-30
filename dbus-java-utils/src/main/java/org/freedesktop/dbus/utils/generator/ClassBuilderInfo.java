@@ -459,8 +459,8 @@ public class ClassBuilderInfo {
             }
 
             String publicModifier = !_isInterface ? "public " : "";
-            String mthReturnType = (getReturnType() == null ? "void"
-                : TypeConverter.getProperJavaClass(getReturnType(), _allImports));
+            String mthReturnType = getReturnType() == null ? "void"
+                : TypeConverter.getProperJavaClass(getReturnType(), _allImports);
             String args = "";
             if (!getArguments().isEmpty()) {
                 args += getArguments().stream()

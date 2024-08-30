@@ -2,6 +2,7 @@ package sample.issue;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.test.AbstractBaseTest;
@@ -24,9 +25,9 @@ public class Issue244Test extends AbstractBaseTest {
 
         logger.info("Creating {} based DBus daemon on address {}", busType, serverAddress);
 
-        try (var edbus = new EmbeddedDBusDaemon(serverAddress)) {
+        try (EmbeddedDBusDaemon edbus = new EmbeddedDBusDaemon(serverAddress)) {
             edbus.startInBackgroundAndWait(MAX_WAIT);
-            try (var con = DBusConnectionBuilder.forAddress(clientAddress).build()) {
+            try (DBusConnection con = DBusConnectionBuilder.forAddress(clientAddress).build()) {
                 assertTrue(con.isConnected(), "First connection attempt must work");
                 edbus.close(); // terminate daemon to enforce disconnect
                 Thread.sleep(1000L);
@@ -35,7 +36,7 @@ public class Issue244Test extends AbstractBaseTest {
 
             // restart daemon and retry
             edbus.startInBackgroundAndWait(MAX_WAIT);
-            try (var con = DBusConnectionBuilder.forAddress(clientAddress).build()) {
+            try (DBusConnection con = DBusConnectionBuilder.forAddress(clientAddress).build()) {
                 assertTrue(con.isConnected(), "Second connection attempt must work");
                 edbus.close(); // terminate daemon to enforce disconnect
                 Thread.sleep(1000L);

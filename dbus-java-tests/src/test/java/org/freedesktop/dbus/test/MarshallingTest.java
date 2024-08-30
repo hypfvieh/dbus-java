@@ -133,7 +133,7 @@ class MarshallingTest extends AbstractBaseTest {
 
     @Test
     void testDeserializeParametersVariant() throws Exception {
-        var varList = new Variant<>(List.of(1, 2, 3), "ai");
+        Variant<List<Integer>> varList = new Variant<>(List.of(1, 2, 3), "ai");
         Type[] types = new Type[] {varList.getType()};
 
         Object[] convertParameters = Marshalling.convertParameters(new Object[] {varList}, types, new String[] {"v"}, null);
