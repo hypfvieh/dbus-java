@@ -3,7 +3,7 @@ package org.freedesktop.dbus.propertyref;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
-import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -16,12 +16,12 @@ import java.util.Objects;
  * @author Brett Smith
  * @since 5.0.0 - 2023-10-20
  */
-public final  class PropertyRef {
+public final class PropertyRef {
 
     private final String name;
     private final Class<?> type;
     private final DBusProperty.Access access;
-    private final DBusProperty.EmitChangeSignal emitChangeSignal;
+    private final EmitChangeSignal emitChangeSignal;
 
     public PropertyRef(String _name, Class<?> _type, Access _access) {
         super();
@@ -75,7 +75,7 @@ public final  class PropertyRef {
         return access;
     }
 
-    public DBusProperty.EmitChangeSignal getEmitChangeSignal() {
+    public EmitChangeSignal getEmitChangeSignal() {
         return emitChangeSignal;
     }
 

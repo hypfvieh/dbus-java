@@ -1,12 +1,9 @@
 package org.freedesktop.dbus.annotations;
 
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 import org.freedesktop.dbus.types.Variant;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Appends information about properties in the interface. The annotated properties are added to the introspection data.
@@ -46,16 +43,16 @@ public @interface DBusProperty {
     String name();
 
     /**
-     * type of the property, in case of complex types please create custom interface that extends {@link org.freedesktop.dbus.TypeRef}
+     * type of the property, in case of complex types please create custom interface that extends {@link org.freedesktop.dbus.TypeRef}.
      *
      * @return type
      */
     Class<?> type() default Variant.class;
 
     /**
-     * Property access type
+     * Specifies the access type of this property.
      *
-     * @return access
+     * @return access type, never null
      */
     Access access() default Access.READ_WRITE;
 
@@ -76,18 +73,10 @@ public @interface DBusProperty {
     }
 
     /**
-     * Property emitChangeSignal
+     * Property which defines if a signal is emitted when the annotated property was changed.
      *
-     * @return emitChangeSignal
+     * @return emitChangeSignal, never null
      */
     EmitChangeSignal emitChangeSignal() default EmitChangeSignal.TRUE;
 
-    enum EmitChangeSignal {
-        TRUE, INVALIDATES, CONST, FALSE;
-
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
-    }
 }

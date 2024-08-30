@@ -1,7 +1,7 @@
 package org.freedesktop.dbus.annotations;
 
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
-import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 import org.freedesktop.dbus.interfaces.Properties;
 
 import java.lang.annotation.ElementType;

@@ -3,7 +3,7 @@ package org.freedesktop.dbus.messages;
 import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.annotations.*;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
-import org.freedesktop.dbus.annotations.DBusProperty.EmitChangeSignal;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
@@ -114,7 +114,7 @@ public class ExportedObject {
         }
 
         String access = _access.getAccessName();
-        if (_emitChangeSignal != EmitChangeSignal.TRUE) {
+        if (_emitChangeSignal != null && _emitChangeSignal != EmitChangeSignal.TRUE) {
             return "<property name=\"" + _propertyName + "\" type=\"" + propertyTypeString + "\" access=\"" + access + "\">"
                     + "\n    <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"" + _emitChangeSignal.name().toLowerCase()
                     + "\"/>\n  </property>\n";
@@ -130,6 +130,11 @@ public class ExportedObject {
      * @throws DBusException in case of unknown data types
      */
     protected String generatePropertiesXml(Class<?> _clz) throws DBusException {
+
+        EmitChangeSignal globalChangeSignal = Optional.ofNullable(_clz.getAnnotation(PropertiesEmitsChangedSignal.class))
+            .map(e -> e.value())
+            .orElse(EmitChangeSignal.TRUE);
+
         StringBuilder xml = new StringBuilder();
         Map<String, PropertyRef> map = new HashMap<>();
         DBusProperties properties = _clz.getAnnotation(DBusProperties.class);
@@ -167,7 +172,14 @@ public class ExportedObject {
                         throw new DBusException(MessageFormat.format(
                             "Property ''{0}'' has access mode ''{1}'' defined multiple times.", name, access));
                     } else {
-                        map.put(name, new PropertyRef(name, type, Access.READ_WRITE, propertyAnnot.emitChangeSignal()));
+                        // if the signal of the annotation is null or the same as the default (TRUE),
+                        // use whatever the global annotation defines
+                        // this means DBusBoundProperty has precedence over the global annotation
+                        EmitChangeSignal emitSignal = Optional.ofNullable(propertyAnnot.emitChangeSignal())
+                            .filter(s -> s == globalChangeSignal)
+                            .orElse(globalChangeSignal);
+
+                        map.put(name, new PropertyRef(name, type, Access.READ_WRITE, emitSignal));
                     }
                 } else {
                     map.put(name, ref);
@@ -175,7 +187,7 @@ public class ExportedObject {
             }
         }
 
-        for (var ref : map.values()) {
+        for (PropertyRef ref : map.values()) {
             xml.append("  ").append(generatePropertyXml(ref.getName(), ref.getType(), ref.getAccess(), ref.getEmitChangeSignal())).append("\n");
         }
 
