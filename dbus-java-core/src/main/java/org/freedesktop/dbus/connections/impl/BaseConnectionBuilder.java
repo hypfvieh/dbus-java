@@ -1,13 +1,20 @@
 package org.freedesktop.dbus.connections.impl;
 
-import org.freedesktop.dbus.connections.*;
+import org.freedesktop.dbus.connections.AbstractConnection;
+import org.freedesktop.dbus.connections.BusAddress;
+import org.freedesktop.dbus.connections.IDisconnectCallback;
 import org.freedesktop.dbus.connections.base.ReceivingService;
-import org.freedesktop.dbus.connections.config.*;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
+import org.freedesktop.dbus.connections.config.ReceivingServiceConfigBuilder;
+import org.freedesktop.dbus.connections.config.TransportConfig;
+import org.freedesktop.dbus.connections.config.TransportConfigBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.constants.Endian;
 
 import java.nio.ByteOrder;
+import java.util.function.Consumer;
 
 /**
  * Base class for connection builders containing commonly used options.
@@ -157,6 +164,21 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
      */
     public R withDisconnectCallback(IDisconnectCallback _disconnectCallback) {
         connectionConfig.setDisconnectCallback(_disconnectCallback);
+        return self();
+    }
+
+    /**
+     * Configures a consumer which will receive any signal which could not be handled.
+     * <p>
+     * By default, no handler is configured, so unknown/unhandled signals will be
+     * ignored and only be logged as warn message.
+     * </p>
+     * @param _handler callback which receives all unknown signals
+     * @return this
+     * @since 5.1.1 - 2024-09-11
+     */
+    public R withUnknownSignalHandler(Consumer<DBusSignal> _handler) {
+        connectionConfig.setUnknownSignalHandler(_handler);
         return self();
     }
 

@@ -1,10 +1,16 @@
 package org.freedesktop.dbus.messages;
 
+import org.freedesktop.dbus.messages.Message.ConstructorArgType;
 import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.freedesktop.dbus.types.DBusListType;
 import org.freedesktop.dbus.types.UInt32;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MessageTest extends AbstractBaseTest {
 
@@ -49,4 +55,45 @@ public class MessageTest extends AbstractBaseTest {
 
     }
 
+    static Stream<ParameterData> parameterSource() {
+        return Stream.of(
+            new ParameterData("Byte array constructor",
+                List.of(new Type[] {Byte[].class, String.class}, new Type[] {Integer.class, String.class}),
+                List.of(new DBusListType(Byte.class), String.class),
+                List.of(ConstructorArgType.ARRAY,  ConstructorArgType.NOT_ARRAY_TYPE)),
+            new ParameterData("Primitive Byte array constructor",
+                List.of(new Type[] {byte[].class, String.class}, new Type[] {Integer.class, String.class}),
+                List.of(new DBusListType(byte.class), String.class),
+                List.of(ConstructorArgType.PRIMITIVE_ARRAY,  ConstructorArgType.NOT_ARRAY_TYPE)),
+            new ParameterData("Byte array and List of Array constructor",
+                List.of(new Type[] {byte[].class, String.class}, new Type[] {new DBusListType(Byte.class), String.class}),
+                List.of(new DBusListType(byte.class), String.class),
+                List.of(ConstructorArgType.PRIMITIVE_ARRAY,  ConstructorArgType.NOT_ARRAY_TYPE)), // if both variations are present, the first matching will be used
+            new ParameterData("Byte array and different second argument",
+                List.of(new Type[] {byte[].class, long.class}, new Type[] {byte[].class, String.class}),
+                List.of(new DBusListType(byte.class), String.class),
+                List.of(ConstructorArgType.PRIMITIVE_ARRAY, ConstructorArgType.NOT_ARRAY_TYPE)), // if both variations are present, the first matching will be used
+            new ParameterData("Byte List constructor",
+                List.of(new Type[] {List.class, int.class}, new Type[] {Long.class}),
+                List.of(new DBusListType(Byte.class), int.class),
+                List.of(ConstructorArgType.COLLECTION,  ConstructorArgType.NOT_ARRAY_TYPE)),
+            new ParameterData("No arrays in constructor",
+                List.of(new Type[] {Integer.class, String.class}, new Type[] {Integer.class, Integer.class}),
+                List.of(String.class, String.class, Integer.class),
+                List.of())
+            );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("parameterSource")
+    void testExtractParameter(ParameterData _data) {
+         assertEquals(_data.expected(), Message.usesPrimitives(_data.constructorArgs(), _data.wanted()));
+    }
+
+    record ParameterData(String name, List<Type[]> constructorArgs, List<Type> wanted, List<ConstructorArgType> expected) {
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 }

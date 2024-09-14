@@ -35,6 +35,7 @@
         <item name="Calling Remote Objects" href="/remote-objects.html" />
         <item name="Properties" href="/properties.html" />
         <item name="Variant" href="/variant-handling.html" />
+        <item name="Signals" href="/using-signals.html" />
         <item name="Howto..." href="/howto.html" />
     </menu>
     <menu ref="reports"/>

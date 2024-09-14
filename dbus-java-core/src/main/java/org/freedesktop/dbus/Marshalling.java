@@ -654,7 +654,7 @@ public final class Marshalling {
         }
 
         // make sure arrays are in the correct format
-        if (parameter instanceof Object[] || parameter instanceof List<?> || parameter.getClass().isArray()) {
+        if (parameter instanceof Object[] || parameter instanceof Collection<?> || parameter.getClass().isArray()) {
             if (_type instanceof ParameterizedType pt) {
                 parameter = ArrayFrob.convert(parameter, (Class<? extends Object>) pt.getRawType());
             } else if (_type instanceof GenericArrayType gat) {

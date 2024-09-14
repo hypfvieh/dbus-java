@@ -1,11 +1,15 @@
 package org.freedesktop.dbus.connections.impl;
 
 import org.freedesktop.dbus.connections.IDisconnectCallback;
+import org.freedesktop.dbus.messages.DBusSignal;
+
+import java.util.function.Consumer;
 
 public class ConnectionConfig {
     private boolean exportWeakReferences;
     private boolean importWeakReferences;
     private IDisconnectCallback disconnectCallback;
+    private Consumer<DBusSignal> unknownSignalHandler;
 
     public boolean isExportWeakReferences() {
         return exportWeakReferences;
@@ -29,6 +33,14 @@ public class ConnectionConfig {
 
     public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
         disconnectCallback = _disconnectCallback;
+    }
+
+    public Consumer<DBusSignal> getUnknownSignalHandler() {
+        return unknownSignalHandler;
+    }
+
+    public void setUnknownSignalHandler(Consumer<DBusSignal> _unknownSignalHandler) {
+        unknownSignalHandler = _unknownSignalHandler;
     }
 
 }

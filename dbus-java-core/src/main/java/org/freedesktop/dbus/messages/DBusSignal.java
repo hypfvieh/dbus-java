@@ -217,7 +217,9 @@ public class DBusSignal extends Message {
         Constructor<? extends DBusSignal> con = null;
         Type[] types = null;
 
-        Object[] parameters = getParameters();
+        List<Type[]> constructorArgs = list.stream().map(c -> c.types).toList();
+
+        Object[] parameters = getParameters(constructorArgs);
 
         // Get all classes required in constructor in order
         // Primitives will always be wrapped in their wrapper classes

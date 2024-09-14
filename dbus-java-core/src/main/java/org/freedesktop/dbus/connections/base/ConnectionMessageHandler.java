@@ -86,6 +86,9 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
                         rs = _signal;
                     }
                     if (rs == null) {
+                        if (getConnectionConfig().getUnknownSignalHandler() != null) {
+                            getConnectionConfig().getUnknownSignalHandler().accept(_signal);
+                        }
                         return;
                     }
                     ((DBusSigHandler<DBusSignal>) h).handle(rs);

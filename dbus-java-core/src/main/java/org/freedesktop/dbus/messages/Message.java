@@ -12,16 +12,14 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.Endian;
 import org.freedesktop.dbus.messages.constants.HeaderField;
-import org.freedesktop.dbus.types.UInt16;
-import org.freedesktop.dbus.types.UInt32;
-import org.freedesktop.dbus.types.UInt64;
-import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
@@ -43,7 +41,7 @@ public class Message {
     public static final byte            PROTOCOL               = 1;
 
     /** Default extraction options. */
-    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, false);
+    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, List.of());
 
     /** Position of data offset in int array. */
     private static final int            OFFSET_DATA            = 1;
@@ -407,7 +405,7 @@ public class Message {
         sb.append(' ');
         Object[] largs = null;
         try {
-            largs = getParameters();
+            largs = extractArgs(null);
         } catch (DBusException _ex) {
             logger.debug("", _ex);
         }
@@ -650,8 +648,8 @@ public class Message {
                         default -> throw new MarshallingException("Primitive array being sent as non-primitive array.");
                     }
                     appendBytes(primbuf);
-                } else if (_data instanceof List<?> lst) {
-                    Object[] contents = lst.toArray();
+                } else if (_data instanceof Collection<?> coll) {
+                    Object[] contents = coll.toArray();
                     int diff = i;
                     ensureBuffers(contents.length * 4);
                     for (Object o : contents) {
@@ -912,8 +910,7 @@ public class Message {
                 rv = decontents;
                 break;
             case VARIANT:
-                ExtractOptions opts = new ExtractOptions(_options.contained(), false);
-                rv = extractVariant(_dataBuf, _offsets, opts, (sig, obj) -> {
+                rv = extractVariant(_dataBuf, _offsets, _options, (sig, obj) -> {
                     logger.trace("Creating Variant with SIG: {} - Value: {}", sig, obj);
                     return new Variant<>(obj, sig);
                 });
@@ -1076,7 +1073,12 @@ public class Message {
             throws DBusException {
         Object rv = null;
 
-        if (_options.primitiveListToArray()) {
+        int offsetPos = _offsets[OFFSET_SIG] - 1; // need to extract one because extractArray will already update offset position
+        boolean optimize = _options.arrayConvert() != null
+            && _options.arrayConvert().size() > offsetPos
+            && _options.arrayConvert().get(offsetPos) == ConstructorArgType.PRIMITIVE_ARRAY;
+
+        if (optimize) {
             switch (_signatureBuf[_offsets[OFFSET_SIG]]) {
                 case BYTE:
                     rv = new byte[_length];
@@ -1313,15 +1315,97 @@ public class Message {
      * @throws DBusException on failure
      */
     public Object[] getParameters() throws DBusException {
-        if (null == args && null != body) {
-            String sig = getSig();
-            if (null != sig && 0 != body.length) {
-                args = extract(sig, body, 0, DEFAULT_OPTIONS);
-            } else {
-                args = new Object[0];
-            }
+        return getParameters(null);
+    }
+
+    /**
+     * Parses and returns the parameters to this message as an Object array.
+     *
+     * This method takes a list of Type[] where each entry of the list represents a constructor call.
+     * The constructor arguments are used to determine if a collection of array of
+     * primitive type should be used when calling the constructor.
+     *
+     * @param _constructorArgs list of desired constructor arguments
+     * @return object array
+     * @throws DBusException on failure
+     */
+    public Object[] getParameters(List<Type[]> _constructorArgs) throws DBusException {
+        if (null == args && body != null) {
+            args = extractArgs(_constructorArgs);
         }
         return args;
+    }
+
+    /**
+     * Creates a object array containing all objects which should be used to call a constructor.
+     *
+     * @param _constructorArgs list of desired constructor arguments
+     * @return object array
+     * @throws DBusException on failure
+     */
+    private Object[] extractArgs(List<Type[]> _constructorArgs) throws DBusException {
+        String sig = getSig();
+
+        ExtractOptions options = DEFAULT_OPTIONS;
+        if (_constructorArgs != null && !_constructorArgs.isEmpty()) {
+            List<Type> dataType = new ArrayList<>();
+            Marshalling.getJavaType(getSig(), dataType, -1);
+            options = new ExtractOptions(DEFAULT_OPTIONS.contained(), usesPrimitives(_constructorArgs, dataType));
+        }
+
+        if (sig != null && body != null && body.length != 0) {
+            return extract(sig, body, 0, options);
+        }
+        return new Object[0];
+    }
+
+    /**
+     * Compares a list of Type[] with a list of desired types.
+     * This is used to decide if an array of primitive types,
+     * an array of object types or a Collection/List of a object type is used in the constructor.
+     *
+     * @param _constructorArgs list of constructor types to check
+     * @param _dataType list of desired types
+     *
+     * @return List of ConstructorArgType
+     */
+    static List<ConstructorArgType> usesPrimitives(List<Type[]> _constructorArgs, List<Type> _dataType) {
+        OUTER: for (Type[] ptype : _constructorArgs) {
+            if (ptype.length == _dataType.size()) {
+                List<ConstructorArgType> argTypes = new ArrayList<>();
+
+                for (int i = 0; i < ptype.length; i++) {
+                    // this is a list type and an array should be used
+                    if (ptype[i] instanceof Class<?> clz && clz.isArray()
+                            && _dataType.get(i) instanceof ParameterizedType pt
+                            && pt.getRawType() == List.class
+                            && pt.getActualTypeArguments() != null
+                            && pt.getActualTypeArguments().length > 0
+                            && pt.getActualTypeArguments()[0] instanceof Class<?> tClz) {
+
+                        argTypes.add(tClz.isPrimitive() ? ConstructorArgType.PRIMITIVE_ARRAY : ConstructorArgType.ARRAY);
+                    } else if (ptype[i] instanceof Class<?> clz
+                        && _dataType.get(i) instanceof ParameterizedType pt
+                        && clz == pt.getRawType()
+                        && Collection.class.isAssignableFrom(clz)) {
+
+                        // the constructor wants some sort of collection
+                        argTypes.add(ConstructorArgType.COLLECTION);
+
+                    } else if (ptype[i] instanceof Class<?> clz
+                        && _dataType.get(i) instanceof Class<?> tClz
+                        && clz != tClz) {
+                        // constructor class type does not match, must be wrong constructor, try next
+                        continue OUTER;
+                    } else {
+                        // not a list/array and type matches, no conversion needed
+                        argTypes.add(ConstructorArgType.NOT_ARRAY_TYPE);
+                    }
+                }
+                return argTypes;
+            }
+        }
+        return List.of();
     }
 
     public void setArgs(Object[] _args) {
@@ -1593,19 +1677,21 @@ public class Message {
 
     /**
      * Additional options to optimize value extraction.
-     *
+     * @param contained boolean to indicate if nested lists should be resolved (false usually)
+     * @param arrayConvert use Collection, array or array of primitives
      * @since 5.1.0 - 2024-05-18
      */
     record ExtractOptions(
-        /** boolean to indicate if nested lists should be resolved (false usually). */
         boolean contained,
-        /** Convert List of Object-Wrapper types to primitive arrays (e.g. List&lt;Integer> to int[]). */
-        boolean primitiveListToArray
+        List<ConstructorArgType> arrayConvert
         ) {
 
         static ExtractOptions copyWithContainedFlag(ExtractOptions _toCopy, boolean _containedFlag) {
-            return new ExtractOptions(_containedFlag, _toCopy.primitiveListToArray());
+            return new ExtractOptions(_containedFlag, _toCopy.arrayConvert());
         }
     }
 
+    enum ConstructorArgType {
+        PRIMITIVE_ARRAY, ARRAY, COLLECTION, NOT_ARRAY_TYPE;
+    }
 }
