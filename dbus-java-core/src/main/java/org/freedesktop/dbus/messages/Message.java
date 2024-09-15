@@ -15,6 +15,7 @@ import org.freedesktop.dbus.messages.constants.HeaderField;
 import org.freedesktop.dbus.types.*;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
+import org.freedesktop.dbus.utils.PrimitiveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1370,41 +1371,56 @@ public class Message {
      * @return List of ConstructorArgType
      */
     static List<ConstructorArgType> usesPrimitives(List<Type[]> _constructorArgs, List<Type> _dataType) {
+        Logger logger = LoggerFactory.getLogger(Message.class);
         OUTER: for (Type[] ptype : _constructorArgs) {
             if (ptype.length == _dataType.size()) {
                 List<ConstructorArgType> argTypes = new ArrayList<>();
 
                 for (int i = 0; i < ptype.length; i++) {
+                    logger.trace(">>>>>> Comparing {} with {}", ptype[i], _dataType.get(i));
                     // this is a list type and an array should be used
-                    if (ptype[i] instanceof Class<?> clz && clz.isArray()
+                    if (ptype[i] instanceof Class<?> constructorClz && constructorClz.isArray()
                             && _dataType.get(i) instanceof ParameterizedType pt
                             && pt.getRawType() == List.class
-                            && pt.getActualTypeArguments() != null
                             && pt.getActualTypeArguments().length > 0
-                            && pt.getActualTypeArguments()[0] instanceof Class<?> tClz) {
+                            && pt.getActualTypeArguments()[0] instanceof Class<?> sigExpectedClz) {
 
-                        argTypes.add(tClz.isPrimitive() ? ConstructorArgType.PRIMITIVE_ARRAY : ConstructorArgType.ARRAY);
+                        logger.trace("Found List type when array was required, trying to find proper array type");
+                        if (PrimitiveUtils.isCompatiblePrimitiveOrWrapper(constructorClz.getComponentType(), sigExpectedClz)) {
+                            ConstructorArgType type = constructorClz.getComponentType().isPrimitive() ? ConstructorArgType.PRIMITIVE_ARRAY : ConstructorArgType.ARRAY;
+                            logger.trace("Selecting {} for parameter {} <=> {}", type, constructorClz.getComponentType(), sigExpectedClz);
+                            argTypes.add(type);
+                        } else {
+                            logger.trace("List uses a different type than required. Found {}, required {}", constructorClz.getComponentType(), sigExpectedClz);
+                            continue OUTER;
+                        }
                     } else if (ptype[i] instanceof Class<?> clz
                         && _dataType.get(i) instanceof ParameterizedType pt
-                        && clz == pt.getRawType()
+                        && clz.isAssignableFrom((Class<?>) pt.getRawType())
                         && Collection.class.isAssignableFrom(clz)) {
 
+                        logger.trace("Found compatible collection type: {} <=> {}", clz, pt.getRawType());
                         // the constructor wants some sort of collection
                         argTypes.add(ConstructorArgType.COLLECTION);
 
-                    } else if (ptype[i] instanceof Class<?> clz
-                        && _dataType.get(i) instanceof Class<?> tClz
-                        && clz != tClz) {
+                    } else if (ptype[i] instanceof Class<?> constructorClz
+                        && _dataType.get(i) instanceof Class<?> sigExpectedClz
+                        && !sigExpectedClz.isAssignableFrom(constructorClz)
+                        && !PrimitiveUtils.isCompatiblePrimitiveOrWrapper(constructorClz, sigExpectedClz)
+                        ) {
+                        logger.trace("Constructor data type mismatch, must be wrong constructor ({} != {})", constructorClz, sigExpectedClz);
                         // constructor class type does not match, must be wrong constructor, try next
                         continue OUTER;
                     } else {
                         // not a list/array and type matches, no conversion needed
+                        logger.trace("Type {} is not an array type, skipping", ptype[i]);
                         argTypes.add(ConstructorArgType.NOT_ARRAY_TYPE);
                     }
                 }
                 return argTypes;
             }
         }
+        logger.trace("No matching constructor arguments found");
         return List.of();
     }
 

@@ -3,13 +3,16 @@ package org.freedesktop.dbus.messages;
 import org.freedesktop.dbus.messages.Message.ConstructorArgType;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.types.DBusListType;
+import org.freedesktop.dbus.types.DBusMapType;
 import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class MessageTest extends AbstractBaseTest {
@@ -57,6 +60,10 @@ public class MessageTest extends AbstractBaseTest {
 
     static Stream<ParameterData> parameterSource() {
         return Stream.of(
+            new ParameterData("Complex constructor", List.of(new Type[] {long.class, String.class, byte[].class, String.class, Map.class}, new Type[] {String.class}),
+                List.of(Long.class, String.class, new DBusListType(Byte.class), String.class, new DBusMapType(CharSequence.class, Variant.class)),
+                List.of(ConstructorArgType.NOT_ARRAY_TYPE, ConstructorArgType.NOT_ARRAY_TYPE, ConstructorArgType.PRIMITIVE_ARRAY,
+                    ConstructorArgType.NOT_ARRAY_TYPE, ConstructorArgType.NOT_ARRAY_TYPE)),
             new ParameterData("Byte array constructor",
                 List.of(new Type[] {Byte[].class, String.class}, new Type[] {Integer.class, String.class}),
                 List.of(new DBusListType(Byte.class), String.class),

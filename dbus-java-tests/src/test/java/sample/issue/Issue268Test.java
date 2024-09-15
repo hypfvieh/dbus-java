@@ -83,19 +83,6 @@ public class Issue268Test extends AbstractDBusDaemonBaseTest {
             private final Map<String, Variant<?>> extras;
 
             public MessageReceivedV2(
-                String _objectpath, long _timestamp,
-                String _sender, String _groupId,
-                String _message, Map<String, Variant<?>> _extras) throws DBusException {
-
-                super(_objectpath, _timestamp, _sender, _groupId, _message, _extras);
-                this.timestamp = _timestamp;
-                this.sender = _sender;
-                this.groupId = _groupId.getBytes();
-                this.message = _message;
-                this.extras = _extras;
-            }
-
-            public MessageReceivedV2(
                     String _objectpath, long _timestamp,
                     String _sender,  byte[] _groupId,
                     String _message, Map<String, Variant<?>> _extras
@@ -104,22 +91,6 @@ public class Issue268Test extends AbstractDBusDaemonBaseTest {
                 this.timestamp = _timestamp;
                 this.sender = _sender;
                 this.groupId = _groupId;
-                this.message = _message;
-                this.extras = _extras;
-            }
-
-            public MessageReceivedV2(
-                String _objectpath, long _timestamp,
-                String _sender, List<Byte> _groupId,
-                String _message, Map<String, Variant<?>> _extras) throws DBusException {
-
-                super(_objectpath, _timestamp, _sender, _groupId, _message, _extras);
-                this.timestamp = _timestamp;
-                this.sender = _sender;
-                this.groupId = new byte[_groupId.size()];
-                for (int i = 0; i < groupId.length; i++) {
-                    groupId[i] = _groupId.get(i);
-                }
                 this.message = _message;
                 this.extras = _extras;
             }
