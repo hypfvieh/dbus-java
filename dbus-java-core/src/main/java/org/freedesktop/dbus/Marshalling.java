@@ -642,6 +642,7 @@ public final class Marshalling {
             } else {
                 type2 = null;
             }
+            LOGGER.trace("Type is: {}", type2);
             if (null != type2) {
                 parameter = deSerializeParameters((List<Object>) parameter, type2, _conn);
             }

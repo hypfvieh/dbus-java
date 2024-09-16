@@ -6,7 +6,6 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.test.AbstractDBusDaemonBaseTest;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ public class Issue268Test extends AbstractDBusDaemonBaseTest {
 
     @Test
     void testSignal() throws Exception {
-        MethodCall.setDefaultTimeout(1000000);
         List<DBusSignal> failed = new ArrayList<>();
         try (DBusConnection exportDBusConn = export(failed);
             DBusConnection receiveDBusConn = receive()) {

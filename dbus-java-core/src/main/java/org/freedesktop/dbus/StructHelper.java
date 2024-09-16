@@ -3,6 +3,7 @@ package org.freedesktop.dbus;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.types.DBusStructType;
 import org.freedesktop.dbus.types.Variant;
+import org.freedesktop.dbus.utils.PrimitiveUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -180,8 +181,8 @@ public final class StructHelper {
         } catch (NoSuchMethodException | SecurityException _ex) {
             for (int i = 0; i < _constructorArgs.length; i++) {
                 Class<?> class1 = _constructorArgs[i];
-                if (ArrayFrob.getWrapperToPrimitiveTypes().containsKey(class1)) {
-                    _constructorArgs[i] = ArrayFrob.getWrapperToPrimitiveTypes().get(class1);
+                if (PrimitiveUtils.getWrapperToPrimitiveTypes().containsKey(class1)) {
+                    _constructorArgs[i] = PrimitiveUtils.getWrapperToPrimitiveTypes().get(class1);
                     return createStruct(_constructorArgs, _values, _classToConstruct);
                 }
             }

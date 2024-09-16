@@ -42,6 +42,7 @@ public class DBusAsyncReply<T> {
 
                     rval = (T) obj;
                 } catch (DBusExecutionException _ex) {
+                    logger.trace("DBusExecutionException while creating message from MethodReturn", _ex);
                     error = _ex;
                 } catch (DBusException _ex) {
                     logger.debug("RemoteInvocationHandler failed", _ex);
