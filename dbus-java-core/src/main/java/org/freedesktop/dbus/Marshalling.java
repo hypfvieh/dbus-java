@@ -200,7 +200,9 @@ public final class Marshalling {
             throw new DBusException(_dataType + " is not a basic type");
         }
 
-        if (_dataType instanceof TypeVariable) {
+        if (_dataType instanceof WildcardType wildcardType && wildcardType.getUpperBounds().length > 0) {
+            return recursiveGetDBusType(_out, wildcardType.getUpperBounds()[0], _basic, _level);
+        } else if (_dataType instanceof TypeVariable) {
             _out[_level].append((char) ArgumentType.VARIANT);
         } else if (_dataType instanceof GenericArrayType gat) {
             _out[_level].append((char) ArgumentType.ARRAY);
