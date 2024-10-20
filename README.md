@@ -137,6 +137,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Updated Maven plugins
    - Improved documentation
    - Fixed issue with arrays, primitive arrays and `Collection` when used in signal constructors ([#268](https://github.com/hypfvieh/dbus-java/issues/268))
+   - Improvements when using library in Kotlin projects ([PR#270](https://github.com/hypfvieh/dbus-java/issues/270)), thanks to [vicr123](https://github.com/vicr123)
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))
