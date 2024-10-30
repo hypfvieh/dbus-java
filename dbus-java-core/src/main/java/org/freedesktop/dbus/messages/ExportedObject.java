@@ -231,17 +231,8 @@ public class ExportedObject {
                 }
             }
             if (!Void.TYPE.equals(meth.getGenericReturnType())) {
-                if (Tuple.class.isAssignableFrom(meth.getReturnType())) {
-                    ParameterizedType tc = (ParameterizedType) meth.getGenericReturnType();
-                    Type[] ts = tc.getActualTypeArguments();
-
-                    for (Type t : ts) {
-                        if (t != null) {
-                            for (String s : Marshalling.getDBusType(t)) {
-                                sb.append("   <arg type=\"").append(s).append("\" direction=\"out\"/>\n");
-                            }
-                        }
-                    }
+                if (Container.class.isAssignableFrom(meth.getReturnType())) {
+                    createReturnArguments(meth, sb);
                 } else if (Object[].class.equals(meth.getGenericReturnType())) {
                     throw new DBusException("Return type of Object[] cannot be introspected properly");
                 } else {
@@ -255,6 +246,49 @@ public class ExportedObject {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Creates the XML parameters for return types of {@link Container} based classes.
+     * This method supports both, parameterized and regular return types.
+     *
+     * @param _meth method which return value is investigated
+     * @param _sb StringBuilder to append arguments to
+     *
+     * @throws DBusException when converting signature fails
+     */
+    private void createReturnArguments(Method _meth, StringBuilder _sb) throws DBusException {
+        // ignore non-existing and void methods
+        if (_meth == null || _sb == null || Void.TYPE.equals(_meth.getGenericReturnType())) {
+            return;
+        }
+
+        List<Type> argTypes = new ArrayList<>();
+        if (_meth.getGenericReturnType() instanceof ParameterizedType pt) {
+            argTypes = Arrays.asList(pt.getActualTypeArguments());
+
+            for (Type t : pt.getActualTypeArguments()) {
+                if (t != null) {
+                    for (String s : Marshalling.getDBusType(t)) {
+                        _sb.append("   <arg type=\"").append(s).append("\" direction=\"out\"/>\n");
+                    }
+                }
+            }
+        } else if (_meth.getGenericReturnType() instanceof Class<?> clz) {
+            argTypes = Arrays.stream(clz.getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(Position.class))
+                .filter(Objects::nonNull)
+                .map(Field::getType)
+                .map(Type.class::cast)
+                .toList();
+        }
+
+        for (Type f : argTypes) {
+            for (String s : Marshalling.getDBusType(f)) {
+                _sb.append("   <arg type=\"").append(s).append("\" direction=\"out\"/>\n");
+            }
+        }
+
     }
 
     /**
