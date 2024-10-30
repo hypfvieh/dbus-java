@@ -278,6 +278,9 @@ public class ExportedObject {
             argTypes = Arrays.stream(clz.getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(Position.class))
                 .filter(Objects::nonNull)
+                .map(f -> Map.entry(f.getAnnotation(Position.class).value(), f))
+                .sorted(Comparator.comparingInt(k -> k.getKey()))
+                .map(f -> f.getValue())
                 .map(Field::getType)
                 .map(Type.class::cast)
                 .toList();
