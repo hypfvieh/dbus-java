@@ -5,6 +5,9 @@ import static org.freedesktop.dbus.utils.CommonRegexPattern.*;
 import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
+import org.freedesktop.dbus.annotations.BusName;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.ObjectPath;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
@@ -453,6 +456,27 @@ public final class DBusConnection extends AbstractConnection {
     public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type)
             throws DBusException {
         return getRemoteObject(_busname, _objectpath, _type, true);
+    }
+
+    public <I extends DBusInterface> I getRemoteObject(Class<I> type) throws DBusException{
+        BusName[] busNameTypes
+                = type.getAnnotationsByType(BusName.class);
+        if(busNameTypes.length == 0){
+            throw new DBusException("No BusName annotation found on class " + type.getName());
+        }
+        if(busNameTypes.length > 1){
+            throw new DBusException("Multiple BusName annotations found on class " + type.getName());
+        }
+        String busName= busNameTypes[0].value();
+        ObjectPath[] objectPathTypes = type.getAnnotationsByType(ObjectPath.class);
+        if(objectPathTypes.length == 0){
+            throw new DBusException("No DBusInterfaceName annotation found on class " + type.getName());
+        }
+        if(objectPathTypes.length > 1){
+            throw new DBusException("Multiple DBusInterfaceName annotations found on class " + type.getName());
+        }
+        String interfaceName = objectPathTypes[0].value();
+        return getRemoteObject(busName, interfaceName, type);
     }
 
     /**
