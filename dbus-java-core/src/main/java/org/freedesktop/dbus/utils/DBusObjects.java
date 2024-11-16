@@ -1,9 +1,8 @@
 package org.freedesktop.dbus.utils;
 
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusNameException;
-import org.freedesktop.dbus.exceptions.InvalidInterfaceSignature;
-import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashSet;
@@ -52,6 +51,30 @@ public final class DBusObjects {
     }
 
     /**
+     * Ensures that the given class is part of a package.
+     *
+     * @param _clz class to check
+     * @return input if valid
+     *
+     * @throws ClassOutsideOfPackageException when class has no package
+     */
+    public static Class<?> requirePackage(Class<?> _clz) throws ClassOutsideOfPackageException {
+        return requirePackage(_clz, null);
+    }
+
+    /**
+     * Ensures that the given class is implements or extends {@link DBusInterface} class.
+     *
+     * @param _clz class to check
+     * @return input if valid
+     *
+     * @throws MissingInterfaceImplementationException when class is incompatible
+     */
+    public static Class<?> requireDBusInterface(Class<?> _clz) throws MissingInterfaceImplementationException {
+        return requireDBusInterface(_clz, null);
+    }
+
+    /**
      * Ensures given string is a valid object path.
      *
      * @param _objectPath string to check
@@ -65,6 +88,56 @@ public final class DBusObjects {
     }
 
     /**
+     * Ensures given DBusPath is a valid object path.
+     *
+     * @param _dbusPath to check
+     *
+     * @return input DBusPath if valid
+     *
+     * @throws InvalidObjectPathException when input is not a valid object path
+     */
+    public static DBusPath requireObjectPath(DBusPath _dbusPath) throws InvalidObjectPathException {
+        return requireObjectPath(_dbusPath, null);
+    }
+
+    /**
+     * Ensures that the given class is part of a package.
+     *
+     * @param _clz class to check
+     * @param _customMsg custom error message
+     * @return input if valid
+     *
+     * @throws ClassOutsideOfPackageException when class has no package
+     */
+    public static Class<?> requirePackage(Class<?> _clz, String _customMsg) throws ClassOutsideOfPackageException {
+        return requireBase(_clz, DBusObjects::validateClassHasPackage, msg -> {
+            if (Util.isBlank(_customMsg)) {
+                return new ClassOutsideOfPackageException(_clz);
+            }
+            return new ClassOutsideOfPackageException(msg);
+
+        }, _customMsg);
+    }
+
+    /**
+     * Ensures that the given class is implements or extends {@link DBusInterface} class.
+     *
+     * @param _clz class to check
+     * @param _customMsg custom error message
+     * @return input if valid
+     *
+     * @throws MissingInterfaceImplementationException when class is incompatible
+     */
+    public static Class<?> requireDBusInterface(Class<?> _clz, String _customMsg) throws MissingInterfaceImplementationException {
+        return requireBase(_clz, DBusObjects::validateDBusInterface, msg -> {
+            if (Util.isBlank(_customMsg)) {
+                return new MissingInterfaceImplementationException(_clz);
+            }
+            return new MissingInterfaceImplementationException(msg);
+        }, _customMsg);
+    }
+
+    /**
      * Ensures given string is a valid object path.
      *
      * @param _objectPath string to check
@@ -75,6 +148,19 @@ public final class DBusObjects {
      */
     public static String requireObjectPath(String _objectPath, String _customMsg) throws InvalidObjectPathException {
         return requireBase(_objectPath, DBusObjects::validateObjectPath, InvalidObjectPathException::new, _customMsg);
+    }
+
+    /**
+     * Ensures given DBusPath is a valid object path.
+     *
+     * @param _dbusPath to check
+     * @param _customMsg custom error message
+     * @return input DBusPath if valid
+     *
+     * @throws InvalidObjectPathException when input is not a valid object path
+     */
+    public static DBusPath requireObjectPath(DBusPath _dbusPath, String _customMsg) throws InvalidObjectPathException {
+        return requireBase(_dbusPath, x -> DBusObjects.validateNotObjectPath(x.getPath()), InvalidObjectPathException::new, _customMsg);
     }
 
     /**
@@ -179,6 +265,28 @@ public final class DBusObjects {
      */
     public static boolean validateObjectPath(String _objectPath) {
         return !validateNotObjectPath(_objectPath);
+    }
+
+    /**
+     * Checks if given class is compatible with {@link DBusInterface} class.
+     *
+     * @param _clz class to check
+     *
+     * @return true if class is compatible
+     */
+    public static boolean validateDBusInterface(Class<?> _clz) {
+        return DBusInterface.class.isAssignableFrom(_clz);
+    }
+
+    /**
+     * Checks if given class has/is in a package.
+     *
+     * @param _clz class to check
+     *
+     * @return true if class has a package
+     */
+    public static boolean validateClassHasPackage(Class<?> _clz) {
+        return !_clz.getName().equals(_clz.getSimpleName());
     }
 
     /**

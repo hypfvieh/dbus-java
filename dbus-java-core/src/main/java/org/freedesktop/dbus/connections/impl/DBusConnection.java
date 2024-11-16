@@ -43,7 +43,7 @@ import java.util.function.Function;
  * issues.
  * </p>
  */
-public final class DBusConnection extends AbstractConnection {
+public final class DBusConnection extends AbstractConnection implements IRemoteObjectGetter {
 
     static final ConcurrentMap<String, DBusConnection> CONNECTIONS           = new ConcurrentHashMap<>();
 
@@ -317,70 +317,18 @@ public final class DBusConnection extends AbstractConnection {
         }).toArray(String[]::new);
     }
 
-    public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type)
-            throws DBusException {
-        return getPeerRemoteObject(_busname, _objectpath, _type, true);
+    @Override
+    public String getDBusOwnerName(String _busName) {
+        return dbus == null ? null : dbus.GetNameOwner(_busName);
     }
 
-    /**
-     * Return a reference to a remote object. This method will resolve the well known name (if given) to a unique bus
-     * name when you call it. This means that if a well known name is released by one process and acquired by another
-     * calls to objects gained from this method will continue to operate on the original process.
-     *
-     * This method will use bus introspection to determine the interfaces on a remote object and so <b>may block</b> and
-     * <b>may fail</b>. The resulting proxy object will, however, be castable to any interface it implements. It will
-     * also autostart the process if applicable. Also note that the resulting proxy may fail to execute the correct
-     * method with overloaded methods and that complex types may fail in interesting ways. Basically, if something odd
-     * happens, try specifying the interface explicitly.
-     *
-     * @param _busname
-     *            The bus name to connect to. Usually a well known bus name in dot-notation (such as
-     *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param _objectpath
-     *            The path on which the process is exporting the object.$
-     * @return A reference to a remote object.
-     * @throws ClassCastException
-     *             If type is not a sub-type of DBusInterface
-     * @throws InvalidBusNameException
-     *             If busname or objectpath are incorrectly formatted.
-     * @throws DBusException
-     *             If retrieving remote object fails
-     */
+    @Override
     public DBusInterface getPeerRemoteObject(String _busname, String _objectpath) throws InvalidBusNameException, DBusException {
-
         DBusObjects.requireBusNameOrConnectionId(_busname);
-        String unique = dbus.GetNameOwner(_busname);
-
-        return dynamicProxy(unique, _objectpath, null);
+        return dynamicProxy(getDBusOwnerName(_busname), _objectpath, null);
     }
 
-    /**
-     * Return a reference to a remote object. This method will always refer to the well known name (if given) rather
-     * than resolving it to a unique bus name. In particular this means that if a process providing the well known name
-     * disappears and is taken over by another process proxy objects gained by this method will make calls on the new
-     * proccess.
-     *
-     * This method will use bus introspection to determine the interfaces on a remote object and so <b>may block</b> and
-     * <b>may fail</b>. The resulting proxy object will, however, be castable to any interface it implements. It will
-     * also autostart the process if applicable. Also note that the resulting proxy may fail to execute the correct
-     * method with overloaded methods and that complex types may fail in interesting ways. Basically, if something odd
-     * happens, try specifying the interface explicitly.
-     *
-     * @param _busname
-     *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
-     *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param _objectpath
-     *            The path on which the process is exporting the object.
-     * @return A reference to a remote object.
-     * @throws ClassCastException
-     *             If type is not a sub-type of DBusInterface
-     * @throws DBusException
-     *             If remote object cannot be retrieved
-     * @throws InvalidBusNameException
-     *             If busname is incorrectly formatted
-     * @throws InvalidObjectPathException
-     *             If objectpath is incorrectly formatted
-     */
+    @Override
     public DBusInterface getRemoteObject(String _busname, String _objectpath) throws DBusException, InvalidBusNameException, InvalidObjectPathException {
         DBusObjects.requireBusNameOrConnectionId(_busname);
         DBusObjects.requireObjectPath(_objectpath);
@@ -388,118 +336,15 @@ public final class DBusConnection extends AbstractConnection {
         return dynamicProxy(_busname, _objectpath, null);
     }
 
-    /**
-     * Return a reference to a remote object. This method will resolve the well known name (if given) to a unique bus
-     * name when you call it. This means that if a well known name is released by one process and acquired by another
-     * calls to objects gained from this method will continue to operate on the original process.
-     *
-     * @param <I>
-     *            class extending {@link DBusInterface}
-     * @param _busname
-     *            The bus name to connect to. Usually a well known bus name in dot-notation (such as
-     *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param _objectpath
-     *            The path on which the process is exporting the object.$
-     * @param _type
-     *            The interface they are exporting it on. This type must have the same full class name and exposed
-     *            method signatures as the interface the remote object is exporting.
-     * @param _autostart
-     *            Disable/Enable auto-starting of services in response to calls on this object. Default is enabled; when
-     *            calling a method with auto-start enabled, if the destination is a well-known name and is not owned the
-     *            bus will attempt to start a process to take the name. When disabled an error is returned immediately.
-     * @return A reference to a remote object.
-     * @throws ClassCastException
-     *             If type is not a sub-type of DBusInterface
-     * @throws DBusException
-     *             If busname or objectpath are incorrectly formatted or type is not in a package.
-     * @throws InvalidBusNameException
-     *             If busname is incorrectly formatted
-     */
-    public <I extends DBusInterface> I getPeerRemoteObject(String _busname, String _objectpath, Class<I> _type,
-            boolean _autostart) throws DBusException, InvalidBusNameException {
-        if (null == _busname) {
-            throw new InvalidBusNameException();
-        }
-
-        DBusObjects.requireBusNameOrConnectionId(_busname);
-
-        String unique = dbus.GetNameOwner(_busname);
-
-        return getRemoteObject(unique, _objectpath, _type, _autostart);
-    }
-
-    /**
-     * Return a reference to a remote object. This method will always refer to the well known name (if given) rather
-     * than resolving it to a unique bus name. In particular this means that if a process providing the well known name
-     * disappears and is taken over by another process proxy objects gained by this method will make calls on the new
-     * proccess.
-     *
-     * @param <I>
-     *            class extending {@link DBusInterface}
-     * @param _busname
-     *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
-     *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param _objectpath
-     *            The path on which the process is exporting the object.
-     * @param _type
-     *            The interface they are exporting it on. This type must have the same full class name and exposed
-     *            method signatures as the interface the remote object is exporting.
-     * @return A reference to a remote object.
-     * @throws ClassCastException
-     *             If type is not a sub-type of DBusInterface
-     * @throws DBusException
-     *             If busname or objectpath are incorrectly formatted or type is not in a package.
-     */
-    public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type)
-            throws DBusException {
-        return getRemoteObject(_busname, _objectpath, _type, true);
-    }
-
-    /**
-     * Return a reference to a remote object. This method will always refer to the well known name (if given) rather
-     * than resolving it to a unique bus name. In particular this means that if a process providing the well known name
-     * disappears and is taken over by another process proxy objects gained by this method will make calls on the new
-     * proccess.
-     *
-     * @param <I>
-     *            class extending {@link DBusInterface}
-     * @param _busname
-     *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
-     *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
-     * @param _objectpath
-     *            The path on which the process is exporting the object.
-     * @param _type
-     *            The interface they are exporting it on. This type must have the same full class name and exposed
-     *            method signatures as the interface the remote object is exporting.
-     * @param _autostart
-     *            Disable/Enable auto-starting of services in response to calls on this object. Default is enabled; when
-     *            calling a method with auto-start enabled, if the destination is a well-known name and is not owned the
-     *            bus will attempt to start a process to take the name. When disabled an error is returned immediately.
-     * @return A reference to a remote object.
-     * @throws ClassCastException
-     *             If type is not a sub-type of DBusInterface
-     * @throws DBusException
-     *             If busname or objectpath are incorrectly formatted or type is not in a package.
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public <I extends DBusInterface> I getRemoteObject(String _busname, String _objectpath, Class<I> _type,
             boolean _autostart) throws DBusException {
-        if (_type == null) {
-            throw new ClassCastException("Not A DBus Interface");
-        }
 
         DBusObjects.requireBusNameOrConnectionId(_busname);
         DBusObjects.requireObjectPath(_objectpath);
-
-        if (!DBusInterface.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Interface");
-        }
-
-        // don't let people import things which don't have a
-        // valid D-Bus interface name
-        if (_type.getName().equals(_type.getSimpleName())) {
-            throw new DBusException("DBusInterfaces cannot be declared outside a package");
-        }
+        DBusObjects.requireDBusInterface(_type);
+        DBusObjects.requirePackage(_type);
 
         RemoteObject ro = new RemoteObject(_busname, _objectpath, _type, _autostart);
         I i = (I) Proxy.newProxyInstance(_type.getClassLoader(), new Class[] {

@@ -10,6 +10,8 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
+import org.freedesktop.dbus.exceptions.MissingInterfaceImplementationException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
@@ -145,28 +147,14 @@ public class DirectConnection extends AbstractConnection {
        * as the interface the remote object is exporting.
        * @param <T> class which extends DBusInterface
        * @return A reference to a remote object.
-       * @throws ClassCastException If type is not a sub-type of DBusInterface
-       * @throws DBusException If busname or objectpath are incorrectly formatted or type is not in a package.
+       * @throws MissingInterfaceImplementationException If type is not a sub-type of DBusInterface
+       * @throws InvalidObjectPathException If busname or objectpath are invalid
+       *
     */
     public <T extends DBusInterface> T getRemoteObject(String _objectPath, Class<T> _type) throws DBusException {
-        if (null == _objectPath) {
-            throw new DBusException("Invalid object path: null");
-        }
-        if (null == _type) {
-            throw new ClassCastException("Not A DBus Interface");
-        }
-
         DBusObjects.requireObjectPath(_objectPath);
-
-        if (!DBusInterface.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Interface");
-        }
-
-        // don't let people import things which don't have a
-        // valid D-Bus interface name
-        if (_type.getName().equals(_type.getSimpleName())) {
-            throw new DBusException("DBusInterfaces cannot be declared outside a package");
-        }
+        DBusObjects.requireDBusInterface(_type);
+        DBusObjects.requirePackage(_type);
 
         RemoteObject ro = new RemoteObject(null, _objectPath, _type, false);
 

@@ -2,7 +2,6 @@ package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -190,9 +189,9 @@ class MarshallingTest extends AbstractBaseTest {
             final String  objectPath;
 
             final List<SomeData> changed;
-            final List<ObjectPath> removed;
+            final List<DBusPath> removed;
 
-            ServicesChanged(String _objectPath, List<SomeData> _k, List<ObjectPath> _removedItems) throws DBusException {
+            ServicesChanged(String _objectPath, List<SomeData> _k, List<DBusPath> _removedItems) throws DBusException {
                 super(_objectPath, _k, _removedItems);
                 objectPath = _objectPath;
 
@@ -208,7 +207,7 @@ class MarshallingTest extends AbstractBaseTest {
                 return changed;
             }
 
-            List<ObjectPath> getRemoved() {
+            List<DBusPath> getRemoved() {
                 return removed;
             }
 

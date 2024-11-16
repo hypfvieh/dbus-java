@@ -2,6 +2,10 @@ package org.freedesktop.dbus;
 
 import java.util.Objects;
 
+/**
+ * @deprecated please use {@link DBusPath} instead
+ */
+@Deprecated(forRemoval = true, since = "5.1.1 - 2024-11-16")
 public class ObjectPath extends DBusPath {
     private String source;
 
@@ -10,6 +14,7 @@ public class ObjectPath extends DBusPath {
         this.source = _source;
     }
 
+    @Override
     public String getSource() {
         return source;
     }

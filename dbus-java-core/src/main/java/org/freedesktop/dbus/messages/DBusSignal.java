@@ -1,9 +1,6 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.DBusMatchRule;
-import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
-import org.freedesktop.dbus.Struct;
+import org.freedesktop.dbus.*;
 import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
@@ -330,9 +327,11 @@ public class DBusSignal extends Message {
 
                 if (Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
                     continue;
-                } else  if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
+                } else if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
                     continue;
-                } else  if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
+                } else if (DBusInterface.class.isAssignableFrom(class1) && DBusPath.class.equals(_wantedArgs.get(i))) {
+                    continue;
+                } else if (Struct.class.isAssignableFrom(class1) && Object[].class.equals(_wantedArgs.get(i))) {
                     continue;
                 } else if (class1.isAssignableFrom(_wantedArgs.get(i))) {
                     continue;

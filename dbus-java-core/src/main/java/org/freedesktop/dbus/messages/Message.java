@@ -929,7 +929,7 @@ public class Message {
             case OBJECT_PATH:
                 length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
-                rv = new ObjectPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
+                rv = new DBusPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case SIGNATURE:

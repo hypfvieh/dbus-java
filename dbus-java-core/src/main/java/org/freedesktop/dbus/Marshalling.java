@@ -590,6 +590,15 @@ public final class Marshalling {
             }
         }
 
+        if (parameter instanceof DBusPath op) {
+            LOGGER.trace("Parameter is DBusPath");
+            if (_type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) _type)) {
+                parameter = _conn.getExportedObject(op.getSource(), op.getPath(), (Class<DBusInterface>) _type);
+            } else {
+                parameter = new DBusPath(op.getPath());
+            }
+        }
+
         // its an enum, parse either as the string name or the ordinal
         if (parameter instanceof String str && _type instanceof Class && Enum.class.isAssignableFrom((Class<?>) _type)) {
             LOGGER.trace("Type seems to be an enum");
