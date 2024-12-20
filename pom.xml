@@ -18,7 +18,7 @@
         <junit5.version>5.11.0</junit5.version>
         <pmd.version>7.4.0</pmd.version>
         <checkstyle.version>10.17.0</checkstyle.version>
-        <logback.version>1.5.7</logback.version>
+        <logback.version>1.5.13</logback.version>
         <slf4j.version>2.0.16</slf4j.version>
         <jnr-unixsocket.version>0.38.22</jnr-unixsocket.version>
         <junixsocket.version>2.10.0</junixsocket.version>
