@@ -22,6 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Contains static methods for marshalling values.
  */
 public final class Marshalling {
+
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
+    private static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
+
     /** Used as initial and incremental size of StringBuffer array when resolving DBusTypes recursively. */
     private static final int INITIAL_BUFFER_SZ = 10;
 
@@ -289,7 +293,7 @@ public final class Marshalling {
                 for (Type t : ts) {
                     Collections.addAll(vs, recursiveGetDBusType(_out, t, false, _level + 1));
                 }
-                return vs.toArray(new String[0]);
+                return vs.toArray(EMPTY_STRING_ARRAY);
             } else {
                 throw new DBusException("Exporting non-exportable parameterized type " + _dataType);
             }
@@ -385,7 +389,7 @@ public final class Marshalling {
 
                     List<Type> contained = new ArrayList<>();
                     getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
-                    _resultValue.add(new DBusStructType(contained.toArray(new Type[0])));
+                    _resultValue.add(new DBusStructType(contained.toArray(EMPTY_TYPE_ARRAY)));
                     idx = structIdx - 1; //-1 because j already points to the next signature char
                     break;
                 case ArgumentType.ARRAY:
@@ -577,7 +581,7 @@ public final class Marshalling {
         if (_type instanceof Class && ((Class<?>) _type).isArray() && ((Class<?>) _type).getComponentType().equals(Type.class) && parameter instanceof String) {
             List<Type> rv = new ArrayList<>();
             getJavaType((String) parameter, rv, -1);
-            parameter = rv.toArray(new Type[0]);
+            parameter = rv.toArray(EMPTY_TYPE_ARRAY);
         }
 
         // its an object path, get/create the proxy
