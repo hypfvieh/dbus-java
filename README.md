@@ -143,6 +143,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Added `of(String...)` factory method to `DBusPath`
    - Smaller refactorings to reduce duplicated code
    - Added additional `getRemoteObject` methods which uses `DBusPath` as argument
+   - Smaller improvements in empty array creation and other minor Improvements ([PR#276](https://github.com/hypfvieh/dbus-java/issues/276)), thanks to [joerg1985](https://github.com/joerg1985)
 
 ##### Changes in 5.1.0 (2024-08-01):
    - Use Junit BOM thanks to [spannm](https://github.com/spannm) ([PR#248](https://github.com/hypfvieh/dbus-java/issues/248))
