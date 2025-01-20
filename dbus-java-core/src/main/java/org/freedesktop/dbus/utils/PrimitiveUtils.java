@@ -73,8 +73,6 @@ public final class PrimitiveUtils {
 
         if (_clz1 == _clz2) {
             return true;
-        } else if (_clz1.isPrimitive() && _clz2.isPrimitive() && _clz1 == _clz2) {
-            return true;
         } else if (_clz1.isPrimitive()) {
             Class<?> wrappedType = PRIMITIVE_TO_WRAPPER.get(_clz1);
             return wrappedType == _clz2;

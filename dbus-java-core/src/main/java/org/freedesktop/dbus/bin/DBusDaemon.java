@@ -48,6 +48,7 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private static final String                                                 DBUS_BUSPATH    = "/org/freedesktop/DBus";
     private static final String                                                 DBUS_BUSNAME    = "org.freedesktop.DBus";
+    private static final String[]                                               EMPTY_STRING_ARRAY = new String[0];
 
     private static final Logger                                                 LOGGER          =
             LoggerFactory.getLogger(DBusDaemon.class);
@@ -458,7 +459,7 @@ public class DBusDaemon extends Thread implements Closeable {
         public String[] ListNames() {
             String[] ns;
             Set<String> nss = names.keySet();
-            ns = nss.toArray(new String[0]);
+            ns = nss.toArray(EMPTY_STRING_ARRAY);
             return ns;
         }
 

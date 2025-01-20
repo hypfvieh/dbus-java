@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
  * and holds common methods.
  */
 public abstract class Container {
-    private static final Map<Type, Type[]> TYPE_CACHE = new HashMap<>();
+    private static final Map<Type, Type[]> TYPE_CACHE = new ConcurrentHashMap<>();
     private Object[]                       parameters = null;
 
     Container() {

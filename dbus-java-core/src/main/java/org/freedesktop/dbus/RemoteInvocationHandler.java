@@ -45,56 +45,59 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object _proxy, Method _method, Object[] _args) throws Throwable {
-        if (_method.getName().equals("isRemote")) {
-            return true;
-        } else if (_method.getName().equals("getObjectPath")) {
-            return remote.getObjectPath();
-        } else if (_method.getName().equals("clone")) {
-            return null;
-        } else if (_method.getName().equals("equals")) {
-            try {
-                if (1 == _args.length) {
-                    return _args[0] != null && remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(_args[0])).remote);
+        switch (_method.getName()) {
+            case "isRemote":
+                return true;
+            case "getObjectPath":
+                return remote.getObjectPath();
+            case "clone":
+                return null;
+            case "equals":
+                try {
+                    if (1 == _args.length) {
+                        return _args[0] != null && remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(_args[0])).remote);
+                    }
+                } catch (IllegalArgumentException _exIa) {
+                    return Boolean.FALSE;
                 }
-            } catch (IllegalArgumentException _exIa) {
-                return Boolean.FALSE;
-            }
-        } else if (_method.getName().equals("finalize")) {
-            return null;
-        } else if (_method.getName().equals("getClass")) {
-            return DBusInterface.class;
-        } else if (_method.getName().equals("hashCode")) {
-            return remote.hashCode();
-        } else if (_method.getName().equals("notify")) {
-            synchronized (remote) {
-                remote.notify();
-            }
-            return null;
-        } else if (_method.getName().equals("notifyAll")) {
-            synchronized (remote) {
-                remote.notifyAll();
-            }
-            return null;
-        } else if (_method.getName().equals("wait")) {
-            synchronized (remote) {
-                if (_args.length == 0) {
-                    remote.wait();
-                } else if (_args.length == 1 && _args[0] instanceof Long l) {
-                    remote.wait(l);
-                } else if (_args.length == 2 && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
-                    remote.wait(l, i);
+            case "finalize":
+                return null;
+            case "getClass":
+                return DBusInterface.class;
+            case "hashCode":
+                return remote.hashCode();
+            case "notify":
+                synchronized (remote) {
+                    remote.notify();
                 }
-                if (_args.length <= 2) {
-                    return null;
+                return null;
+            case "notifyAll":
+                synchronized (remote) {
+                    remote.notifyAll();
                 }
-            }
-        } else if (_method.getName().equals("toString")) {
-            return remote.toString();
-        } else if (_method.isAnnotationPresent(DBusBoundProperty.class)) {
-            return PropRefRemoteHandler.handleDBusBoundProperty(conn, remote, _method, _args);
-        }
+                return null;
+            case "wait":
+                synchronized (remote) {
+                    if (_args.length == 0) {
+                        remote.wait();
+                    } else if (_args.length == 1 && _args[0] instanceof Long l) {
+                        remote.wait(l);
+                    } else if (_args.length == 2 && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
+                        remote.wait(l, i);
+                    }
+                    if (_args.length <= 2) {
+                        return null;
+                    }
+                }
+            case "toString":
+                return remote.toString();
+            default:
+                if (_method.isAnnotationPresent(DBusBoundProperty.class)) {
+                    return PropRefRemoteHandler.handleDBusBoundProperty(conn, remote, _method, _args);
+                }
 
-        return executeRemoteMethod(remote, _method, conn, CALL_TYPE_SYNC, null, _args);
+                return executeRemoteMethod(remote, _method, conn, CALL_TYPE_SYNC, null, _args);
+        }
     }
 
     public static Object convertRV(Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
