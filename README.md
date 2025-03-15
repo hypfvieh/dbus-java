@@ -125,7 +125,7 @@ The library will remain open source and MIT licensed and can still be used, fork
 #### Changes
 
 ##### Changes in 5.1.2 (not yet released):
-   - Nothing yet
+   - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
 
 ##### Changes in 5.1.1 (2025-03-14):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments
