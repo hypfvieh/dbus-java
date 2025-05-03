@@ -1,13 +1,17 @@
 package org.freedesktop.dbus.messages;
 
-import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.DBusPath;
+import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.ObjectPath;
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.HeaderField;
-import org.freedesktop.dbus.messages.constants.MessageType;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.utils.CommonRegexPattern;
 import org.freedesktop.dbus.utils.DBusNamingUtil;
 import org.freedesktop.dbus.utils.DBusObjects;
@@ -53,7 +57,7 @@ public class DBusSignal extends Message {
 
     protected DBusSignal(byte _endianess, String _source, String _path, String _iface, String _member, String _sig, Object... _args)
             throws DBusException {
-        super(_endianess, MessageType.SIGNAL, (byte) 0);
+        super(_endianess, MessageTypes.SIGNAL.getId(), (byte) 0);
 
         if (null == _path || null == _member || null == _iface) {
             throw new MessageFormatException("Must specify object path, interface and signal name to Signals.");
@@ -98,7 +102,7 @@ public class DBusSignal extends Message {
      */
     @SuppressWarnings("unchecked")
     protected DBusSignal(byte _endianess, String _objectPath, Object... _args) throws DBusException {
-        super(_endianess, MessageType.SIGNAL, (byte) 0);
+        super(_endianess, MessageTypes.SIGNAL.getId(), (byte) 0);
 
         DBusObjects.requireObjectPath(_objectPath);
 

@@ -1,7 +1,6 @@
 package org.freedesktop.dbus.connections;
 
 import org.freedesktop.dbus.DBusAsyncReply;
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.connections.base.ConnectionMessageHandler;
@@ -11,10 +10,11 @@ import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.impl.ConnectionConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-import org.freedesktop.dbus.exceptions.InvalidSignalException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
@@ -238,8 +238,8 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If type is not a sub-type of DBusSignal.
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
-        assertSignal(_type);
-        removeSigHandler(new DBusMatchRule(_type), _handler);
+        DBusObjects.requireDBusSignal(_type);
+        removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).build(), _handler);
     }
 
     /**
@@ -260,10 +260,10 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
             throws DBusException {
-        assertSignal(_type);
+        DBusObjects.requireDBusSignal(_type);
         String objectPath = getImportedObjects().get(_object).getObjectPath();
         DBusObjects.requireObjectPath(objectPath);
-        removeSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
+        removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).withPath(objectPath).build(), _handler);
     }
 
     /**
@@ -283,8 +283,8 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      *             If type is not a sub-type of DBusSignal.
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusSigHandler<T> _handler) throws DBusException {
-        assertSignal(_type);
-        return addSigHandler(new DBusMatchRule(_type), _handler);
+        DBusObjects.requireDBusSignal(_type);
+        return addSigHandler(DBusMatchRuleBuilder.create().withType(_type).build(), _handler);
     }
 
     /**
@@ -307,24 +307,18 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, DBusInterface _object, DBusSigHandler<T> _handler)
             throws DBusException {
-        assertSignal(_type);
+        DBusObjects.requireDBusSignal(_type);
         RemoteObject rObj = getImportedObjects().get(_object);
         if (rObj == null) {
             throw new DBusException("Not an object exported or imported by this connection");
         }
         String objectPath = rObj.getObjectPath();
         DBusObjects.requireObjectPath(objectPath);
-        return addSigHandler(new DBusMatchRule(_type, null, objectPath), _handler);
-    }
-
-    private <T extends DBusSignal> void assertSignal(Class<T> _type) throws InvalidSignalException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new InvalidSignalException(_type);
-        }
+        return addSigHandler(DBusMatchRuleBuilder.create().withType(_type).withPath(objectPath).build(), _handler);
     }
 
     protected <T extends DBusSignal> void addSigHandlerWithoutMatch(Class<? extends DBusSignal> _signal, DBusSigHandler<T> _handler) throws DBusException {
-        DBusMatchRule rule = new DBusMatchRule(_signal);
+        DBusMatchRule rule = DBusMatchRuleBuilder.create().withType(_signal).build();
         synchronized (getHandledSignals()) {
             Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(rule);
             if (null == v) {

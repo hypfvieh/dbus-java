@@ -3,7 +3,7 @@ package org.freedesktop.dbus.messages;
 import org.freedesktop.dbus.FileDescriptor;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageTypeException;
-import org.freedesktop.dbus.messages.constants.MessageType;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,13 +66,19 @@ public final class MessageFactory {
     }
 
     public static Message createMessage(byte _type, byte[] _buf, byte[] _header, byte[] _body, List<FileDescriptor> _filedescriptors) throws DBusException, MessageTypeException {
-        Message m = switch (_type) {
-            case MessageType.METHOD_CALL -> new MethodCall();
-            case MessageType.METHOD_RETURN -> new MethodReturn();
-            case MessageType.SIGNAL -> new DBusSignal();
-            case MessageType.ERROR -> new Error();
-            default -> throw new MessageTypeException(String.format("Message type %s unsupported", _type));
-        };
+
+        Message m;
+        if (_type == MessageTypes.METHOD_CALL.getId()) {
+            m = new MethodCall();
+        } else if (_type == MessageTypes.METHOD_REPLY.getId()) {
+            m = new MethodReturn();
+        } else if (_type == MessageTypes.SIGNAL.getId()) {
+            m = new DBusSignal();
+        } else if (_type == MessageTypes.ERROR.getId()) {
+            m = new Error();
+        } else {
+            throw new MessageTypeException(String.format("Message type %s unsupported", _type));
+        }
 
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(Hexdump.format(_buf));

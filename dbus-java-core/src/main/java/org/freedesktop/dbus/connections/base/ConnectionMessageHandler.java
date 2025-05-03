@@ -1,6 +1,9 @@
 package org.freedesktop.dbus.connections.base;
 
-import org.freedesktop.dbus.*;
+import org.freedesktop.dbus.DBusAsyncReply;
+import org.freedesktop.dbus.DBusCallInfo;
+import org.freedesktop.dbus.MethodTuple;
+import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
@@ -11,6 +14,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
 
@@ -59,13 +63,13 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
         List<DBusSigHandler<DBusSignal>> genericHandlers = new ArrayList<>();
 
         for (Entry<DBusMatchRule, Queue<DBusSigHandler<? extends DBusSignal>>> e : getHandledSignals().entrySet()) {
-            if (e.getKey().matches(_signal, false)) {
+            if (e.getKey().matches(_signal)) {
                 handlers.addAll(e.getValue());
             }
         }
 
         for (Entry<DBusMatchRule, Queue<DBusSigHandler<DBusSignal>>> e : getGenericHandledSignals().entrySet()) {
-            if (e.getKey().matches(_signal, false)) {
+            if (e.getKey().matches(_signal)) {
                 genericHandlers.addAll(e.getValue());
             }
         }

@@ -3,7 +3,6 @@ package org.freedesktop.dbus.connections.impl;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
 import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -15,6 +14,7 @@ import org.freedesktop.dbus.exceptions.MissingInterfaceImplementationException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.utils.AddressBuilder;
@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * </p>
  */
 public class DirectConnection extends AbstractConnection {
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String machineId;
 

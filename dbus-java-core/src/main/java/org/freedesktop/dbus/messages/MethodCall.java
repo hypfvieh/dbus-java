@@ -4,7 +4,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.HeaderField;
-import org.freedesktop.dbus.messages.constants.MessageType;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class MethodCall extends MethodBase {
     }
 
     protected MethodCall(byte _endianess, String _source, String _dest, String _path, String _iface, String _member, byte _flags, String _sig, Object... _args) throws DBusException {
-        super(_endianess, MessageType.METHOD_CALL, _flags);
+        super(_endianess, MessageTypes.METHOD_CALL.getId(), _flags);
 
         if (null == _member || null == _path) {
             throw new MessageFormatException("Must specify destination, path and function name to MethodCalls.");

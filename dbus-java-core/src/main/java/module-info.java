@@ -13,6 +13,7 @@ module org.freedesktop.dbus {
     exports org.freedesktop.dbus.exceptions;
     exports org.freedesktop.dbus.handlers;
     exports org.freedesktop.dbus.interfaces;
+    exports org.freedesktop.dbus.matchrules;
     exports org.freedesktop.dbus.messages;
     exports org.freedesktop.dbus.messages.constants;
     exports org.freedesktop.dbus.spi.transport;

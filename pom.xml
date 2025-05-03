@@ -16,6 +16,7 @@
     <properties>
         <!-- Dependency versions -->
         <junit5.version>5.11.0</junit5.version>
+        <mockito.version>5.16.1</mockito.version>
         <pmd.version>7.10.0</pmd.version>
         <checkstyle.version>10.17.0</checkstyle.version>
         <logback.version>1.5.13</logback.version>
@@ -498,6 +499,13 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 

@@ -1,11 +1,13 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.DBusSignal;
+import org.freedesktop.dbus.messages.constants.MessageTypes;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterfaceEnum.TestEnum;
 import org.freedesktop.dbus.test.helper.signals.SampleSignals;
@@ -131,7 +133,12 @@ public class HandlerTest extends AbstractDBusBaseTest {
     @Test
     public void testGenericSignalHandler() throws DBusException, InterruptedException {
         GenericSignalHandler genericHandler = new GenericSignalHandler();
-        DBusMatchRule signalRule = new DBusMatchRule("signal", "org.foo", "methodnoarg", "/");
+        DBusMatchRule signalRule = DBusMatchRuleBuilder.create()
+            .withType(MessageTypes.SIGNAL)
+            .withInterface("org.foo")
+            .withMember("methodnoarg")
+            .withPath("/")
+            .build();
 
         clientconn.addGenericSigHandler(signalRule, genericHandler);
 
@@ -151,7 +158,12 @@ public class HandlerTest extends AbstractDBusBaseTest {
     @Test
     public void testGenericDecodeSignalHandler() throws DBusException, InterruptedException {
         GenericHandlerWithDecode genericDecode = new GenericHandlerWithDecode(new UInt32(42), "SampleString");
-        DBusMatchRule signalRule = new DBusMatchRule("signal", "org.foo", "methodarg", "/");
+        DBusMatchRule signalRule = DBusMatchRuleBuilder.create()
+            .withType(MessageTypes.SIGNAL)
+            .withInterface("org.foo")
+            .withMember("methodarg")
+            .withPath("/")
+            .build();
 
         clientconn.addGenericSigHandler(signalRule, genericDecode);
 
@@ -173,7 +185,11 @@ public class HandlerTest extends AbstractDBusBaseTest {
     @Test
     public void testGenericHandlerWithNoInterface() throws DBusException, InterruptedException {
         GenericHandlerWithDecode genericDecode = new GenericHandlerWithDecode(new UInt32(42), "SampleString");
-        DBusMatchRule signalRule = new DBusMatchRule("signal", null, "methodargNoIface", "/");
+        DBusMatchRule signalRule = DBusMatchRuleBuilder.create()
+            .withType(MessageTypes.SIGNAL)
+            .withMember("methodargNoIface")
+            .withPath("/")
+            .build();
 
         clientconn.addGenericSigHandler(signalRule, genericDecode);
         DBusSignal signalToSend = clientconn.getMessageFactory().createSignal(null, "/", "org.foo", "methodargNoIface", "us", new UInt32(42), "SampleString");

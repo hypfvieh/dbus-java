@@ -3,6 +3,7 @@ package org.freedesktop.dbus.utils;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
 
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashSet;
@@ -135,6 +136,69 @@ public final class DBusObjects {
             }
             return new MissingInterfaceImplementationException(msg);
         }, _customMsg);
+    }
+
+    /**
+     * Ensures that the given class is implements or extends {@link DBusSignal} class.
+     *
+     * @param _clz class to check
+     * @param _customMsg custom error message
+     * @return input if valid
+     *
+     * @throws InvalidSignalException when class is incompatible
+     */
+    public static Class<?> requireDBusSignal(Class<?> _clz, String _customMsg) throws InvalidSignalException {
+        return requireBase(_clz, DBusObjects::validateDBusSignal, msg -> {
+            if (Util.isBlank(_customMsg)) {
+                return new InvalidSignalException(_clz);
+            }
+            return new InvalidSignalException(msg);
+        }, _customMsg);
+    }
+
+    /**
+     * Ensures that the given class is implements or extends {@link DBusSignal} class.
+     *
+     * @param _clz class to check
+     * @return input if valid
+     *
+     * @throws InvalidSignalException when class is incompatible
+     * @since 5.1.2 - 2025-05-02
+     */
+    public static Class<?> requireDBusSignal(Class<?> _clz) throws InvalidSignalException {
+        return requireDBusSignal(_clz, null);
+    }
+
+    /**
+     * Checks if given type is a DBusSignal and source comply with naming rules.
+     *
+     * @param <T> type of class
+     * @param _type class
+     * @param _source source of signal (aka sender)
+     *
+     * @throws DBusException when validation fails
+     * @since 5.1.2 - 2025-05-02
+     */
+    public static void requireDBusSignalRule(Class<?> _type, String _source) throws DBusException {
+        requireDBusSignal(_type);
+        requireNotBusName(_source, "Cannot watch for signals based on well known bus name as source. Only unique names supported");
+        requireConnectionId(_source);
+    }
+
+    /**
+     * Checks if given String is a valid DBusInterface.
+     *
+     * @param _str string to check
+     * @return input if valid
+     *
+     * @throws InvalidObjectPathException when not matching
+     * @since 5.1.2 - 2025-05-02
+     */
+    public static String requireDBusInterface(String _str) throws InvalidObjectPathException {
+        if (_str == null || _str.isEmpty() || _str.startsWith(".") || !_str.contains(".")) {
+            throw new InvalidObjectPathException(_str);
+        }
+        return _str;
     }
 
     /**
@@ -276,6 +340,18 @@ public final class DBusObjects {
      */
     public static boolean validateDBusInterface(Class<?> _clz) {
         return DBusInterface.class.isAssignableFrom(_clz);
+    }
+
+    /**
+     * Checks if given class is compatible with {@link DBusSignal} class.
+     *
+     * @param _clz class to check
+     *
+     * @return true if class is compatible
+     * @since 5.1.2 - 2025-05-02
+     */
+    public static boolean validateDBusSignal(Class<?> _clz) {
+        return DBusSignal.class.isAssignableFrom(_clz);
     }
 
     /**

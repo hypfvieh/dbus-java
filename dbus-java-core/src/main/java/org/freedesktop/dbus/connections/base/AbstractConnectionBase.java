@@ -1,7 +1,6 @@
 package org.freedesktop.dbus.connections.base;
 
 import org.freedesktop.dbus.DBusCallInfo;
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.IDisconnectAction;
@@ -18,6 +17,7 @@ import org.freedesktop.dbus.exceptions.FatalDBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.messages.*;
 import org.freedesktop.dbus.messages.Error;
 import org.freedesktop.dbus.messages.constants.Flags;

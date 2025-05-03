@@ -2,7 +2,6 @@ package org.freedesktop.dbus.connections.impl;
 
 import static org.freedesktop.dbus.utils.CommonRegexPattern.*;
 
-import org.freedesktop.dbus.DBusMatchRule;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
 import org.freedesktop.dbus.connections.AbstractConnection;
@@ -14,6 +13,8 @@ import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.types.UInt32;
@@ -372,8 +373,8 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        validateSignal(_type, _source);
-        removeSigHandler(new DBusMatchRule(_type, _source, null), _handler);
+        DBusObjects.requireDBusSignalRule(_type, _source);
+        removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).build(), _handler);
     }
 
     /**
@@ -396,12 +397,11 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      */
     public <T extends DBusSignal> void removeSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
-        validateSignal(_type, _source);
+        DBusObjects.requireDBusSignalRule(_type, _source);
 
         String objectPath = getImportedObjects().get(_object).getObjectPath();
         DBusObjects.requireObjectPath(objectPath);
-
-        removeSigHandler(new DBusMatchRule(_type, _source, objectPath), _handler);
+        removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).withPath(objectPath).build(), _handler);
     }
 
     /**
@@ -450,8 +450,8 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, String _source, DBusSigHandler<T> _handler)
             throws DBusException {
-        validateSignal(_type, _source);
-        addSigHandler(new DBusMatchRule(_type, _source, null), (DBusSigHandler<? extends DBusSignal>) _handler);
+        DBusObjects.requireDBusSignalRule(_type, _source);
+        addSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).build(), (DBusSigHandler<? extends DBusSignal>) _handler);
         return () -> removeSigHandler(_type, _source, _handler);
     }
 
@@ -478,28 +478,13 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      */
     public <T extends DBusSignal> AutoCloseable addSigHandler(Class<T> _type, String _source, DBusInterface _object,
             DBusSigHandler<T> _handler) throws DBusException {
-        validateSignal(_type, _source);
+        DBusObjects.requireDBusSignalRule(_type, _source);
 
         String objectPath = getImportedObjects().get(_object).getObjectPath();
         DBusObjects.requireObjectPath(objectPath);
-        addSigHandler(new DBusMatchRule(_type, _source, objectPath), (DBusSigHandler<? extends DBusSignal>) _handler);
-        return () -> removeSigHandler(_type, _source, _object, _handler);
-    }
 
-    /**
-     * Checks if given type is a DBusSignal and matches the required rules.
-     *
-     * @param <T> type of class
-     * @param _type class
-     * @param _source
-     * @throws DBusException when validation fails
-     */
-    private <T extends DBusSignal> void validateSignal(Class<T> _type, String _source) throws DBusException {
-        if (!DBusSignal.class.isAssignableFrom(_type)) {
-            throw new ClassCastException("Not A DBus Signal");
-        }
-        DBusObjects.requireNotBusName(_source, "Cannot watch for signals based on well known bus name as source. Only unique names supported");
-        DBusObjects.requireConnectionId(_source);
+        addSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).withPath(objectPath).build(), (DBusSigHandler<? extends DBusSignal>) _handler);
+        return () -> removeSigHandler(_type, _source, _object, _handler);
     }
 
     /**
