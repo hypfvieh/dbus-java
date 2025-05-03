@@ -10,12 +10,12 @@ import java.util.function.BiPredicate;
 
 public enum MatchRuleField {
     TYPE((m, s) -> Util.strEquals(MessageTypes.getRuleNameById(m.getType()), s), null),
+    SENDER((m, s) -> Util.strEquals(m.getSource(), s), null),
     INTERFACE((m, s) -> Util.strEquals(m.getInterface(), s), null),
     MEMBER((m, s) -> Util.strEquals(m.getName(), s), null),
-    SENDER((m, s) -> Util.strEquals(m.getSource(), s), null),
     PATH((m, s) -> Util.strEquals(m.getPath(), s), null),
-    DESTINATION((m, s) -> Util.strEquals(m.getDestination(), s), null),
     PATH_NAMESPACE((m, s) -> MatchRuleMatcher.matchPathNamespace(m.getPath(), s), null),
+    DESTINATION((m, s) -> Util.strEquals(m.getDestination(), s), null),
     ARG0123(null, (m, s) -> MatchRuleMatcher.matchArg0123(m, s)),
     ARG0123PATH(null, (m, s) -> MatchRuleMatcher.matchArg0123Path(m, s)),
     ARG0NAMESPACE((m, s) -> MatchRuleMatcher.matchArg0Namespace(m, s), null);

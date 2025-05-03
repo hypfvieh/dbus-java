@@ -48,23 +48,49 @@ public interface MySignal extends DBusInterface {
 To get notified when the signal arrives you have to register a signal handler on you connection to DBus.
 A signal handler must implements `DBusSigHandler<?>` interface and can be registered the current connection.
 
-There are different `addSignalHandler` methods depending on the use case.
+There are different `addSigHandler` methods depending on the use case.
 If you only want to listen for specific signals of a specific remote object, you should use something like:
 
 ```
 MySignal remoteSignal connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
-connection.addSignalHandler(MySignalClass.class, remoteSignal, new MySignalClassHandler());
+connection.addSigHandler(MySignalClass.class, remoteSignal, new MySignalClassHandler());
 ```
 
 If you want to listen to all object paths of an exported object you can use:
-`connection.addSignalHandler(MySignalClass.class, new MySignalClassHandler())`.
+`connection.addSigHandler(MySignalClass.class, new MySignalClassHandler())`.
 
 It is also possible to express a signal handler as Lambda e.g.:
-`connection.addSignalHandler(MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
+`connection.addSigHandler(MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
 
-To remove a handler use the appropriate `removeSigHandler` call.
+To remove a handler you can either call `close()` on the object returned by the `addSigHandler` calls or use the appropriate `removeSigHandler` call.
 You don't have to remove your signal handler when you want to close the connection anyway. 
 All registered signal handlers will automatically be unregistered when connection is closed.
+
+### Using DBusMatchRule
+
+In addition to the `addSigHandler` methods described above you can also use a feature called MatchRule.
+
+MatchRules are simple filters which will be registered on server side. The associated callback will be called when the server selects a message matching the filter criteria and sending it to the connection the filter has been registered for.
+
+To allow you to use custom filter criteria, you can use DBusMatchRuleBuilder to create any rule matching your needs.
+
+Example:
+
+```
+connection.addSigHandler(DBusMatchRuleBuilder.create()
+    .withPath("/org/test/Introduction")
+    .withSender("org.my.Sender")
+    .build(), 
+    new MyCustomSignalHandler());
+```
+
+The code above will create a custom rule using `path` and `sender`. 
+The handler will be called when both conditions are true.  
+
+For more information on MatchRules see [DBus-Specification](https://dbus.freedesktop.org/doc/dbus-specification.html#message-bus-routing-match-rules).
+
+Please note: dbus-java does not support the eavesdrop option. 
+Eavesdrop is deprecated according to specification, therefore there are no plans to add it.
 
 ## Signals and constructors
 

@@ -14,15 +14,15 @@ import java.util.stream.Stream;
  * Use {@link DBusMatchRuleBuilder} to create instances of this class.
  *
  * @author hypfvieh
- * @since 5.1.2 - 2025-05-03
+ * @since 5.2.0 - 2025-05-03
  */
 @SuppressWarnings("removal") // required until old implementation is removed
 public sealed class DBusMatchRule permits org.freedesktop.dbus.DBusMatchRule {
 
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
 
-    private final Map<MatchRuleField, String> fields = new LinkedHashMap<>();
-    private final Map<MatchRuleField, Map<Integer, String>> multiValueFields = new LinkedHashMap<>();
+    private final Map<MatchRuleField, String> fields = new TreeMap<>();
+    private final Map<MatchRuleField, Map<Integer, String>> multiValueFields = new TreeMap<>();
 
     protected DBusMatchRule(Map<MatchRuleField, String> _values, Map<MatchRuleField, Map<Integer, String>> _multiValues) {
         fields.putAll(Objects.requireNonNull(_values, "Values required"));
@@ -84,18 +84,18 @@ public sealed class DBusMatchRule permits org.freedesktop.dbus.DBusMatchRule {
         }
 
         for (Entry<MatchRuleField, String> entry : fields.entrySet()) {
-            if (entry.getKey().getSingleMatcher().test(_msg, entry.getValue())) {
-                return true;
+            if (!entry.getKey().getSingleMatcher().test(_msg, entry.getValue())) {
+                return false;
             }
         }
 
         for (Entry<MatchRuleField, Map<Integer, String>> entry : multiValueFields.entrySet()) {
-            if (entry.getKey().getMultiMatcher().test(_msg, entry.getValue())) {
-                return true;
+            if (!entry.getKey().getMultiMatcher().test(_msg, entry.getValue())) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -116,7 +116,8 @@ public sealed class DBusMatchRule permits org.freedesktop.dbus.DBusMatchRule {
         }
 
         DBusMatchRule other = (DBusMatchRule) _obj;
-        return Objects.equals(fields, other.fields) && Objects.equals(multiValueFields, other.multiValueFields);
+        return Objects.equals(fields, other.fields)
+            && Objects.equals(multiValueFields, other.multiValueFields);
     }
 
     /**

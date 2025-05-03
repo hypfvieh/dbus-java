@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  * Builder to configure a {@link DBusMatchRule}.
  *
  * @author hypfvieh
- * @since 5.1.2 - 2025-05-01
+ * @since 5.2.0 - 2025-05-01
  */
 public final class DBusMatchRuleBuilder {
 
@@ -118,25 +118,27 @@ public final class DBusMatchRuleBuilder {
      * @throws DBusException when invalid class s given
      */
     @SuppressWarnings("unchecked")
-    public DBusMatchRuleBuilder withType(Class<?> _c) throws DBusException {
-        if (DBusInterface.class.isAssignableFrom(_c)) {
-            putOrRemove(MatchRuleField.INTERFACE, DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_c)));
-        } else if (DBusSignal.class.isAssignableFrom(_c)) {
-            if (null == _c.getEnclosingClass()) {
+    public DBusMatchRuleBuilder withType(Class<?> _clz) throws DBusException {
+        if (DBusInterface.class.isAssignableFrom(_clz)) {
+            putOrRemove(MatchRuleField.INTERFACE, DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_clz)));
+        } else if (DBusSignal.class.isAssignableFrom(_clz)) {
+            if (_clz.getEnclosingClass() == null) {
                 throw new DBusException("Signals must be declared as a member of a class implementing DBusInterface which is the member of a package.");
             }
             // Don't export things which are invalid D-Bus interfaces
-            String interfaceName = DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_c.getEnclosingClass()));
-            String signalName = DBusNamingUtil.getSignalName(_c);
+            String interfaceName = DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_clz.getEnclosingClass()));
+            String signalName = DBusNamingUtil.getSignalName(_clz);
+
+            DBusMatchRule.addToTypeMap(interfaceName + '$' + signalName, (Class<? extends DBusSignal>) _clz);
+
             putOrRemove(MatchRuleField.INTERFACE, interfaceName);
             putOrRemove(MatchRuleField.MEMBER, signalName);
-            DBusMatchRule.addToTypeMap(interfaceName + '$' + signalName, (Class<? extends DBusSignal>) _c);
             putOrRemove(MatchRuleField.TYPE, MessageTypes.SIGNAL.getMatchRuleName());
-        } else if (Error.class.isAssignableFrom(_c) || DBusExecutionException.class.isAssignableFrom(_c)) {
-            putOrRemove(MatchRuleField.INTERFACE, DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_c)));
+        } else if (Error.class.isAssignableFrom(_clz) || DBusExecutionException.class.isAssignableFrom(_clz)) {
+            putOrRemove(MatchRuleField.INTERFACE, DBusObjects.requireDBusInterface(DBusNamingUtil.getInterfaceName(_clz)));
             putOrRemove(MatchRuleField.TYPE, MessageTypes.ERROR.getMatchRuleName());
         } else {
-            throw new DBusException("Invalid type for match rule: " + _c);
+            throw new DBusException("Invalid type for match rule: " + _clz);
         }
 
         return this;

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * Utility to read match rule strings.
  *
  * @author hypfvieh
- * @since 5.1.2 - 2025-05-03
+ * @since 5.2.0 - 2025-05-03
  */
 public final class MatchRuleParser {
     private static final Pattern PATTERN = Pattern.compile("(\\w+)=('(?:\\\\'|[^'])*')");

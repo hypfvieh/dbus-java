@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  *
  * @deprecated use {@link DBusMatchRuleBuilder}
  */
-@Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-03")
+@Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-03")
 public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMatchRule {
 
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
@@ -41,17 +41,17 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
         DBusMatchRule::getDestination
     );
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(String _type, String _iface, String _member) {
         this(_type, _iface, _member, null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(String _type, String _iface, String _member, String _path) {
         this(_type, _iface, _member, _path, null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(String _type, String _iface, String _member, String _path, String _destination) {
         super(Stream.of(MatchRuleField.TYPE.entryOf(_type),
             MatchRuleField.INTERFACE.entryOf(_iface),
@@ -63,12 +63,12 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
             .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue())), null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(DBusExecutionException _e) throws DBusException {
         this(_e.getClass());
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(Message _m) {
         super(Stream.of(
             MatchRuleField.INTERFACE.entryOf(_m.getInterface()),
@@ -79,22 +79,22 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
             .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue())), null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(Class<? extends DBusInterface> _c, String _method) throws DBusException {
         this(_c, null, null, MessageTypes.METHOD_CALL.getMatchRuleName(), _method);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     DBusMatchRule(Class<?> _c, String _sender, String _path, String _type, String _member) throws DBusException {
         super(legacyCompat(_c, _sender, _path, _type, _member), null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(Class<?> _c, String _source, String _object) throws DBusException {
         this(_c, _source, _object, null, null);
     }
 
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public DBusMatchRule(Class<?> _c) throws DBusException {
         this(_c, null, null);
     }
@@ -134,7 +134,7 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
     /**
      * @deprecated use {@link org.freedesktop.dbus.matchrules.DBusMatchRule#getCachedSignalType(String)}
      */
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-03")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-03")
     public static Class<? extends DBusSignal> getCachedSignalType(String _type) {
         return org.freedesktop.dbus.matchrules.DBusMatchRule.getCachedSignalType(_type);
     }
@@ -156,8 +156,8 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
      * @deprecated using a MatchRule to match against a MatchRule makes no sense,
      *  therefore this method will be removed without any replacement
      */
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
-    public boolean matches(DBusMatchRule _rule, @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01") boolean _strict) {
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
+    public boolean matches(DBusMatchRule _rule, @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01") boolean _strict) {
         if (_rule == null) {
             return false;
         }
@@ -191,7 +191,7 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
      *
      * @return true if matching
      */
-    public boolean matches(DBusSignal _signal, @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01") boolean _strict) {
+    public boolean matches(DBusSignal _signal, @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01") boolean _strict) {
         return super.matches(_signal);
     }
 
@@ -199,7 +199,7 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
      * @deprecated use {@link #getSender()}
      * @return sender
      */
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public String getSource() {
         return getSender();
     }
@@ -208,7 +208,7 @@ public final class DBusMatchRule extends org.freedesktop.dbus.matchrules.DBusMat
      * @deprecated use {@link #getPath()}
      * @return path
      */
-    @Deprecated(forRemoval = true, since = "5.1.2 - 2025-05-01")
+    @Deprecated(forRemoval = true, since = "5.2.0 - 2025-05-01")
     public String getObject() {
         return getPath();
     }

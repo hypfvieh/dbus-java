@@ -55,8 +55,9 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      * @param <T> signal type
      *
      * @throws DBusException on error
+     * @apiNote public since 5.2.0 - 2025-05-03
      */
-    protected abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
+    public abstract <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
 
     /**
      * Add a signal handler with the given {@link DBusMatchRule} to DBus.
@@ -71,8 +72,9 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      * @return closeable that removes signal handler
      *
      * @throws DBusException on error
+     * @apiNote public since 5.2.0 - 2025-05-03
      */
-    protected abstract <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
+    public abstract <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException;
 
     /**
      * Remove a generic signal handler with the given {@link DBusMatchRule}.

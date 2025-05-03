@@ -124,8 +124,13 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
-##### Changes in 5.1.2 (not yet released):
-   - Nothing yet
+##### Changes in 5.2.0 (not yet released):
+   - Re-Implemented `DBusMatchRule`
+     - The new implementation can be found in `org.freedesktop.dbus.matchrules.DBusMatchRule`, the old `DBusMatchRule` class still exists and is now a subclass
+     of the new implementation but is deprecated.
+     - use `DBusMatchRuleBuilder` to create instances of the new `DBusMatchRule`
+     - the `AbstractConnection.addSigHandler(DBusMatchRule, SigHandler)` is now public and can be used to register rules arbitrary rules
+     - the new implementation supports additional MatchRules as defined by DBus Specification (except eavesdrop)
 
 ##### Changes in 5.1.1 (2025-03-14):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments

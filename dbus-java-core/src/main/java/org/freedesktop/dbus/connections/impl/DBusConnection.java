@@ -408,7 +408,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      * {@inheritDoc}
      */
     @Override
-    protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
+    public <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
         Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(_rule);

@@ -163,7 +163,7 @@ public final class DBusObjects {
      * @return input if valid
      *
      * @throws InvalidSignalException when class is incompatible
-     * @since 5.1.2 - 2025-05-02
+     * @since 5.2.0 - 2025-05-02
      */
     public static Class<?> requireDBusSignal(Class<?> _clz) throws InvalidSignalException {
         return requireDBusSignal(_clz, null);
@@ -177,7 +177,7 @@ public final class DBusObjects {
      * @param _source source of signal (aka sender)
      *
      * @throws DBusException when validation fails
-     * @since 5.1.2 - 2025-05-02
+     * @since 5.2.0 - 2025-05-02
      */
     public static void requireDBusSignalRule(Class<?> _type, String _source) throws DBusException {
         requireDBusSignal(_type);
@@ -192,7 +192,7 @@ public final class DBusObjects {
      * @return input if valid
      *
      * @throws InvalidObjectPathException when not matching
-     * @since 5.1.2 - 2025-05-02
+     * @since 5.2.0 - 2025-05-02
      */
     public static String requireDBusInterface(String _str) throws InvalidObjectPathException {
         if (_str == null || _str.isEmpty() || _str.startsWith(".") || !_str.contains(".")) {
@@ -348,7 +348,7 @@ public final class DBusObjects {
      * @param _clz class to check
      *
      * @return true if class is compatible
-     * @since 5.1.2 - 2025-05-02
+     * @since 5.2.0 - 2025-05-02
      */
     public static boolean validateDBusSignal(Class<?> _clz) {
         return DBusSignal.class.isAssignableFrom(_clz);

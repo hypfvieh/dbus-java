@@ -169,7 +169,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
-    protected <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
+    public <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
         Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(_rule);
         if (v != null) {
             v.remove(_handler);
@@ -180,7 +180,7 @@ public class DirectConnection extends AbstractConnection {
     }
 
     @Override
-    protected <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
+    public <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
         Queue<DBusSigHandler<? extends DBusSignal>> v =
                 getHandledSignals().computeIfAbsent(_rule, val -> new ConcurrentLinkedQueue<>());
 
