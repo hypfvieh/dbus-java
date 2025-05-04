@@ -172,7 +172,6 @@ public final class DBusObjects {
     /**
      * Checks if given type is a DBusSignal and source comply with naming rules.
      *
-     * @param <T> type of class
      * @param _type class
      * @param _source source of signal (aka sender)
      *

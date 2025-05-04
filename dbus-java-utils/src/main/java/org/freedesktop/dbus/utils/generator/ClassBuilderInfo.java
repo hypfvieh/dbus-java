@@ -137,7 +137,6 @@ public class ClassBuilderInfo {
     /**
      * Create the Java source for the class information provided.
      *
-     * @param _argumentPrefix use given prefix for generated method arguments (null/blank if not needed)
      * @return String
      */
     public String createClassFileContent() {

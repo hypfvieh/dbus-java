@@ -1,9 +1,7 @@
 package org.freedesktop.dbus.connections.impl;
 
 import org.freedesktop.dbus.DBusPath;
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.exceptions.InvalidBusNameException;
-import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
+import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.utils.DBusObjects;
 
