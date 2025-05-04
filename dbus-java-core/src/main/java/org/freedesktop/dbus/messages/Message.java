@@ -12,7 +12,10 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
 import org.freedesktop.dbus.messages.constants.Endian;
 import org.freedesktop.dbus.messages.constants.HeaderField;
-import org.freedesktop.dbus.types.*;
+import org.freedesktop.dbus.types.UInt16;
+import org.freedesktop.dbus.types.UInt32;
+import org.freedesktop.dbus.types.UInt64;
+import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Hexdump;
 import org.freedesktop.dbus.utils.LoggingHelper;
 import org.freedesktop.dbus.utils.PrimitiveUtils;
@@ -1677,6 +1680,39 @@ public class Message {
             case HeaderField.UNIX_FDS -> "Unix FD";
             default -> "Invalid";
         };
+    }
+
+    /**
+     * Creates a clone of this message and setting serial to next available.
+     * @return Message
+     */
+    Message cloneWithNewSerial() {
+        Message message = new Message();
+
+        byte[][] copyWireData = new byte[wiredata.length][];
+
+        for (int i = 0; i < wiredata.length; i++) {
+            if (wiredata[i] != null) {
+                copyWireData[i] = Arrays.copyOf(wiredata[i], wiredata[i].length);
+            }
+        }
+
+        message.body = Arrays.copyOf(body, body.length);
+        message.endianWasSet = true;
+        message.big = big;
+        message.flags = flags;
+        message.protover = protover;
+        message.type = type;
+        message.bufferuse = bufferuse;
+        message.bodylen = bodylen;
+        message.bytecounter = bytecounter;
+        message.filedescriptors.addAll(filedescriptors);
+
+        message.setWireData(copyWireData);
+        message.setHeader(Arrays.copyOf(headers, headers.length));
+        message.setSerial(GLOBAL_SERIAL.incrementAndGet());
+
+        return message;
     }
 
     /**

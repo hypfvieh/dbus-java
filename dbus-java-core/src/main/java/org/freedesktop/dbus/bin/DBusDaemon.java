@@ -15,6 +15,8 @@ import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.MatchRuleParser;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
@@ -141,13 +143,14 @@ public class DBusDaemon extends Thread implements Closeable {
                         if (DBUS_BUSNAME.equals(m.getDestination())) {
                             dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
+                            handleMatchRules(m);
+
                             if (m instanceof DBusSignal) {
                                 List<ConnectionStruct> l;
                                 synchronized (sigrecips) {
                                     l = new ArrayList<>(sigrecips);
                                 }
-                                List<ConnectionStruct> list = l;
-                                for (ConnectionStruct d : list) {
+                                for (ConnectionStruct d : l) {
                                     send(d, m);
                                 }
                             } else {
@@ -174,6 +177,32 @@ public class DBusDaemon extends Thread implements Closeable {
             }
         }
 
+    }
+
+    private void handleMatchRules(Message _msg) {
+        if (_msg instanceof MethodCall mc && mc.getDestination() == null
+            || !(_msg instanceof MethodCall)) {
+
+            List<ConnectionStruct> l;
+            synchronized (sigrecips) {
+                l = new ArrayList<>(sigrecips);
+            }
+
+            for (ConnectionStruct connStruct : l) {
+                if (!connStruct.rules.isEmpty()) {
+                    connStruct.rules.forEach(e -> {
+                        if (e.matches(_msg)) {
+                            try {
+                                Message clone = MessageFactory.createCloneWithNewSerial(_msg);
+                                send(connStruct, clone);
+                            } catch (Exception _ex) {
+                                LOGGER.error("Error cloning message for rule matching: {}", _msg, _ex);
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private static void logMessage(String _logStr, Message _m, String _connUniqueId) {
@@ -378,6 +407,7 @@ public class DBusDaemon extends Thread implements Closeable {
     public static class ConnectionStruct {
         private final TransportConnection       connection;
         private String                          unique;
+        private final Set<DBusMatchRule>        rules = Collections.synchronizedSet(new LinkedHashSet<>());
 
         ConnectionStruct(TransportConnection _c) {
             connection = _c;
@@ -552,16 +582,33 @@ public class DBusDaemon extends Thread implements Closeable {
 
             LOGGER.trace("Adding match rule: {}", _matchrule);
 
+            DBusMatchRule matchRule = MatchRuleParser.convertMatchRule(_matchrule);
+            if (matchRule == null) {
+                throw new MatchRuleInvalid("Received invalid match rule " + _matchrule);
+            }
+
             synchronized (sigrecips) {
                 if (!sigrecips.contains(connStruct)) {
                     sigrecips.add(connStruct);
                 }
+            }
+
+            synchronized (connStruct.rules) {
+                connStruct.rules.add(matchRule);
             }
         }
 
         @Override
         public void RemoveMatch(String _matchrule) throws MatchRuleInvalid {
             LOGGER.trace("Removing match rule: {}", _matchrule);
+            DBusMatchRule matchRule = MatchRuleParser.convertMatchRule(_matchrule);
+            if (matchRule == null) {
+                throw new MatchRuleInvalid("Received invalid match rule " + _matchrule);
+            }
+
+            synchronized (connStruct.rules) {
+                connStruct.rules.remove(matchRule);
+            }
         }
 
         @Override
@@ -586,6 +633,7 @@ public class DBusDaemon extends Thread implements Closeable {
             if (!(_msg instanceof MethodCall)) {
                 return;
             }
+
             Object[] args = _msg.getParameters();
 
             Class<? extends Object>[] cs = new Class[args.length];

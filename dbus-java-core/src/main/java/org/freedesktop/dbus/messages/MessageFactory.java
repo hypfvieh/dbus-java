@@ -65,6 +65,14 @@ public final class MessageFactory {
         return new Error(endianess, _source, _dest, _errorName, _replyserial, _sig, _args);
     }
 
+    public static Message createCloneWithNewSerial(Message _msg) {
+        if (_msg == null) {
+            return null;
+        }
+
+        return _msg.cloneWithNewSerial();
+    }
+
     public static Message createMessage(byte _type, byte[] _buf, byte[] _header, byte[] _body, List<FileDescriptor> _filedescriptors) throws DBusException, MessageTypeException {
 
         Message m;

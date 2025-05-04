@@ -6,12 +6,20 @@ import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.matchrules.DBusMatchRule;
+import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.freedesktop.dbus.test.helper.signals.SampleSignals;
+import org.freedesktop.dbus.test.helper.signals.SampleSignals.TestSignal;
+import org.freedesktop.dbus.types.UInt32;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 /**
  *
@@ -20,7 +28,53 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
     @Test
     @SuppressWarnings("PMD.UnusedLocalVariable")
+    void testAddMatchRule() throws DBusException, InterruptedException {
+
+        doWithEmbeddedDaemon((daemon, addr) -> {
+            CountDownLatch countDown = new CountDownLatch(1);
+            try {
+
+                try (DBusConnection handlerConn = DBusConnectionBuilder.forAddress(addr)
+                        .withShared(false).build();
+                    DBusConnection senderConn = DBusConnectionBuilder.forAddress(addr)
+                        .withShared(false).build()) {
+
+                    DBusMatchRule rule = DBusMatchRuleBuilder.create()
+                        .withInterface(SampleSignals.class.getName())
+                        .withSender(senderConn.getUniqueName())
+                        .build();
+
+                    handlerConn.addSigHandler(rule, s -> {
+                        logger.info(">>> Got signal: {}", s);
+                        countDown.countDown();
+                    });
+
+                    senderConn.sendMessage(new TestSignal("/some/rule/Test", "XXX", new UInt32(21)));
+                    countDown.await(5, TimeUnit.MINUTES);
+                    assertEquals(0, countDown.getCount(), "Expected signal to be handled");
+
+                }
+            } catch (Exception _ex) {
+                fail(_ex);
+            }
+        });
+
+    }
+
+    @Test
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     void testStartAndConnectEmbeddedDBusDaemon() throws DBusException {
+        doWithEmbeddedDaemon((daemon, addr) -> {
+            try (DBusConnection conn = DBusConnectionBuilder.forAddress(addr).build()) {
+                logger.debug("Connected to embedded DBus {}", addr);
+            } catch (Exception _ex) {
+                fail("Connection to EmbeddedDbusDaemon failed", _ex);
+                logger.error("Error connecting to EmbeddedDbusDaemon", _ex);
+            }
+        });
+    }
+
+    private void doWithEmbeddedDaemon(BiConsumer<EmbeddedDBusDaemon, BusAddress> _handler) {
         String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
@@ -32,19 +86,15 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
             logger.debug("Started embedded bus on address {}", listenBusAddress);
             daemon.startInBackgroundAndWait(MAX_WAIT);
 
-            // connect to started daemon process
-            logger.info("Connecting to embedded DBus {}", busAddress);
-
-            try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
-                logger.debug("Connected to embedded DBus {}", busAddress);
-            } catch (Exception _ex) {
-                fail("Connection to EmbeddedDbusDaemon failed", _ex);
-                logger.error("Error connecting to EmbeddedDbusDaemon", _ex);
+            if (_handler != null) {
+                _handler.accept(daemon, busAddress);
             }
-        } catch (IOException _ex1) {
-            fail("Failed to start EmbeddedDbusDaemon", _ex1);
-            logger.error("Error starting EmbeddedDbusDaemon", _ex1);
+
+        } catch (IOException _ex) {
+            fail("Failed to start EmbeddedDbusDaemon", _ex);
+            logger.error("Error starting EmbeddedDbusDaemon", _ex);
         }
+
     }
 
     @Test

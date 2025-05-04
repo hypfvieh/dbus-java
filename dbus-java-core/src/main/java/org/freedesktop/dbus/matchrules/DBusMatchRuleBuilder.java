@@ -32,11 +32,9 @@ public final class DBusMatchRuleBuilder {
 
     /**
      * Set sender filter.
-     * <br><br>
-     * <b>DBus Specification Quote:</b>
+     * <br>
      * <p>
-     * Match messages sent by a particular sender.
-     * An example of a sender match is sender='org.freedesktop.Hal'
+     * <b>Possible values:</b> A bus (e.g. org.freedesktop.Hal) or unique name (e.g. :1.2)
      * </p>
      * @param _sender sender to filter, {@code null} to remove
      * @return this
@@ -113,7 +111,10 @@ public final class DBusMatchRuleBuilder {
 
     /**
      * Set message type filter.
-     * <br><br>
+     * <br>
+     * <p>
+     * <b>Possible values:</b> 'signal', 'method_call', 'method_return', 'error'
+     * </p>
      * <b>DBus Specification Quote:</b>
      * <p>
      * Match on the message type.
