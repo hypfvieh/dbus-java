@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.matchrules;
 
+import org.freedesktop.dbus.errors.MatchRuleInvalid;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -21,9 +23,14 @@ public final class MatchRuleParser {
      * Creates a DBusMatchRule from a rule string as used on DBus.
      * @param _ruleStr rule string
      * @return DBusMatchRule
+     * @throws MatchRuleInvalid when rule is invalid
      */
     public static DBusMatchRule convertMatchRule(String _ruleStr) {
-        return DBusMatchRuleBuilder.create().fromMap(parseMatchRule(_ruleStr));
+        try {
+            return DBusMatchRuleBuilder.create().fromMap(parseMatchRule(_ruleStr));
+        } catch (Exception _ex) {
+            throw new MatchRuleInvalid("Matchrule \"" + _ruleStr + "\"string is invalid", _ex);
+        }
     }
 
     /**
