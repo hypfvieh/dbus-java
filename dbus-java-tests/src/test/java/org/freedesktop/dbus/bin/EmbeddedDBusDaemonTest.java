@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -31,9 +32,9 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
     void testAddMatchRule() throws DBusException, InterruptedException {
 
         doWithEmbeddedDaemon((daemon, addr) -> {
-            CountDownLatch countDown = new CountDownLatch(1);
             try {
-
+                CountDownLatch countDown = new CountDownLatch(1);
+                AtomicInteger counter = new AtomicInteger();
                 try (DBusConnection handlerConn = DBusConnectionBuilder.forAddress(addr)
                         .withShared(false).build();
                     DBusConnection senderConn = DBusConnectionBuilder.forAddress(addr)
@@ -46,12 +47,13 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
 
                     handlerConn.addSigHandler(rule, s -> {
                         logger.info(">>> Got signal: {}", s);
+                        counter.incrementAndGet();
                         countDown.countDown();
                     });
 
                     senderConn.sendMessage(new TestSignal("/some/rule/Test", "XXX", new UInt32(21)));
-                    countDown.await(5, TimeUnit.MINUTES);
-                    assertEquals(0, countDown.getCount(), "Expected signal to be handled");
+                    countDown.await(5, TimeUnit.SECONDS);
+                    assertEquals(1, counter.get(), "Expected signal to be handled");
 
                 }
             } catch (Exception _ex) {

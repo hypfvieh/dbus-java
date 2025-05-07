@@ -34,7 +34,7 @@ public abstract class AbstractSignalHandler<T extends DBusSignal> implements DBu
     @Override
     public final void handle(T _s) { // should not be implemented by subclasses
         getTestRuns().incrementAndGet();
-
+        logger.debug("Signal received in handler {} (hash={})", _s == null ? null : _s.getClass().getName(), System.identityHashCode(_s));
         setFailed(getExpectedRuns() > getActualTestRuns(), "Signal received to often.");
 
         logger.debug("{} running", getClass().getSimpleName());

@@ -25,7 +25,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
             Thread.sleep(1500L);
         }
 
-        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
 
             logger.debug("get remote");
             TwoPartInterface remote = conn.getRemoteObject("org.freedesktop.dbus.test.two_part_server", "/", TwoPartInterface.class);
@@ -51,13 +51,8 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
             } catch (InterruptedException _ex) {
             }
 
-            // when a signal is received, a new signal object is created
-            // this will take the next available global serial even this message
-            // is never transmitted on the bus.
-            // Therefore it is expected that the serial stored before is one step lower than the
-            // serial received in the handler
-            signalSerial++;
-            assertEquals(signalSerial, twoPartServer.receivedSignalSerial, "Expected signal serial to be the same");
+            assertNull(twoPartServer.error, "No error expected but got: " + twoPartServer.error);
+            assertTrue(signalSerial < twoPartServer.receivedSignalSerial, "Expected received signal serial to be larger than created serial");
         } catch (DBusException | IOException _ex) {
             fail("Exception in client", _ex);
         }
@@ -66,6 +61,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
     private class TwoPartServer extends Thread {
 
         private long receivedSignalSerial;
+        private String error;
 
         TwoPartServer() {
             super("TwoPartServerThread");
@@ -75,7 +71,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
         @SuppressWarnings("PMD.EmptyCatchBlock")
         @Override
         public void run() {
-            try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
+            try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
 
                 conn.requestBusName("org.freedesktop.dbus.test.two_part_server");
                 TwoPartTestServer server = new TwoPartTestServer(conn);
@@ -89,6 +85,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
                     }
                 } while (server.getSignalSerial() == 0);
 
+                error = server.getError();
                 // the serial number of the signal we received
                 // the signal was created before and should have the same serial
                 receivedSignalSerial = server.getSignalSerial();

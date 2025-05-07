@@ -7,7 +7,6 @@ import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -22,9 +21,20 @@ class MatchRuleMatcherTest extends AbstractBaseTest {
         Type[] dataTypes = _results.stream().map(e -> (Type) e.getClass()).toArray(Type[]::new);
         String dBusType = Marshalling.getDBusType(dataTypes);
 
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getSig()).thenReturn(dBusType);
-        Mockito.when(msg.getParameters()).thenReturn(_results.toArray());
+        Message msg = new Message() {
+
+            @Override
+            public String getSig() {
+                return dBusType;
+            }
+
+            @Override
+            public Object[] getParameters() throws DBusException {
+                return _results.toArray();
+            }
+
+        };
+
         assertEquals(_matchResult, MatchRuleMatcher.matchArg0123Path(msg, _matcher));
     }
 
@@ -35,9 +45,19 @@ class MatchRuleMatcherTest extends AbstractBaseTest {
         Type[] dataTypes = _results.stream().map(e -> (Type) e.getClass()).toArray(Type[]::new);
         String dBusType = Marshalling.getDBusType(dataTypes);
 
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getSig()).thenReturn(dBusType);
-        Mockito.when(msg.getParameters()).thenReturn(_results.toArray());
+        Message msg = new Message() {
+
+            @Override
+            public String getSig() {
+                return dBusType;
+            }
+
+            @Override
+            public Object[] getParameters() throws DBusException {
+                return _results.toArray();
+            }
+
+        };
 
         assertEquals(_matchResult, MatchRuleMatcher.matchArg0123(msg, _matcher));
     }

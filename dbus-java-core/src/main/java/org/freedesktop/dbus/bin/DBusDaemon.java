@@ -24,6 +24,7 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.AddressBuilder;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * A replacement DBusDaemon
@@ -143,16 +145,16 @@ public class DBusDaemon extends Thread implements Closeable {
                         if (DBUS_BUSNAME.equals(m.getDestination())) {
                             dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
-                            handleMatchRules(m);
-
                             if (m instanceof DBusSignal) {
-                                List<ConnectionStruct> l;
-                                synchronized (sigrecips) {
-                                    l = new ArrayList<>(sigrecips);
+                                if (m.getDestination() == null) {
+                                    handleMatchRules(m, connectionStruct);
+                                } else {
+                                    ConnectionStruct destination = names.get(m.getDestination());
+                                    if (destination != null) {
+                                        send(destination, m);
+                                    }
                                 }
-                                for (ConnectionStruct d : l) {
-                                    send(d, m);
-                                }
+
                             } else {
                                 ConnectionStruct dest = names.get(m.getDestination());
 
@@ -162,8 +164,10 @@ public class DBusDaemon extends Thread implements Closeable {
                                             String.format("The name `%s' does not exist", m.getDestination())));
                                 } else {
                                     send(dest, m);
+                                    handleMatchRules(m, connectionStruct);
                                 }
                             }
+
                         }
                     }
                 }
@@ -179,27 +183,34 @@ public class DBusDaemon extends Thread implements Closeable {
 
     }
 
-    private void handleMatchRules(Message _msg) {
+    private void handleMatchRules(Message _msg, ConnectionStruct _currentConnection) {
         if (_msg instanceof MethodCall mc && mc.getDestination() == null
             || !(_msg instanceof MethodCall)) {
 
-            List<ConnectionStruct> l;
-            synchronized (sigrecips) {
-                l = new ArrayList<>(sigrecips);
+            Map<ConnectionStruct, DBusDaemonReaderThread> l;
+            synchronized (conns) {
+                l = new HashMap<>(conns);
             }
 
-            for (ConnectionStruct connStruct : l) {
-                if (!connStruct.rules.isEmpty()) {
-                    connStruct.rules.forEach(e -> {
-                        if (e.matches(_msg)) {
-                            try {
-                                Message clone = MessageFactory.createCloneWithNewSerial(_msg);
-                                send(connStruct, clone);
-                            } catch (Exception _ex) {
-                                LOGGER.error("Error cloning message for rule matching: {}", _msg, _ex);
-                            }
+            CON_LOOP: for (Entry<ConnectionStruct, DBusDaemonReaderThread> cs : l.entrySet()) {
+                if (cs.getKey().rules.isEmpty()
+                    || Util.strEquals(cs.getKey().unique, _currentConnection.unique)) {
+                    // do not duplicate if this is a message from ourselves
+                    continue;
+                }
+                for (DBusMatchRule rule : cs.getKey().rules) {
+                    if (rule.matches(_msg)) {
+                        LOGGER.debug("Cloning message for matchrule \"{}\" for connection {} (origin={})",
+                            rule, cs.getKey(), _currentConnection.unique);
+
+                        try {
+                            Message clone = MessageFactory.createCloneWithNewSerial(_msg);
+                            send(cs.getKey(), clone);
+                            continue CON_LOOP;
+                        } catch (Exception _ex) {
+                            LOGGER.error("Error cloning message for rule matching: {}", _msg, _ex);
                         }
-                    });
+                    }
                 }
             }
         }
@@ -299,6 +310,8 @@ public class DBusDaemon extends Thread implements Closeable {
 
         ConnectionStruct c = new ConnectionStruct(_s);
         DBusDaemonReaderThread r = new DBusDaemonReaderThread(c);
+        c.threadSupplier = () -> r;
+        r.setUncaughtExceptionHandler((t, ex) -> LOGGER.error("Error in Thread {}: ", t, ex));
         conns.put(c, r);
         r.start();
     }
@@ -406,16 +419,32 @@ public class DBusDaemon extends Thread implements Closeable {
 
     public static class ConnectionStruct {
         private final TransportConnection       connection;
+        private final Set<DBusMatchRule>        rules;
+
         private String                          unique;
-        private final Set<DBusMatchRule>        rules = Collections.synchronizedSet(new LinkedHashSet<>());
+        private Supplier<Thread>                threadSupplier;
 
         ConnectionStruct(TransportConnection _c) {
             connection = _c;
+            rules = Collections.synchronizedSet(new LinkedHashSet<>());
         }
 
         @Override
         public String toString() {
             return null == unique ? ":?-?" : unique;
+        }
+
+        void updateUniqueId(int _id) {
+            unique = ":1." + _id;
+            updateThreadName();
+        }
+
+        /**
+         * Update thread name to add the unique ID to thread name.
+         */
+        void updateThreadName() {
+            Thread thread = threadSupplier.get();
+            thread.setName(thread.getName() + "-" + unique);
         }
     }
 
@@ -466,10 +495,10 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String Hello() {
             synchronized (connStruct) {
-                if (null != connStruct.unique) {
+                if (connStruct.unique != null) {
                     throw new AccessDenied("Connection has already sent a Hello message");
                 }
-                connStruct.unique = ":1." + nextUnique.incrementAndGet();
+                connStruct.updateUniqueId(nextUnique.incrementAndGet());
             }
             names.put(connStruct.unique, connStruct);
 
@@ -593,6 +622,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
+            LOGGER.info("Adding matchrule: {}, has = {}", matchRule, matchRule.hashCode());
             synchronized (connStruct.rules) {
                 connStruct.rules.add(matchRule);
             }
@@ -855,14 +885,16 @@ public class DBusDaemon extends Thread implements Closeable {
 
     public class DBusDaemonReaderThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(getClass());
-        private ConnectionStruct                      conn;
         private final WeakReference<ConnectionStruct> weakconn;
-        private final AtomicBoolean running = new AtomicBoolean(false);
+        private final AtomicBoolean running;
+        private ConnectionStruct conn;
 
         public DBusDaemonReaderThread(ConnectionStruct _conn) {
             this.conn = _conn;
+            running = new AtomicBoolean(false);
             weakconn = new WeakReference<>(_conn);
-            setName(getClass().getSimpleName());
+            setName(getClass().getSimpleName() + "-" + _conn.connection.getId());
+            setUncaughtExceptionHandler((t, ex) -> LOGGER.error("Error in Thread {}: ", t, ex));
         }
 
         public void terminate() {

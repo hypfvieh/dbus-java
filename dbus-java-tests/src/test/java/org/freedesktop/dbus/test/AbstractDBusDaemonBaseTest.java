@@ -40,7 +40,7 @@ public abstract class AbstractDBusDaemonBaseTest extends AbstractBaseTest {
      * @throws InterruptedException on interruption
      */
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAllBase() {
         Logger logger = LoggerFactory.getLogger(AbstractDBusDaemonBaseTest.class);
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
             String busType = TransportBuilder.getRegisteredBusTypes().get(0);
@@ -65,7 +65,7 @@ public abstract class AbstractDBusDaemonBaseTest extends AbstractBaseTest {
      * @throws IOException shutdown failed
      */
     @AfterAll
-    public static void afterAll() throws IOException {
+    public static void afterAllBase() throws IOException {
         if (edbus != null) {
             edbus.close();
         }

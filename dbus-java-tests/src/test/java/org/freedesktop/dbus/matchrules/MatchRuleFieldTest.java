@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -21,9 +20,19 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchArg0Namespace() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getSig()).thenReturn("s");
-        Mockito.when(msg.getParameters()).thenReturn(new Object[] {"/com/example/foo/bar"});
+        Message msg = new Message() {
+
+            @Override
+            public String getSig() {
+                return "s";
+            }
+
+            @Override
+            public Object[] getParameters() throws DBusException {
+                return new Object[] {"/com/example/foo/bar"};
+            }
+
+        };
 
         assertTrue(MatchRuleField.ARG0NAMESPACE.getSingleMatcher().test(msg, "/com/example/foo"));
         assertTrue(MatchRuleField.ARG0NAMESPACE.getSingleMatcher().test(msg, "/com/example/foo/bar"));
@@ -32,8 +41,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchPathNamespace() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getPath()).thenReturn("/com/example/foo/bar");
+        Message msg = new Message() {
+
+            @Override
+            public String getPath() {
+                return "/com/example/foo/bar";
+            }
+
+        };
 
         assertTrue(MatchRuleField.PATH_NAMESPACE.getSingleMatcher().test(msg, "/com/example/foo"));
         assertTrue(MatchRuleField.PATH_NAMESPACE.getSingleMatcher().test(msg, "/com/example/foo/bar"));
@@ -42,8 +57,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchMsgType() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getType()).thenReturn(MessageTypes.SIGNAL.getId());
+        Message msg = new Message() {
+
+            @Override
+            public byte getType() {
+                return MessageTypes.SIGNAL.getId();
+            }
+
+        };
 
         assertTrue(MatchRuleField.TYPE.getSingleMatcher().test(msg, "signal"));
         assertFalse(MatchRuleField.TYPE.getSingleMatcher().test(msg, "error"));
@@ -51,8 +72,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchSender() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getSource()).thenReturn("org.freedesktop.Hal");
+        Message msg = new Message() {
+
+            @Override
+            public String getSource() {
+                return "org.freedesktop.Hal";
+            }
+
+        };
 
         assertTrue(MatchRuleField.SENDER.getSingleMatcher().test(msg, "org.freedesktop.Hal"));
         assertFalse(MatchRuleField.PATH.getSingleMatcher().test(msg, "org.freedesktop.DBus"));
@@ -60,8 +87,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchPath() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getPath()).thenReturn("/org/freedesktop/Hal/Manager");
+        Message msg = new Message() {
+
+            @Override
+            public String getPath() {
+                return "/org/freedesktop/Hal/Manager";
+            }
+
+        };
 
         assertTrue(MatchRuleField.PATH.getSingleMatcher().test(msg, "/org/freedesktop/Hal/Manager"));
         assertFalse(MatchRuleField.PATH.getSingleMatcher().test(msg, "/org/freedesktop/Hal/ObjectMapper"));
@@ -69,8 +102,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchMember() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getName()).thenReturn("NameOwnerChanged");
+        Message msg = new Message() {
+
+            @Override
+            public String getName() {
+                return "NameOwnerChanged";
+            }
+
+        };
 
         assertTrue(MatchRuleField.MEMBER.getSingleMatcher().test(msg, "NameOwnerChanged"));
         assertFalse(MatchRuleField.MEMBER.getSingleMatcher().test(msg, "NameOwner"));
@@ -78,8 +117,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchInterface() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getInterface()).thenReturn("org.freedesktop.Interface");
+        Message msg = new Message() {
+
+            @Override
+            public String getInterface() {
+                return "org.freedesktop.Interface";
+            }
+
+        };
 
         assertTrue(MatchRuleField.INTERFACE.getSingleMatcher().test(msg, "org.freedesktop.Interface"));
         assertFalse(MatchRuleField.INTERFACE.getSingleMatcher().test(msg, "org.freedesktop.Other"));
@@ -87,8 +132,14 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
 
     @Test
     void testMatchDestination() throws DBusException {
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getDestination()).thenReturn("dest");
+        Message msg = new Message() {
+
+            @Override
+            public String getDestination() {
+                return "dest";
+            }
+
+        };
 
         assertTrue(MatchRuleField.DESTINATION.getSingleMatcher().test(msg, "dest"));
         assertFalse(MatchRuleField.DESTINATION.getSingleMatcher().test(msg, "xxx"));
@@ -110,9 +161,19 @@ public class MatchRuleFieldTest extends AbstractBaseTest {
         Type[] dataTypes = _results.stream().map(e -> (Type) e.getClass()).toArray(Type[]::new);
         String dBusType = Marshalling.getDBusType(dataTypes);
 
-        Message msg = Mockito.mock(Message.class);
-        Mockito.when(msg.getSig()).thenReturn(dBusType);
-        Mockito.when(msg.getParameters()).thenReturn(_results.toArray());
+        Message msg = new Message() {
+
+            @Override
+            public String getSig() {
+                return dBusType;
+            }
+
+            @Override
+            public Object[] getParameters() throws DBusException {
+                return _results.toArray();
+            }
+
+        };
 
         assertEquals(_matchResult, _field.getMultiMatcher().test(msg, _matcher));
     }

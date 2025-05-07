@@ -24,6 +24,9 @@ public abstract class AbstractDBusBaseTest extends AbstractDBusDaemonBaseTest {
         clientconn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
         serverconn.requestBusName(getTestBusName());
 
+        logger.info("Client-Conn UniqueID: {}, Server-Conn Unique-ID: {}",
+            clientconn.getUniqueName(), serverconn.getUniqueName());
+
         tclass = new SampleClass(serverconn);
 
         /** This exports an instance of the test class as the object /Test. */
