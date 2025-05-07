@@ -61,7 +61,11 @@ public class MatchRuleParserTest {
                 Map.of("type", "signal",
                     "interface", "org.example.MyInterface",
                     "arg2", "with'quote",
-                    "arg0", "some.value"))
+                    "arg0", "some.value")),
+            Arguments.of("type='signal',interface='org.freedesktop.dbus.test.helper.interfaces.Binding.SampleSignals',member='Triggered'",
+                Map.of("type", "signal",
+                    "interface", "org.freedesktop.dbus.test.helper.interfaces.Binding.SampleSignals",
+                    "member", "Triggered"))
             );
     }
 }

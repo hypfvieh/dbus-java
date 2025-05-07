@@ -24,7 +24,6 @@ import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.AddressBuilder;
-import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,11 +192,6 @@ public class DBusDaemon extends Thread implements Closeable {
             }
 
             CON_LOOP: for (Entry<ConnectionStruct, DBusDaemonReaderThread> cs : l.entrySet()) {
-                if (cs.getKey().rules.isEmpty()
-                    || Util.strEquals(cs.getKey().unique, _currentConnection.unique)) {
-                    // do not duplicate if this is a message from ourselves
-                    continue;
-                }
                 for (DBusMatchRule rule : cs.getKey().rules) {
                     if (rule.matches(_msg)) {
                         LOGGER.debug("Cloning message for matchrule \"{}\" for connection {} (origin={})",
@@ -622,7 +616,7 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
 
-            LOGGER.info("Adding matchrule: {}, has = {}", matchRule, matchRule.hashCode());
+            LOGGER.info("Adding matchrule: {}, hash = {}", matchRule, matchRule.hashCode());
             synchronized (connStruct.rules) {
                 connStruct.rules.add(matchRule);
             }
