@@ -130,7 +130,7 @@ The library will remain open source and MIT licensed and can still be used, fork
      - The new implementation can be found in `org.freedesktop.dbus.matchrules.DBusMatchRule`, the old `DBusMatchRule` class still exists and is now a subclass
      of the new implementation but is deprecated.
      - use `DBusMatchRuleBuilder` to create instances of the new `DBusMatchRule`
-     - the `AbstractConnection.addSigHandler(DBusMatchRule, SigHandler)` is now public and can be used to register rules arbitrary rules
+     - the `AbstractConnection.addSigHandler(DBusMatchRule, SigHandler)` is now `public` and can be used to register arbitrary rules
      - the new implementation supports additional MatchRules as defined by DBus Specification (except eavesdrop)
      - Extended `EmbeddedDBusDaemon` to properly support MatchRules
 
