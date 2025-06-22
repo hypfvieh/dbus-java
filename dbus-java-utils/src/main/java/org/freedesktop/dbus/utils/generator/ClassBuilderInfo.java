@@ -498,7 +498,7 @@ public class ClassBuilderInfo {
         /** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
-        private final String       type;
+        private String       type;
         /** True to force this member to be final, false otherwise. */
         private final boolean      finalArg;
         /** List of classes/types or placeholders put into diamond operators to use as generics. */
@@ -527,6 +527,10 @@ public class ClassBuilderInfo {
 
         public String getType() {
             return type;
+        }
+
+        public void setType(String _type) {
+            type = _type;
         }
 
         public boolean isFinalArg() {
