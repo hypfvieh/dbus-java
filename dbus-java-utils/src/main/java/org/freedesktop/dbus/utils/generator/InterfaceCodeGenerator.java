@@ -327,7 +327,22 @@ public class InterfaceCodeGenerator {
             String resultType;
             if (outputArgs.size() > 1) { // multi-value return
                 logger.debug("Found method with multiple return values: {}", methodElementName);
-                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes);
+                List<String> genericTypes = new ArrayList<>();
+
+                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes, genericTypes);
+
+                genericTypes.stream()
+                    .flatMap(e -> ClassBuilderInfo.getImportsForType(e).stream())
+                    .forEach(_clzBldr.getImports()::add);
+
+                _clzBldr.getImports().add(resultType);
+
+                resultType = Util.extractClassNameFromFqcn(resultType);
+                List<String> returnGenerics = genericTypes.stream()
+                    .map(TypeConverter::convertJavaPrimitiveToBoxed)
+                    .map(ClassBuilderInfo::getSimpleTypeClasses)
+                    .toList();
+                resultType += "<" + String.join(", ", returnGenerics) + ">";
             } else {
                 logger.debug("Found method with arguments: {}({})", methodElementName, inputArgs);
                 resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
@@ -401,7 +416,7 @@ public class InterfaceCodeGenerator {
         ClassBuilderInfo propertyTypeRef = null;
         String origType = null;
         if (!isComplex) {
-            clzzName = ClassBuilderInfo.getClassName(type);
+            clzzName = Util.extractClassNameFromFqcn(type);
         } else {
             origType = type;
             type = TypeRef.class.getName() + "<" + type + ">";
@@ -464,7 +479,8 @@ public class InterfaceCodeGenerator {
      * @param _dbusOutputArgTypes Dbus argument names and data types
      * @return FQCN of the newly created tuple based class
      */
-    private String createTuple(List<MemberOrArgument> _outputArgs, String _className, ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses, List<String> _dbusOutputArgTypes) {
+    private String createTuple(List<MemberOrArgument> _outputArgs, String _className,
+        ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses, List<String> _dbusOutputArgTypes, List<String> _genericTypes) {
         if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
             return null;
         }
@@ -478,17 +494,17 @@ public class InterfaceCodeGenerator {
             info.getImports().add(Position.class.getName());
         }
 
-        ArrayList<MemberOrArgument> cnstrctArgs = new ArrayList<>();
+        List<MemberOrArgument> cnstrctArgs = new ArrayList<>();
+        Map<String, String> genericTypes = new LinkedHashMap<>();
+
         int position = 0;
         for (MemberOrArgument entry : _outputArgs) {
-            entry.getAnnotations().add("@Position(" + position++ + ")");
-            cnstrctArgs.add(new MemberOrArgument(entry.getName(), entry.getType()));
-        }
+            String genericName = findNextGenericName(genericTypes.keySet());
 
-        for (String outputType : _dbusOutputArgTypes) {
-            for (String part : outputType.replace(" ", "").replace(">", "").split("<|,")) {
-                info.getImports().add(part);
-            }
+            genericTypes.put(genericName, entry.getType());
+            entry.getAnnotations().add("@Position(" + position++ + ")");
+            entry.setType(genericName);
+            cnstrctArgs.add(new MemberOrArgument(entry.getName(), genericName));
         }
 
         ClassConstructor cnstrct = new ClassConstructor();
@@ -496,9 +512,28 @@ public class InterfaceCodeGenerator {
 
         info.getConstructors().add(cnstrct);
         info.getMembers().addAll(_outputArgs);
+        info.getGenerics().addAll(genericTypes.keySet());
+
         _additionalClasses.add(info);
+        _genericTypes.addAll(genericTypes.values());
 
         return info.getFqcn();
+    }
+
+    /**
+     * Tries to find next available generic name for a Tuple class.
+     * @param _used Set of already used names
+     * @return next available name
+     * @throws IllegalStateException if no name could be found
+     */
+    static String findNextGenericName(Set<String> _used) {
+        for (char c = 'A'; c <= 'Z'; c++) {
+            String name = String.valueOf(c);
+            if (!_used.contains(name)) {
+                return name;
+            }
+        }
+        throw new IllegalStateException("Unable to find a generic name for Tuple class");
     }
 
     /**

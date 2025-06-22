@@ -1,22 +1,23 @@
 package org.freedesktop.dbus.utils.generator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 class InterfaceCodeGeneratorTest {
 
     static InterfaceCodeGenerator loadDBusXmlFile(File _inputFile, String _objectPath, String _busName) {
-        if (!StringUtils.isBlank(_busName)) {
+        if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
 
             return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, false, null);
@@ -107,5 +108,20 @@ class InterfaceCodeGeneratorTest {
             .lines()
             .noneMatch(s -> s.contains("import PresetUnitFilesChangesStruct")),
             "Did not expect an import for a class of same package");
+    }
+
+    @ParameterizedTest
+    @MethodSource("createFindGenericNameData")
+    void testFindGenericName(Set<String> _existingNames, String _expectedName) {
+        assertEquals(_expectedName, InterfaceCodeGenerator.findNextGenericName(_existingNames));
+    }
+
+    static Stream<Arguments> createFindGenericNameData() {
+        return Stream.of(
+            Arguments.of(Set.of("A", "B", "C"), "D"),
+            Arguments.of(Set.of("A", "B", "C", "D"), "E"),
+            Arguments.of(Set.of("A", "B", "C", "D", "E"), "F"),
+            Arguments.of(Set.of("A", "B", "C", "D", "E", "F"), "G")
+        );
     }
 }
