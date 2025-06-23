@@ -133,6 +133,7 @@ The library will remain open source and MIT licensed and can still be used, fork
      - the `AbstractConnection.addSigHandler(DBusMatchRule, SigHandler)` is now `public` and can be used to register arbitrary rules
      - the new implementation supports additional MatchRules as defined by DBus Specification (except eavesdrop)
      - Extended `EmbeddedDBusDaemon` to properly support MatchRules
+   - Improved `InterfaceCodeGenerator` to properly create Tuple classes and create empty signal classes as well
 
 ##### Changes in 5.1.1 (2025-03-14):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments

@@ -40,10 +40,12 @@ class InterfaceCodeGeneratorTest {
 
     static Stream<Arguments> createTestData() {
         return Stream.of(
-            Arguments.of("Test Extract All", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
+            Arguments.of("FirewallD1: Test Extract All", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
                 "/org/fedoraproject/FirewallD1", "*", 23),
-            Arguments.of("Test Extract Selected", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
-                "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1", 9)
+            Arguments.of("FirewallD1: Test Extract Selected", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
+                "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1", 9),
+            Arguments.of("DisplayConfig: Test Extract All", new File("src/test/resources/CreateInterface/mutter/org.gnome.Mutter.DisplayConfig.xml"),
+                "/org/gnome/Mutter", "org.gnome.Mutter.DisplayConfig", 16)
         );
     }
 

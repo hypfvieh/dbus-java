@@ -186,7 +186,7 @@ public class InterfaceCodeGenerator {
             switch (element.getTagName().toLowerCase()) {
                 case "method"   -> additionalClasses.addAll(extractMethods(element, interfaceClass));
                 case "property" -> additionalClasses.addAll(extractProperties(element, interfaceClass));
-                case "signal"   -> additionalClasses.addAll(extractSignals(element, interfaceClass));
+                case "signal"   -> extractSignals(element, interfaceClass);
             }
         }
 
@@ -203,18 +203,11 @@ public class InterfaceCodeGenerator {
      *
      * @param _signalElement signal xml element
      * @param _clzBldr {@link ClassBuilderInfo} object
-     * @return List of {@link ClassBuilderInfo} which have been created (maybe empty, never null)
      *
      * @throws IOException on IO Error
      * @throws DBusException on DBus Error
      */
-    private List<ClassBuilderInfo> extractSignals(Element _signalElement, ClassBuilderInfo _clzBldr) throws IOException, DBusException {
-        List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
-
-        if (!_signalElement.hasChildNodes()) { // signal without any input/output?!
-            logger.warn("Signal without any input/output arguments. These are not supported yet, please open a ticket at github!");
-            return additionalClasses;
-        }
+    private void extractSignals(Element _signalElement, ClassBuilderInfo _clzBldr) throws IOException, DBusException {
 
         String className = _signalElement.getAttribute("name");
         if (className.contains(".")) {
@@ -229,42 +222,42 @@ public class InterfaceCodeGenerator {
         innerClass.setClassName(className);
 
         _clzBldr.getInnerClasses().add(innerClass);
+        List<MemberOrArgument> argsList = new ArrayList<>();
 
-        List<Element> signalArgs = XmlUtil.convertToElementList(XmlUtil.applyXpathExpressionToDocument("arg", _signalElement));
+        if (!_signalElement.hasChildNodes()) { // signal without any input/output?!
+            logger.info("Signal without any input/output arguments. Creating empty signal class: {}", innerClass.getFqcn());
+        } else {
+            List<Element> signalArgs = XmlUtil.convertToElementList(XmlUtil.applyXpathExpressionToDocument("arg", _signalElement));
 
-        Map<String, String> args = new LinkedHashMap<>();
+            Map<String, String> args = new LinkedHashMap<>();
 
-        int unknownArgCnt = 0;
-        for (Element argElm : signalArgs) {
-            String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
-            String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
-            if (Util.isBlank(argName)) {
-                argName = "arg" + unknownArgCnt;
-                unknownArgCnt++;
+            int unknownArgCnt = 0;
+            for (Element argElm : signalArgs) {
+                String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
+                String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
+                if (Util.isBlank(argName)) {
+                    argName = "arg" + unknownArgCnt;
+                    unknownArgCnt++;
+                }
+                args.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
             }
-            args.put(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()));
-        }
 
-        for (Entry<String, String> argEntry : args.entrySet()) {
-            innerClass.getMembers().add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), true));
+            for (Entry<String, String> argEntry : args.entrySet()) {
+                innerClass.getMembers().add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), true));
+                argsList.add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), false));
+            }
+
         }
 
         ClassConstructor classConstructor = new ClassBuilderInfo.ClassConstructor();
 
-        List<MemberOrArgument> argsList = new ArrayList<>();
-        for (Entry<String, String> e : args.entrySet()) {
-            argsList.add(new MemberOrArgument("_" + e.getKey(), e.getValue(), false));
-        }
-
         classConstructor.getArguments().addAll(argsList);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
 
-        classConstructor.getSuperArguments().add(new MemberOrArgument("_path", "String", false));
+        classConstructor.getSuperArguments().add(new MemberOrArgument("path", "String", false));
         classConstructor.getSuperArguments().addAll(argsList);
 
         innerClass.getConstructors().add(classConstructor);
-
-        return additionalClasses;
     }
 
     /**
