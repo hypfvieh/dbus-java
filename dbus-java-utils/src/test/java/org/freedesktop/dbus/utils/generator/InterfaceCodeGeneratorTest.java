@@ -1,22 +1,23 @@
 package org.freedesktop.dbus.utils.generator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 class InterfaceCodeGeneratorTest {
 
     static InterfaceCodeGenerator loadDBusXmlFile(File _inputFile, String _objectPath, String _busName) {
-        if (!StringUtils.isBlank(_busName)) {
+        if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
 
             return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, false, null);
@@ -28,20 +29,24 @@ class InterfaceCodeGeneratorTest {
         return null;
     }
 
-    @Test
-    void testCreateSelectedFirewallInterfaces() throws Exception {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("createTestData")
+    void testExtractData(String _description, File _input, String _dbusPath, String _filter, int _expected) throws Exception {
         InterfaceCodeGenerator ci2 = loadDBusXmlFile(
-                new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1");
+            _input, _dbusPath, _filter);
         Map<File, String> analyze = ci2.analyze(true);
-        assertEquals(9, analyze.size());
+        assertEquals(_expected, analyze.size());
     }
 
-    @Test
-    void testCreateAllFirewallInterfaces() throws Exception {
-        InterfaceCodeGenerator ci2 = loadDBusXmlFile(
-                new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"), "/org/fedoraproject/FirewallD1", "*");
-        Map<File, String> analyze = ci2.analyze(true);
-        assertEquals(20, analyze.size());
+    static Stream<Arguments> createTestData() {
+        return Stream.of(
+            Arguments.of("FirewallD1: Test Extract All", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
+                "/org/fedoraproject/FirewallD1", "*", 23),
+            Arguments.of("FirewallD1: Test Extract Selected", new File("src/test/resources/CreateInterface/firewall/org.fedoraproject.FirewallD1.xml"),
+                "/org/fedoraproject/FirewallD1", "org.fedoraproject.FirewallD1", 9),
+            Arguments.of("DisplayConfig: Test Extract All", new File("src/test/resources/CreateInterface/mutter/org.gnome.Mutter.DisplayConfig.xml"),
+                "/org/gnome/Mutter", "org.gnome.Mutter.DisplayConfig", 16)
+        );
     }
 
     @Test
@@ -107,5 +112,20 @@ class InterfaceCodeGeneratorTest {
             .lines()
             .noneMatch(s -> s.contains("import PresetUnitFilesChangesStruct")),
             "Did not expect an import for a class of same package");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("createFindGenericNameData")
+    void testFindGenericName(String _description, Set<String> _existingNames, String _expectedName) {
+        assertEquals(_expectedName, InterfaceCodeGenerator.findNextGenericName(_existingNames));
+    }
+
+    static Stream<Arguments> createFindGenericNameData() {
+        return Stream.of(
+            Arguments.of("ABC -> D", Set.of("A", "B", "C"), "D"),
+            Arguments.of("ABCD -> E", Set.of("A", "B", "C", "D"), "E"),
+            Arguments.of("ABCDE -> F", Set.of("A", "B", "C", "D", "E"), "F"),
+            Arguments.of("ABCDEF -> G", Set.of("A", "B", "C", "D", "E", "F"), "G")
+        );
     }
 }

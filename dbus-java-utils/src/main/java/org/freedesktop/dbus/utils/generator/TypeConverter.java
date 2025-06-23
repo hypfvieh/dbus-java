@@ -21,14 +21,34 @@ import java.util.stream.Collectors;
  */
 public final class TypeConverter {
 
-    private static final Map<String, String> CLASS_MAP = new HashMap<>();
-    static {
-        CLASS_MAP.put("java.lang.CharSequence", "String");
-        CLASS_MAP.put("java.util.List", "List");
-        CLASS_MAP.put("java.util.Set", "Set");
-        CLASS_MAP.put("java.util.Map", "Map");
-        CLASS_MAP.put(Variant.class.getName(), "Variant<?>");
-    }
+    private static final Map<String, String> CLASS_MAP = Map.of(
+        "java.lang.CharSequence", "String",
+        "java.util.List", "List",
+        "java.util.Set", "Set",
+        "java.util.Map", "Map",
+        Variant.class.getName(), "Variant<?>");
+
+    private static final Map<String, String> PRIMITIVE_TO_BOXED = Map.of(
+        "byte", "Byte",
+        "short", "Short",
+        "int", "Integer",
+        "long", "Long",
+        "float", "Float",
+        "double", "Double",
+        "boolean", "Boolean",
+        "char", "Character"
+    );
+
+    private static final Map<String, String> BOXED_TO_PRIMITIVE = Map.of(
+        "Byte", "byte",
+        "Short", "short",
+        "Integer", "int",
+        "Long", "long",
+        "Float", "float",
+        "Double", "double",
+        "Boolean", "boolean",
+        "Character", "char"
+    );
 
     private TypeConverter() {}
 
@@ -114,17 +134,27 @@ public final class TypeConverter {
      * @param _clazzName class name of boxed type
      * @return primitive or original input
      */
-    private static String convertJavaBoxedTypeToPrimitive(String _clazzName) {
-        return switch (_clazzName) {
-            case "Boolean" -> "boolean";
-            case "Integer" -> "int";
-            case "Long"    -> "long";
-            case "Double"  -> "double";
-            case "Float"   -> "float";
-            case "Byte"    -> "byte";
-            case "Char"    -> "char";
-            default        -> _clazzName;
-        };
+    public static String convertJavaBoxedTypeToPrimitive(String _clazzName) {
+        return  BOXED_TO_PRIMITIVE.getOrDefault(_clazzName, _clazzName);
+    }
+
+    /**
+     * Converts certain primitives to boxed types.
+     *
+     * @param _primitiveName class name of primitve type
+     * @return boxed type or original input
+     */
+    public static String convertJavaPrimitiveToBoxed(String _primitiveName) {
+        return  PRIMITIVE_TO_BOXED.getOrDefault(_primitiveName, _primitiveName);
+    }
+
+    /**
+     * Checks if the given class name is a primitive type.
+     * @param _clazzName
+     * @return true if primitive, false otherwise
+     */
+    public static boolean isPrimitive(String _clazzName) {
+        return PRIMITIVE_TO_BOXED.containsKey(_clazzName);
     }
 
     /**

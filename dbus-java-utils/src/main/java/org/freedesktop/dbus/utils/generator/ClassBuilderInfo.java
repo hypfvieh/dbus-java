@@ -35,6 +35,8 @@ public class ClassBuilderInfo {
     /** Constructors for this class. */
     private final List<ClassConstructor> constructors          = new ArrayList<>();
 
+    private final List<String>           generics              = new ArrayList<>();
+
     /** Prefix to prepend to method/constructor arguments. */
     private final String                 argumentPrefix;
 
@@ -134,6 +136,10 @@ public class ClassBuilderInfo {
         return constructors;
     }
 
+    public List<String> getGenerics() {
+        return generics;
+    }
+
     /**
      * Create the Java source for the class information provided.
      *
@@ -191,6 +197,9 @@ public class ClassBuilderInfo {
 
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");
         bgn += " " + getClassName();
+        if (!getGenerics().isEmpty()) {
+            bgn += "<" + String.join(", ", getGenerics()) + ">";
+        }
         if (getExtendClass() != null) {
             Set<String> lImports = getImportsForType(getExtendClass());
             getImports().addAll(lImports);
@@ -198,7 +207,7 @@ public class ClassBuilderInfo {
             bgn += " extends " + getSimpleTypeClasses(getExtendClass());
         }
         if (!getImplementedInterfaces().isEmpty()) {
-            bgn += " implements " + getImplementedInterfaces().stream().map(ClassBuilderInfo::getClassName).collect(Collectors.joining(", "));
+            bgn += " implements " + getImplementedInterfaces().stream().map(Util::extractClassNameFromFqcn).collect(Collectors.joining(", "));
             // add classes import if implements-arguments are not a java.lang. classes
             getImports().addAll(getImplementedInterfaces().stream().filter(s -> !s.startsWith("java.lang.")).toList());
         }
@@ -311,24 +320,6 @@ public class ClassBuilderInfo {
     }
 
     /**
-     * Extract the class name from a given FQCN (fully qualified classname).
-     *
-     * @param _fqcn fqcn to analyze
-     * @return classname, null if input was null
-     */
-    static String getClassName(String _fqcn) {
-        if (_fqcn == null) {
-            return null;
-        }
-
-        String clzzName = _fqcn;
-        if (clzzName.contains(".")) {
-            clzzName = clzzName.substring(clzzName.lastIndexOf('.') + 1);
-        }
-        return clzzName;
-    }
-
-    /**
      * Simplify class names in the type. Please go to unit tests for usage examples.
      *
      * @param _type type described in the string format
@@ -343,7 +334,7 @@ public class ClassBuilderInfo {
         Matcher matcher = compile.matcher(_type);
         while (matcher.find()) {
             String match = matcher.group();
-            matcher.appendReplacement(sb, getClassName(match));
+            matcher.appendReplacement(sb, Util.extractClassNameFromFqcn(match));
         }
         matcher.appendTail(sb);
         return sb.toString();
@@ -498,7 +489,7 @@ public class ClassBuilderInfo {
         /** Name of member/field. */
         private final String       name;
         /** Type of member/field (e.g. String, int...). */
-        private final String       type;
+        private String       type;
         /** True to force this member to be final, false otherwise. */
         private final boolean      finalArg;
         /** List of classes/types or placeholders put into diamond operators to use as generics. */
@@ -527,6 +518,10 @@ public class ClassBuilderInfo {
 
         public String getType() {
             return type;
+        }
+
+        public void setType(String _type) {
+            type = _type;
         }
 
         public boolean isFinalArg() {

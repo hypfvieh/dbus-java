@@ -715,4 +715,25 @@ public final class Util {
             return null;
         }
     }
+
+    /**
+     * Extracts the class name from a fully qualified class name (FQCN).
+     * <p>
+     * If the FQCN is {@code null} or empty, {@code null} will be returned.
+     * If the FQCN does not contain any dots, the FQCN itself will be returned.
+     *
+     * @param _fqcn fully qualified class name
+     * @return class name or null if input was null/empty
+     */
+    public static String extractClassNameFromFqcn(String _fqcn) {
+        if (Util.isBlank(_fqcn)) {
+            return null;
+        }
+        int lastDot = _fqcn.lastIndexOf('.');
+        if (lastDot < 0) {
+            return _fqcn;
+        }
+        return _fqcn.substring(lastDot + 1);
+    }
+
 }

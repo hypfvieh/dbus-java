@@ -11,10 +11,7 @@ import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Helper to create a DBus struct class.
@@ -27,13 +24,15 @@ import java.util.Map;
 public class StructTreeBuilder {
 
     private final String argumentPrefix;
+    private final Set<String> generatedStructClassNames;
 
-    StructTreeBuilder(String _argumentPrefix) {
+    StructTreeBuilder(String _argumentPrefix, Set<String> _generatedStructClassNames) {
         argumentPrefix = _argumentPrefix;
+        generatedStructClassNames = _generatedStructClassNames;
     }
 
     StructTreeBuilder() {
-        this(null);
+        this(null, new HashSet<>());
     }
 
     /**
@@ -49,14 +48,14 @@ public class StructTreeBuilder {
      * This may lead to classes with names like FooStructStructStruct (FooStruct-&gt;(InnerStruct-&gt;InnerInnerStruct)).
      *
      * @param _dbusSig dbus Type string
-     * @param _structName name the struct should have
+     * @param _structBaseFqcn FQCN including base class name to use for the created struct class
      * @param _clzBldr class builder with the class where the struct was first seen
      * @param _generatedClasses a list, this will contain additional struct classes created, if any. Should never be null!
      *
      * @return Struct class name or Collection type name
      * @throws DBusException on DBus Error
      */
-    public String buildStructClasses(String _dbusSig, String _structName, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _generatedClasses) throws DBusException {
+    public String buildStructClasses(String _dbusSig, String _structBaseFqcn, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _generatedClasses) throws DBusException {
 
         if (Util.isBlank(_dbusSig) || _generatedClasses == null) {
             return null;
@@ -70,10 +69,13 @@ public class StructTreeBuilder {
             structTree = structTree.get(0).getSubType();
         }
 
+        String rootStructName = findNextStructFqcn(_structBaseFqcn, generatedStructClassNames);
+        rootStructName = rootStructName.substring(rootStructName.lastIndexOf('.') + 1);
+
         int cnt = 0;
         for (StructTree treeItem : structTree) {
             ClassBuilderInfo root = new ClassBuilderInfo(argumentPrefix);
-            root.setClassName(Util.upperCaseFirstChar(_structName));
+            root.setClassName(Util.upperCaseFirstChar(rootStructName));
             root.setPackageName(_clzBldr.getPackageName());
             root.setExtendClass(Struct.class.getName());
             root.setClassType(ClassType.CLASS);
@@ -88,24 +90,42 @@ public class StructTreeBuilder {
             }
 
             if (!treeItem.getSubType().isEmpty()) {
-                createNested(treeItem.getSubType(), root, _generatedClasses);
+                createNested(treeItem.getSubType(), _structBaseFqcn, root, _generatedClasses);
             }
         }
 
-        return parentType == null ? _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName) : parentType;
+        return parentType == null ? _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(rootStructName) : parentType;
 
+    }
+
+    /**
+     * Find next available struct FQCN.
+     * If the given FQCN is already in use, it will append "Struct" until a free name is found.
+     *
+     * @param _structFqcn base FQCN to use
+     * @param _generatedStructClassNames set of already generated struct class names
+     * @return next available FQCN
+     */
+    static String findNextStructFqcn(String _structFqcn, Set<String> _generatedStructClassNames) {
+        String structFqcn = _structFqcn;
+        while (_generatedStructClassNames.contains(structFqcn)) {
+            structFqcn += "Struct";
+        }
+        _generatedStructClassNames.add(structFqcn);
+        return structFqcn;
     }
 
     /**
      * Create nested Struct class.
      *
      * @param _list List of struct tree elements
+     * @param _structFqcnBase base classname of created struct class
      * @param _root root class of this struct (maybe other struct)
      * @param _classes a list, this will contain additional struct classes created, if any. Should never be null!
      *
      * @return last created struct or null
      */
-    private ClassBuilderInfo createNested(List<StructTree> _list, ClassBuilderInfo _root, List<ClassBuilderInfo> _classes) {
+    private ClassBuilderInfo createNested(List<StructTree> _list, String _structFqcnBase, ClassBuilderInfo _root, List<ClassBuilderInfo> _classes) {
         int position = 0;
 
         ClassBuilderInfo root = _root;
@@ -113,6 +133,7 @@ public class StructTreeBuilder {
         ClassConstructor classConstructor = new ClassConstructor();
 
         for (StructTree inTree : _list) {
+
             MemberOrArgument member = new MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
             member.getAnnotations().add("@Position(" + position + ")");
 
@@ -122,13 +143,17 @@ public class StructTreeBuilder {
 
             if (Struct.class.isAssignableFrom(inTree.getDataType())) {
                 ClassBuilderInfo temp = new ClassBuilderInfo(argumentPrefix);
-                temp.setClassName(Util.upperCaseFirstChar(_root.getClassName()) + "Struct");
+
+                String structName = findNextStructFqcn(_structFqcnBase, generatedStructClassNames);
+                structName = structName.substring(structName.lastIndexOf('.') + 1);
+
+                temp.setClassName(Util.upperCaseFirstChar(structName));
                 temp.setPackageName(_root.getPackageName());
                 temp.setExtendClass(Struct.class.getName());
                 temp.setClassType(ClassType.CLASS);
-                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
-
-                createNested(inTree.getSubType(), temp, _classes);
+                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, temp.getClassName()));
+                member.setType(temp.getClassName());
+                createNested(inTree.getSubType(), _structFqcnBase, temp, _classes);
 
                 _classes.add(temp);
                 retval = temp;
@@ -137,7 +162,7 @@ public class StructTreeBuilder {
 
                 temp.setClassName(root.getClassName());
                 temp.setPackageName(root.getPackageName());
-                ClassBuilderInfo x = createNested(inTree.getSubType(), temp, _classes);
+                ClassBuilderInfo x = createNested(inTree.getSubType(), _structFqcnBase, temp, _classes);
                 if (x != null) {
                     member.getGenerics().add(x.getClassName());
                 } else {
