@@ -322,7 +322,7 @@ public class InterfaceCodeGenerator {
                 logger.debug("Found method with multiple return values: {}", methodElementName);
                 List<String> genericTypes = new ArrayList<>();
 
-                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, dbusOutputArgTypes, genericTypes);
+                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, genericTypes);
 
                 genericTypes.stream()
                     .flatMap(e -> ClassBuilderInfo.getImportsForType(e).stream())
@@ -469,11 +469,10 @@ public class InterfaceCodeGenerator {
      * @param _className name the tuple class should get
      * @param _parentClzBldr parent class where the tuple was required in
      * @param _additionalClasses list where the new created tuple class will be added to
-     * @param _dbusOutputArgTypes Dbus argument names and data types
      * @return FQCN of the newly created tuple based class
      */
     private String createTuple(List<MemberOrArgument> _outputArgs, String _className,
-        ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses, List<String> _dbusOutputArgTypes, List<String> _genericTypes) {
+        ClassBuilderInfo _parentClzBldr, List<ClassBuilderInfo> _additionalClasses, List<String> _genericTypes) {
         if (_outputArgs == null || _outputArgs.isEmpty() || _additionalClasses == null) {
             return null;
         }

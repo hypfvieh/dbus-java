@@ -107,12 +107,14 @@ public class StructTreeBuilder {
      * @return next available FQCN
      */
     static String findNextStructFqcn(String _structFqcn, Set<String> _generatedStructClassNames) {
-        String structFqcn = _structFqcn;
-        while (_generatedStructClassNames.contains(structFqcn)) {
-            structFqcn += "Struct";
+        StringBuilder structFqcn = new StringBuilder(_structFqcn);
+        while (_generatedStructClassNames.contains(structFqcn.toString())) {
+            structFqcn.append("Struct");
         }
-        _generatedStructClassNames.add(structFqcn);
-        return structFqcn;
+
+        String resultStr = structFqcn.toString();
+        _generatedStructClassNames.add(resultStr);
+        return resultStr;
     }
 
     /**
