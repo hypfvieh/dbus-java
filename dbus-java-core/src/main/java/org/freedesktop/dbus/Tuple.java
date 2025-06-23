@@ -12,15 +12,21 @@ package org.freedesktop.dbus;
  * </p><p>
  * A Tuple should have generic type parameters, otherwise deserialization may fail.
  * </p>
- * Example:
+ * Example class:
  * <pre>
- * public class MyTuple&lt;String, Integer&gt; extends Tuple {
+ * public class MyTuple&lt;A, B&gt; extends Tuple {
  *      &#64;Position(0)
- *      private final String firstValue;
+ *      private final A firstValue;
  *      &#64;Position(1)
- *      private final int secondValue;
+ *      private final B secondValue;
  *
  *      // constructor/getter/setter omitted for brevity
+ * }
+ * </pre>
+ * Example usage:
+ * <pre>
+ * public SampleDbusInterface extends DBusInterface {
+ *     MyTuple&lt;String, Integer&gt; getMyTuple();
  * }
  * </pre>
  */
