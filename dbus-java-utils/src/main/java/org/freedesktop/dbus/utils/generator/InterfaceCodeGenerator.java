@@ -549,18 +549,10 @@ public class InterfaceCodeGenerator {
      */
     private String buildStructClass(String _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
         String structFqcn = _packageName.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
-        String structClassName = new StructTreeBuilder(argumentPrefix).buildStructClasses(_dbusTypeStr, () -> getNextStructFqcn(structFqcn), _packageName, _structClasses);
+        String structClassName = new StructTreeBuilder(argumentPrefix, generatedStructClassNames)
+            .buildStructClasses(_dbusTypeStr, structFqcn, _packageName, _structClasses);
         generatedStructClassNames.add(structFqcn);
         return structClassName;
-    }
-
-    String getNextStructFqcn(String _structFqcn) {
-        String structFqcn = _structFqcn;
-        while (generatedStructClassNames.contains(structFqcn)) {
-            structFqcn += "Struct";
-        }
-        generatedStructClassNames.add(structFqcn);
-        return structFqcn;
     }
 
     /**

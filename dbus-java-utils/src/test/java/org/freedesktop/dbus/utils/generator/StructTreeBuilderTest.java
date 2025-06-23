@@ -20,7 +20,7 @@ class StructTreeBuilderTest {
 
         List<ClassBuilderInfo> generated = new ArrayList<>();
         new StructTreeBuilder()
-            .buildStructClasses(dbusTypeStr, () -> "UnitTestStruct", classBuilderInfo, generated);
+            .buildStructClasses(dbusTypeStr, "UnitTestStruct", classBuilderInfo, generated);
 
         assertEquals(2, generated.size());
         assertEquals("UnitTestStruct", generated.get(0).getClassName());
