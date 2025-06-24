@@ -10,17 +10,7 @@
 
     <logger name="com" level="INFO" />
     <logger name="org" level="DEBUG" />
-    <logger name="org.freedesktop.dbus.connections" level="INFO" />
-    <logger name="org.freedesktop.dbus.connections.impl.DirectConnection" level="DEBUG" />
-    <logger name="org.freedesktop.dbus.connections.IncomingMessageThread" level="DEBUG" />
-    <logger name="org.freedesktop.dbus.connections.transports.TransportBuilder" level="DEBUG" />
-    <logger name="org.freedesktop.dbus.errors" level="INFO" />
-    <logger name="org.freedesktop.dbus.messages" level="INFO" />
-    <logger name="org.freedesktop.dbus.MessageWriter" level="INFO" />
-    <logger name="org.freedesktop.dbus.connections.SASL" level="INFO" />
-	<logger name="org.freedesktop.dbus.connections.ReceivingService" level="DEBUG" />
-    
-    <logger name="org.freedesktop.dbus.bin" level="INFO" />
+    <logger name="org.freedesktop.dbus" level="TRACE" />
 
     <root level="TRACE">
         <appender-ref ref="STDOUT" />

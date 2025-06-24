@@ -246,7 +246,7 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                             myVal = new ArrayList<>(Arrays.asList(Util.toObjectArray(myVal)));
                         }
                     }
-                    _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this));
+                    _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this, true));
                     invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED));
                 } catch (Exception _ex) {
                     getLogger().debug("Failed to invoke method call on Properties", _ex);

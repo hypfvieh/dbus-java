@@ -734,7 +734,7 @@ public final class Marshalling {
     }
 
     @SuppressWarnings("unchecked")
-    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
+    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn, boolean _methodCall) throws Exception {
         LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("(3) Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
 
         if (null == _parameters) {
@@ -767,7 +767,8 @@ public final class Marshalling {
 
                 Object o = constructors[0].newInstance(parameters);
                 return new Object[] {o};
-            } else if (Struct.class.isAssignableFrom(clz)) {
+            } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
+                LOGGER.trace("(4) Deserializing Struct return");
                 return new Object[] {deSerializeParameter(_parameters, types[0], _conn)};
             }
         }
@@ -822,5 +823,9 @@ public final class Marshalling {
             }
         }
         return parameters;
+    }
+
+    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
+        return deSerializeParameters(_parameters, _types, _conn, false);
     }
 }

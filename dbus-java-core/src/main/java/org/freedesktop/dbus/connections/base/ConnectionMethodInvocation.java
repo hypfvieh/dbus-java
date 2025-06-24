@@ -48,7 +48,7 @@ public abstract sealed class ConnectionMethodInvocation extends AbstractConnecti
         try {
             Type[] ts = _meth.getGenericParameterTypes();
             Object[] params2 = _methodCall.getParameters();
-            _methodCall.setArgs(Marshalling.deSerializeParameters(params2, ts, this));
+            _methodCall.setArgs(Marshalling.deSerializeParameters(params2, ts, this, true));
             LoggingHelper.logIf(getLogger().isTraceEnabled(), () -> {
                 try {
                     Object[] params3 = _methodCall.getParameters();

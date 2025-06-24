@@ -101,10 +101,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
     }
 
     public static Object convertRV(Object[] _rp, Method _m, AbstractConnection _conn) throws DBusException {
-        return convertRV(_rp, new Type[] {_m.getGenericReturnType()}, _m, _conn);
+        return convertRV(false, _rp, new Type[] {_m.getGenericReturnType()}, _m, _conn);
     }
 
-    public static Object convertRV(Object[] _rp, Type[] _types, Method _m, AbstractConnection _conn) throws DBusException {
+    static Object convertRV(boolean _methodCall, Object[] _rp, Type[] _types, Method _m, AbstractConnection _conn) throws DBusException {
         Class<? extends Object> c = _m.getReturnType();
         Object[] rp = _rp;
         if (rp == null) {
@@ -118,7 +118,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Converting return parameters from {} to type {}",
                         Arrays.deepToString(_rp), _m.getGenericReturnType()));
 
-                rp = Marshalling.deSerializeParameters(rp, _types, _conn);
+                rp = Marshalling.deSerializeParameters(rp, _types, _conn, _methodCall);
             } catch (Exception _ex) {
                 LOGGER.debug("Wrong return type.", _ex);
                 throw new DBusException(String.format("Wrong return type (failed to de-serialize correct types: %s )", _ex.getMessage()), _ex);
@@ -153,7 +153,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
 
     public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m,
                                              final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
-        return executeRemoteMethod(_ro, _m, new Type[] {_m.getGenericReturnType()}, _conn, _syncmethod, _callback, _args);
+        return executeRemoteMethod(false, _ro, _m, new Type[] {_m.getGenericReturnType()}, _conn, _syncmethod, _callback, _args);
     }
 
     /**
@@ -172,7 +172,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
      *
      * @throws DBusException when call fails
      */
-    public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m, String[] _customSignatures,
+    public static Object executeRemoteMethod(boolean _methodCall, final RemoteObject _ro, final Method _m, String[] _customSignatures,
         final Type[] _types, final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
 
         Type[] ts = _m.getGenericParameterTypes();
@@ -242,16 +242,16 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
 
         try {
-            return convertRV(reply.getParameters(), _types, _m, _conn);
+            return convertRV(_methodCall, reply.getParameters(), _types, _m, _conn);
         } catch (DBusException _ex) {
             LOGGER.debug("", _ex);
             throw new DBusExecutionException(_ex.getMessage(), _ex);
         }
     }
 
-    public static Object executeRemoteMethod(final RemoteObject _ro, final Method _m,
+    public static Object executeRemoteMethod(boolean _methodCall, final RemoteObject _ro, final Method _m,
                                              final Type[] _types, final AbstractConnection _conn, final int _syncmethod, final CallbackHandler<?> _callback, Object... _args) throws DBusException {
-        return executeRemoteMethod(_ro, _m, null, _types, _conn, _syncmethod, _callback, _args);
+        return executeRemoteMethod(_methodCall, _ro, _m, null, _types, _conn, _syncmethod, _callback, _args);
     }
 
 }

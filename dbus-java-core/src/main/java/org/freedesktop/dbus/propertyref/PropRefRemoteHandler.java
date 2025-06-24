@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 
 /**
- * Contains {@link DBusBoundProperty} code used for remote method invokation.
+ * Contains {@link DBusBoundProperty} code used for remote method invocation.
  *
  * @author hypfvieh
  * @since 5.0.0 - 2023-10-20
@@ -68,10 +68,10 @@ public final class PropRefRemoteHandler {
         Object result = null;
 
         if (access == Access.READ) {
-            result = RemoteInvocationHandler.executeRemoteMethod(propertiesRemoteObj, PROP_GET_METHOD,
+            result = RemoteInvocationHandler.executeRemoteMethod(true, propertiesRemoteObj, PROP_GET_METHOD,
                    new Type[] {_method.getGenericReturnType()}, _conn, RemoteInvocationHandler.CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name);
         } else {
-            result = RemoteInvocationHandler.executeRemoteMethod(propertiesRemoteObj, PROP_SET_METHOD, variantType,
+            result = RemoteInvocationHandler.executeRemoteMethod(false, propertiesRemoteObj, PROP_SET_METHOD, variantType,
                    new Type[] {_method.getGenericReturnType()}, _conn, RemoteInvocationHandler.CALL_TYPE_SYNC, null, DBusNamingUtil.getInterfaceName(_method.getDeclaringClass()), name, _args[0]);
         }
 
