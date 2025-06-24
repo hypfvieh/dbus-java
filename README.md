@@ -134,6 +134,8 @@ The library will remain open source and MIT licensed and can still be used, fork
      - the new implementation supports additional MatchRules as defined by DBus Specification (except eavesdrop)
      - Extended `EmbeddedDBusDaemon` to properly support MatchRules
    - Improved `InterfaceCodeGenerator` to properly create Tuple classes and create empty signal classes as well
+   - Added support to use `Struct` datatypes as return values instead of `Tuple`
+   - Added new commandline option `--disable-tuples` to `InterfaceCodeGenerator` to create `Struct` classes instead of `Tuple`s for multi value return (**Caution** the generated code will only work with dbus-java 5.2.0+)
 
 ##### Changes in 5.1.1 (2025-03-14):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments

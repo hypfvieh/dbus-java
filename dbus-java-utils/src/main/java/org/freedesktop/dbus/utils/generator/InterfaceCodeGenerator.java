@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.utils.generator;
 
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
@@ -37,11 +38,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * Replacement for the old CreateInterface tool.
- * This utility class will read introspection data from a given DBus interface
- * and tries to generate proper Java interfaces.
+ * Replacement for the old CreateInterface tool. This utility class will read introspection data from a given DBus
+ * interface and tries to generate proper Java interfaces.
  *
  * @author hypfvieh
+ *
  * @since v3.0.1 - 2018-12-20
  */
 public class InterfaceCodeGenerator {
@@ -61,7 +62,11 @@ public class InterfaceCodeGenerator {
     private final Set<String>            generatedStructClassNames;
     private final String                 argumentPrefix;
 
-    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName, String _packageName, boolean _propertyMethods, String _argumentPrefix) {
+    private final boolean                avoidUsingTuple;
+
+    public InterfaceCodeGenerator(boolean _disableFilter, String _introspectionData, String _objectPath, String _busName,
+        String _packageName, boolean _propertyMethods, String _argumentPrefix,
+        boolean _avoidUsingTuple) {
         disableFilter = _disableFilter;
         introspectionData = _introspectionData;
         nodeName = _objectPath;
@@ -70,6 +75,7 @@ public class InterfaceCodeGenerator {
         forcePackageName = _packageName;
         propertyMethods = _propertyMethods;
         generatedStructClassNames = new LinkedHashSet<>();
+        avoidUsingTuple = _avoidUsingTuple;
         logger.debug("ForcePackageName: {} / PropertyMethods: {}", forcePackageName, propertyMethods);
     }
 
@@ -77,7 +83,9 @@ public class InterfaceCodeGenerator {
      * Analyze the DBus interface given in constructor by parsing the introspection data.
      *
      * @param _ignoreDtd true to disable dtd-validation, false otherwise
+     *
      * @return List of Filenames and contents for the files
+     *
      * @throws Exception on DBUS or IO errors
      */
     public Map<File, String> analyze(boolean _ignoreDtd) throws Exception {
@@ -116,7 +124,8 @@ public class InterfaceCodeGenerator {
                 || "org.freedesktop.DBus.Properties".equals(nameAttrib))) {
                 continue; // do not create DBus classes (they are part of dbus-java)
             }
-            if (!noBusnameGiven && !nameAttrib.startsWith(busName)) { // busname was set, and current element does not match -> skip
+            if (!noBusnameGiven && !nameAttrib.startsWith(busName)) { // busname was set, and current element does not
+                                                                      // match -> skip
                 logger.info("Skipping: {} - does not match given busName: {}", nameAttrib, busName);
                 continue;
             } else if (noBusnameGiven) { // no busname given, take all
@@ -132,10 +141,10 @@ public class InterfaceCodeGenerator {
     }
 
     /**
-     * Converts a NodeList to List&lt;Element&gt;.
-     * Will skip all NodeList entries not compatible with Element type.
+     * Converts a NodeList to List&lt;Element&gt;. Will skip all NodeList entries not compatible with Element type.
      *
      * @param _nodeList NodeList to convert
+     *
      * @return List of Element, maybe empty
      */
     static List<Element> convertToElementList(NodeList _nodeList) {
@@ -152,7 +161,9 @@ public class InterfaceCodeGenerator {
      * Extract all methods/signals etc. from the given interface element.
      *
      * @param _ife interface element
+     *
      * @return Map of files and their contents
+     *
      * @throws IOException when reading xml fails
      * @throws DBusException when DBus fails
      */
@@ -161,7 +172,7 @@ public class InterfaceCodeGenerator {
         String interfaceName = _ife.getAttribute("name");
         Map<DbusInterfaceToFqcn, String> fqcn = DbusInterfaceToFqcn.toFqcn(interfaceName);
         String originalPackageName = fqcn.get(DbusInterfaceToFqcn.PACKAGENAME);
-        String packageName =  forcePackageName == null ? originalPackageName : forcePackageName;
+        String packageName = forcePackageName == null ? originalPackageName : forcePackageName;
         String className = fqcn.get(DbusInterfaceToFqcn.CLASSNAME);
 
         logger.info("Creating interface: {}.{}", packageName, className);
@@ -184,9 +195,9 @@ public class InterfaceCodeGenerator {
         List<Element> interfaceElements = convertToElementList(_ife.getChildNodes());
         for (Element element : interfaceElements) {
             switch (element.getTagName().toLowerCase()) {
-                case "method"   -> additionalClasses.addAll(extractMethods(element, interfaceClass));
+                case "method" -> additionalClasses.addAll(extractMethods(element, interfaceClass));
                 case "property" -> additionalClasses.addAll(extractProperties(element, interfaceClass));
-                case "signal"   -> extractSignals(element, interfaceClass);
+                case "signal" -> extractSignals(element, interfaceClass);
             }
         }
 
@@ -282,6 +293,7 @@ public class InterfaceCodeGenerator {
             List<MemberOrArgument> outputArgs = new ArrayList<>();
 
             List<String> dbusOutputArgTypes = new ArrayList<>();
+            List<DuoData> dbusSignatures = new ArrayList<>();
 
             int unknownArgNameCnt = 0;
             for (Element argElm : methodArgs) {
@@ -302,7 +314,7 @@ public class InterfaceCodeGenerator {
                 }
 
                 if (Util.isBlank(argName)) {
-                    argName = "_arg" + unknownArgNameCnt;
+                    argName = "arg" + unknownArgNameCnt;
                     unknownArgNameCnt++;
                 } else {
                     argName = Util.snakeToCamelCase(argName);
@@ -314,6 +326,7 @@ public class InterfaceCodeGenerator {
                 } else if ("out".equals(dirAttr)) {
                     outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                     dbusOutputArgTypes.add(argType);
+                    dbusSignatures.add(new DuoData(argElm.getAttribute("type"), argName));
                 }
             }
 
@@ -322,11 +335,14 @@ public class InterfaceCodeGenerator {
                 logger.debug("Found method with multiple return values: {}", methodElementName);
                 List<String> genericTypes = new ArrayList<>();
 
-                resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, genericTypes);
-
+                if (avoidUsingTuple) {
+                    resultType = buildStructClass(dbusSignatures, methodElementName + "Struct", _clzBldr, additionalClasses);
+                } else {
+                    resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, genericTypes);
+                }
                 genericTypes.stream()
-                    .flatMap(e -> ClassBuilderInfo.getImportsForType(e).stream())
-                    .forEach(_clzBldr.getImports()::add);
+                .flatMap(e -> ClassBuilderInfo.getImportsForType(e).stream())
+                .forEach(_clzBldr.getImports()::add);
 
                 _clzBldr.getImports().add(resultType);
 
@@ -335,17 +351,20 @@ public class InterfaceCodeGenerator {
                     .map(TypeConverter::convertJavaPrimitiveToBoxed)
                     .map(ClassBuilderInfo::getSimpleTypeClasses)
                     .toList();
-                resultType += "<" + String.join(", ", returnGenerics) + ">";
+                String joinedGenerics = String.join(", ", returnGenerics);
+
+                resultType += joinedGenerics.isBlank() ? "" : "<" + joinedGenerics + ">";
             } else {
                 logger.debug("Found method with arguments: {}({})", methodElementName, inputArgs);
                 resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
             }
 
-            ClassMethod classMethod = new ClassMethod(methodElementName, resultType, false);
-            classMethod.getArguments().addAll(inputArgs);
+            if (resultType != null) {
+                ClassMethod classMethod = new ClassMethod(methodElementName, resultType, false);
+                classMethod.getArguments().addAll(inputArgs);
 
-            _clzBldr.getMethods().add(classMethod);
-
+                _clzBldr.getMethods().add(classMethod);
+            }
         } else { // method has no arguments
 
             ClassMethod classMethod = new ClassMethod(methodElementName, "void", false);
@@ -361,7 +380,9 @@ public class InterfaceCodeGenerator {
      *
      * @param _propertyElement method XML element
      * @param _clzBldr {@link ClassBuilderInfo} object
+     *
      * @return List of {@link ClassBuilderInfo} which have been created (maybe empty, never null)
+     *
      * @throws DBusException on DBus Error
      */
     private List<ClassBuilderInfo> extractProperties(Element _propertyElement, ClassBuilderInfo _clzBldr) throws DBusException {
@@ -446,7 +467,7 @@ public class InterfaceCodeGenerator {
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
                 ClassMethod classMethod = new ClassMethod("set" + attrName, "void", false);
                 classMethod.getArguments().add(new MemberOrArgument(attrName.substring(0, 1).toLowerCase() + attrName.substring(1), clzzName));
-                    _clzBldr.getMethods().add(classMethod);
+                _clzBldr.getMethods().add(classMethod);
                 classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
                 _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
@@ -469,6 +490,7 @@ public class InterfaceCodeGenerator {
      * @param _className name the tuple class should get
      * @param _parentClzBldr parent class where the tuple was required in
      * @param _additionalClasses list where the new created tuple class will be added to
+     *
      * @return FQCN of the newly created tuple based class
      */
     private String createTuple(List<MemberOrArgument> _outputArgs, String _className,
@@ -514,8 +536,11 @@ public class InterfaceCodeGenerator {
 
     /**
      * Tries to find next available generic name for a Tuple class.
+     *
      * @param _used Set of already used names
+     *
      * @return next available name
+     *
      * @throws IllegalStateException if no name could be found
      */
     static String findNextGenericName(Set<String> _used) {
@@ -534,9 +559,11 @@ public class InterfaceCodeGenerator {
      * @param _dbusTypeStr Dbus Type definition string
      * @param _structName name of the struct to create
      * @param _packageName package name for the struct class
-     * @param _structClasses list of {@link ClassCastException}, other struct classes which may be created during struct creation will be added here
+     * @param _structClasses list of {@link ClassCastException}, other struct classes which may be created during struct
+     *            creation will be added here
      *
      * @return FQCN of the created struct class
+     *
      * @throws DBusException on Error
      */
     private String buildStructClass(String _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
@@ -545,6 +572,47 @@ public class InterfaceCodeGenerator {
             .buildStructClasses(_dbusTypeStr, structFqcn, _packageName, _structClasses);
         generatedStructClassNames.add(structFqcn);
         return structClassName;
+    }
+
+    private String buildStructClass(List<DuoData> _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
+
+        ClassBuilderInfo root = new ClassBuilderInfo(argumentPrefix);
+        root.setPackageName(_packageName.getPackageName());
+        root.setClassName(Util.upperCaseFirstChar(_structName));
+        root.setExtendClass(Struct.class.getName());
+        root.setClassType(ClassType.CLASS);
+
+        ClassConstructor classConstructor = new ClassConstructor();
+        root.getConstructors().add(classConstructor);
+
+        String structFqcn = _packageName.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
+
+        for (int i = 0; i < _dbusTypeStr.size(); i++) {
+            DuoData data = _dbusTypeStr.get(i);
+            String structClassName;
+
+            if (data.dbusSig().contains("(")) {
+                String subStructFqcn = structFqcn + Util.upperCaseFirstChar(Objects.toString(data.name(), "")) + "Struct";
+                structClassName = new StructTreeBuilder(argumentPrefix, generatedStructClassNames)
+                    .buildStructClasses(data.dbusSig(), subStructFqcn, _packageName, _structClasses);
+            } else {
+                Set<String> addClasses = new HashSet<>();
+                structClassName = TypeConverter.getJavaTypeFromDBusType(data.dbusSig(), addClasses);
+                root.getImports().addAll(addClasses);
+            }
+
+            MemberOrArgument argument = new MemberOrArgument(data.name(), structClassName, true);
+            argument.getAnnotations().add("@Position(" + i + ")");
+            root.getMembers().add(argument);
+            root.getImports().add(Position.class.getName());
+
+            classConstructor.getArguments().add(new MemberOrArgument(data.name(), structClassName));
+        }
+
+        _structClasses.add(root);
+
+        generatedStructClassNames.add(structFqcn);
+        return structFqcn;
     }
 
     /**
@@ -581,6 +649,7 @@ public class InterfaceCodeGenerator {
         boolean propertyMethods = false;
         String forcePackageName = null;
         String argumentPrefix = null;
+        boolean disableTuples = false;
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
@@ -604,6 +673,8 @@ public class InterfaceCodeGenerator {
                 }
             } else if ("--propertyMethods".equals(p) || "-m".equals(p)) {
                 propertyMethods = true;
+            } else if ("--disable-tuples".equals(p) || "-t".equals(p)) {
+                disableTuples = true;
             } else if ("--package".equals(p) || "-p".equals(p)) {
                 if (_args.length > i) {
                     forcePackageName = _args[++i];
@@ -679,7 +750,7 @@ public class InterfaceCodeGenerator {
         }
 
         InterfaceCodeGenerator ci2 = new InterfaceCodeGenerator(noFilter, introspectionData, objectPath,
-            busName, forcePackageName, propertyMethods, argumentPrefix);
+            busName, forcePackageName, propertyMethods, argumentPrefix, disableTuples);
         try {
 
             Map<File, String> analyze = ci2.analyze(ignoreDtd);
@@ -726,6 +797,9 @@ public class InterfaceCodeGenerator {
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
         System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
         System.out.println("");
+        System.out.println("        --disable-tuples   | -t           Create Struct based classes for multi-value "
+            + "return methods instead of creating Tuple classes (code will only work with dbus-java 5.2.0+)");
+        System.out.println("");
         System.out.println("        --argumentPrefix                  Prepend the given prefix to generated method arguments/parameters");
         System.out.println("");
         System.out.println("        --enable-dtd-validation           Enable DTD validation of introspection XML");
@@ -763,5 +837,7 @@ public class InterfaceCodeGenerator {
             return map;
         }
     }
+
+    record DuoData(String dbusSig, String name) {}
 
 }

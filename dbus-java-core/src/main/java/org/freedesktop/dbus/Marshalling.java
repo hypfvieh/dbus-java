@@ -568,7 +568,7 @@ public final class Marshalling {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnectionBase _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type);
+        LOGGER.trace("(1) Deserializing from {} to {}", _parameter.getClass(), _type);
 
         Object parameter = _parameter;
         // its a wrapped variant, unwrap it
@@ -719,7 +719,7 @@ public final class Marshalling {
     }
 
     static List<Object> deSerializeParameters(List<Object> _parameters, Type _type, AbstractConnectionBase _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {}", _parameters, _type);
+        LOGGER.trace("(2) Deserializing from {} to {}", _parameters, _type);
         if (_parameters == null) {
             return null;
         }
@@ -735,7 +735,7 @@ public final class Marshalling {
 
     @SuppressWarnings("unchecked")
     public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
-        LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
+        LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("(3) Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
 
         if (null == _parameters) {
             return null;
@@ -749,23 +749,27 @@ public final class Marshalling {
             types = pt.getActualTypeArguments();
         }
 
-        if (types.length == 1 && types[0] instanceof Class<?> clz && Tuple.class.isAssignableFrom(clz)) {
-            String typeName = types[0].getTypeName();
-            Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
-            if (constructors.length != 1) {
-                throw new DBusException("Error deserializing message: "
-                        + "We had a Tuple type but wrong number of constructors for this Tuple. "
-                        + "There should be exactly one.");
-            }
+        if (types.length == 1 && types[0] instanceof Class<?> clz) {
+            if (Tuple.class.isAssignableFrom(clz)) {
+                String typeName = types[0].getTypeName();
+                Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
+                if (constructors.length != 1) {
+                    throw new DBusException("Error deserializing message: "
+                            + "We had a Tuple type but wrong number of constructors for this Tuple. "
+                            + "There should be exactly one.");
+                }
 
-            if (constructors[0].getParameterCount() != parameters.length) {
-                throw new DBusException("Error deserializing message: "
-                        + "We had a Tuple type but it had wrong number of constructor arguments. "
-                        + "The number of constructor arguments should match the number of parameters to deserialize.");
-            }
+                if (constructors[0].getParameterCount() != parameters.length) {
+                    throw new DBusException("Error deserializing message: "
+                            + "We had a Tuple type but it had wrong number of constructor arguments. "
+                            + "The number of constructor arguments should match the number of parameters to deserialize.");
+                }
 
-            Object o = constructors[0].newInstance(parameters);
-            return new Object[] {o};
+                Object o = constructors[0].newInstance(parameters);
+                return new Object[] {o};
+            } else if (Struct.class.isAssignableFrom(clz)) {
+                return new Object[] {deSerializeParameter(_parameters, types[0], _conn)};
+            }
         }
 
         for (int i = 0; i < parameters.length; i++) {
