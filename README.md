@@ -124,6 +124,8 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 #### Changes
 
+[Planned changes for next major version](PLANNING.md)
+
 ##### Changes in 5.2.0 (not yet released):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
    - Re-Implemented `DBusMatchRule`
