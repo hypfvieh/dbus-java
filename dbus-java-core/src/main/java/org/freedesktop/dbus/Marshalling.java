@@ -630,10 +630,11 @@ public final class Marshalling {
             parameter = deSerializeParameters(objArr, ts, _conn);
             for (Constructor<?> con : ((Class<?>) _type).getDeclaredConstructors()) {
                 try {
+                    LOGGER.trace("Trying to create instance of {} using constructor {} with parameters: {}", _type, con, objArr);
                     parameter = con.newInstance(objArr);
                     break;
                 } catch (IllegalArgumentException _exIa) {
-                    LOGGER.trace("Could not create new instance", _exIa);
+                    LOGGER.error("Could not create new instance of " + _type, _exIa);
                 }
             }
         }
@@ -769,7 +770,8 @@ public final class Marshalling {
                 return new Object[] {o};
             } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
                 LOGGER.trace("(4) Deserializing Struct return");
-                return new Object[] {deSerializeParameter(_parameters, types[0], _conn)};
+                Object[] val = deSerializeParameters(_parameters, types, _conn, true);
+                return val;
             }
         }
 
