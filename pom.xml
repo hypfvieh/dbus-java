@@ -44,6 +44,7 @@
         <mvn.maven.surefire.plugin>3.3.1</mvn.maven.surefire.plugin>
         <mvn.sonar.maven.plugin>3.11.0.3922</mvn.sonar.maven.plugin>
         <mvn.versions.maven.plugin>2.17.1</mvn.versions.maven.plugin>
+        <mvn.centralpublishing.plugin.version>0.8.0</mvn.centralpublishing.plugin.version>
 
         <!-- Code analysis -->
         <check.skip-javadoc>false</check.skip-javadoc>
@@ -119,6 +120,11 @@
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
             </plugin>
 
         </plugins>
@@ -242,6 +248,21 @@
                         <releaseProfiles>release</releaseProfiles>
                         <goals>deploy</goals>
                         <pushChanges>false</pushChanges>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>${mvn.centralpublishing.plugin.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <skipPublishing>false</skipPublishing>
+                        <publishingServerId>central</publishingServerId>
+                        <autoPublish>false</autoPublish>
+                        <waitUntil>validated</waitUntil>
+                        <failOnBuildFailure>true</failOnBuildFailure>
+                        <checksums>all</checksums>
                     </configuration>
                 </plugin>
 
@@ -409,12 +430,14 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>central</id>
+            <name>Sonatype Central Snapshots</name>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>central</id>
+            <name>Sonatype Central Staging Repository</name>
+            <url>https://central.sonatype.com</url>
         </repository>
         <site>
             <id>local</id>
