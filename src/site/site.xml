@@ -1,46 +1,45 @@
-<project	xmlns="http://maven.apache.org/DECORATION/1.4.0"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 https://maven.apache.org/xsd/decoration-1.4.0.xsd"
-			name="dbus-java">
+<site xmlns="http://maven.apache.org/SITE/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd"
+    name="dbus-java">
 
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.12.0</version>
-  </skin>
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.10.0</version>
+    </skin>
 
-  <bannerLeft>
-    <name>dbus-java</name>
-  </bannerLeft>
-  
     <custom>
-    <fluidoSkin>
-    </fluidoSkin>
-  </custom>
+        <fluidoSkin>
+        </fluidoSkin>
+    </custom>
 
-<version position="right"/>
+    <version position="right" />
 
-<body>
-    <links>
-      <item name="GitHub Repository" href="https://www.github.com/hypfvieh/dbus-java" />
-      <item name="GitHub Wiki" href="https://www.github.com/hypfvieh/dbus-java/wiki" />
-      <item name="Maven Central" href="https://search.maven.org/search?q=g:com.github.hypfvieh%20dbus-java" />
-    </links>
-    
-    <menu name="Overview">
-        <item name="Home" href="/index.html" />
-        <item name="Quickstart" href="/quick-start.html" />
-        <item name="Code Generation" href="/code-generation.html" />
-        <item name="Exporting Objects" href="/exporting-objects.html" />
-        <item name="Calling Remote Objects" href="/remote-objects.html" />
-        <item name="Properties" href="/properties.html" />
-        <item name="Variant" href="/variant-handling.html" />
-        <item name="Signals" href="/using-signals.html" />
-        <item name="Howto..." href="/howto.html" />
-    </menu>
-    <menu ref="reports"/>
-    <menu ref="modules"/>
-</body>
+    <body>
+        <links>
+            <item name="GitHub Repository"
+                href="https://www.github.com/hypfvieh/dbus-java" />
+            <item name="GitHub Wiki"
+                href="https://www.github.com/hypfvieh/dbus-java/wiki" />
+            <item name="Maven Central"
+                href="https://search.maven.org/search?q=g:com.github.hypfvieh%20dbus-java" />
+        </links>
 
-</project>
+        <menu name="Overview">
+            <item name="Home" href="/index.html" />
+            <item name="Quickstart" href="/quick-start.html" />
+            <item name="Code Generation" href="/code-generation.html" />
+            <item name="Exporting Objects" href="/exporting-objects.html" />
+            <item name="Calling Remote Objects" href="/remote-objects.html" />
+            <item name="Properties" href="/properties.html" />
+            <item name="Variant" href="/variant-handling.html" />
+            <item name="Signals" href="/using-signals.html" />
+            <item name="Howto..." href="/howto.html" />
+        </menu>
+        <menu ref="reports" />
+        <menu ref="modules" />
+    </body>
+
+</site>
 
