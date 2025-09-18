@@ -15,13 +15,13 @@
 
     <properties>
         <!-- Dependency versions -->
-        <junit5.version>5.11.0</junit5.version>
-        <pmd.version>7.10.0</pmd.version>
-        <checkstyle.version>10.17.0</checkstyle.version>
-        <logback.version>1.5.13</logback.version>
-        <slf4j.version>2.0.16</slf4j.version>
-        <jnr-unixsocket.version>0.38.22</jnr-unixsocket.version>
-        <junixsocket.version>2.10.0</junixsocket.version>
+        <junit5.version>5.13.4</junit5.version>
+        <pmd.version>7.17.0</pmd.version>
+        <checkstyle.version>11.0.1</checkstyle.version>
+        <logback.version>1.5.18</logback.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <jnr-unixsocket.version>0.38.23</jnr-unixsocket.version>
+        <junixsocket.version>2.10.1</junixsocket.version>
 
         <!-- Plugin versions -->
         <mvn.git.commit.id.maven.plugin>9.0.1</mvn.git.commit.id.maven.plugin>
@@ -39,7 +39,7 @@
         <mvn.maven.project.info.reports.plugin>3.7.0</mvn.maven.project.info.reports.plugin>
         <mvn.maven.release.plugin>3.1.1</mvn.maven.release.plugin>
         <mvn.maven.resource.plugin>3.3.1</mvn.maven.resource.plugin>
-        <mvn.maven.site.plugin>3.20.0</mvn.maven.site.plugin>
+        <mvn.maven.site.plugin>3.21.0</mvn.maven.site.plugin>
         <mvn.maven.source.plugin>3.3.0</mvn.maven.source.plugin>
         <mvn.maven.surefire.plugin>3.3.1</mvn.maven.surefire.plugin>
         <mvn.sonar.maven.plugin>3.11.0.3922</mvn.sonar.maven.plugin>
