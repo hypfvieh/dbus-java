@@ -3,12 +3,11 @@
     xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd"
     name="dbus-java">
 
-<version position="right"/>
+    <version position="right" />
 
-<body>
-    <menu ref="reports"/>
-    <menu ref="parent"/>
-</body>
+    <body>
+        <menu ref="reports" />
+        <menu ref="parent" />
+    </body>
 
 </site>
-
