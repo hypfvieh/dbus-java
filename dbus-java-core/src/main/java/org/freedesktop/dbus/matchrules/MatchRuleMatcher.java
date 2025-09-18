@@ -126,12 +126,7 @@ final class MatchRuleMatcher {
     }
 
     private static boolean matchesArg0Path(String _matchVal, String _compareVal) {
-
-        if ("/".equals(_compareVal) || _matchVal.startsWith(_compareVal)) {
-            return true;
-        }
-
-        return !_matchVal.equals(_compareVal.substring(0, _compareVal.length() - 1));
+        return "/".equals(_compareVal) || _matchVal.startsWith(_compareVal);
     }
 
     /**
