@@ -726,7 +726,7 @@ public final class Util {
      * @return class name or null if input was null/empty
      */
     public static String extractClassNameFromFqcn(String _fqcn) {
-        if (Util.isBlank(_fqcn)) {
+        if (isBlank(_fqcn)) {
             return null;
         }
         int lastDot = _fqcn.lastIndexOf('.');

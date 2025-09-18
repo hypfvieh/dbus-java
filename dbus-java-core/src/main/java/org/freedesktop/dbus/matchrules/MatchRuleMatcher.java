@@ -131,11 +131,7 @@ final class MatchRuleMatcher {
             return true;
         }
 
-        if (_matchVal.equals(_compareVal.substring(0, _compareVal.length() - 1))) {
-            return false;
-        }
-
-        return false;
+        return !_matchVal.equals(_compareVal.substring(0, _compareVal.length() - 1));
     }
 
     /**

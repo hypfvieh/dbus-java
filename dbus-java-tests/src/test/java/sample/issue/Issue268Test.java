@@ -23,6 +23,7 @@ public class Issue268Test extends AbstractDBusDaemonBaseTest {
 
     private final CountDownLatch waitLatch = new CountDownLatch(1);
 
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     @Test
     void testSignal() throws Exception {
         List<DBusSignal> failed = new ArrayList<>();

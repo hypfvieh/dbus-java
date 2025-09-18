@@ -25,13 +25,13 @@ public enum MessageTypes {
     }
 
     public static MessageTypes getById(byte _id) {
-        return Stream.of(MessageTypes.values())
+        return Stream.of(values())
             .filter(e -> e.getId() == _id)
             .findFirst().orElse(null);
     }
 
     public static String getRuleNameById(byte _id) {
-        return Stream.of(MessageTypes.values())
+        return Stream.of(values())
             .filter(e -> e.getId() == _id)
             .map(e -> e.getMatchRuleName())
             .findFirst().orElse(null);
