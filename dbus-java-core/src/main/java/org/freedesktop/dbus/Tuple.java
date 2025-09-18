@@ -7,7 +7,7 @@ package org.freedesktop.dbus;
  * which returns multiple values.
  * </p><p>
  * All fields in the Tuple which you wish to be serialized and sent to the
- * remote method should be annotated with the {@link org.freedesktop.dbus.Position Position}
+ * remote method should be annotated with the {@link org.freedesktop.dbus.annotations.Position Position}
  * annotation, in the order they should appear to DBus.
  * </p><p>
  * A Tuple should have generic type parameters, otherwise deserialization may fail.
