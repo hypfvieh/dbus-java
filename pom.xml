@@ -267,7 +267,7 @@
                     <configuration>
                         <skipPublishing>false</skipPublishing>
                         <publishingServerId>central</publishingServerId>
-                        <autoPublish>false</autoPublish>
+                        <autoPublish>true</autoPublish>
                         <waitUntil>validated</waitUntil>
                         <failOnBuildFailure>true</failOnBuildFailure>
                         <checksums>all</checksums>
