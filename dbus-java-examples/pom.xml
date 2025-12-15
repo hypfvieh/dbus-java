@@ -67,7 +67,7 @@
         <dependency>
             <groupId>com.github.hypfvieh</groupId>
             <artifactId>java-utils</artifactId>
-            <version>1.2.1</version>
+            <version>${java.utils.version}</version>
         </dependency>
 
         <dependency>
