@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.utils;
 
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.InvalidBusNameException;
 import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
@@ -23,7 +24,9 @@ public class DBusObjectsTest extends AbstractBaseTest {
 
     @Test
     void testRequireObjectPath() {
+        assertDoesNotThrow(() -> DBusObjects.requireObjectPath(new DBusPath("/")));
         assertDoesNotThrow(() -> DBusObjects.requireObjectPath("/obj/path"));
+
         assertThrows(InvalidObjectPathException.class, () -> DBusObjects.requireObjectPath("blabla"));
         assertThrows(InvalidObjectPathException.class, () -> DBusObjects.requireObjectPath("bla/bla"));
     }

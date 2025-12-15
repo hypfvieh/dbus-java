@@ -141,6 +141,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Increased minimum required Maven version from 3.6.3 to 3.9.3
    - Update site descriptors
    - Addressed a few PMD findings
+   - Fixed issue when using `DBusPath("/")` in `getRemoteObject` method ([#290](https://github.com/hypfvieh/dbus-java/issues/290))
 
 ##### Changes in 5.1.1 (2025-03-14):
    - Added new Helper class `VariantBuilder` to allow creating Variants which contain Maps or Collections without messing with the required DBus type arguments
