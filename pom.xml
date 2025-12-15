@@ -16,13 +16,16 @@
     <properties>
         <!-- Dependency versions -->
         <junit5.version>5.13.4</junit5.version>
-        <pmd.version>7.17.0</pmd.version>
-        <checkstyle.version>11.0.1</checkstyle.version>
-        <logback.version>1.5.18</logback.version>
+        <pmd.version>7.19.0</pmd.version>
+        <checkstyle.version>12.3.0</checkstyle.version>
+        <logback.version>1.5.22</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <jnr-unixsocket.version>0.38.23</jnr-unixsocket.version>
+        <jnr-unixsocket.version>0.38.24</jnr-unixsocket.version>
         <junixsocket.version>2.10.1</junixsocket.version>
 
+        <!-- only for example code -->
+        <java.utils.version>1.2.2</java.utils.version>
+        
         <!-- Plugin versions -->
         <mvn.git.commit.id.maven.plugin>9.0.2</mvn.git.commit.id.maven.plugin>
         <mvn.maven.bundle.plugin.version>5.1.9</mvn.maven.bundle.plugin.version>

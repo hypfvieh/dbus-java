@@ -4,3 +4,4 @@
 - Remove `throws IOException` from `AbstractConnectionBase.close()` (Issue #287)
 - Remove all methods and classes marked as `@Deprecated(forRemoval = true)`
 - Support usage of `Struct`s as return value (as alternative to `Tuple` with generics) (based on discussion in #285)
+- Update JUnit to JUnit 6.x
