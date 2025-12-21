@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class DBusPath implements Comparable<DBusPath> {
     private final String source;
-    private String path;
+    private final String path;
 
     public DBusPath(String _source, String _path) {
         source = _source;
@@ -17,14 +17,6 @@ public class DBusPath implements Comparable<DBusPath> {
 
     public String getPath() {
         return path;
-    }
-
-    /**
-     * @deprecated path will be final in future, please do no longer use the setter.
-     */
-    @Deprecated(forRemoval = true, since = "5.1.1 - 2024-11-16")
-    public void setPath(String _path) {
-        path = _path;
     }
 
     public String getSource() {

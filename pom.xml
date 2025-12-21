@@ -6,7 +6,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>dbus-java-parent</artifactId>
-    <version>5.2.1-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <url>https://github.com/hypfvieh/dbus-java</url>
@@ -15,7 +15,7 @@
 
     <properties>
         <!-- Dependency versions -->
-        <junit5.version>5.13.4</junit5.version>
+        <junit6.version>6.0.1</junit6.version>
         <pmd.version>7.19.0</pmd.version>
         <checkstyle.version>12.3.0</checkstyle.version>
         <logback.version>1.5.22</logback.version>
@@ -28,25 +28,25 @@
         
         <!-- Plugin versions -->
         <mvn.git.commit.id.maven.plugin>9.0.2</mvn.git.commit.id.maven.plugin>
-        <mvn.maven.bundle.plugin.version>5.1.9</mvn.maven.bundle.plugin.version>
+        <mvn.maven.bundle.plugin.version>6.0.0</mvn.maven.bundle.plugin.version>
         <mvn.maven.checkstyle.plugin>3.6.0</mvn.maven.checkstyle.plugin>
         <mvn.maven.clean.plugin>3.5.0</mvn.maven.clean.plugin>
-        <mvn.maven.compiler.plugin>3.14.0</mvn.maven.compiler.plugin>
+        <mvn.maven.compiler.plugin>3.14.1</mvn.maven.compiler.plugin>
         <mvn.maven.deploy.plugin>3.1.4</mvn.maven.deploy.plugin>
-        <mvn.maven.enforcer.plugin>3.6.1</mvn.maven.enforcer.plugin>
+        <mvn.maven.enforcer.plugin>3.6.2</mvn.maven.enforcer.plugin>
         <mvn.maven.gpg.plugin>3.2.8</mvn.maven.gpg.plugin>
         <mvn.maven.install.plugin>3.1.4</mvn.maven.install.plugin>
-        <mvn.maven.jar.plugin>3.4.2</mvn.maven.jar.plugin>
-        <mvn.maven.javadoc.plugin>3.11.3</mvn.maven.javadoc.plugin>
-        <mvn.maven.pmd.plugin>3.27.0</mvn.maven.pmd.plugin>
+        <mvn.maven.jar.plugin>3.5.0</mvn.maven.jar.plugin>
+        <mvn.maven.javadoc.plugin>3.12.0</mvn.maven.javadoc.plugin>
+        <mvn.maven.pmd.plugin>3.28.0</mvn.maven.pmd.plugin>
         <mvn.maven.project.info.reports.plugin>3.9.0</mvn.maven.project.info.reports.plugin>
-        <mvn.maven.release.plugin>3.1.1</mvn.maven.release.plugin>
-        <mvn.maven.resource.plugin>3.3.1</mvn.maven.resource.plugin>
+        <mvn.maven.release.plugin>3.3.1</mvn.maven.release.plugin>
+        <mvn.maven.resource.plugin>3.4.0</mvn.maven.resource.plugin>
         <mvn.maven.site.plugin>3.21.0</mvn.maven.site.plugin>
-        <mvn.maven.source.plugin>3.3.1</mvn.maven.source.plugin>
+        <mvn.maven.source.plugin>3.4.0</mvn.maven.source.plugin>
         <mvn.maven.surefire.plugin>3.5.4</mvn.maven.surefire.plugin>
-        <mvn.sonar.maven.plugin>5.2.0.4988</mvn.sonar.maven.plugin>
-        <mvn.versions.maven.plugin>2.19.0</mvn.versions.maven.plugin>
+        <mvn.sonar.maven.plugin>5.5.0.6356</mvn.sonar.maven.plugin>
+        <mvn.versions.maven.plugin>2.20.1</mvn.versions.maven.plugin>
         <mvn.centralpublishing.plugin.version>0.9.0</mvn.centralpublishing.plugin.version>
 
         <!-- Code analysis -->
@@ -57,9 +57,9 @@
 
         <!-- Build properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
 
         <parentDir>${maven.multiModuleProjectDirectory}</parentDir>
         <project.build.outputTimestamp>2025-12-21T13:12:42Z</project.build.outputTimestamp>
@@ -488,7 +488,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>${junit5.version}</version>
+                <version>${junit6.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

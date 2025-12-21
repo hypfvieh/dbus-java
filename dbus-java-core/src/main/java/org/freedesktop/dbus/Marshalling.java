@@ -75,7 +75,6 @@ public final class Marshalling {
 
         CLASS_TO_ARGUMENTTYPE.put(DBusInterface.class, ArgumentType.OBJECT_PATH);
         CLASS_TO_ARGUMENTTYPE.put(DBusPath.class, ArgumentType.OBJECT_PATH);
-        CLASS_TO_ARGUMENTTYPE.put(ObjectPath.class, ArgumentType.OBJECT_PATH);
     }
 
     private Marshalling() {
@@ -582,16 +581,6 @@ public final class Marshalling {
             List<Type> rv = new ArrayList<>();
             getJavaType((String) parameter, rv, -1);
             parameter = rv.toArray(EMPTY_TYPE_ARRAY);
-        }
-
-        // its an object path, get/create the proxy
-        if (parameter instanceof ObjectPath op) {
-            LOGGER.trace("Parameter is ObjectPath");
-            if (_type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) _type)) {
-                parameter = _conn.getExportedObject(op.getSource(), op.getPath(), (Class<DBusInterface>) _type);
-            } else {
-                parameter = new DBusPath(op.getPath());
-            }
         }
 
         if (parameter instanceof DBusPath op) {

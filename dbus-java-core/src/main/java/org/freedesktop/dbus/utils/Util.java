@@ -9,6 +9,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -306,9 +308,9 @@ public final class Util {
         try {
             URL dlUrl;
             if (fileUrl.startsWith("file:/")) {
-                dlUrl = new URL("file", "", fileUrl.replaceFirst("file:\\/{1,2}", ""));
+                dlUrl = new URI("file", "", fileUrl.replaceFirst("file:\\/{1,2}", "")).toURL();
             } else {
-                dlUrl = new URL(fileUrl);
+                dlUrl = new URI(fileUrl).toURL();
             }
             URLConnection urlConn = dlUrl.openConnection();
             urlConn.setDoInput(true);
@@ -316,7 +318,7 @@ public final class Util {
 
             return readTextFileFromStream(urlConn.getInputStream(), _charset, _silent);
 
-        } catch (IOException _ex) {
+        } catch (IOException | URISyntaxException _ex) {
             if (!_silent) {
                 LOGGER.warn("Error while reading file:", _ex);
             }

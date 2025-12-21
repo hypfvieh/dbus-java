@@ -7,7 +7,6 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.networkmanager.device.Wireless;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 
 public final class NetworkManagerExample2 {
@@ -23,7 +22,7 @@ public final class NetworkManagerExample2 {
             List<DBusPath> getAllAccessPoints = wifiAdaptor.GetAllAccessPoints();
             System.out.println(getAllAccessPoints);
 
-        } catch (IOException | DBusException _ex) {
+        } catch (DBusException _ex) {
             LoggerFactory.getLogger(NetworkManagerExample2.class).error("Error", _ex);
         }
     }

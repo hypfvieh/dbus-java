@@ -93,19 +93,6 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
     }
 
     /**
-     * Enable/Disable weak references on connection.
-     * Default is false.
-     *
-     * @param _weakRef true to enable
-     * @return this
-     * @deprecated use {@link #withExportWeakReferences(boolean)} instead
-     */
-    @Deprecated(forRemoval = true, since = "5.1.0 - 2024-07-12")
-    public R withWeakReferences(boolean _weakRef) {
-        return withExportWeakReferences(_weakRef);
-    }
-
-    /**
      * Enable/Disable usage of weak references for exported objects.
      * <p>
      * Exported objects are objects provided by the application to

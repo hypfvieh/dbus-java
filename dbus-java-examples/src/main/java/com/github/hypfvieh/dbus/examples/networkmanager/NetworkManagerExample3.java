@@ -10,7 +10,6 @@ import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +102,7 @@ public final class NetworkManagerExample3 {
                 connection.Save();
             }
 
-        } catch (IOException | DBusException _ex) {
+        } catch (DBusException _ex) {
             LoggerFactory.getLogger(NetworkManagerExample3.class).error("Error", _ex);
         }
     }

@@ -52,7 +52,7 @@ public class TestPeer2Peer extends AbstractBaseTest {
             dc.disconnect();
             LoggerFactory.getLogger(getClass()).info("Client: Disconnected");
             finished = true;
-        } catch (IOException | DBusException _ex) {
+        } catch (DBusException _ex) {
             fail("Exception in client", _ex);
         }
     }

@@ -669,7 +669,7 @@ public class InterfaceCodeGenerator {
                     logger.error("Failed to get introspection data");
                     System.exit(1);
                 }
-            } catch (DBusExecutionException | DBusException | IOException _ex) {
+            } catch (DBusExecutionException | DBusException _ex) {
                 logger.error("Failure in DBus Communications. ", _ex);
                 System.exit(1);
             }

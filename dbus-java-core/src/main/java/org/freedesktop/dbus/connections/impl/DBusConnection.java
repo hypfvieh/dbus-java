@@ -593,7 +593,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      * Same as disconnect.
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
         disconnect();
     }
 

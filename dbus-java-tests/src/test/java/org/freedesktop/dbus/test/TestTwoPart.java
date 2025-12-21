@@ -9,8 +9,6 @@ import org.freedesktop.dbus.test.helper.twopart.TwoPartTestClient.TwoPartTestObj
 import org.freedesktop.dbus.test.helper.twopart.TwoPartTestServer;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 public class TestTwoPart extends AbstractDBusDaemonBaseTest {
 
     private volatile boolean serverReady = false;
@@ -53,7 +51,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
 
             assertNull(twoPartServer.error, "No error expected but got: " + twoPartServer.error);
             assertTrue(signalSerial < twoPartServer.receivedSignalSerial, "Expected received signal serial to be larger than created serial");
-        } catch (DBusException | IOException _ex) {
+        } catch (DBusException _ex) {
             fail("Exception in client", _ex);
         }
     }
@@ -89,7 +87,7 @@ public class TestTwoPart extends AbstractDBusDaemonBaseTest {
                 // the serial number of the signal we received
                 // the signal was created before and should have the same serial
                 receivedSignalSerial = server.getSignalSerial();
-            } catch (DBusException | IOException _ex) {
+            } catch (DBusException _ex) {
                 logger.error("Exception while running TwoPartServer", _ex);
                 throw new RuntimeException("Exception in server");
             }

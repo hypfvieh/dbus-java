@@ -599,22 +599,10 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     }
 
     /**
-     * Set the callback which will be notified when a disconnection happens.
-     * Use null to remove.
-     *
-     * @param _disconnectCallback callback to execute or null to remove
-     * @deprecated should be set on construction using the builder
-     */
-    @Deprecated(since = "5.1.0 - 2024-07-12", forRemoval = true)
-    public void setDisconnectCallback(IDisconnectCallback _disconnectCallback) {
-        connectionConfig.setDisconnectCallback(_disconnectCallback);
-    }
-
-    /**
      * Disconnect this session (for use in try-with-resources).
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
         disconnect();
     }
 

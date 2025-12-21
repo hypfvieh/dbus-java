@@ -126,7 +126,15 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 [Planned changes for next major version](PLANNING.md)
 
-##### Changes in 5.2.0 (not yet released):
+##### Changes in 6.0.0 (not released yet):
+   - **Minimum Java version: 21**
+   - **Removed** all methods, members and classes marked as deprecated
+   - Update JUnit to Version 6
+   - Remove `throws IOException` from `AbstractConnectionBase.close()` (Issue #287)
+   - Support usage of `Struct`s as return value (as alternative to `Tuple` with generics) (based on discussion in #285)
+   - Updated dependencies and plugins
+
+##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
    - Re-Implemented `DBusMatchRule`
      - The new implementation can be found in `org.freedesktop.dbus.matchrules.DBusMatchRule`, the old `DBusMatchRule` class still exists and is now a subclass

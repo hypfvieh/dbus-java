@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>5.2.1-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
-            <version>1.7.4</version>
+            <version>1.8.3</version>
         </dependency>
 
     </dependencies>

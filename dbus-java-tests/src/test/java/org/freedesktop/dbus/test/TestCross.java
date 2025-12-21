@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -69,7 +68,7 @@ public class TestCross extends AbstractDBusDaemonBaseTest {
                 }
             }
 
-        } catch (DBusException | IOException _exDbe) {
+        } catch (DBusException _exDbe) {
             _exDbe.printStackTrace();
             fail("Exception while processing DBus");
         }
@@ -110,7 +109,7 @@ public class TestCross extends AbstractDBusDaemonBaseTest {
                     logger.warn("---> " + s + " untested");
                 }
                 conn.disconnect();
-            } catch (DBusException | IOException _exDe) {
+            } catch (DBusException _exDe) {
                 _exDe.printStackTrace();
                 error = _exDe;
             }

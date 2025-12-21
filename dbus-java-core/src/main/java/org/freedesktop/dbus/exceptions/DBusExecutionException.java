@@ -24,18 +24,4 @@ public class DBusExecutionException extends RuntimeException {
         super(_message, _cause);
     }
 
-    /**
-     * @deprecated the configured type is never used
-     */
-    @Deprecated(forRemoval = true, since = "5.1.0 - 2024-07-12")
-    public void setType(String _type) {
-    }
-
-    /**
-    * @deprecated type is never used
-    */
-    @Deprecated(forRemoval = true, since = "5.1.0 - 2024-07-12")
-    public String getType() {
-        return getClass().getName();
-    }
 }

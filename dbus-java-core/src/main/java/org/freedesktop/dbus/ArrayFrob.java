@@ -7,28 +7,9 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public final class ArrayFrob {
     private ArrayFrob() {
-    }
-
-    /**
-     * @deprecated use {@link PrimitiveUtils#getPrimitiveToWrapperTypes()}
-     * @return Map with primitive type and wrapper types
-     */
-    @Deprecated(since = "5.1.1 - 2024-09-15")
-    public static Map<Class<?>, Class<?>> getPrimitiveToWrapperTypes() {
-        return PrimitiveUtils.getPrimitiveToWrapperTypes();
-    }
-
-    /**
-     * @deprecated use {@link PrimitiveUtils#getWrapperToPrimitiveTypes()}
-     * @return Map with wrapper type and primitive type
-     */
-    @Deprecated(since = "5.1.1 - 2024-09-15")
-    public static Map<Class<?>, Class<?>> getWrapperToPrimitiveTypes() {
-        return PrimitiveUtils.getWrapperToPrimitiveTypes();
     }
 
     @SuppressWarnings("unchecked")

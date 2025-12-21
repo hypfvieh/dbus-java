@@ -16,8 +16,7 @@ import java.util.stream.Stream;
  * @author hypfvieh
  * @since 5.2.0 - 2025-05-03
  */
-@SuppressWarnings("removal") // required until old implementation is removed
-public sealed class DBusMatchRule permits org.freedesktop.dbus.DBusMatchRule {
+public final class DBusMatchRule {
 
     private static final Map<String, Class<? extends DBusSignal>> SIGNALTYPEMAP = new ConcurrentHashMap<>();
 

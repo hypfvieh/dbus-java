@@ -2,7 +2,6 @@ package org.freedesktop.dbus.messages;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
-import org.freedesktop.dbus.ObjectPath;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.connections.base.AbstractConnectionBase;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -330,8 +329,6 @@ public class DBusSignal extends Message {
                 Class<?> class1 = parameterTypes.get(i);
 
                 if (Enum.class.isAssignableFrom(class1) && String.class.equals(_wantedArgs.get(i))) {
-                    continue;
-                } else if (DBusInterface.class.isAssignableFrom(class1) && ObjectPath.class.equals(_wantedArgs.get(i))) {
                     continue;
                 } else if (DBusInterface.class.isAssignableFrom(class1) && DBusPath.class.equals(_wantedArgs.get(i))) {
                     continue;

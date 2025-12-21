@@ -4,8 +4,6 @@
 name: Maven Build/Test JDK 21
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 

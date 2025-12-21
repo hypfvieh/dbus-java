@@ -9,7 +9,6 @@ import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Sample client which connects to our sample sample (#{@link RunTwoPartDaemon}).
@@ -40,7 +39,7 @@ public final class RunTwoPartClient {
                 }
             }
 
-        } catch (IOException | DBusException _ex) {
+        } catch (DBusException _ex) {
             throw new RuntimeException("Could not connect to twopart daemon");
         }
     }

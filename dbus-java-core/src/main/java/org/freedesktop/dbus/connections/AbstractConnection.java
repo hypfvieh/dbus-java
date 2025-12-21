@@ -141,19 +141,6 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
     }
 
     /**
-     * If set to true the bus will not hold a strong reference to exported objects. If they go out of scope they will
-     * automatically be unexported from the bus. The default is to hold a strong reference, which means objects must be
-     * explicitly unexported before they will be garbage collected.
-     *
-     * @param _weakreferences reference
-     * @deprecated should be set during construction time (using the builder), will be removed in future
-     */
-    @Deprecated(since = "5.1.0 - 2024-07-12", forRemoval = true)
-    public void setWeakReferences(boolean _weakreferences) {
-        getConnectionConfig().setExportWeakReferences(_weakreferences);
-    }
-
-    /**
      * Export an object so that its methods can be called on DBus.
      *
      * @param _objectPath
