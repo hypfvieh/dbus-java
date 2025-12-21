@@ -23,7 +23,6 @@
         <project.build.outputTimestamp>2025-03-14T09:18:08Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
         
-        <skipDeployment>true</skipDeployment>
         <check.skip-javadoc>true</check.skip-javadoc>
     </properties>
 
@@ -35,6 +34,15 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- No deployment to maven central -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <configuration>
+                    <skipPublishing>true</skipPublishing>
                 </configuration>
             </plugin>
         </plugins>
