@@ -37,6 +37,15 @@
                 </configuration>
             </plugin>
 
+            <!-- no deployment on deploy phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
             <!-- No deployment to maven central -->
             <plugin>
                 <groupId>org.sonatype.central</groupId>
