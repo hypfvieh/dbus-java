@@ -15,12 +15,12 @@
     <parent>
         <groupId>com.github.hypfvieh</groupId>
         <artifactId>dbus-java-parent</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.2.0</version>
     </parent>
 
     <properties>
         <parentDir>${project.parent.basedir}</parentDir>
-        <project.build.outputTimestamp>2025-03-14T09:18:08Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-12-21T13:05:58Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
     </properties>
     
