@@ -655,13 +655,15 @@ public class ClassBuilderInfo {
             String assignments = "";
 
             if (!getSuperArguments().isEmpty()) {
-                assignments = _indent + "super(" + getSuperArguments().stream().map(MemberOrArgument::getName).collect(Collectors.joining(", ")) + ");";
+                assignments = " ".repeat(_indent.length() / 2) + "super(" + getSuperArguments().stream()
+                    .map(e -> maybePrefix(e.getName(), _argumentPrefix))
+                    .collect(Collectors.joining(", ")) + ");";
             }
 
             if (!getArguments().isEmpty()) {
                 List<String> assigns = new ArrayList<>();
                 for (MemberOrArgument e : getArguments()) {
-                    assigns.add(_indent + "this." + e.getName().replaceFirst("^_(.+)", "$1") + " = " + maybePrefix(e.getName(), _argumentPrefix) + ";");
+                    assigns.add(_indent + "this." + e.getName() + " = " + maybePrefix(e.getName(), _argumentPrefix) + ";");
                 }
                 assignments += String.join(System.lineSeparator(), assigns);
             }

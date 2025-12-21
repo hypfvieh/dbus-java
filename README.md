@@ -133,6 +133,8 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Remove `throws IOException` from `AbstractConnectionBase.close()` (Issue #287)
    - Support usage of `Struct`s as return value (as alternative to `Tuple` with generics) (based on discussion in #285)
    - Updated dependencies and plugins
+   - Added support to use `Struct` datatypes as return values instead of `Tuple`
+   - Added new commandline option `--disable-tuples` to `InterfaceCodeGenerator` to create `Struct` classes instead of `Tuple`s for multi value return (**Caution** the generated code will only work with dbus-java 5.2.0+)
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 

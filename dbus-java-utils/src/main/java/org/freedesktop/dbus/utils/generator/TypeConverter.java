@@ -259,6 +259,7 @@ public final class TypeConverter {
                         _javaIncludes.addAll(e.getValue());
                     } else {
                         internalTypes.add(e.getKey());
+                        _javaIncludes.add(e.getKey());
                     }
                 }
             }

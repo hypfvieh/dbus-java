@@ -567,7 +567,7 @@ public final class Marshalling {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     static Object deSerializeParameter(Object _parameter, Type _type, AbstractConnectionBase _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {}", _parameter.getClass(), _type);
+        LOGGER.trace("(1) Deserializing from {} to {}", _parameter.getClass(), _type);
 
         Object parameter = _parameter;
         // its a wrapped variant, unwrap it
@@ -619,10 +619,11 @@ public final class Marshalling {
             parameter = deSerializeParameters(objArr, ts, _conn);
             for (Constructor<?> con : ((Class<?>) _type).getDeclaredConstructors()) {
                 try {
+                    LOGGER.trace("Trying to create instance of {} using constructor {} with parameters: {}", _type, con, objArr);
                     parameter = con.newInstance(objArr);
                     break;
                 } catch (IllegalArgumentException _exIa) {
-                    LOGGER.trace("Could not create new instance", _exIa);
+                    LOGGER.error("Could not create new instance of " + _type, _exIa);
                 }
             }
         }
@@ -708,7 +709,7 @@ public final class Marshalling {
     }
 
     static List<Object> deSerializeParameters(List<Object> _parameters, Type _type, AbstractConnectionBase _conn) throws Exception {
-        LOGGER.trace("Deserializing from {} to {}", _parameters, _type);
+        LOGGER.trace("(2) Deserializing from {} to {}", _parameters, _type);
         if (_parameters == null) {
             return null;
         }
@@ -723,8 +724,8 @@ public final class Marshalling {
     }
 
     @SuppressWarnings("unchecked")
-    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
-        LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
+    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn, boolean _methodCall) throws Exception {
+        LoggingHelper.logIf(LOGGER.isTraceEnabled(), () -> LOGGER.trace("(3) Deserializing from {} to {} ", Arrays.deepToString(_parameters), Arrays.deepToString(_types)));
 
         if (null == _parameters) {
             return null;
@@ -738,23 +739,29 @@ public final class Marshalling {
             types = pt.getActualTypeArguments();
         }
 
-        if (types.length == 1 && types[0] instanceof Class<?> clz && Tuple.class.isAssignableFrom(clz)) {
-            String typeName = types[0].getTypeName();
-            Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
-            if (constructors.length != 1) {
-                throw new DBusException("Error deserializing message: "
-                        + "We had a Tuple type but wrong number of constructors for this Tuple. "
-                        + "There should be exactly one.");
-            }
+        if (types.length == 1 && types[0] instanceof Class<?> clz) {
+            if (Tuple.class.isAssignableFrom(clz)) {
+                String typeName = types[0].getTypeName();
+                Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
+                if (constructors.length != 1) {
+                    throw new DBusException("Error deserializing message: "
+                            + "We had a Tuple type but wrong number of constructors for this Tuple. "
+                            + "There should be exactly one.");
+                }
 
-            if (constructors[0].getParameterCount() != parameters.length) {
-                throw new DBusException("Error deserializing message: "
-                        + "We had a Tuple type but it had wrong number of constructor arguments. "
-                        + "The number of constructor arguments should match the number of parameters to deserialize.");
-            }
+                if (constructors[0].getParameterCount() != parameters.length) {
+                    throw new DBusException("Error deserializing message: "
+                            + "We had a Tuple type but it had wrong number of constructor arguments. "
+                            + "The number of constructor arguments should match the number of parameters to deserialize.");
+                }
 
-            Object o = constructors[0].newInstance(parameters);
-            return new Object[] {o};
+                Object o = constructors[0].newInstance(parameters);
+                return new Object[] {o};
+            } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
+                LOGGER.trace("(4) Deserializing Struct return");
+                Object[] val = deSerializeParameters(_parameters, types, _conn, true);
+                return val;
+            }
         }
 
         for (int i = 0; i < parameters.length; i++) {
@@ -807,5 +814,9 @@ public final class Marshalling {
             }
         }
         return parameters;
+    }
+
+    public static Object[] deSerializeParameters(Object[] _parameters, Type[] _types, AbstractConnectionBase _conn) throws Exception {
+        return deSerializeParameters(_parameters, _types, _conn, false);
     }
 }
