@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"org.freedesktop.dbus"},{"l":"org.freedesktop.dbus.utils"}];updateSearchResults();
+moduleSearchIndex = [{"l":"org.freedesktop.dbus"},{"l":"org.freedesktop.dbus.transport.jnr"},{"l":"org.freedesktop.dbus.transport.jre"},{"l":"org.freedesktop.dbus.transport.junixsocket"},{"l":"org.freedesktop.dbus.transport.tcp"},{"l":"org.freedesktop.dbus.utils"}];updateSearchResults();
