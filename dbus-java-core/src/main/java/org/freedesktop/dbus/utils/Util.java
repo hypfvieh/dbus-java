@@ -308,7 +308,7 @@ public final class Util {
         try {
             URL dlUrl;
             if (fileUrl.startsWith("file:/")) {
-                dlUrl = new URI("file", "", fileUrl.replaceFirst("file:\\/{1,2}", "")).toURL();
+                dlUrl = new URI(fileUrl).toURL();
             } else {
                 dlUrl = new URI(fileUrl).toURL();
             }
