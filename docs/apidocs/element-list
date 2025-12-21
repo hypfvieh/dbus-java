@@ -13,6 +13,7 @@ org.freedesktop.dbus.errors
 org.freedesktop.dbus.exceptions
 org.freedesktop.dbus.handlers
 org.freedesktop.dbus.interfaces
+org.freedesktop.dbus.matchrules
 org.freedesktop.dbus.messages
 org.freedesktop.dbus.messages.constants
 org.freedesktop.dbus.propertyref
@@ -20,6 +21,10 @@ org.freedesktop.dbus.spi.message
 org.freedesktop.dbus.spi.transport
 org.freedesktop.dbus.types
 org.freedesktop.dbus.utils
+module:org.freedesktop.dbus.transport.jnr
+module:org.freedesktop.dbus.transport.jre
+module:org.freedesktop.dbus.transport.junixsocket
+module:org.freedesktop.dbus.transport.tcp
 module:org.freedesktop.dbus.utils
 org.freedesktop.dbus.utils.bin
 org.freedesktop.dbus.utils.generator

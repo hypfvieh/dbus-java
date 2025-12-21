@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"Alle Packages","u":"allpackages-index.html"},{"m":"org.freedesktop.dbus.transport.jre","l":"org.freedesktop.dbus.transport.jre"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"m":"org.freedesktop.dbus.transport.jre","l":"org.freedesktop.dbus.transport.jre"}];updateSearchResults();

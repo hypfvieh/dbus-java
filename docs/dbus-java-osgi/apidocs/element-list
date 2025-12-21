@@ -13,6 +13,7 @@ org.freedesktop.dbus.errors
 org.freedesktop.dbus.exceptions
 org.freedesktop.dbus.handlers
 org.freedesktop.dbus.interfaces
+org.freedesktop.dbus.matchrules
 org.freedesktop.dbus.messages
 org.freedesktop.dbus.messages.constants
 org.freedesktop.dbus.propertyref
