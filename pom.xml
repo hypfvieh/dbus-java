@@ -47,7 +47,7 @@
         <mvn.maven.surefire.plugin>3.5.4</mvn.maven.surefire.plugin>
         <mvn.sonar.maven.plugin>5.2.0.4988</mvn.sonar.maven.plugin>
         <mvn.versions.maven.plugin>2.19.0</mvn.versions.maven.plugin>
-        <mvn.centralpublishing.plugin.version>0.8.0</mvn.centralpublishing.plugin.version>
+        <mvn.centralpublishing.plugin.version>0.9.0</mvn.centralpublishing.plugin.version>
 
         <!-- Code analysis -->
         <check.skip-javadoc>false</check.skip-javadoc>
@@ -64,8 +64,6 @@
         <parentDir>${maven.multiModuleProjectDirectory}</parentDir>
         <project.build.outputTimestamp>2025-03-14T09:18:08Z</project.build.outputTimestamp>
         <dateFormatTimeZone>UTC</dateFormatTimeZone>
-        
-        <skipDeployment>false</skipDeployment>
     </properties>
 
     <modules>
@@ -86,9 +84,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>${skipDeployment}</skip>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -133,9 +128,6 @@
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <configuration>
-                    <skipPublishing>${skipDeployment}</skipPublishing>
-                </configuration>
             </plugin>
 
         </plugins>
@@ -285,7 +277,6 @@
                     <version>${mvn.centralpublishing.plugin.version}</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <skipPublishing>false</skipPublishing>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>true</autoPublish>
                         <waitUntil>validated</waitUntil>
