@@ -21,7 +21,7 @@ additional required parameters after that.
 This constructor must call the super constructor providing all arguments which are part of this signal.
 
 Example:
-```
+```java
 public interface MySignal extends DBusInterface {
 
     class MySignalClass extends DBusSignal {
@@ -51,7 +51,7 @@ A signal handler must implements `DBusSigHandler<?>` interface and can be regist
 There are different `addSigHandler` methods depending on the use case.
 If you only want to listen for specific signals of a specific remote object, you should use something like:
 
-```
+```java
 MySignal remoteSignal connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
 connection.addSigHandler(MySignalClass.class, remoteSignal, new MySignalClassHandler());
 ```
@@ -76,7 +76,7 @@ To allow you to use custom filter criteria, you can use DBusMatchRuleBuilder to 
 
 Example:
 
-```
+```java
 connection.addSigHandler(DBusMatchRuleBuilder.create()
     .withPath("/org/test/Introduction")
     .withSender("org.my.Sender")
@@ -141,7 +141,7 @@ constructors using primitive array, but also for `Collection`.
 This flexibility comes with a small price: If you have multiple constructors with the same argument length and order, but one uses array and one collection, the first constructor listed in your class will be used.
 
 Example:
-```
+```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
        super(_objectPath, _arr, _text);
@@ -159,7 +159,7 @@ If the order would be inverted, the constructor with `List` would always be call
 If you use proper constructor chaining like suggested above, this will not bother you.
 The example would then look like this:
 
-```
+```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
        this(_objectPath, Arrays.asList(_arr), _text);
@@ -170,5 +170,3 @@ class MySignal extends DBusSignal {
     }
 }
 ```
-
-

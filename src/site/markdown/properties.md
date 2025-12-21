@@ -26,7 +26,7 @@ This feature is activated by the `@DBusBoundProperty` annotation.
 
 Consider the following interface.
 
-```
+```java
 package com.acme;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -214,7 +214,7 @@ and invoke the `Get()`, `GetAll()` or `Set()` methods on that object.
 
 The above example, re-written to use `@DBusProperty`, would look like this.
 
-```
+```java
 package com.acme;
 
 import org.freedesktop.dbus.interfaces.DBusInterface;
