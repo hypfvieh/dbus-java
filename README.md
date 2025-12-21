@@ -16,8 +16,8 @@ Updating dbus-java to a newer major version may always introduce incompatibiliti
 
 If you plan to update to a newer version, please check the update guides below.
 
-[Update from dbus-java 4.x or older to 5.x (or from 5.0.0 >= 5.1.0)](UPGRADE_TO_5x.md)
-[Update from dbus-java 5.x to 6.x](UPGRADE_TO_6x.md)
+- [Update from dbus-java 4.x or older to 5.x (or from 5.0.0 >= 5.1.0)](UPGRADE_TO_5x.md)
+- [Update from dbus-java 5.x to 6.x](UPGRADE_TO_6x.md)
 
 ### Which Java version for which dbus-java version
 
@@ -27,6 +27,7 @@ If you plan to update to a newer version, please check the update guides below.
 | 3.x.x           | JDK 8          | General overhaul version                  |
 | 4.x.x           | JDK 11         | First version using newer JDK and features (java modules), introduced new artifact names and split between core library and transports|
 | 5.x.x           | JDK 17         | Lots of cleanups, helper methods and better testing, usage of new JDK features (sealed classes) |
+| 6.x.x           | JDK 21         | Current version |
 
 ### How to use file descriptors?
 In DBus-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
@@ -147,4 +148,5 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed issue with shared connections did not work when underlying transport was disconnected due to end-point (daemon) was stopped/restarted ([#244](https://github.com/hypfvieh/dbus-java/issues/244))
    - Fixed class cast exception in LoggingHelper ([#247](https://github.com/hypfvieh/dbus-java/issues/247)), reported by [AsamK](https://github.com/AsamK)
 
+##### Older Changes: [See Wiki ChangeLog 4x](https://github.com/hypfvieh/dbus-java/wiki/Changelog-4.x)
 ##### Older Changes: [See Wiki ChangeLog 3x](https://github.com/hypfvieh/dbus-java/wiki/Changelog-3.x)
