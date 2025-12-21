@@ -5,7 +5,7 @@ the interface and call the method.  If we use the same interface as we used
 in the [exporting objects](./exporting-objects.html) example, we come up with
 the following code:
 
-```
+```java
 package com.foo;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -26,7 +26,7 @@ public class RemoteExample {
         System.out.println( i.add( 5, 7 ) );
     }
 
-    public static void main(String[] args ) throws DBusException {
+    public static void main(String[] _args) throws DBusException {
         new RemoteExample();
     }
 
