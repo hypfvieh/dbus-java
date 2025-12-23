@@ -21,13 +21,16 @@ If you plan to update to a newer version, please check the update guides below.
 
 ### Which Java version for which dbus-java version
 
-|dbus-java version|Required JDK/JRE|Remarks                                    |
-|-----------------|----------------|-------------------------------------------|
-| 2.7.x           | JDK 8          | First forked version with some minor fixes|
-| 3.x.x           | JDK 8          | General overhaul version                  |
-| 4.x.x           | JDK 11         | First version using newer JDK and features (java modules), introduced new artifact names and split between core library and transports|
-| 5.x.x           | JDK 17         | Lots of cleanups, helper methods and better testing, usage of new JDK features (sealed classes) |
-| 6.x.x           | JDK 21         | Current version |
+|dbus-java version|Required JDK/JRE| Supported | Remarks                                    |
+|-----------------|----------------|-----------|--------------------------------------------|
+| 2.7.x           | JDK 8          | EOL | First forked version with some minor fixes  |
+| 3.x.x           | JDK 8          | EOL | General overhaul version                    |
+| 4.x.x           | JDK 11         | EOL | First version using newer JDK and features (java modules), introduced new artifact names and split between core library and transports|
+| 5.x.x           | JDK 17         | SSP | Lots of cleanups, helper methods and better testing, usage of new JDK features (sealed classes) |
+| 6.x.x           | JDK 21         | Fully supported | Current version |
+
+*EOL* -> End-Of-Life, no longer supported - no bugfixes, no security updates! <br>
+*SSP* -> Sunset-Period, smaller bugfixes/security fixes only - support will end approx. Winter 2026
 
 ### How to use file descriptors?
 In DBus-Java version below < 4.3.1 file descriptor usage was not supported out of the box and required a third party libary (see below).
