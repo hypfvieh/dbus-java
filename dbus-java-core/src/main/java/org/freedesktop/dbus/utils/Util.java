@@ -306,12 +306,7 @@ public final class Util {
         }
 
         try {
-            URL dlUrl;
-            if (fileUrl.startsWith("file:/")) {
-                dlUrl = new URI(fileUrl).toURL();
-            } else {
-                dlUrl = new URI(fileUrl).toURL();
-            }
+            URL dlUrl = new URI(fileUrl).toURL();
             URLConnection urlConn = dlUrl.openConnection();
             urlConn.setDoInput(true);
             urlConn.setUseCaches(false);

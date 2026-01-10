@@ -11,8 +11,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 public class Issue290Test extends AbstractDBusDaemonBaseTest {
 
     private static DBusConnection connection;
@@ -26,7 +24,7 @@ public class Issue290Test extends AbstractDBusDaemonBaseTest {
     }
 
     @AfterAll
-    static void afterAll() throws IOException {
+    static void afterAll() {
         if (connection != null) {
             connection.close();
         }
