@@ -7,6 +7,8 @@ import org.freedesktop.dbus.connections.shared.IThreadPoolRetryHandler;
 import org.freedesktop.dbus.exceptions.IllegalThreadPoolStateException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,10 +20,14 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Tests that no retry is attempted when no retry handler is installed.
      */
-    @Test
-    void testRetryHandlerNotUsed() {
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testRetryHandlerNotUsed(boolean _virtual) {
 
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withRetryHandler(null)
+            .withAllVirtualThreads(_virtual)
+            .build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -38,8 +44,9 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Tests that 5 retries will be attempted due to the handler returning true 5 times.
      */
-    @Test
-    void testRetryHandlerCalled5Times() {
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testRetryHandlerCalled5Times(boolean _virtual) {
         IThreadPoolRetryHandler handler = new IThreadPoolRetryHandler() {
             private int count = 0;
 
@@ -50,7 +57,9 @@ class ReceivingServiceTest extends AbstractBaseTest {
             }
         };
 
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -67,9 +76,12 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that the default retry handler is only called for the defined retries.
      */
-    @Test
-    void testDefaultRetryHandler() {
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).build();
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testDefaultRetryHandler(boolean _virtual) {
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -87,11 +99,14 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that retrying will be interrupted when the hard limit of {@value ReceivingService#MAX_RETRIES} is reached.
      */
-    @Test
-    void testRetryHandlerHardLimit() {
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testRetryHandlerHardLimit(boolean _virtual) {
         IThreadPoolRetryHandler handler = (executor, ex) -> true;
 
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -131,8 +146,9 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that checks that the retry handler has not been called because no exception was thrown.
      */
-    @Test
-    void testRetryHandlerNotCalledBecauseNoFailure() {
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testRetryHandlerNotCalledBecauseNoFailure(boolean _virtual) {
         AtomicBoolean handlerWasCalled = new AtomicBoolean();
 
         IThreadPoolRetryHandler handler = (executor, ex) -> {
@@ -140,7 +156,9 @@ class ReceivingServiceTest extends AbstractBaseTest {
             return true;
         };
 
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(handler).build();
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(handler).build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -160,9 +178,12 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that a proper exception is thrown when no executor was returned.
      */
-    @Test
-    void testExecutorNull() {
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testExecutorNull(boolean _virtual) {
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override
@@ -179,9 +200,13 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that a proper exception is thrown when executor was shutdown or terminated.
      */
-    @Test
-    void testExecutorShutdownOrTerminated() {
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testExecutorShutdownOrTerminated(boolean _virtual) {
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(null).build();
+
         NoOpExecutorService exec = new NoOpExecutorService();
         exec.shutdown = true;
 
@@ -207,9 +232,12 @@ class ReceivingServiceTest extends AbstractBaseTest {
     /**
      * Test that a proper exception is thrown when service was closed.
      */
-    @Test
-    void testReceivingServiceClosed() {
-        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null).withRetryHandler(null).build();
+    @ParameterizedTest(name = "{index} -> Virtual: {0}")
+    @ValueSource(booleans = { true, false })
+    void testReceivingServiceClosed(boolean _virtual) {
+        ReceivingServiceConfig build = new ReceivingServiceConfigBuilder<>(null)
+            .withAllVirtualThreads(_virtual)
+            .withRetryHandler(null).build();
 
         ReceivingService service = new ReceivingService("", build) {
             @Override

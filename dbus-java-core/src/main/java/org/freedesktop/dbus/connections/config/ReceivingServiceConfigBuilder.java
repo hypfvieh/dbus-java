@@ -26,14 +26,18 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
 
     private static final IThreadPoolRetryHandler DEFAULT_RETRYHANDLER = new IThreadPoolRetryHandler() {
         private final AtomicInteger retries = new AtomicInteger(0);
+
         @Override
         public boolean handle(ExecutorNames _executor, Exception _ex) {
             if (retries.incrementAndGet() < DEFAULT_HANDLER_RETRIES) {
                 return true;
             }
+
             LoggerFactory.getLogger(ReceivingService.class).error("Dropping runnable for {}, retry failed for more than {} iterations, cause:", _executor, DEFAULT_HANDLER_RETRIES, _ex);
+            retries.set(0);
             return false;
         }
+
     };
 
     private final Supplier<R> connectionBuilder;
@@ -114,7 +118,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     }
 
     /**
-     * Sets the thread priority of the created signal thread(s).
+     * Sets the thread priority of the created error thread(s).
      * <p>
      * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
      *
@@ -129,7 +133,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     }
 
     /**
-     * Sets the thread priority of the created signal thread(s).
+     * Sets the thread priority of the created method call thread(s).
      * <p>
      * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
      *
@@ -144,7 +148,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     }
 
     /**
-     * Sets the thread priority of the created signal thread(s).
+     * Sets the thread priority of the created method return thread(s).
      * <p>
      * Default: {@link Thread#NORM_PRIORITY} ({@value Thread#NORM_PRIORITY});
      *
@@ -155,6 +159,85 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      */
     public ReceivingServiceConfigBuilder<R> withMethodReturnThreadPriority(int _priority) {
         config.setMethodReturnThreadPriority(Util.checkIntInRange(_priority, Thread.MIN_PRIORITY, Thread.MAX_PRIORITY));
+        return this;
+    }
+
+    /**
+     * Use virtual threads for the created signal thread(s).
+     * <p>
+     * Default: {@value false};
+     *
+     * @param _virtual true to use virtual threads, false to use native threads
+     * @return this
+     *
+     * @since 6.0.0 - 2026-01-10
+     */
+    public ReceivingServiceConfigBuilder<R> withVirtualSignalThreads(boolean _virtual) {
+        config.setSignalVirtualThreads(_virtual);
+        return this;
+    }
+
+    /**
+     * Use virtual threads for the created error thread(s).
+     * <p>
+     * Default: {@value false};
+     *
+     * @param _virtual true to use virtual threads, false to use native threads
+     * @return this
+     *
+     * @since 6.0.0 - 2026-01-10
+     */
+    public ReceivingServiceConfigBuilder<R> withVirtualErrorThreads(boolean _virtual) {
+        config.setErrorVirtualThreads(_virtual);
+        return this;
+    }
+
+    /**
+     * Use virtual threads for the created method call thread(s).
+     * <p>
+     * Default: {@value false};
+     *
+     * @param _virtual true to use virtual threads, false to use native threads
+     * @return this
+     *
+     * @since 6.0.0 - 2026-01-10
+     */
+    public ReceivingServiceConfigBuilder<R> withMethodCallSignalThreads(boolean _virtual) {
+        config.setMethodCallVirtualThreads(_virtual);
+        return this;
+    }
+
+    /**
+     * Use virtual threads for the created method return thread(s).
+     * <p>
+     * Default: {@value false};
+     *
+     * @param _virtual true to use virtual threads, false to use native threads
+     * @return this
+     *
+     * @since 6.0.0 - 2026-01-10
+     */
+    public ReceivingServiceConfigBuilder<R> withVirtualMethodReturnThreads(boolean _virtual) {
+        config.setMethodReturnVirtualThreads(_virtual);
+        return this;
+    }
+
+    /**
+     * Use virtual threads for all created thread(s).
+     * <p>
+     * Default: {@value false};
+     *
+     * @param _virtual true to use virtual threads, false to use native threads
+     * @return this
+     *
+     * @since 6.0.0 - 2026-01-10
+     */
+    public ReceivingServiceConfigBuilder<R> withAllVirtualThreads(boolean _virtual) {
+        config.setSignalVirtualThreads(_virtual);
+        config.setMethodCallVirtualThreads(_virtual);
+        config.setErrorVirtualThreads(_virtual);
+        config.setMethodReturnVirtualThreads(_virtual);
+
         return this;
     }
 
@@ -194,14 +277,6 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
      */
     public static ReceivingServiceConfig getDefaultConfig() {
         return DEFAULT_CFG;
-    }
-
-    /**
-     * Returns the default retry handler used for {@link ReceivingService}.
-     * @return default handler
-     */
-    public static IThreadPoolRetryHandler getDefaultRetryHandler() {
-        return DEFAULT_RETRYHANDLER;
     }
 
 }

@@ -9,7 +9,6 @@ import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.Properties;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -51,7 +50,7 @@ public final class PrintUserSessions {
     private PrintUserSessions() {}
 
     public static void main(String[] _args)
-        throws IOException, DBusException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        throws DBusException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         try (DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().build()) {
 

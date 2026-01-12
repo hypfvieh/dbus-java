@@ -5,8 +5,6 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 public class ExportClass implements DBusInterface {
 
     @Override
@@ -19,7 +17,7 @@ public class ExportClass implements DBusInterface {
         return "/";
     }
 
-    public static void main(String[] _args) throws DBusException, InterruptedException, IOException {
+    public static void main(String[] _args) throws DBusException, InterruptedException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
             conn.requestBusName("sample.issue");
 

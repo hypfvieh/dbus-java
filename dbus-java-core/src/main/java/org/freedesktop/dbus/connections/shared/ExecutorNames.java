@@ -7,19 +7,25 @@ package org.freedesktop.dbus.connections.shared;
  * @version 4.0.1 - 2022-02-02
  */
 public enum ExecutorNames {
-    SIGNAL("SignalExecutor"),
-    ERROR("ErrorExecutor"),
-    METHODCALL("MethodCallExecutor"),
-    METHODRETURN("MethodReturnExecutor");
+    SIGNAL("SignalExecutor", "DBus-Signal-Receiver"),
+    ERROR("ErrorExecutor", "DBus-Error-Receiver"),
+    METHODCALL("MethodCallExecutor", "DBus-MethodCall-Receiver"),
+    METHODRETURN("MethodReturnExecutor", "DBus-MethodReturn-Receiver");
 
     private final String description;
+    private final String threadName;
 
-    ExecutorNames(String _name) {
+    ExecutorNames(String _name, String _threadName) {
         description = _name;
+        threadName = _threadName;
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public String getThreadName() {
+        return threadName;
     }
 
     @Override

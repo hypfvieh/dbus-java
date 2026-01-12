@@ -306,12 +306,7 @@ public final class Util {
         }
 
         try {
-            URL dlUrl;
-            if (fileUrl.startsWith("file:/")) {
-                dlUrl = new URI(fileUrl).toURL();
-            } else {
-                dlUrl = new URI(fileUrl).toURL();
-            }
+            URL dlUrl = new URI(fileUrl).toURL();
             URLConnection urlConn = dlUrl.openConnection();
             urlConn.setDoInput(true);
             urlConn.setUseCaches(false);
@@ -736,6 +731,23 @@ public final class Util {
             return _fqcn;
         }
         return _fqcn.substring(lastDot + 1);
+    }
+
+    /**
+     * Checks if the given value is not lower than the minimum.
+     *
+     * @param _minimum minimum allowed value
+     * @param _checkVal value to check
+     *
+     * @return checkVal if valid
+     *
+     * @throws IllegalArgumentException when value is lower than minimum
+     */
+    public static int requireMinimum(int _minimum, int _checkVal) {
+        if (_checkVal < _minimum) {
+            throw new IllegalArgumentException("Value " + _checkVal + " is lower than the required minimum of " + _minimum);
+        }
+        return _checkVal;
     }
 
 }

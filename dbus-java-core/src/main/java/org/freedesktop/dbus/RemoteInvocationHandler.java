@@ -58,8 +58,9 @@ public class RemoteInvocationHandler implements InvocationHandler {
                         return _args[0] != null && remote.equals(((RemoteInvocationHandler) Proxy.getInvocationHandler(_args[0])).remote);
                     }
                 } catch (IllegalArgumentException _exIa) {
-                    return Boolean.FALSE;
+                    LOGGER.trace("Error calling equals method", _exIa);
                 }
+                return Boolean.FALSE;
             case "finalize":
                 return null;
             case "getClass":
@@ -85,10 +86,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
                     } else if (_args.length == 2 && _args[0] instanceof Long l && _args[1] instanceof Integer i) {
                         remote.wait(l, i);
                     }
-                    if (_args.length <= 2) {
-                        return null;
-                    }
                 }
+                return null;
             case "toString":
                 return remote.toString();
             default:

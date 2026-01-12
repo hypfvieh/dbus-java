@@ -759,8 +759,7 @@ public final class Marshalling {
                 return new Object[] {o};
             } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
                 LOGGER.trace("(4) Deserializing Struct return");
-                Object[] val = deSerializeParameters(_parameters, types, _conn, true);
-                return val;
+                return deSerializeParameters(_parameters, types, _conn, true);
             }
         }
 

@@ -10,7 +10,6 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -55,7 +54,7 @@ public class RunDaemon {
     }
 
     @SuppressWarnings("PMD.UnusedLocalVariable")
-    private void connectSelf() throws DBusException, IOException {
+    private void connectSelf() throws DBusException {
         BusAddress busAddress = BusAddress.of(newAddress);
         log.info("Connecting to embedded DBus {}", busAddress);
         try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).build()) {
