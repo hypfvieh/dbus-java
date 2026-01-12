@@ -48,7 +48,7 @@ public class TypeTest extends AbstractDBusBaseTest {
         }
 
         assertEquals(5, is.size());
-        assertEquals(-1, is.get(0).intValue());
+        assertEquals(-1, is.getFirst().intValue());
         assertEquals(-5, is.get(1).intValue());
         assertEquals(-7, is.get(2).intValue());
         assertEquals(-12, is.get(3).intValue());

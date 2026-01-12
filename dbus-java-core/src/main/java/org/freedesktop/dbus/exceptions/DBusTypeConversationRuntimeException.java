@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when type conversation failed.
  *
@@ -8,6 +10,7 @@ package org.freedesktop.dbus.exceptions;
  */
 public class DBusTypeConversationRuntimeException extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public DBusTypeConversationRuntimeException(String _message, Throwable _cause) {

@@ -124,7 +124,7 @@ public class P2pTestServer implements SampleRemoteInterface {
     }
 
     public static void main(String[] _args) throws Exception {
-        String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), false);
+        String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().getFirst(), false);
         PrintWriter w = new PrintWriter(new FileOutputStream("address"));
         w.println(address);
         w.flush();

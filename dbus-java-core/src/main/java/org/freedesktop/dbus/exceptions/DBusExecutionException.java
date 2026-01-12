@@ -1,10 +1,13 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * An exception while running a remote method within DBus.
  */
 @SuppressWarnings("checkstyle:mutableexception")
 public class DBusExecutionException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 6327661667731344250L;
 
     /**

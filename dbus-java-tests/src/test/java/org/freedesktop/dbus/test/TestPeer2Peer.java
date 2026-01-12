@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class TestPeer2Peer extends AbstractBaseTest {
 
-    private static final String CONNECTION_ADDRESS = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), false);
+    private static final String CONNECTION_ADDRESS = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().getFirst(), false);
 
     private volatile boolean finished = false;
 

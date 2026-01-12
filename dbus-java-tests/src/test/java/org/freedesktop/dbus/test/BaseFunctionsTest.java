@@ -57,7 +57,7 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
         SampleSerializable<String> s = new SampleSerializable<>(1, "woo", v);
         s = tri2.testSerializable((byte) 12, s, 13);
         logger.debug("returned: " + s);
-        if (s.getInt() != 1 || !s.getString().equals("woo") || s.getList().size() != 3 || s.getList().get(0) != 1
+        if (s.getInt() != 1 || !s.getString().equals("woo") || s.getList().size() != 3 || s.getList().getFirst() != 1
                 || s.getList().get(1) != 2 || s.getList().get(2) != 3) {
             fail("Didn't get back the same TestSerializable");
         }

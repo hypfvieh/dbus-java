@@ -12,6 +12,7 @@ package org.freedesktop.dbus.viewer;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.Serial;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -21,6 +22,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.text.JTextComponent;
 
 abstract class TabbedSaveAction extends AbstractAction implements Iterable<TextFile> {
+    @Serial
     private static final long   serialVersionUID = -1L;
     /** File chooser component.
      * Make static so that previous save location is stored

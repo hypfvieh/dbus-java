@@ -20,16 +20,16 @@ public class ArraySignalHandler extends AbstractSignalHandler<SampleSignals.Test
             setFailed(_t.getListOfStruct().size() != 1, "Incorrect TestArraySignal array length: should be 1, actually " + _t.getListOfStruct().size());
 
             logger.debug("Got a test array signal with Parameters: ");
-            for (String str : _t.getListOfStruct().get(0).getValueList()) {
+            for (String str : _t.getListOfStruct().getFirst().getValueList()) {
                 logger.debug("--{}", str);
             }
-            logger.debug("{}", _t.getListOfStruct().get(0).getVariantValue().getType());
-            logger.debug("{}", _t.getListOfStruct().get(0).getVariantValue().getValue());
+            logger.debug("{}", _t.getListOfStruct().getFirst().getVariantValue().getType());
+            logger.debug("{}", _t.getListOfStruct().getFirst().getVariantValue().getValue());
 
-            boolean b = !(_t.getListOfStruct().get(0).getVariantValue().getValue() instanceof UInt64) || 567L != ((UInt64) _t.getListOfStruct().get(0).getVariantValue().getValue()).longValue()
-                    || _t.getListOfStruct().get(0).getValueList().size() != 5 || !"hi".equals(_t.getListOfStruct().get(0).getValueList().get(0))
-                    || !"hello".equals(_t.getListOfStruct().get(0).getValueList().get(1)) || !"hej".equals(_t.getListOfStruct().get(0).getValueList().get(2))
-                    || !"hey".equals(_t.getListOfStruct().get(0).getValueList().get(3)) || !"aloha".equals(_t.getListOfStruct().get(0).getValueList().get(4));
+            boolean b = !(_t.getListOfStruct().getFirst().getVariantValue().getValue() instanceof UInt64) || 567L != ((UInt64) _t.getListOfStruct().getFirst().getVariantValue().getValue()).longValue()
+                    || _t.getListOfStruct().getFirst().getValueList().size() != 5 || !"hi".equals(_t.getListOfStruct().getFirst().getValueList().getFirst())
+                    || !"hello".equals(_t.getListOfStruct().getFirst().getValueList().get(1)) || !"hej".equals(_t.getListOfStruct().getFirst().getValueList().get(2))
+                    || !"hey".equals(_t.getListOfStruct().getFirst().getValueList().get(3)) || !"aloha".equals(_t.getListOfStruct().getFirst().getValueList().get(4));
 
             setFailed(b, "Incorrect TestArraySignal parameters");
 

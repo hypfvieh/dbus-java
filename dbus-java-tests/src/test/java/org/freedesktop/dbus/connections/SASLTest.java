@@ -38,7 +38,7 @@ public class SASLTest extends AbstractBaseTest {
 
     @Test
     public void testAnonymousAuthentication() throws DBusException {
-        String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+        String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
         BusAddress busAddress = BusAddress.of(newAddress);

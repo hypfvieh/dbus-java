@@ -28,7 +28,7 @@ public class SignalNameTest extends AbstractBaseTest {
     @Test
     void testSignalNameAlias() {
         assertDoesNotThrow(() -> {
-            String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+            String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
             BusAddress busAddress = TransportBuilder.
                     createWithDynamicSession(protocolType)
                     .configure().build().getBusAddress();

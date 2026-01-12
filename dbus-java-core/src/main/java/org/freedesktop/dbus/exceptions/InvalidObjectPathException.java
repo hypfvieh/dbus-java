@@ -1,10 +1,13 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * @since 5.0.0 - 2023-11-08
  * @author hypfvieh
  */
 public class InvalidObjectPathException extends DBusException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public InvalidObjectPathException(String _message, Throwable _cause) {

@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * Thrown when a used thread pool (e.g. in ReceivingService) is in an invalid state.
  *
@@ -8,6 +10,7 @@ package org.freedesktop.dbus.exceptions;
  */
 public class IllegalThreadPoolStateException extends IllegalStateException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public IllegalThreadPoolStateException() {

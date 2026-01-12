@@ -87,7 +87,7 @@ public class DirectConnection extends AbstractConnection {
             }
 
             RemoteObject ro = new RemoteObject(null, _path, _type, false);
-            DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(), ifcs.toArray(EMPTY_CLASS_ARRAY), new RemoteInvocationHandler(this, ro));
+            DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.getFirst().getClassLoader(), ifcs.toArray(EMPTY_CLASS_ARRAY), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
             return (T) newi;
         } catch (Exception _ex) {

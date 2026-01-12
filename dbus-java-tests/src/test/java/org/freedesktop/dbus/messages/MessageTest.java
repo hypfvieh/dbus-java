@@ -40,7 +40,7 @@ public class MessageTest extends AbstractBaseTest {
             logger.debug("{} ---> {}", String.valueOf(o[0]), o[1]);
         }
 
-        Object[] entry1 = (Object[]) objectList.get(0);
+        Object[] entry1 = (Object[]) objectList.getFirst();
         assertEquals((byte) 6, entry1[0]);
         assertEquals(":1.20", entry1[1]);
 

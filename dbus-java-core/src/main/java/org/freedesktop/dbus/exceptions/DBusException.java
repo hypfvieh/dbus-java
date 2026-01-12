@@ -1,9 +1,12 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * An exception within DBus.
  */
 public class DBusException extends Exception {
+    @Serial
     private static final long serialVersionUID = -1L;
 
     /**

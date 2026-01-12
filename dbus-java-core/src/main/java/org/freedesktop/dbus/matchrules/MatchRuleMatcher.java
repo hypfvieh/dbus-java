@@ -203,7 +203,7 @@ final class MatchRuleMatcher {
 
             if (dataType.isEmpty()) {
                 return false;
-            } else if (dataType.get(0) instanceof Class<?> clz && clz.isAssignableFrom(String.class)) {
+            } else if (dataType.getFirst() instanceof Class<?> clz && clz.isAssignableFrom(String.class)) {
                 Object[] parameters = _msg.getParameters();
                 return parameters[0] == _compare || ((String) parameters[0]).startsWith(_compare);
             }

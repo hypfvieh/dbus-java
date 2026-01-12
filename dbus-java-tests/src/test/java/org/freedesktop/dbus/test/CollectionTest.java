@@ -31,7 +31,7 @@ public class CollectionTest extends AbstractDBusBaseTest {
         Thread.sleep(500L);
 
         assertIterableEquals(lli, checklistReply.getReply(), "did not get back the same as sent in async");
-        assertIterableEquals(li, checklistReply.getReply().get(0));
+        assertIterableEquals(li, checklistReply.getReply().getFirst());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class CollectionTest extends AbstractDBusBaseTest {
         Thread.sleep(500L);
 
         assertIterableEquals(lli, cbHandle.getRetval(), "did not get back the same as sent in async");
-        assertIterableEquals(li, cbHandle.getRetval().get(0));
+        assertIterableEquals(li, cbHandle.getRetval().getFirst());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class CollectionTest extends AbstractDBusBaseTest {
         lli.add(li);
 
         List<List<Integer>> reti = tri2.checklist(lli);
-        if (reti.size() != 1 || reti.get(0).size() != 1 || reti.get(0).get(0) != 1) {
+        if (reti.size() != 1 || reti.getFirst().size() != 1 || reti.getFirst().getFirst() != 1) {
             fail("Failed to check nested lists");
         }
     }

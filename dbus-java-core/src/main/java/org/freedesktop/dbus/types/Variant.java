@@ -87,7 +87,7 @@ public class Variant<T> {
             if (ts.size() != 1) {
                 throw new IllegalArgumentException("Can't wrap multiple or no types in a Variant: " + _sig);
             }
-            this.type = ts.get(0);
+            this.type = ts.getFirst();
         } catch (DBusException _ex) {
             logger.debug("Cannot create variant", _ex);
             throw new IllegalArgumentException(String.format("Can''t wrap %s in an unqualified Variant (%s).", _sig, _ex.getMessage()));

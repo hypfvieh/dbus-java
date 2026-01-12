@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * Thrown when something goes wrong with the connection to DBus.<p>
  * This includes find the connection parameter (e.g. machine-id file) or establishing the connection.
@@ -8,6 +10,7 @@ package org.freedesktop.dbus.exceptions;
  * @since v3.3.0 - 2021-01-27
  */
 public class DBusConnectionException extends DBusException {
+    @Serial
     private static final long serialVersionUID = -1L;
 
     public DBusConnectionException() {

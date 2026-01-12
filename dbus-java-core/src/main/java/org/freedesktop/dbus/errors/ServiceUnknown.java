@@ -2,10 +2,13 @@ package org.freedesktop.dbus.errors;
 
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
+import java.io.Serial;
+
 /**
  * Thrown if the requested service was not available
  */
 public class ServiceUnknown extends DBusExecutionException {
+    @Serial
     private static final long serialVersionUID = -8634413313381034023L;
 
     public ServiceUnknown(String _message) {

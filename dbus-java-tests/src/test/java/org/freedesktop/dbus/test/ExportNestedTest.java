@@ -43,13 +43,13 @@ public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
                 assertEquals(2, partNames.size());
 
                 // all names used in child objects
-                assertEquals("ABC", partNames.get(0));
+                assertEquals("ABC", partNames.getFirst());
                 assertEquals("DEF", partNames.get(1));
 
                 List<MyInterfacePart> parts = myObject.getParts();
                 assertEquals(2, parts.size());
                 // check the child objects
-                assertEquals("123", parts.get(0).getVal2());
+                assertEquals("123", parts.getFirst().getVal2());
                 assertEquals("456", parts.get(1).getVal2());
             }
         }

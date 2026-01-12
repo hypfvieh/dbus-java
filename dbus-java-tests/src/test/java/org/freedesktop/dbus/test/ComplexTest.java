@@ -57,7 +57,7 @@ public class ComplexTest extends AbstractDBusBaseTest {
         /** Call the remote object and get a response. */
         SampleTuple<String, List<Integer>, Boolean> rv = tri2.show(234);
         logger.debug("Show returned: " + rv);
-        if (!clientconn.getUniqueName().equals(rv.getFirstValue()) || 1 != rv.getSecondValue().size() || 1953 != rv.getSecondValue().get(0)
+        if (!clientconn.getUniqueName().equals(rv.getFirstValue()) || 1 != rv.getSecondValue().size() || 1953 != rv.getSecondValue().getFirst()
                 || !rv.getThirdValue()) {
             fail("show return value incorrect (" + rv.getFirstValue() + "," + rv.getSecondValue() + "," + rv.getThirdValue() + ")");
         }

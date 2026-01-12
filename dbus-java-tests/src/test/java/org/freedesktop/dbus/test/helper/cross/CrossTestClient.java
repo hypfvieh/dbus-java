@@ -193,8 +193,8 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
     @SuppressWarnings("unchecked")
     public static List<Variant<Object>> primitizeRecurse(Object _a, Type _t) {
         List<Variant<Object>> vs = new ArrayList<>();
-        if (_t instanceof ParameterizedType) {
-            Class<Object> c = (Class<Object>) ((ParameterizedType) _t).getRawType();
+        if (_t instanceof ParameterizedType type) {
+            Class<Object> c = (Class<Object>) type.getRawType();
             if (List.class.isAssignableFrom(c)) {
                 Object os;
                 if (_a instanceof List) {
@@ -202,14 +202,14 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
                 } else {
                     os = _a;
                 }
-                Type[] ts = ((ParameterizedType) _t).getActualTypeArguments();
+                Type[] ts = type.getActualTypeArguments();
                 for (int i = 0; i < Array.getLength(os); i++) {
                     vs.addAll(primitizeRecurse(Array.get(os, i), ts[0]));
                 }
             } else if (Map.class.isAssignableFrom(c)) {
                 Object[] os = ((Map<?, ?>) _a).keySet().toArray();
                 Object[] ks = ((Map<?, ?>) _a).values().toArray();
-                Type[] ts = ((ParameterizedType) _t).getActualTypeArguments();
+                Type[] ts = type.getActualTypeArguments();
                 for (Object element : ks) {
                     vs.addAll(primitizeRecurse(element, ts[0]));
                 }
@@ -218,7 +218,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
                 }
             } else if (Struct.class.isAssignableFrom(c)) {
                 Object[] os = ((Struct) _a).getParameters();
-                Type[] ts = ((ParameterizedType) _t).getActualTypeArguments();
+                Type[] ts = type.getActualTypeArguments();
                 for (int i = 0; i < os.length; i++) {
                     vs.addAll(primitizeRecurse(os[i], ts[i]));
                 }
@@ -228,8 +228,8 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
             }
         } else if (Variant.class.isAssignableFrom((Class<?>) _t)) {
             vs.addAll(primitizeRecurse(((Variant<?>) _a).getValue(), ((Variant<?>) _a).getType()));
-        } else if (_t instanceof Class && ((Class<?>) _t).isArray()) {
-            Type t2 = ((Class<?>) _t).getComponentType();
+        } else if (_t instanceof Class<?> tClazz && tClazz.isArray()) {
+            Type t2 = tClazz.getComponentType();
             for (int i = 0; i < Array.getLength(_a); i++) {
                 vs.addAll(primitizeRecurse(Array.get(_a, i), t2));
             }
@@ -479,20 +479,20 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
         }
         boolean pass = false;
 
-        if (_a instanceof Object[]) {
-            pass = Arrays.equals((Object[]) _a, (Object[]) _b);
-        } else if (_a instanceof byte[]) {
-            pass = Arrays.equals((byte[]) _a, (byte[]) _b);
-        } else if (_a instanceof boolean[]) {
-            pass = Arrays.equals((boolean[]) _a, (boolean[]) _b);
-        } else if (_a instanceof int[]) {
-            pass = Arrays.equals((int[]) _a, (int[]) _b);
-        } else if (_a instanceof short[]) {
-            pass = Arrays.equals((short[]) _a, (short[]) _b);
-        } else if (_a instanceof long[]) {
-            pass = Arrays.equals((long[]) _a, (long[]) _b);
-        } else if (_a instanceof double[]) {
-            pass = Arrays.equals((double[]) _a, (double[]) _b);
+        if (_a instanceof Object[] objects) {
+            pass = Arrays.equals(objects, (Object[]) _b);
+        } else if (_a instanceof byte[] bytes) {
+            pass = Arrays.equals(bytes, (byte[]) _b);
+        } else if (_a instanceof boolean[] booleans) {
+            pass = Arrays.equals(booleans, (boolean[]) _b);
+        } else if (_a instanceof int[] ints) {
+            pass = Arrays.equals(ints, (int[]) _b);
+        } else if (_a instanceof short[] shorts) {
+            pass = Arrays.equals(shorts, (short[]) _b);
+        } else if (_a instanceof long[] longs) {
+            pass = Arrays.equals(longs, (long[]) _b);
+        } else if (_a instanceof double[] doubles) {
+            pass = Arrays.equals(doubles, (double[]) _b);
         }
 
         if (pass) {

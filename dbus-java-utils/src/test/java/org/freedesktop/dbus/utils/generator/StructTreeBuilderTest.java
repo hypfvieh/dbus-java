@@ -23,11 +23,11 @@ class StructTreeBuilderTest {
             .buildStructClasses(dbusTypeStr, "UnitTestStruct", classBuilderInfo, generated);
 
         assertEquals(2, generated.size());
-        assertEquals("UnitTestStruct", generated.get(0).getClassName());
+        assertEquals("UnitTestStruct", generated.getFirst().getClassName());
         assertEquals("UnitTestStructStruct", generated.get(1).getClassName());
 
-        assertTrue(generated.get(0).createClassFileContent().contains("private final String member0"));
-        assertTrue(generated.get(0).createClassFileContent().contains("private final List<UnitTestStructStruct> member1;"));
+        assertTrue(generated.getFirst().createClassFileContent().contains("private final String member0"));
+        assertTrue(generated.getFirst().createClassFileContent().contains("private final List<UnitTestStructStruct> member1;"));
     }
 
 }

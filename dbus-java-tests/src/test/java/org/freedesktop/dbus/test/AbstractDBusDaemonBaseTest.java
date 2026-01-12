@@ -43,7 +43,7 @@ public abstract class AbstractDBusDaemonBaseTest extends AbstractBaseTest {
     public static void beforeAllBase() {
         Logger logger = LoggerFactory.getLogger(AbstractDBusDaemonBaseTest.class);
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")) {
-            String busType = TransportBuilder.getRegisteredBusTypes().get(0);
+            String busType = TransportBuilder.getRegisteredBusTypes().getFirst();
             String addr = TransportBuilder.createDynamicSession(busType, true);
             BusAddress address = BusAddress.of(addr);
 
