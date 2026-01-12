@@ -83,6 +83,10 @@ The library will remain open source and MIT licensed and can still be used, fork
       - with this change, you can also create Structs and use them as return value having something like `GetCurrentStateStruct` instead of using the long Tuple-name
       - Further details on this in [#285](https://github.com/hypfvieh/dbus-java/issues/285)
    - Added new commandline option `--disable-tuples` to `InterfaceCodeGenerator` to create `Struct` classes instead of `Tuple`s for multi value return (**Caution** the generated code will only work with dbus-java 6.0.0+)
+   - Added support for Virtual-Threads in `ReceivingService`
+     - This can be enabled using the `DBusConnectionBuilder`, example: `DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().receivingThreadConfig().withAllVirtualThreads(true).connectionConfig().build()`
+     - Virtual-Threads can be enabled/disabled for each of the different executor services used in `ReceivingService`: `SIGNAL`, `ERROR`, `METHODCALL`, `METHODRETURN`
+     - default remains native threads on all executors
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 

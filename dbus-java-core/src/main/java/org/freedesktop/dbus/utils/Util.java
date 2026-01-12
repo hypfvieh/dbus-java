@@ -733,4 +733,21 @@ public final class Util {
         return _fqcn.substring(lastDot + 1);
     }
 
+    /**
+     * Checks if the given value is not lower than the minimum.
+     *
+     * @param _minimum minimum allowed value
+     * @param _checkVal value to check
+     *
+     * @return checkVal if valid
+     *
+     * @throws IllegalArgumentException when value is lower than minimum
+     */
+    public static int requireMinimum(int _minimum, int _checkVal) {
+        if (_checkVal < _minimum) {
+            throw new IllegalArgumentException("Value " + _checkVal + " is lower than the required minimum of " + _minimum);
+        }
+        return _checkVal;
+    }
+
 }

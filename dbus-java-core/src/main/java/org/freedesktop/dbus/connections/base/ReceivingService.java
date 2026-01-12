@@ -9,13 +9,11 @@ import org.freedesktop.dbus.utils.NameableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Service providing threads for every type of message expected to be received by DBus.
@@ -42,18 +40,32 @@ public class ReceivingService {
     ReceivingService(String _namePrefix, ReceivingServiceConfig _rsCfg) {
         String prefix = _namePrefix == null ? "" : _namePrefix;
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
-        executors.put(ExecutorNames.SIGNAL,
-            Executors.newFixedThreadPool(rsCfg.getSignalThreadPoolSize(), new NameableThreadFactory(prefix + "DBus-Signal-Receiver-", true, rsCfg.getSignalThreadPriority())));
-        executors.put(ExecutorNames.ERROR,
-            Executors.newFixedThreadPool(rsCfg.getErrorThreadPoolSize(), new NameableThreadFactory(prefix + "DBus-Error-Receiver-", true, rsCfg.getErrorThreadPriority())));
 
-        // we need multiple threads here so recursive method calls are possible
-        executors.put(ExecutorNames.METHODCALL,
-            Executors.newFixedThreadPool(rsCfg.getMethodCallThreadPoolSize(), new NameableThreadFactory(prefix + "DBus-MethodCall-Receiver-", true, rsCfg.getMethodCallThreadPriority())));
-        executors.put(ExecutorNames.METHODRETURN,
-            Executors.newFixedThreadPool(rsCfg.getMethodReturnThreadPoolSize(), new NameableThreadFactory(prefix + "DBus-MethodReturn-Receiver-", true, rsCfg.getMethodReturnThreadPriority())));
+        Arrays.stream(ExecutorNames.values())
+        .forEach(t -> {
+            executors.put(t,
+                Executors.newFixedThreadPool(rsCfg.getPoolSize(t), createFactory(prefix + t.getThreadName() + "-", _rsCfg.isVirtual(t), _rsCfg.getPriority(t))));
+        });
 
         retryHandler = rsCfg.getRetryHandler();
+    }
+
+    /**
+     * Create thread factory for creating native or virtual threads.
+     *
+     * @param _name name for created threads
+     * @param _virtualThreads true to create virtual threads
+     * @param _priority thread priority (only used for non-virtual threads)
+     * @return {@link ThreadFactory}
+     *
+     * @since 6.0.0  - 2026-01-10
+     */
+    private ThreadFactory createFactory(String _name, boolean _virtualThreads, int _priority) {
+        if (_virtualThreads) {
+            return Thread.ofVirtual().name(_name, 1L).factory();
+        } else {
+            return new NameableThreadFactory(_name, true, _priority);
+        }
     }
 
     /**
