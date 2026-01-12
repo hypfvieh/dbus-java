@@ -279,7 +279,7 @@ public class ClassBuilderInfo {
             return;
         }
 
-        String lastLine = _content.get(_content.size() - 1);
+        String lastLine = _content.getLast();
         if (!Util.isBlank(lastLine)) {
             _content.add("");
         }

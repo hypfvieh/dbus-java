@@ -18,7 +18,7 @@ public class Issue196Test extends AbstractBaseTest {
 
     @Test
     public void testCorrectInterfaceCreation() throws Exception {
-        String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+        String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
         BusAddress busAddress = TransportBuilder.createWithDynamicSession(protocolType).configure().build()
             .getBusAddress();
 

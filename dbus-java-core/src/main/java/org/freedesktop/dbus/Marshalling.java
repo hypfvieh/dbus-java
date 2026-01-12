@@ -214,7 +214,7 @@ public final class Marshalling {
                 throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
             }
             _out[_level].append(s[0]);
-        } else if (_dataType instanceof Class<?> && DBusSerializable.class.isAssignableFrom((Class<?>) _dataType)
+        } else if (_dataType instanceof Class<?> dtClazz && DBusSerializable.class.isAssignableFrom(dtClazz)
             || _dataType instanceof ParameterizedType pt
                 && DBusSerializable.class.isAssignableFrom((Class<?>) pt.getRawType())) {
             // it's a custom serializable type
@@ -395,12 +395,12 @@ public final class Marshalling {
                     if (ArgumentType.DICT_ENTRY1 == _dbusType.charAt(idx + 1)) {
                         contained = new ArrayList<>();
                         int javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
-                        _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
+                        _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
                         idx += javaType + 2;
                     } else {
                         contained = new ArrayList<>();
                         int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 1);
-                        _resultValue.add(new DBusListType(contained.get(0)));
+                        _resultValue.add(new DBusListType(contained.getFirst()));
                         idx += javaType;
                     }
                     break;
@@ -452,7 +452,7 @@ public final class Marshalling {
                 case ArgumentType.DICT_ENTRY1:
                     contained = new ArrayList<>();
                     int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);
-                    _resultValue.add(new DBusMapType(contained.get(0), contained.get(1)));
+                    _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
                     idx += javaType + 1;
                     break;
                 default:
@@ -577,15 +577,15 @@ public final class Marshalling {
         }
 
         // Turn a signature into a Type[]
-        if (_type instanceof Class && ((Class<?>) _type).isArray() && ((Class<?>) _type).getComponentType().equals(Type.class) && parameter instanceof String) {
+        if (_type instanceof Class<?> tClazz && tClazz.isArray() && tClazz.getComponentType().equals(Type.class) && parameter instanceof String str) {
             List<Type> rv = new ArrayList<>();
-            getJavaType((String) parameter, rv, -1);
+            getJavaType(str, rv, -1);
             parameter = rv.toArray(EMPTY_TYPE_ARRAY);
         }
 
         if (parameter instanceof DBusPath op) {
             LOGGER.trace("Parameter is DBusPath");
-            if (_type instanceof Class && DBusInterface.class.isAssignableFrom((Class<?>) _type)) {
+            if (_type instanceof Class<?> tClazz && DBusInterface.class.isAssignableFrom(tClazz)) {
                 parameter = _conn.getExportedObject(op.getSource(), op.getPath(), (Class<DBusInterface>) _type);
             } else {
                 parameter = new DBusPath(op.getPath());
@@ -593,17 +593,17 @@ public final class Marshalling {
         }
 
         // its an enum, parse either as the string name or the ordinal
-        if (parameter instanceof String str && _type instanceof Class && Enum.class.isAssignableFrom((Class<?>) _type)) {
+        if (parameter instanceof String str && _type instanceof Class<?> tClazz && Enum.class.isAssignableFrom(tClazz)) {
             LOGGER.trace("Type seems to be an enum");
             parameter = Enum.valueOf((Class<Enum>) _type, str);
         }
 
         // it should be a struct. create it
-        if (parameter instanceof Object[] objArr && _type instanceof Class && Struct.class.isAssignableFrom((Class<?>) _type)) {
+        if (parameter instanceof Object[] objArr && _type instanceof Class<?> tClazz && Struct.class.isAssignableFrom(tClazz)) {
             LOGGER.trace("Creating Struct {} from {}", _type, parameter);
             Type[] ts = Container.getTypeCache(_type);
             if (ts == null) {
-                Field[] fs = ((Class<?>) _type).getDeclaredFields();
+                Field[] fs = tClazz.getDeclaredFields();
                 ts = new Type[fs.length];
                 for (Field f : fs) {
                     Position p = f.getAnnotation(Position.class);
@@ -617,7 +617,7 @@ public final class Marshalling {
 
             // recurse over struct contents
             parameter = deSerializeParameters(objArr, ts, _conn);
-            for (Constructor<?> con : ((Class<?>) _type).getDeclaredConstructors()) {
+            for (Constructor<?> con : tClazz.getDeclaredConstructors()) {
                 try {
                     LOGGER.trace("Trying to create instance of {} using constructor {} with parameters: {}", _type, con, objArr);
                     parameter = con.newInstance(objArr);
@@ -778,8 +778,8 @@ public final class Marshalling {
                 continue;
             }
 
-            if (types[i] instanceof Class
-                    && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) types[i])
+            if (types[i] instanceof Class<? extends Object> tClazz
+                    && DBusSerializable.class.isAssignableFrom(tClazz)
                 || types[i] instanceof ParameterizedType pt
                     && DBusSerializable.class.isAssignableFrom((Class<? extends Object>) pt.getRawType())) {
                 Class<? extends DBusSerializable> dsc;

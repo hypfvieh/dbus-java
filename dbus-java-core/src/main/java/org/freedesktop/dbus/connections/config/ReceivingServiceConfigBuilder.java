@@ -165,7 +165,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     /**
      * Use virtual threads for the created signal thread(s).
      * <p>
-     * Default: {@value false};
+     * Default: {@code false}
      *
      * @param _virtual true to use virtual threads, false to use native threads
      * @return this
@@ -180,7 +180,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     /**
      * Use virtual threads for the created error thread(s).
      * <p>
-     * Default: {@value false};
+     * Default: {@code false}
      *
      * @param _virtual true to use virtual threads, false to use native threads
      * @return this
@@ -195,7 +195,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     /**
      * Use virtual threads for the created method call thread(s).
      * <p>
-     * Default: {@value false};
+     * Default: {@code false}
      *
      * @param _virtual true to use virtual threads, false to use native threads
      * @return this
@@ -210,7 +210,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     /**
      * Use virtual threads for the created method return thread(s).
      * <p>
-     * Default: {@value false};
+     * Default: {@code false}
      *
      * @param _virtual true to use virtual threads, false to use native threads
      * @return this
@@ -225,7 +225,7 @@ public final class ReceivingServiceConfigBuilder<R extends BaseConnectionBuilder
     /**
      * Use virtual threads for all created thread(s).
      * <p>
-     * Default: {@value false};
+     * Default: {@code false}
      *
      * @param _virtual true to use virtual threads, false to use native threads
      * @return this

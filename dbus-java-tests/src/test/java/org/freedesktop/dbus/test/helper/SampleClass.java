@@ -137,7 +137,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         for (String s : _ss) {
             logger.debug("--{}", s);
         }
-        if (_ss.size() != 5 || !"hi".equals(_ss.get(0)) || !"hello".equals(_ss.get(1)) || !"hej".equals(_ss.get(2)) || !"hey".equals(_ss.get(3)) || !"aloha".equals(_ss.get(4))) {
+        if (_ss.size() != 5 || !"hi".equals(_ss.getFirst()) || !"hello".equals(_ss.get(1)) || !"hej".equals(_ss.get(2)) || !"hey".equals(_ss.get(3)) || !"aloha".equals(_ss.get(4))) {
             fail("sampleArray, String array contents incorrect");
         }
         logger.debug("Got an array:");
@@ -188,7 +188,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         if (_n.size() != 3) {
             fail("List was wrong size (expected 3, actual " + _n.size() + ")");
         }
-        if (_n.get(0) != 2L || _n.get(1) != 5L || _n.get(2) != 71L) {
+        if (_n.getFirst() != 2L || _n.get(1) != 5L || _n.get(2) != 71L) {
             fail("List has wrong contents");
         }
         if (!(_v instanceof Integer)) {
@@ -243,7 +243,7 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
     public SampleSerializable<String> testSerializable(byte _b, SampleSerializable<String> _s, int _i) {
         logger.debug("Recieving TestSerializable: {}", _s);
         if (_b != 12 || _i != 13 || !(_s.getInt() == 1) || !(_s.getString().equals("woo"))
-                || !(_s.getList().size() == 3) || !(_s.getList().get(0) == 1)
+                || !(_s.getList().size() == 3) || !(_s.getList().getFirst() == 1)
                 || !(_s.getList().get(1) == 2) || !(_s.getList().get(2) == 3)) {
             fail("Error in recieving custom synchronisation");
         }

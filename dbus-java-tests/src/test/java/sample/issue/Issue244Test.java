@@ -18,7 +18,7 @@ public class Issue244Test extends AbstractBaseTest {
 
     @Test
     public void testSharedConnection() {
-        String busType = TransportBuilder.getRegisteredBusTypes().get(0);
+        String busType = TransportBuilder.getRegisteredBusTypes().getFirst();
         String addr = TransportBuilder.createDynamicSession(busType, false);
         BusAddress clientAddress = BusAddress.of(addr);
         BusAddress serverAddress = BusAddress.of(addr).getListenerAddress();

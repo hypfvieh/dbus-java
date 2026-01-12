@@ -356,7 +356,7 @@ public class InterfaceCodeGenerator {
                 resultType += joinedGenerics.isBlank() ? "" : "<" + joinedGenerics + ">";
             } else {
                 logger.debug("Found method with arguments: {}({})", methodElementName, inputArgs);
-                resultType = outputArgs.isEmpty() ? "void" : outputArgs.get(0).getFullType(new HashSet<>());
+                resultType = outputArgs.isEmpty() ? "void" : outputArgs.getFirst().getFullType(new HashSet<>());
             }
 
             if (resultType != null) {

@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
 import java.util.Collection;
 
 /**
@@ -7,6 +8,7 @@ import java.util.Collection;
  * @author hypfvieh
  */
 public class InvalidInterfaceSignature extends DBusException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public InvalidInterfaceSignature(Collection<String> _invalid) {

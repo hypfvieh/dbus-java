@@ -77,7 +77,7 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
     }
 
     private void doWithEmbeddedDaemon(BiConsumer<EmbeddedDBusDaemon, BusAddress> _handler) {
-        String protocolType = TransportBuilder.getRegisteredBusTypes().get(0);
+        String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
         BusAddress busAddress = BusAddress.of(newAddress);
@@ -103,7 +103,7 @@ class EmbeddedDBusDaemonTest extends AbstractBaseTest {
     void testStartStop() throws Exception {
 
         for (int i = 0; i < 2; i++) {
-            String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().get(0), true);
+            String address = TransportBuilder.createDynamicSession(TransportBuilder.getRegisteredBusTypes().getFirst(), true);
             BusAddress busAddress = BusAddress.of(address);
 
             // initialize

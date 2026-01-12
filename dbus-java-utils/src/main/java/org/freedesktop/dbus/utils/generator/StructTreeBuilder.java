@@ -64,9 +64,9 @@ public class StructTreeBuilder {
         List<StructTree> structTree = buildTree(_dbusSig);
 
         String parentType = null;
-        if (!structTree.isEmpty() && Collection.class.isAssignableFrom(structTree.get(0).getDataType())) {
-            parentType = structTree.get(0).getDataType().getName();
-            structTree = structTree.get(0).getSubType();
+        if (!structTree.isEmpty() && Collection.class.isAssignableFrom(structTree.getFirst().getDataType())) {
+            parentType = structTree.getFirst().getDataType().getName();
+            structTree = structTree.getFirst().getSubType();
         }
 
         String rootStructName = findNextStructFqcn(_structBaseFqcn, generatedStructClassNames);

@@ -235,8 +235,8 @@ public final class TypeConverter {
         List<Type> dataType = new ArrayList<>();
         Marshalling.getJavaType(_dbusType, dataType, 1);
 
-        if (dataType.get(0) instanceof DBusListType || dataType.get(0) instanceof DBusMapType) {
-            ParameterizedType dBusListType = (ParameterizedType) dataType.get(0);
+        if (dataType.getFirst() instanceof DBusListType || dataType.getFirst() instanceof DBusMapType) {
+            ParameterizedType dBusListType = (ParameterizedType) dataType.getFirst();
             Type[] actualTypeArguments = dBusListType.getActualTypeArguments();
 
             String retVal = dBusListType.getRawType().getTypeName();
@@ -265,13 +265,13 @@ public final class TypeConverter {
             }
 
             // if key and value of map is of same type:
-            if (dataType.get(0) instanceof DBusMapType && internalTypes.size() == 1) {
-                internalTypes.add(internalTypes.get(0));
+            if (dataType.getFirst() instanceof DBusMapType && internalTypes.size() == 1) {
+                internalTypes.add(internalTypes.getFirst());
             }
 
             return retVal + "<" + String.join(", ", internalTypes) + ">";
         }
 
-        return dataType.get(0).getTypeName();
+        return dataType.getFirst().getTypeName();
     }
 }

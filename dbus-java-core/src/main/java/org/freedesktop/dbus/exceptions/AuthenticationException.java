@@ -1,8 +1,10 @@
 package org.freedesktop.dbus.exceptions;
 
 import java.io.IOException;
+import java.io.Serial;
 
 public class AuthenticationException extends IOException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public AuthenticationException(String _message, Throwable _cause) {

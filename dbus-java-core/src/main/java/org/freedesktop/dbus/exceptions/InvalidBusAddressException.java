@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
+import java.io.Serial;
+
 /**
  * Thrown when a invalid BusAddress should be created.
  *
@@ -8,6 +10,7 @@ package org.freedesktop.dbus.exceptions;
  */
 public class InvalidBusAddressException extends IllegalStateException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public InvalidBusAddressException() {

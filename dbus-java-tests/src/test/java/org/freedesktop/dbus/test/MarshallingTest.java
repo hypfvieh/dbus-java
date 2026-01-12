@@ -61,7 +61,7 @@ class MarshallingTest extends AbstractBaseTest {
         Marshalling.getJavaType("a(oa{sv})ao", temp, -1);
 
         assertEquals(2, temp.size(), "result must contain two types");
-        assertTrue(temp.get(0) instanceof DBusListType);
+        assertTrue(temp.getFirst() instanceof DBusListType);
         assertTrue(temp.get(1) instanceof DBusListType);
     }
 
@@ -142,7 +142,7 @@ class MarshallingTest extends AbstractBaseTest {
         assertTrue(params[0] instanceof Variant, "Variant expected");
         @SuppressWarnings("unchecked")
         Variant<List<Integer>> mt = (Variant<List<Integer>>) params[0];
-        assertEquals(1, mt.getValue().get(0), "1 expected");
+        assertEquals(1, mt.getValue().getFirst(), "1 expected");
         assertEquals(2, mt.getValue().get(1), "2 expected");
         assertEquals(3, mt.getValue().get(2), "3 expected");
     }

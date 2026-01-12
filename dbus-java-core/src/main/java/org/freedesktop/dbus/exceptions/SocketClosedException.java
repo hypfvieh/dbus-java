@@ -1,6 +1,7 @@
 package org.freedesktop.dbus.exceptions;
 
 import java.io.IOException;
+import java.io.Serial;
 
 /**
  * Exception which indicates a terminated connection.
@@ -9,6 +10,7 @@ import java.io.IOException;
  * @since v4.2.2 - 2023-02-01
  */
 public class SocketClosedException extends IOException {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public SocketClosedException() {

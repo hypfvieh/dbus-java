@@ -212,7 +212,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
             }
 
             RemoteObject ro = new RemoteObject(_source, _path, _type, false);
-            DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.get(0).getClassLoader(),
+            DBusInterface newi = (DBusInterface) Proxy.newProxyInstance(ifcs.getFirst().getClassLoader(),
                     ifcs.toArray(Class[]::new), new RemoteInvocationHandler(this, ro));
             getImportedObjects().put(newi, ro);
 
@@ -302,7 +302,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      * @return unique name
      */
     public String getUniqueName() {
-        return doWithBusNamesAndReturn(bn -> bn.get(0));
+        return doWithBusNamesAndReturn(bn -> bn.getFirst());
     }
 
     /**
