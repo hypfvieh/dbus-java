@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test;
  * the daemon disappears, the shared connection should no longer be used.
  * Instead this broken connection should be cleaned from the internal connection map.
  */
-public class Issue244Test extends AbstractBaseTest {
+class Issue244Test extends AbstractBaseTest {
 
     @Test
-    public void testSharedConnection() {
+    void testSharedConnection() {
         String busType = TransportBuilder.getRegisteredBusTypes().getFirst();
         String addr = TransportBuilder.createDynamicSession(busType, false);
         BusAddress clientAddress = BusAddress.of(addr);

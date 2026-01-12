@@ -7,15 +7,14 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ExportNestedTest extends AbstractDBusDaemonBaseTest {
+class ExportNestedTest extends AbstractDBusDaemonBaseTest {
 
     @Test
-    public void testExportNested() throws IOException, DBusException {
+    void testExportNested() throws DBusException {
         try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().build()) {
             MyObjectPart part1 = new MyObjectPart();
             part1.setVal1("ABC");

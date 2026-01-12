@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
 
-public class Issue196Test extends AbstractBaseTest {
+class Issue196Test extends AbstractBaseTest {
 
     @Test
-    public void testCorrectInterfaceCreation() throws Exception {
+    void testCorrectInterfaceCreation() throws Exception {
         String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
         BusAddress busAddress = TransportBuilder.createWithDynamicSession(protocolType).configure().build()
             .getBusAddress();

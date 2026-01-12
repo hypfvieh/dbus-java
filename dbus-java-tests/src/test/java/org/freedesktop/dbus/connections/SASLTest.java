@@ -13,31 +13,31 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class SASLTest extends AbstractBaseTest {
+class SASLTest extends AbstractBaseTest {
 
     @Test
-    public void testCommandNoData() throws IOException {
+    void testCommandNoData() throws IOException {
         Command cmdData = new Command("DATA ");
         assertEquals(SaslCommand.DATA, cmdData.getCommand());
         assertNull(cmdData.getData());
     }
 
     @Test
-    public void testCommandWithData() throws IOException {
+    void testCommandWithData() throws IOException {
         Command cmdData = new Command("DATA blafasel");
         assertEquals(SaslCommand.DATA, cmdData.getCommand());
         assertEquals("blafasel", cmdData.getData());
     }
 
     @Test
-    public void testCommandAuth() throws IOException {
+    void testCommandAuth() throws IOException {
         Command cmdData = new Command("AUTH ");
         assertEquals(SaslCommand.AUTH, cmdData.getCommand());
         assertNull(cmdData.getData());
     }
 
     @Test
-    public void testAnonymousAuthentication() throws DBusException {
+    void testAnonymousAuthentication() throws DBusException {
         String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
         String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
 
