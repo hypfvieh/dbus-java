@@ -366,7 +366,8 @@ public class SASL {
                 case AUTH_ANON:
                     return SaslResult.OK;
                 case AUTH_EXTERNAL:
-                    if (0 == COL.compare(_uid, _c.getData()) && (null == _kernelUid || 0 == COL.compare(_uid, _kernelUid))) {
+                    if ((_c.getData() != null && COL.compare(_uid, _c.getData()) == 0)
+                        && (_kernelUid == null || COL.compare(_uid, _kernelUid) == 0)) {
                         return SaslResult.OK;
                     } else {
                         return SaslResult.REJECT;
