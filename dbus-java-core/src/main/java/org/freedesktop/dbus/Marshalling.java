@@ -299,21 +299,21 @@ public final class Marshalling {
         } else if (_dataType instanceof Class<?> dataTypeClazz) {
 
             if (dataTypeClazz.isArray()) {
-                if (Type.class.equals(((Class<?>) _dataType).getComponentType())) {
+                if (Type.class.equals(dataTypeClazz.getComponentType())) {
                     _out[_level].append((char) ArgumentType.SIGNATURE);
                 } else {
                     _out[_level].append((char) ArgumentType.ARRAY);
-                    String[] s = recursiveGetDBusType(_out, ((Class<?>) _dataType).getComponentType(), false, _level + 1);
+                    String[] s = recursiveGetDBusType(_out, dataTypeClazz.getComponentType(), false, _level + 1);
                     if (s.length != 1) {
                         throw new DBusException(ERROR_MULTI_VALUED_ARRAY);
                     }
                     _out[_level].append(s[0]);
                 }
-            } else if (Struct.class.isAssignableFrom((Class<?>) _dataType)) {
+            } else if (Struct.class.isAssignableFrom(dataTypeClazz)) {
                 _out[_level].append((char) ArgumentType.STRUCT1);
                 Type[] ts = Container.getTypeCache(_dataType);
                 if (null == ts) {
-                    Field[] fs = ((Class<?>) _dataType).getDeclaredFields();
+                    Field[] fs = dataTypeClazz.getDeclaredFields();
                     ts = new Type[fs.length];
                     for (Field f : fs) {
                         Position p = f.getAnnotation(Position.class);
@@ -642,7 +642,7 @@ public final class Marshalling {
                 type2 = pt.getActualTypeArguments()[0];
             } else if (_type instanceof GenericArrayType gat) {
                 type2 = gat.getGenericComponentType();
-            } else if (_type instanceof Class<?> clz && ((Class<?>) _type).isArray()) {
+            } else if (_type instanceof Class<?> clz && clz.isArray()) {
                 type2 = clz.getComponentType();
             } else {
                 type2 = null;
@@ -674,7 +674,7 @@ public final class Marshalling {
                 }
                 Object o = Array.newInstance(cc, 0);
                 parameter = ArrayFrob.convert(parameter, o.getClass());
-            } else if (_type instanceof Class<?> clz && ((Class<?>) _type).isArray()) {
+            } else if (_type instanceof Class<?> clz && clz.isArray()) {
                 Class<?> cc = clz.getComponentType();
                 if ((cc.equals(Float.class) || cc.equals(Float.TYPE)) && parameter instanceof double[] dbArr) {
                     float[] tmp2 = new float[dbArr.length];
@@ -741,8 +741,7 @@ public final class Marshalling {
 
         if (types.length == 1 && types[0] instanceof Class<?> clz) {
             if (Tuple.class.isAssignableFrom(clz)) {
-                String typeName = types[0].getTypeName();
-                Constructor<?>[] constructors = Class.forName(typeName).getDeclaredConstructors();
+                Constructor<?>[] constructors = clz.getDeclaredConstructors();
                 if (constructors.length != 1) {
                     throw new DBusException("Error deserializing message: "
                             + "We had a Tuple type but wrong number of constructors for this Tuple. "
