@@ -55,7 +55,7 @@ class Issue196Test extends AbstractBaseTest {
 
                 dbi = connection.dynamicProxy(source, path, type);
                 assertNotNull(dbi);
-                assertTrue(dbi instanceof TestInterfaceType);
+                assertInstanceOf(TestInterfaceType.class, dbi);
 
                 rih = (RemoteInvocationHandler) Proxy.getInvocationHandler(dbi);
                 assertNotNull(rih);
