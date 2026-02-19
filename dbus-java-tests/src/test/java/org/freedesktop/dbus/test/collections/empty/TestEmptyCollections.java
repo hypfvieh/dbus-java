@@ -140,7 +140,7 @@ class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
                         s -> new ListStructPrimitive(Arrays.asList(1, 2), s)), "ListPrimitive", "1,2"),
                 Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testListIntStruct,
                         s -> new ListStructStruct(Collections.emptyList(), s),
-                        s -> new ListStructStruct(Arrays.asList(new IntStruct(5, 6)), s)), "ListStruct", "(5,6)"),
+                        s -> new ListStructStruct(List.of(new IntStruct(5, 6)), s)), "ListStruct", "(5,6)"),
                 Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testArrayPrimitive,
                         s -> new ArrayStructPrimitive(new int[0], s),
                         s -> new ArrayStructPrimitive(new int[] {4, 5}, s)), "ArrayPrimitive", "4,5"),
@@ -166,7 +166,7 @@ class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
                         "{complete:{inbetween:{test:(42,19)}}}"),
                 Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMixedListMap,
                         s -> new ListMapStruct(Collections.emptyList(), s),
-                        s -> new ListMapStruct(Arrays.asList(getIntStructHashMap()), s)), "mixedListMapStruct",
+                        s -> new ListMapStruct(List.of(getIntStructHashMap()), s)), "mixedListMapStruct",
                         "[{other=(12,17)}]"),
                 Arguments.of(new ArgumentObj<>(ISampleCollectionInterface::testMixedMapArray,
                         s -> new MapArrayStruct(Collections.emptyMap(), s),
@@ -197,7 +197,7 @@ class TestEmptyCollections extends AbstractDBusDaemonBaseTest {
     }
 
     private static List<List<List<IntStruct>>> getDeepList() {
-        return Arrays.asList(Arrays.asList(Arrays.asList(new IntStruct(111, 44))));
+        return List.of(List.of(List.of(new IntStruct(111, 44))));
     }
 
     private static Map<String, IntStruct> getIntStructHashMap() {

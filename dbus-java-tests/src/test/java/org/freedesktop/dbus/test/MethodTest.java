@@ -31,14 +31,14 @@ public class MethodTest extends AbstractDBusBaseTest {
 
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = tri.pathrv(path);
-        logger.debug(path.toString() + " => " + p.toString());
+        logger.debug("{} => {}", path, p.toString());
         assertEquals(path, p, "pathrv incorrect");
 
         List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
 
         List<DBusPath> ps = tri.pathlistrv(paths);
-        logger.debug(paths.toString() + " => " + ps.toString());
+        logger.debug("{} => {}", paths, ps.toString());
 
         assertEquals(paths, ps, "pathlistrv incorrect");
 

@@ -28,20 +28,20 @@ public final class NetworkManagerExample {
             NetworkManager nm = dbusConn.getRemoteObject("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager",
                     NetworkManager.class);
 
-            System.out.println("");
+            System.out.println();
             System.out.println("Permissions");
             System.out.println("------------------");
-            System.out.println("");
+            System.out.println();
 
             Map<CharSequence, CharSequence> getPermissions = nm.GetPermissions();
             for (Entry<CharSequence, CharSequence> entry : getPermissions.entrySet()) {
                 System.out.println("Permission: " + entry.getKey() + " = " + entry.getValue());
             }
 
-            System.out.println("");
+            System.out.println();
             System.out.println("Device Information");
             System.out.println("------------------");
-            System.out.println("");
+            System.out.println();
 
             for (DBusPath path : nm.GetDevices()) {
                 System.out.println("DevicePath: " + path);
@@ -77,7 +77,7 @@ public final class NetworkManagerExample {
                     List<Map<String, Variant<?>>> addressArrV6 = ipv6Config.Get("org.freedesktop.NetworkManager.IP6Config", "AddressData");
                     printAddressInfo(addressArrV6, "IPv6");
                 }
-                System.out.println("");
+                System.out.println();
             }
 
         }
@@ -92,7 +92,7 @@ public final class NetworkManagerExample {
                     System.out.println(" / " + String.valueOf(_addressArr.get(i).get("prefix")).replaceAll("\\[|\\]", ""));
                 }
             } else {
-                System.out.println("");
+                System.out.println();
             }
             for (Entry<String, Variant<?>> entry : _addressArr.get(i).entrySet()) {
                 if (entry.getKey().equals("address") || entry.getKey().equals("prefix")) {

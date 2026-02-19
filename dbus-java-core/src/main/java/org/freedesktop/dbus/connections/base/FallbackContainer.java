@@ -30,7 +30,6 @@ public class FallbackContainer {
     }
 
     public synchronized ExportedObject get(String _path) {
-        int best = 0;
         ExportedObject bestobject = null;
         String[] pathel = _path.split("/");
         for (Map.Entry<String[], ExportedObject> entry : fallbacks.entrySet()) {
@@ -48,7 +47,7 @@ public class FallbackContainer {
                     break;
                 }
             }
-            if (i > 0 && i == fbpath.length && i > best) {
+            if (i > 0 && i == fbpath.length) {
                 bestobject = entry.getValue();
             }
             logger.trace("Matches {} bestobject now {}", i, bestobject);

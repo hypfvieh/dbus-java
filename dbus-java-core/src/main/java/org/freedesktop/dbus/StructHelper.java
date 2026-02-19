@@ -109,7 +109,7 @@ public final class StructHelper {
             if (constructorArgClasses.length != object.length) {
                 throw new IllegalArgumentException("Struct length does not match argument length");
             }
-            T x = createStruct(constructorArgClasses, (Object) object, _structType);
+            T x = createStruct(constructorArgClasses, object, _structType);
             _result.add(x);
         }
 

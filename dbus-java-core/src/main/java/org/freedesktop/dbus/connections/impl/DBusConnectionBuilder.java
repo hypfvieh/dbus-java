@@ -121,23 +121,21 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
             throw new IllegalArgumentException("No transports found to connect to DBus. Please add at least one transport provider to your classpath");
         }
 
-        BusAddress address = _address;
-
         // no unix transport but address wants to use a unix socket
         if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
-                && address != null
-                && address.isBusType("UNIX")) {
+                && _address != null
+                && _address.isBusType("UNIX")) {
             throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
         }
 
         // no tcp transport but TCP address given
         if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
-                && address != null
-                && address.isBusType("TCP")) {
+                && _address != null
+                && _address.isBusType("TCP")) {
             throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
         }
 
-        return address;
+        return _address;
 
     }
 

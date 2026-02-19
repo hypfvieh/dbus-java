@@ -132,15 +132,11 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
     }
 
     /**
-     * Do some action with the currently registered names in a synchronized manor.
+     * Do some action with the currently registered names in a synchronized manner.
      *
-     * @param _exClz exception type which may be thrown
      * @param _action action to execute
-     * @param <X> type of exception
      *
      * @return whatever the action returns
-     *
-     * @throws X thrown when action throws
      */
     private <T> T doWithBusNamesAndReturn(Function<List<String>, T> _action) {
         if (_action == null) {
@@ -152,13 +148,9 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
     }
 
     /**
-     * Do some action with the currently registered names in a synchronized manor.
+     * Do some action with the currently registered names in a synchronized manner.
      *
-     * @param _exClz exception type which may be thrown
      * @param _action action to execute
-     * @param <X> type of exception
-     *
-     * @throws X thrown when action throws
      */
     private void doWithBusNames(Consumer<List<String>> _action) {
         doWithBusNamesAndReturn(bn -> {
@@ -302,7 +294,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      * @return unique name
      */
     public String getUniqueName() {
-        return doWithBusNamesAndReturn(bn -> bn.getFirst());
+        return doWithBusNamesAndReturn(List::getFirst);
     }
 
     /**
@@ -311,11 +303,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
      * @return connection names
      */
     public String[] getNames() {
-        return doWithBusNamesAndReturn(bn -> {
-            Set<String> names = new TreeSet<>();
-            names.addAll(bn);
-            return names;
-        }).toArray(String[]::new);
+        return doWithBusNamesAndReturn(TreeSet::new).toArray(String[]::new);
     }
 
     @Override
@@ -514,7 +502,7 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
-                logger.debug("Cannot add match rule: " + _rule.toString(), _ex);
+                logger.debug("Cannot add match rule: {}", _rule, _ex);
                 throw new DBusException("Cannot add match rule.", _ex);
             }
         }

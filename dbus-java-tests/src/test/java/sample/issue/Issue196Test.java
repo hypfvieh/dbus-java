@@ -44,7 +44,7 @@ class Issue196Test extends AbstractBaseTest {
                 dbi = connection.dynamicProxy(source, path, null);
                 assertNotNull(dbi);
 
-                rih = RemoteInvocationHandler.class.cast(Proxy.getInvocationHandler(dbi));
+                rih = (RemoteInvocationHandler) Proxy.getInvocationHandler(dbi);
                 assertNotNull(rih);
 
                 RemoteObject ro = rih.getRemote();
@@ -55,9 +55,9 @@ class Issue196Test extends AbstractBaseTest {
 
                 dbi = connection.dynamicProxy(source, path, type);
                 assertNotNull(dbi);
-                assertTrue(TestInterfaceType.class.isInstance(dbi));
+                assertTrue(dbi instanceof TestInterfaceType);
 
-                rih = RemoteInvocationHandler.class.cast(Proxy.getInvocationHandler(dbi));
+                rih = (RemoteInvocationHandler) Proxy.getInvocationHandler(dbi);
                 assertNotNull(rih);
 
                 // RemoteInvocationHandler.remote is package scope

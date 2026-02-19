@@ -303,12 +303,7 @@ public class InterfaceCodeGenerator {
                 if (argElm.getAttribute("type").contains("(")) { // this argument requires some sort of struct
                     String structPart = argElm.getAttribute("type").replaceAll("(\\(.+\\))", "$1");
                     String paramName = Util.defaultString(Util.upperCaseFirstChar(Util.snakeToCamelCase(argName)), "");
-                    String parentType = buildStructClass(structPart, methodElementName + paramName + "Struct", _clzBldr, additionalClasses);
-                    if (parentType != null) {
-                        argType = parentType;
-                    } else {
-                        argType = null;
-                    }
+                    argType = buildStructClass(structPart, methodElementName + paramName + "Struct", _clzBldr, additionalClasses);
                 } else {
                     argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
                 }
@@ -796,16 +791,16 @@ public class InterfaceCodeGenerator {
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
         System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
-        System.out.println("");
+        System.out.println();
         System.out.println("        --disable-tuples   | -t           Create Struct based classes for multi-value "
             + "return methods instead of creating Tuple classes (code will only work with dbus-java 5.2.0+)");
-        System.out.println("");
+        System.out.println();
         System.out.println("        --argumentPrefix                  Prepend the given prefix to generated method arguments/parameters");
-        System.out.println("");
+        System.out.println();
         System.out.println("        --enable-dtd-validation           Enable DTD validation of introspection XML");
         System.out.println("        --version                         Show version information");
         System.out.println("        --help                            Show this help");
-        System.out.println("");
+        System.out.println();
         System.out.println("If --inputFile is given busname object argument can be skipped (or * can be used), that will force the util to extract all interfaces found in the given file.");
         System.out.println("If busname (not empty, blank and not '*') is given, then only interfaces starting with the given busname will be extracted.");
     }

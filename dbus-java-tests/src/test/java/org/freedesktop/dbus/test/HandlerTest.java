@@ -69,12 +69,12 @@ public class HandlerTest extends AbstractDBusBaseTest {
         logger.debug("Sending Path Signal...");
         DBusPath path = new DBusPath("/nonexistantwooooooo");
         DBusPath p = peer.pathrv(path);
-        logger.debug(path.toString() + " => " + p.toString());
+        logger.debug("{} => {}", path, p.toString());
         assertEquals(path, p, "pathrv incorrect");
         List<DBusPath> paths = new ArrayList<>();
         paths.add(path);
         List<DBusPath> ps = peer.pathlistrv(paths);
-        logger.debug(paths.toString() + " => " + ps.toString());
+        logger.debug("{} => {}", paths, ps.toString());
         Map<DBusPath, DBusPath> pathm = new HashMap<>();
         pathm.put(path, path);
         serverconn.sendMessage(new TestPathSignal(getTestObjectPath(), path, paths, pathm));

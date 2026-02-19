@@ -126,7 +126,7 @@ public final class DBusMatchRuleBuilder {
      */
     public DBusMatchRuleBuilder withType(String _type) {
         if (Stream.of(MessageTypes.values())
-            .map(e -> e.getMatchRuleName())
+            .map(MessageTypes::getMatchRuleName)
             .noneMatch(e -> e.equals(_type))) {
             throw new IllegalArgumentException(_type + " is not a valid message type");
         }

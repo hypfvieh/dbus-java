@@ -28,7 +28,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class containing methods for handling DBus properties and {@link DBusBoundProperty} annotation. <br>
@@ -125,9 +124,9 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                             Object val = invokeMethod(_methodCall, propMeth, object);
 
                             // when the value is a collection, array or map, wrap them in a proper variant type
-                            if (val != null && val.getClass().isArray() || Collection.class.isInstance(val) || Map.class.isInstance(val)) {
+                            if (val != null && val.getClass().isArray() || val instanceof Collection || val instanceof Map) {
                                 String[] dataType = Marshalling.getDBusType(propEn.getValue().getGenericReturnType());
-                                String dataTypeStr = Arrays.stream(dataType).collect(Collectors.joining());
+                                String dataTypeStr = String.join("", dataType);
                                 getLogger().trace("Creating embedded Array/Collection/Map of type {}", dataTypeStr);
                                 val = new Variant<>(val, dataTypeStr);
                             }

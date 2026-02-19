@@ -41,7 +41,7 @@ public final class DBusObjects {
      */
     private static <T, X extends DBusException> T requireBase(T _input, Predicate<T> _validation, Function<String, X> _exSupplier, String _customMessage) throws X {
         if (_input == null) {
-            throw _exSupplier.apply(_customMessage != null ? _customMessage : null);
+            throw _exSupplier.apply(_customMessage);
         } else if (_input instanceof String str && str.isBlank()) {
             throw _exSupplier.apply(_customMessage != null ? _customMessage : "<Empty String>");
         } else if (!_validation.test(_input)) {
@@ -194,7 +194,7 @@ public final class DBusObjects {
      * @since 5.2.0 - 2025-05-02
      */
     public static String requireDBusInterface(String _str) throws InvalidObjectPathException {
-        if (_str == null || _str.isEmpty() || _str.startsWith(".") || !_str.contains(".")) {
+        if (_str == null || _str.startsWith(".") || !_str.contains(".")) {
             throw new InvalidObjectPathException(_str);
         }
         return _str;

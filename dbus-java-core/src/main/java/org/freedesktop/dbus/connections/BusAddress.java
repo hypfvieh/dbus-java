@@ -49,7 +49,7 @@ public class BusAddress {
             throw new InvalidBusAddressException("Bus address is blank");
         }
 
-        BusAddress busAddress = new BusAddress((BusAddress) null);
+        BusAddress busAddress = new BusAddress(null);
 
         LOGGER.trace("Parsing bus address: {}", _address);
 

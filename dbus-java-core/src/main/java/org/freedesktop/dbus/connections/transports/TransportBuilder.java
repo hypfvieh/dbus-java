@@ -120,7 +120,6 @@ public final class TransportBuilder {
      * @param _address address, never null
      *
      * @return new {@link TransportBuilder}
-     * @throws DBusException if invalid address provided
      */
     public static TransportBuilder create(BusAddress _address) {
         Objects.requireNonNull(_address, "BusAddress required");

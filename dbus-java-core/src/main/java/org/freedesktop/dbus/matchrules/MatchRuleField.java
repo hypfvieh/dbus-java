@@ -2,23 +2,23 @@ package org.freedesktop.dbus.matchrules;
 
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.constants.MessageTypes;
-import org.freedesktop.dbus.utils.Util;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 
 public enum MatchRuleField {
-    TYPE((m, s) -> Util.strEquals(MessageTypes.getRuleNameById(m.getType()), s), null),
-    SENDER((m, s) -> Util.strEquals(m.getSource(), s), null),
-    INTERFACE((m, s) -> Util.strEquals(m.getInterface(), s), null),
-    MEMBER((m, s) -> Util.strEquals(m.getName(), s), null),
-    PATH((m, s) -> Util.strEquals(m.getPath(), s), null),
+    TYPE((m, s) -> Objects.equals(MessageTypes.getRuleNameById(m.getType()), s), null),
+    SENDER((m, s) -> Objects.equals(m.getSource(), s), null),
+    INTERFACE((m, s) -> Objects.equals(m.getInterface(), s), null),
+    MEMBER((m, s) -> Objects.equals(m.getName(), s), null),
+    PATH((m, s) -> Objects.equals(m.getPath(), s), null),
     PATH_NAMESPACE((m, s) -> MatchRuleMatcher.matchPathNamespace(m.getPath(), s), null),
-    DESTINATION((m, s) -> Util.strEquals(m.getDestination(), s), null),
-    ARG0123(null, (m, s) -> MatchRuleMatcher.matchArg0123(m, s)),
-    ARG0123PATH(null, (m, s) -> MatchRuleMatcher.matchArg0123Path(m, s)),
-    ARG0NAMESPACE((m, s) -> MatchRuleMatcher.matchArg0Namespace(m, s), null);
+    DESTINATION((m, s) -> Objects.equals(m.getDestination(), s), null),
+    ARG0123(null, MatchRuleMatcher::matchArg0123),
+    ARG0123PATH(null, MatchRuleMatcher::matchArg0123Path),
+    ARG0NAMESPACE(MatchRuleMatcher::matchArg0Namespace, null);
 
     private final BiPredicate<Message, String> singleMatcher;
     private final BiPredicate<Message, Map<Integer, String>> multiMatcher;

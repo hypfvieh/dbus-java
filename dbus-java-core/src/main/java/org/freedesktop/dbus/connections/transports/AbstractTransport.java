@@ -266,7 +266,6 @@ public abstract class AbstractTransport implements Closeable {
      * The default implementation does not support file descriptor passing!
      *
      * @param _socket socket to use
-     * @param _messageFactory message factory
      * @return TransportConnection with configured socket channel, reader and writer
      */
     private TransportConnection createInputOutput(SocketChannel _socket) {

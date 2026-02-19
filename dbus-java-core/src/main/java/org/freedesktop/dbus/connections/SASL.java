@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.NetworkChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -600,14 +599,14 @@ public class SASL {
                 switch (state) {
                     case INITIAL_STATE:
                         ByteBuffer buf = ByteBuffer.allocate(1);
-                        if (_sock instanceof NetworkChannel) {
+                        if (_sock != null) {
                             _sock.read(buf); // 0
                             state = SaslAuthState.WAIT_AUTH;
                         } else {
                             try {
                                 int kuid = -1;
                                 if (_transport instanceof AbstractUnixTransport aut) {
-                                    kuid = aut.getUid(_sock);
+                                    kuid = aut.getUid(null);
                                 }
                                 if (kuid >= 0) {
                                     kernelUid = stupidlyEncode("" + kuid);

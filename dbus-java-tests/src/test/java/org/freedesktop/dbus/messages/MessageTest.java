@@ -37,7 +37,7 @@ public class MessageTest extends AbstractBaseTest {
 
         for (Object object : objectList) {
             Object[] o = (Object[]) object;
-            logger.debug("{} ---> {}", String.valueOf(o[0]), o[1]);
+            logger.debug("{} ---> {}", o[0], o[1]);
         }
 
         Object[] entry1 = (Object[]) objectList.getFirst();

@@ -273,9 +273,7 @@ public final class Profile {
                 }
                 len = 256;
                 while (len <= 32768) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("a".repeat(len));
-                    String s = sb.toString();
+                    String s = "a".repeat(len);
                     end = System.currentTimeMillis() + 500;
                     count = 0;
                     do {

@@ -23,7 +23,7 @@ public final class DBusMatchRule {
     private final Map<MatchRuleField, String> fields = new TreeMap<>();
     private final Map<MatchRuleField, Map<Integer, String>> multiValueFields = new TreeMap<>();
 
-    protected DBusMatchRule(Map<MatchRuleField, String> _values, Map<MatchRuleField, Map<Integer, String>> _multiValues) {
+    DBusMatchRule(Map<MatchRuleField, String> _values, Map<MatchRuleField, Map<Integer, String>> _multiValues) {
         fields.putAll(Objects.requireNonNull(_values, "Values required"));
         if (_multiValues != null) {
             multiValueFields.putAll(_multiValues);

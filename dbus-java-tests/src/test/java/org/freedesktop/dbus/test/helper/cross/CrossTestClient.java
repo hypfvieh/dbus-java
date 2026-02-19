@@ -108,7 +108,7 @@ public class CrossTestClient implements Binding.SampleClient, DBusSigHandler<Bin
                 if (o instanceof Map) {
                     Map<Object, Object> a = (Map<Object, Object>) o;
                     Map<Object, Object> b = (Map<Object, Object>) _rv;
-                    if (a.keySet().size() != b.keySet().size()) {
+                    if (a.size() != b.size()) {
                         fail(_iface.getName() + "." + _method, msg);
                     } else {
                         for (Object k : a.keySet()) {

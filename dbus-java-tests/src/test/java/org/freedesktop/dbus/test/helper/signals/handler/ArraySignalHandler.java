@@ -33,7 +33,7 @@ public class ArraySignalHandler extends AbstractSignalHandler<SampleSignals.Test
 
             setFailed(b, "Incorrect TestArraySignal parameters");
 
-            setFailed(_t.getMapOfIntStruct().keySet().size() != 2, "Incorrect TestArraySignal map size: should be 2, actually " + _t.getMapOfIntStruct().keySet().size());
+            setFailed(_t.getMapOfIntStruct().size() != 2, "Incorrect TestArraySignal map size: should be 2, actually " + _t.getMapOfIntStruct().size());
 
             boolean c = !(_t.getMapOfIntStruct().get(new UInt32(1)).getVariantValue().getValue() instanceof UInt64)
                     || 678L != ((UInt64) _t.getMapOfIntStruct().get(new UInt32(1)).getVariantValue().getValue()).longValue()

@@ -65,7 +65,7 @@ public final class Util {
             try {
                 return readProperties(new FileInputStream(_file));
             } catch (FileNotFoundException _ex) {
-                LOGGER.info("Could not load properties file: " + _file, _ex);
+                LOGGER.info("Could not load properties file: {}", _file, _ex);
             }
         }
         return null;
@@ -105,24 +105,6 @@ public final class Util {
      */
     public static boolean isBlank(String _str) {
         return _str == null || _str.isBlank();
-    }
-
-    /**
-     * Null-safe equals for two strings.
-     *
-     * @param _str1 first string
-     * @param _str2 second string
-     * @return true if both are equal (also true if both are null)
-     */
-    public static boolean strEquals(String _str1, String _str2) {
-        if (_str1 == _str2) {
-            return true;
-        } else if (_str1 == null || _str2 == null) {
-            return false;
-        } else if (_str1.length() != _str2.length()) {
-            return false;
-        }
-        return _str1.equals(_str2);
     }
 
     /**
@@ -380,7 +362,7 @@ public final class Util {
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(_fileName), _charset)) {
             writer.write(allText);
         } catch (IOException _ex) {
-            LOGGER.error("Could not write file to '" + _fileName + "'", _ex);
+            LOGGER.error("Could not write file to '{}'", _fileName, _ex);
             return false;
         }
 
@@ -466,16 +448,7 @@ public final class Util {
      * @return java major
      */
     public static int getJavaVersion() {
-        String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            version = version.substring(2, 3);
-        } else {
-            int dot = version.indexOf('.');
-            if (dot != -1) {
-                version = version.substring(0, dot);
-            }
-        }
-        return Integer.parseInt(version);
+        return Runtime.version().feature();
     }
 
     /**

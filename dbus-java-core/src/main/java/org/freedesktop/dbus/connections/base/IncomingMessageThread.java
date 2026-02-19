@@ -32,14 +32,11 @@ public class IncomingMessageThread extends Thread {
     @Override
     public void run() {
 
-        Message msg;
         while (!terminate) {
-            msg = null;
-
             // read from the wire
             try {
                 // this blocks on outgoing being non-empty or a message being available.
-                msg = connection.readIncoming();
+                Message msg = connection.readIncoming();
                 if (msg != null) {
                     logger.trace("Read message from {}: {}", connection.getTransport(), msg);
 

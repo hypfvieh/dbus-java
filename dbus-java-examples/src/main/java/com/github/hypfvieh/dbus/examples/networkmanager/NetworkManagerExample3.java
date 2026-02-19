@@ -10,7 +10,6 @@ import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ public final class NetworkManagerExample3 {
                     address.put("address", new Variant<>(_args[2]));
                     address.put("prefix", new Variant<>(new UInt32(_args[3])));
 
-                    List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
+                    List<Map<String, Variant<?>>> addressData = List.of(address);
                     ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
                     if (_args.length == 5) {

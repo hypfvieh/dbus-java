@@ -6,12 +6,12 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.DBusObjects;
-import org.freedesktop.dbus.utils.Util;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 final class MatchRuleMatcher {
 
@@ -159,7 +159,7 @@ final class MatchRuleMatcher {
         }
 
         for (int i = 0; i < compareSplit.length; i++) {
-            if (!Util.strEquals(compareSplit[i], inputSplit[i])) {
+            if (!Objects.equals(compareSplit[i], inputSplit[i])) {
                 return false;
             }
         }

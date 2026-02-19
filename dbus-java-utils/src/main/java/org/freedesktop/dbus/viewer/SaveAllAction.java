@@ -18,7 +18,7 @@ import javax.swing.JTabbedPane;
 @SuppressWarnings("serial")
 final class SaveAllAction extends TabbedSaveAction {
 
-    protected SaveAllAction(JTabbedPane _tabbedPane) {
+    SaveAllAction(JTabbedPane _tabbedPane) {
         super(_tabbedPane, "Save All...");
     }
 

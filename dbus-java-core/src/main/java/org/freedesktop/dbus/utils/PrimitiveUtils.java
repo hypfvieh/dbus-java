@@ -1,8 +1,6 @@
 package org.freedesktop.dbus.utils;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class containing methods dealing with object and primitive class types.
@@ -10,33 +8,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author hypfvieh
  */
 public final class PrimitiveUtils {
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = Collections.unmodifiableMap(
-        new ConcurrentHashMap<>(
-            Map.of(
-                Boolean.TYPE, Boolean.class,
-                Byte.TYPE, Byte.class,
-                Short.TYPE, Short.class,
-                Character.TYPE, Character.class,
-                Integer.TYPE, Integer.class,
-                Long.TYPE, Long.class,
-                Float.TYPE, Float.class,
-                Double.TYPE, Double.class)
-            )
-        );
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = Map.of(
+            Boolean.TYPE, Boolean.class,
+            Byte.TYPE, Byte.class,
+            Short.TYPE, Short.class,
+            Character.TYPE, Character.class,
+            Integer.TYPE, Integer.class,
+            Long.TYPE, Long.class,
+            Float.TYPE, Float.class,
+            Double.TYPE, Double.class);
 
-        private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE = Collections.unmodifiableMap(
-            new ConcurrentHashMap<>(
-                Map.of(
-                    Boolean.class, Boolean.TYPE,
-                    Byte.class, Byte.TYPE,
-                    Short.class, Short.TYPE,
-                    Character.class, Character.TYPE,
-                    Integer.class, Integer.TYPE,
-                    Long.class, Long.TYPE,
-                    Float.class, Float.TYPE,
-                    Double.class, Double.TYPE)
-                )
-            );
+    private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE = Map.of(
+            Boolean.class, Boolean.TYPE,
+            Byte.class, Byte.TYPE,
+            Short.class, Short.TYPE,
+            Character.class, Character.TYPE,
+            Integer.class, Integer.TYPE,
+            Long.class, Long.TYPE,
+            Float.class, Float.TYPE,
+            Double.class, Double.TYPE);
 
     private PrimitiveUtils() {
 
@@ -47,7 +37,7 @@ public final class PrimitiveUtils {
      * @return unmodifiable map
      */
     public static Map<Class<?>, Class<?>> getPrimitiveToWrapperTypes() {
-        return Collections.unmodifiableMap(PRIMITIVE_TO_WRAPPER);
+        return PRIMITIVE_TO_WRAPPER;
     }
 
     /**
@@ -55,7 +45,7 @@ public final class PrimitiveUtils {
      * @return unmodifiable map
      */
     public static Map<Class<?>, Class<?>> getWrapperToPrimitiveTypes() {
-        return Collections.unmodifiableMap(WRAPPER_TO_PRIMITIVE);
+        return WRAPPER_TO_PRIMITIVE;
     }
 
     /**

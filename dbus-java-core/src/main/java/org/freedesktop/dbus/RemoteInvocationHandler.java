@@ -30,8 +30,8 @@ public class RemoteInvocationHandler implements InvocationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInvocationHandler.class);
 
     // CHECKSTYLE:OFF
-    AbstractConnection conn;
-    RemoteObject       remote;
+    private final AbstractConnection conn;
+    private final RemoteObject       remote;
     // CHECKSTYLE:ON
 
     public RemoteInvocationHandler(AbstractConnection _conn, RemoteObject _remote) {

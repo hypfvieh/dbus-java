@@ -64,7 +64,7 @@ public sealed interface IRemoteObjectGetter permits DBusConnection {
      * happens, try specifying the interface explicitly.
      *
      * @param _busname
-     *            The bus name to connect to. Usually a well known bus name name in dot-notation (such as
+     *            The bus name to connect to. Usually a well known bus name in dot-notation (such as
      *            "org.freedesktop.local") or may be a DBus address such as ":1-16".
      * @param _objectpath
      *            The path on which the process is exporting the object.
