@@ -1,11 +1,7 @@
 package org.freedesktop.dbus.transport.jre;
 
-import jdk.net.ExtendedSocketOptions;
-import jdk.net.UnixDomainPrincipal;
-
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.nio.file.attribute.UserPrincipal;
 
 public final class NativeUnixSocketHelper {
 
@@ -20,14 +16,18 @@ public final class NativeUnixSocketHelper {
      * @throws IOException when socket channel fails to read SO_PEERCRED option
      */
     public static int getUid(SocketChannel _sock) throws IOException {
-        if (_sock == null) {
-            return -1;
-        }
-
-        UnixDomainPrincipal creds = _sock.getOption(ExtendedSocketOptions.SO_PEERCRED);
-        UserPrincipal user = creds.user();
-
-        return Integer.parseInt(user.getName());
+        // gathering the UID of SO_PEERCRED is currently not possible using pure Java.
+        // The code below will only provide the username, not the UID.
+        // This does not comply with the DBus-Spec which wants UID.
+        return -1;
+//        if (_sock == null) {
+//            return -1;
+//        }
+//
+//        UnixDomainPrincipal creds = _sock.getOption(ExtendedSocketOptions.SO_PEERCRED);
+//        UserPrincipal user = creds.user();
+//
+//        return Integer.parseInt(user.getName());
     }
 
 }
