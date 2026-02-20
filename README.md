@@ -74,7 +74,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - **Minimum Java version: 21**
    - **Removed** all methods, members and classes marked as deprecated
    - Update JUnit to Version 6
-   - Remove `throws IOException` from `AbstractConnectionBase.close()` (Issue #287)
+   - Remove `throws IOException` from `AbstractConnectionBase.close()` ([#287](https://github.com/hypfvieh/dbus-java/issues/287))
    - Support usage of `Struct`s as return value (as alternative to `Tuple` with generics) (based on discussion in #285)
    - Updated dependencies and plugins
    - Added support to use `Struct` datatypes as return values instead of `Tuple`#
@@ -87,6 +87,8 @@ The library will remain open source and MIT licensed and can still be used, fork
      - This can be enabled using the `DBusConnectionBuilder`, example: `DBusConnection sessionConnection = DBusConnectionBuilder.forSystemBus().receivingThreadConfig().withAllVirtualThreads(true).connectionConfig().build()`
      - Virtual-Threads can be enabled/disabled for each of the different executor services used in `ReceivingService`: `SIGNAL`, `ERROR`, `METHODCALL`, `METHODRETURN`
      - default remains native threads on all executors
+   - Fixed possible NullPointerException in SASL auth ([#294](https://github.com/hypfvieh/dbus-java/issues/294))
+   - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298)) 
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
