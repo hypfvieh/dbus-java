@@ -11,14 +11,7 @@ import java.util.Optional;
  * Can be created from either an integer (gotten through some JNI/JNA/JNR call) or from a
  * {@link java.io.FileDescriptor}.
  */
-public final class FileDescriptor {
-
-    private final int fd;
-
-    public FileDescriptor(int _fd) {
-        fd = _fd;
-    }
-
+public record FileDescriptor(int intFileDescriptor) {
     /**
      * Converts this DBus {@link FileDescriptor} to a {@link java.io.FileDescriptor}.<br>
      * Tries to use the provided ISocketProvider if present first. <br>
@@ -31,41 +24,15 @@ public final class FileDescriptor {
      */
     public java.io.FileDescriptor toJavaFileDescriptor(ISocketProvider _provider) throws MarshallingException {
         if (_provider != null) {
-            Optional<java.io.FileDescriptor> result = _provider.createFileDescriptor(fd);
+            Optional<java.io.FileDescriptor> result = _provider.createFileDescriptor(intFileDescriptor);
             if (result.isPresent()) {
                 return result.get();
             }
         }
 
         return ReflectionFileDescriptorHelper.getInstance()
-                .flatMap(helper -> helper.createFileDescriptor(fd))
+                .flatMap(helper -> helper.createFileDescriptor(intFileDescriptor))
                 .orElseThrow(() -> new MarshallingException("Could not create new FileDescriptor instance"));
-    }
-
-    public int getIntFileDescriptor() {
-        return fd;
-    }
-
-    @Override
-    public boolean equals(Object _o) {
-        if (this == _o) {
-            return true;
-        }
-        if (_o == null || getClass() != _o.getClass()) {
-            return false;
-        }
-        FileDescriptor that = (FileDescriptor) _o;
-        return fd == that.fd;
-    }
-
-    @Override
-    public int hashCode() {
-        return fd;
-    }
-
-    @Override
-    public String toString() {
-        return FileDescriptor.class.getSimpleName() + "[fd=" + fd + "]";
     }
 
     /**

@@ -110,7 +110,7 @@ final class MatchRuleMatcher {
                     if (clz.isAssignableFrom(String.class)) {
                         matchVal = (String) parameters[i];
                     } else if (clz.isAssignableFrom(DBusPath.class)) {
-                        matchVal = ((DBusPath) parameters[i]).getPath();
+                        matchVal = ((DBusPath) parameters[i]).path();
                     } else {
                         continue; // not String or DBusPath, do not try to match
                     }

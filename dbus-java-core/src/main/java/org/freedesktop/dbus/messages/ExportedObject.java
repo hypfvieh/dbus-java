@@ -168,7 +168,7 @@ public class ExportedObject {
                 propertyMethods.put(ref, method);
                 if (map.containsKey(name)) {
                     PropertyRef existing = map.get(name);
-                    if (access.equals(existing.getAccess())) {
+                    if (access.equals(existing.access())) {
                         throw new DBusException(MessageFormat.format(
                             "Property ''{0}'' has access mode ''{1}'' defined multiple times.", name, access));
                     } else {
@@ -188,7 +188,7 @@ public class ExportedObject {
         }
 
         for (PropertyRef ref : map.values()) {
-            xml.append("  ").append(generatePropertyXml(ref.getName(), ref.getType(), ref.getAccess(), ref.getEmitChangeSignal())).append("\n");
+            xml.append("  ").append(generatePropertyXml(ref.name(), ref.type(), ref.access(), ref.emitChangeSignal())).append("\n");
         }
 
         return xml.toString();
@@ -277,10 +277,9 @@ public class ExportedObject {
         } else if (_meth.getGenericReturnType() instanceof Class<?> clz) {
             argTypes = Arrays.stream(clz.getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(Position.class))
-                .filter(Objects::nonNull)
                 .map(f -> Map.entry(f.getAnnotation(Position.class).value(), f))
-                .sorted(Comparator.comparingInt(k -> k.getKey()))
-                .map(f -> f.getValue())
+                .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                .map(Map.Entry::getValue)
                 .map(Field::getType)
                 .map(Type.class::cast)
                 .toList();

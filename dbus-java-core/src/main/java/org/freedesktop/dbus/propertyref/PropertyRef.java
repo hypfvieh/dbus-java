@@ -16,27 +16,9 @@ import java.util.Objects;
  * @author Brett Smith
  * @since 5.0.0 - 2023-10-20
  */
-public final class PropertyRef {
-
-    private final String name;
-    private final Class<?> type;
-    private final DBusProperty.Access access;
-    private final EmitChangeSignal emitChangeSignal;
-
+public record PropertyRef(String name, Class<?> type, Access access, EmitChangeSignal emitChangeSignal) {
     public PropertyRef(String _name, Class<?> _type, Access _access) {
-        super();
-        this.name = _name;
-        this.type = _type;
-        this.access = _access;
-        this.emitChangeSignal = EmitChangeSignal.TRUE;
-    }
-
-    public PropertyRef(String _name, Class<?> _type, Access _access, EmitChangeSignal _emitChangeSignal) {
-        super();
-        this.name = _name;
-        this.type = _type;
-        this.access = _access;
-        this.emitChangeSignal = _emitChangeSignal;
+        this(_name, _type, _access, EmitChangeSignal.TRUE);
     }
 
     public PropertyRef(DBusProperty _property) {
@@ -61,22 +43,6 @@ public final class PropertyRef {
         }
         PropertyRef other = (PropertyRef) _obj;
         return access == other.access && Objects.equals(name, other.name);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Class<?> getType() {
-        return type;
-    }
-
-    public DBusProperty.Access getAccess() {
-        return access;
-    }
-
-    public EmitChangeSignal getEmitChangeSignal() {
-        return emitChangeSignal;
     }
 
     public static Access accessForMethod(Method _method) {

@@ -94,10 +94,10 @@ public class BaseFunctionsTest extends AbstractDBusBaseTest {
     @Test
     public void testGetProperties() throws DBusException {
         Properties prop = clientconn.getRemoteObject(getTestBusName(), getTestObjectPath(), Properties.class);
-        DBusPath prv = (DBusPath) prop.Get("foo.bar", "foo");
+        DBusPath prv = prop.Get("foo.bar", "foo");
         logger.debug("Got path " + prv);
 
-        assertEquals("/nonexistant/path", prv.getPath());
+        assertEquals("/nonexistant/path", prv.path());
 
     }
 

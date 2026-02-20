@@ -223,7 +223,7 @@ public final class DBusObjects {
      * @throws InvalidObjectPathException when input is not a valid object path
      */
     public static DBusPath requireObjectPath(DBusPath _dbusPath, String _customMsg) throws InvalidObjectPathException {
-        return requireBase(_dbusPath, x -> validateObjectPath(x.getPath()), InvalidObjectPathException::new, _customMsg);
+        return requireBase(_dbusPath, x -> validateObjectPath(x.path()), InvalidObjectPathException::new, _customMsg);
     }
 
     /**

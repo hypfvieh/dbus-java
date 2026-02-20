@@ -63,7 +63,7 @@ public class FileDescriptorsTest extends AbstractDBusDaemonBaseTest {
         FDPassing remoteObject = clientconn.getRemoteObject("foo.bar.Test", TEST_OBJECT_PATH, FDPassing.class);
         Stream.of(0, 1, 2).map(FileDescriptor::new).forEach(fd -> {
             // that's not a mistake of using NotEquals here, as fd passing make a new copy with a new value
-            assertNotEquals(fd.getIntFileDescriptor(), remoteObject.doNothing(fd).getIntFileDescriptor());
+            assertNotEquals(fd.intFileDescriptor(), remoteObject.doNothing(fd).intFileDescriptor());
         });
     }
 

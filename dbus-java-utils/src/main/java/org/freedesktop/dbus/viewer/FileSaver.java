@@ -52,7 +52,7 @@ final class FileSaver implements Runnable {
         final Iterator<TextFile> iterator = textFiles.iterator();
         while (iterator.hasNext()) {
             final TextFile textFile = iterator.next();
-            String fileName = textFile.getFileName();
+            String fileName = textFile.fileName();
             File fileToSave = new File(parentDirectory, fileName);
             File parentFile = fileToSave.getParentFile();
             if (parentFile.exists() || parentFile.mkdirs()) {
@@ -82,7 +82,7 @@ final class FileSaver implements Runnable {
                 }
                 if (doSave) {
                     try {
-                        String contents = textFile.getContents();
+                        String contents = textFile.contents();
                         writeFile(fileToSave, contents);
                     } catch (IOException _ex) {
                         /* Can't access parent directory for saving */

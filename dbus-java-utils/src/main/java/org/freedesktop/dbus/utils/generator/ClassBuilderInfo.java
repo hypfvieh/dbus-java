@@ -154,7 +154,6 @@ public class ClassBuilderInfo {
      * Create the Java source for the class information provided.
      *
      * @param _staticClass this is static inner class
-     * @param _argumentPrefix use given prefix for generated method arguments (null/blank if not needed)
      * @param _otherImports this class needs additional imports (e.g. due to inner class)
      * @return
      */
@@ -187,10 +186,10 @@ public class ClassBuilderInfo {
         }
 
         for (AnnotationInfo annotation : annotations) {
-            allImports.add(annotation.getAnnotationClass().getName());
-            String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
-            if (annotation.getAnnotationParams() != null) {
-                annotationCode += "(" + annotation.getAnnotationParams() + ")";
+            allImports.add(annotation.annotationClass().getName());
+            String annotationCode = classIndent + "@" + annotation.annotationClass().getSimpleName();
+            if (annotation.annotationParams() != null) {
+                annotationCode += "(" + annotation.annotationParams() + ")";
             }
             content.add(annotationCode);
         }
@@ -370,27 +369,12 @@ public class ClassBuilderInfo {
     /**
      * Contains information about annotation to place on classes, members or methods.
      *
+     * @param annotationClass  Annotation class.
+     * @param annotationParams Annotation params (e.g. value = "foo", key = "bar").
      * @author hypfvieh
      * @since v3.2.1 - 2019-11-13
      */
-    public static class AnnotationInfo {
-        /** Annotation class. */
-        private final Class<? extends Annotation> annotationClass;
-        /** Annotation params (e.g. value = "foo", key = "bar"). */
-        private final String                      annotationParams;
-
-        public AnnotationInfo(Class<? extends Annotation> _annotationClass, String _annotationParams) {
-            annotationClass = _annotationClass;
-            annotationParams = _annotationParams;
-        }
-
-        public Class<? extends Annotation> getAnnotationClass() {
-            return annotationClass;
-        }
-
-        public String getAnnotationParams() {
-            return annotationParams;
-        }
+    public record AnnotationInfo(Class<? extends Annotation> annotationClass, String annotationParams) {
     }
 
     /**

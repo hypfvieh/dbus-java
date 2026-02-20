@@ -586,9 +586,9 @@ public final class Marshalling {
         if (parameter instanceof DBusPath op) {
             LOGGER.trace("Parameter is DBusPath");
             if (_type instanceof Class<?> tClazz && DBusInterface.class.isAssignableFrom(tClazz)) {
-                parameter = _conn.getExportedObject(op.getSource(), op.getPath(), (Class<DBusInterface>) _type);
+                parameter = _conn.getExportedObject(op.source(), op.path(), (Class<DBusInterface>) _type);
             } else {
-                parameter = new DBusPath(op.getPath());
+                parameter = new DBusPath(op.path());
             }
         }
 

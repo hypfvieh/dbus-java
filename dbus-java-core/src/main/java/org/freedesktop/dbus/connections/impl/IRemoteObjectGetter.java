@@ -20,7 +20,7 @@ public sealed interface IRemoteObjectGetter permits DBusConnection {
     default <I extends DBusInterface> I getPeerRemoteObject(String _busname, DBusPath _objectpath, Class<I> _type)
         throws DBusException {
         DBusObjects.requireObjectPath(_objectpath);
-        return getPeerRemoteObject(_busname, _objectpath.getPath(), _type);
+        return getPeerRemoteObject(_busname, _objectpath.path(), _type);
     }
 
     /**
@@ -134,7 +134,7 @@ public sealed interface IRemoteObjectGetter permits DBusConnection {
 
         DBusObjects.requireBusNameOrConnectionId(_busname);
         DBusObjects.requireObjectPath(_objectpath);
-        return getRemoteObject(getDBusOwnerName(_busname), _objectpath.getPath(), _type, _autostart);
+        return getRemoteObject(getDBusOwnerName(_busname), _objectpath.path(), _type, _autostart);
     }
 
     /**
@@ -174,7 +174,7 @@ public sealed interface IRemoteObjectGetter permits DBusConnection {
     default <I extends DBusInterface> I getRemoteObject(String _busname, DBusPath _objectpath, Class<I> _type)
         throws DBusException {
         DBusObjects.requireObjectPath(_objectpath);
-        return getRemoteObject(_busname, _objectpath.getPath(), _type, true);
+        return getRemoteObject(_busname, _objectpath.path(), _type, true);
     }
     /**
      * Return a reference to a remote object. This method will always refer to the well known name (if given) rather
@@ -215,7 +215,7 @@ public sealed interface IRemoteObjectGetter permits DBusConnection {
     default <I extends DBusInterface> I getRemoteObject(String _busname, DBusPath _objectpath, Class<I> _type,
         boolean _autostart) throws DBusException {
         DBusObjects.requireObjectPath(_objectpath);
-        return getRemoteObject(_busname, _objectpath.getPath(), _type, _autostart);
+        return getRemoteObject(_busname, _objectpath.path(), _type, _autostart);
     }
 
     /**

@@ -68,15 +68,7 @@ public class LoggingHelperTest extends AbstractBaseTest {
         );
     }
 
-    private static class TestValues {
-        private final Object input;
-        private final String expected;
-
-        TestValues(Object _input, String _expected) {
-            input = _input;
-            expected = _expected;
-        }
-
+    private record TestValues(Object input, String expected) {
         @Override
         public String toString() {
             return input.getClass().getTypeName().replace("[]", "Array") + "Test";

@@ -118,7 +118,7 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                 Map<String, Object> resultMap = new HashMap<>();
                 for (Entry<PropertyRef, Method> propEn : allPropertyMethods) {
                     Method propMeth = propEn.getValue();
-                    if (propEn.getKey().getAccess() == Access.READ) {
+                    if (propEn.getKey().access() == Access.READ) {
                         try {
                             _methodCall.setArgs(new Object[0]);
                             Object val = invokeMethod(_methodCall, propMeth, object);
@@ -131,7 +131,7 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                                 val = new Variant<>(val, dataTypeStr);
                             }
 
-                            resultMap.put(propEn.getKey().getName(), val);
+                            resultMap.put(propEn.getKey().name(), val);
                         } catch (Throwable _ex) {
                             getLogger().debug("Error executing method {} on method call {}", propMeth, _methodCall, _ex);
                             handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
