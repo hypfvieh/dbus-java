@@ -249,6 +249,9 @@ public abstract class AbstractTransport implements Closeable {
      * @throws IOException on any error
      */
     private void authenticate(SocketChannel _sock) throws IOException {
+        if (_sock == null) {
+            throw new IOException("SocketChannel instance required");
+        }
         SASL sasl = new SASL(config.getSaslConfig());
         try {
             if (!sasl.auth(_sock, this)) {

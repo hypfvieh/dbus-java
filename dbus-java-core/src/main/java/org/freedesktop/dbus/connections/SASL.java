@@ -598,24 +598,18 @@ public class SASL {
             case SERVER:
                 switch (state) {
                     case INITIAL_STATE:
-                        ByteBuffer buf = ByteBuffer.allocate(1);
-                        if (_sock != null) {
-                            _sock.read(buf); // 0
-                            state = SaslAuthState.WAIT_AUTH;
-                        } else {
-                            try {
-                                int kuid = -1;
-                                if (_transport instanceof AbstractUnixTransport aut) {
-                                    kuid = aut.getUid(null);
-                                }
-                                if (kuid >= 0) {
-                                    kernelUid = stupidlyEncode("" + kuid);
-                                }
-                                state = SaslAuthState.WAIT_AUTH;
-
-                            } catch (SocketException _ex) {
-                                state = SaslAuthState.FAILED;
+                        try {
+                            int kuid = -1;
+                            if (_transport instanceof AbstractUnixTransport aut) {
+                                kuid = aut.getUid(_sock);
                             }
+                            if (kuid >= 0) {
+                                kernelUid = stupidlyEncode("" + kuid);
+                            }
+                            state = SaslAuthState.WAIT_AUTH;
+
+                        } catch (SocketException _ex) {
+                            state = SaslAuthState.FAILED;
                         }
                     break;
                     case WAIT_AUTH:
