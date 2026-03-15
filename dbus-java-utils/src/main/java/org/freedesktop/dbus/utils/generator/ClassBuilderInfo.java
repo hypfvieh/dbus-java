@@ -1,9 +1,16 @@
 package org.freedesktop.dbus.utils.generator;
 
+import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.bin.IdentifierMangler;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo.AnnotArgs;
+import org.slf4j.LoggerFactory;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -19,7 +26,9 @@ import java.util.stream.Collectors;
  */
 public class ClassBuilderInfo {
 
-    private static final String DEFAULT_INDENT = "    ";
+    private static final Set<String>     RESERVED_METHOD_NAMES = getReservedMethods(Message.class);
+
+    private static final String          DEFAULT_INDENT        = "    ";
     /** Imported files for this class. */
     private final Set<String>            imports               = new TreeSet<>();
     /** Annotations of this class. */
@@ -159,16 +168,18 @@ public class ClassBuilderInfo {
      * @return
      */
     private List<String> createClassFileContent(boolean _staticClass, Set<String> _otherImports) {
-        List<String> content = new ArrayList<>();
 
         final String classIndent = _staticClass ? DEFAULT_INDENT : "";
         final String memberIndent = _staticClass ? DEFAULT_INDENT.repeat(2) : DEFAULT_INDENT;
 
         Set<String> allImports = new TreeSet<>();
         allImports.addAll(getImports());
+
         if (_otherImports != null) {
             allImports.addAll(_otherImports);
         }
+
+        List<String> content = new ArrayList<>();
 
         if (!_staticClass) {
             content.add("package " + getPackageName() + ";");
@@ -188,6 +199,8 @@ public class ClassBuilderInfo {
 
         for (AnnotationInfo annotation : annotations) {
             allImports.add(annotation.getAnnotationClass().getName());
+            allImports.addAll(annotation.getAdditionalImports().stream().map(Class::getName).toList());
+
             String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
             if (annotation.getAnnotationParams() != null) {
                 annotationCode += "(" + annotation.getAnnotationParams() + ")";
@@ -222,7 +235,11 @@ public class ClassBuilderInfo {
         // add member fields
         for (MemberOrArgument member : members) {
             if (!member.getAnnotations().isEmpty()) {
-                content.addAll(member.getAnnotations().stream().map(l -> memberIndent + l).toList());
+                member.getAnnotations().stream().forEach(l -> {
+                   content.add(memberIndent + l.getAnnotationString());
+                   allImports.addAll(l.getAdditionalImports().stream().map(Class::getName).toList());
+                   allImports.add(l.getAnnotationClass().getName());
+                });
             }
             content.add(memberIndent + "private " + member.asOneLineString(allImports, "", false) + ";");
         }
@@ -265,6 +282,9 @@ public class ClassBuilderInfo {
                     .filter(l -> l.contains(".")) // no dots in name means this is only a class name so we are in same package and don't need to import
                     .map(l -> "import " + l + ";")
                     .toList());
+        } else {
+            // add the collected additional imports to the provided set when creating inner class
+            _otherImports.addAll(allImports);
         }
 
         return content;
@@ -367,6 +387,28 @@ public class ClassBuilderInfo {
         return imports;
     }
 
+    static Set<String> getReservedMethods(Class<?> _class) {
+        try {
+            return Arrays.stream(Introspector.getBeanInfo(_class).getMethodDescriptors())
+                .map(e -> e.getMethod().getName())
+                .collect(Collectors.toSet());
+        } catch (IntrospectionException _ex) {
+            LoggerFactory.getLogger(ClassBuilderInfo.class).error("Could not extract method names from {}", _class, _ex);
+            return Set.of();
+        }
+    }
+
+    /**
+     * Check if the provided method name classes with any method name found in {@link #RESERVED_METHOD_NAMES}.
+     * Will check the given method name with usual Java method prefixes (get/is/set) as well.
+     * @param _methodName method name
+     * @return true if reserved
+     */
+    static boolean isReservedMethodName(String _methodName) {
+        return RESERVED_METHOD_NAMES.contains(_methodName) || RESERVED_METHOD_NAMES.contains("set" + _methodName)
+            || RESERVED_METHOD_NAMES.contains("get" + _methodName) || RESERVED_METHOD_NAMES.contains("is" + _methodName);
+    }
+
     /**
      * Contains information about annotation to place on classes, members or methods.
      *
@@ -374,22 +416,123 @@ public class ClassBuilderInfo {
      * @since v3.2.1 - 2019-11-13
      */
     public static class AnnotationInfo {
+
         /** Annotation class. */
         private final Class<? extends Annotation> annotationClass;
-        /** Annotation params (e.g. value = "foo", key = "bar"). */
-        private final String                      annotationParams;
+        /** Map of parameters for the annotation (should be ordered). */
+        private final Map<String, Object> annotationParams = new LinkedHashMap<>();
 
-        public AnnotationInfo(Class<? extends Annotation> _annotationClass, String _annotationParams) {
+        private final Set<Class<?>> additionalImports = new LinkedHashSet<>();
+
+        public AnnotationInfo(Class<? extends Annotation> _annotationClass, AnnotArgs _annotationParams) {
             annotationClass = _annotationClass;
-            annotationParams = _annotationParams;
+            if (_annotationParams != null) {
+                _annotationParams.args.forEach(e -> {
+                    annotationParams.put(e.key(), e.value());
+                    if (e.value() != null && !e.value().getClass().getPackage().getName().startsWith("java.lang")) {
+                        additionalImports.add(e.value().getClass());
+                    }
+                });
+            }
         }
 
         public Class<? extends Annotation> getAnnotationClass() {
             return annotationClass;
         }
 
-        public String getAnnotationParams() {
+        public Map<String, Object> getAnnotationParams() {
             return annotationParams;
+        }
+
+        public Set<Class<?>> getAdditionalImports() {
+            return additionalImports;
+        }
+
+        public String getAnnotationString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("@").append(getAnnotationClass().getSimpleName());
+
+            if (!getAnnotationParams().isEmpty()) {
+                sb.append("(");
+
+                if (getAnnotationParams().size() == 1 && "value".equals(getAnnotationParams().keySet().iterator().next())) {
+                    sb.append(handleArg(getAnnotationParams().values().iterator().next()));
+                } else {
+                    getAnnotationParams().forEach((k, v) -> {
+                        sb.append(k).append(" = ");
+                        sb.append(handleArg(v));
+                    });
+                }
+
+                sb.append(")");
+            }
+
+            return sb.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "AnnotationInfo [annotationClass=" + annotationClass + ", annotationParams=" + annotationParams + ", additionalImports=" + additionalImports + "]";
+        }
+
+        private String handleArg(Object _value) {
+            if (_value instanceof String s) {
+                return "\"" + s + "\"";
+            } else {
+                return String.valueOf(_value);
+            }
+        }
+
+        public static final class AnnotArgs {
+            private final Set<AnnotArg> args = new LinkedHashSet<>();
+
+            private AnnotArgs() {
+
+            }
+
+            public AnnotArgs add(String _key, Object _val) {
+                Objects.requireNonNull(_key);
+                Objects.requireNonNull(_val);
+
+                args.add(new AnnotArg(_key, _val));
+                return this;
+            }
+
+            /**
+             * Shortcut for {@code #add("value", _val)}.
+             * @param _val value to set for "value" option
+             * @return this
+             */
+            public AnnotArgs add(Object _val) {
+                return this.add("value", _val);
+            }
+
+            public static AnnotArgs create() {
+                return new AnnotArgs();
+            }
+
+            record AnnotArg(String key, Object value) {
+
+                @Override
+                public int hashCode() {
+                    return Objects.hash(key);
+                }
+
+                @Override
+                public boolean equals(Object _obj) {
+                    if (this == _obj) {
+                        return true;
+                    }
+                    if (_obj == null) {
+                        return false;
+                    }
+                    if (getClass() != _obj.getClass()) {
+                        return false;
+                    }
+                    AnnotArg other = (AnnotArg) _obj;
+                    return Objects.equals(key, other.key);
+                }
+            }
         }
     }
 
@@ -402,24 +545,31 @@ public class ClassBuilderInfo {
     public static class ClassMethod {
 
         private static final String METHOD_TEMPL = """
-            %s%s %s(%s);
+            %s%s %s%s(%s);
             """;
 
         /** Name of this method. */
         private final String                 name;
         /** Return value of the method. */
         private final String                 returnType;
+        /** Prefix for method name (e.g. get or is), {@code null} if not needed. */
+        private final String                 methodPrefix;
         /** True if method should be final, false otherwise. */
         private final boolean                finalMethod;
         /** Arguments for this method, key is argument name, value is argument type. */
-        private final List<MemberOrArgument> arguments   = new ArrayList<>();
+        private final List<MemberOrArgument> arguments    = new ArrayList<>();
         /** List of annotations for this method. */
-        private final List<String>           annotations = new ArrayList<>();
+        private final List<AnnotationInfo>   annotations  = new ArrayList<>();
 
         public ClassMethod(String _name, String _returnType, boolean _finalMethod) {
+            this(_name, _returnType, null, _finalMethod);
+        }
+
+        public ClassMethod(String _name, String _returnType, String _methodPrefix, boolean _finalMethod) {
             name = _name;
             returnType = _returnType;
             finalMethod = _finalMethod;
+            methodPrefix = _methodPrefix;
         }
 
         public String getName() {
@@ -430,6 +580,10 @@ public class ClassBuilderInfo {
             return returnType;
         }
 
+        public String getMethodPrefix() {
+            return methodPrefix;
+        }
+
         public boolean isFinalMethod() {
             return finalMethod;
         }
@@ -438,27 +592,53 @@ public class ClassBuilderInfo {
             return arguments;
         }
 
-        public List<String> getAnnotations() {
+        public List<AnnotationInfo> getAnnotations() {
             return annotations;
         }
 
         public List<String> generateCode(boolean _isInterface, String _argumentPrefix, String _indent, Set<String> _allImports) {
             List<String> result = new ArrayList<>();
-            if (!getAnnotations().isEmpty()) {
-                result.addAll(getAnnotations().stream().map(a -> _indent + a).toList());
+
+            String methodName = Util.kebabToCamelCase(Util.snakeToCamelCase(getName()));
+
+            List<AnnotationInfo> currentAnnotations = new ArrayList<>(getAnnotations());
+
+            // java method name differs from bus method name -> add annotation to mitigate
+            if (!getName().equals(methodName)) {
+                if (currentAnnotations.stream().anyMatch(e -> e.getAnnotationClass() == DBusBoundProperty.class)) {
+                    currentAnnotations.stream().filter(e -> e.getAnnotationClass() == DBusBoundProperty.class)
+                    .forEach(e -> e.getAnnotationParams().put("name", getName()));
+                } else {
+                    currentAnnotations.add(new AnnotationInfo(DBusMemberName.class, AnnotArgs.create().add(getName())));
+                }
+            }
+
+            if (!currentAnnotations.isEmpty()) {
+                result.addAll(currentAnnotations.stream().map(a -> _indent + a.getAnnotationString()).toList());
             }
 
             String publicModifier = !_isInterface ? "public " : "";
             String mthReturnType = getReturnType() == null ? "void"
                 : TypeConverter.getProperJavaClass(getReturnType(), _allImports);
             String args = "";
+
             if (!getArguments().isEmpty()) {
                 args += getArguments().stream()
                     .map(e -> e.asOneLineString(_allImports, _argumentPrefix, true))
                         .collect(Collectors.joining(", "));
             }
 
-            METHOD_TEMPL.formatted(publicModifier, mthReturnType, getName(), args)
+            String prefix = "";
+            if (!Util.isBlank(getMethodPrefix())) {
+                methodName = Util.upperCaseFirstChar(methodName);
+                prefix = getMethodPrefix();
+            }
+
+            if (isReservedMethodName(methodName) || isReservedMethodName(prefix + methodName)) {
+                methodName += methodName + "FromBus";
+            }
+
+            METHOD_TEMPL.formatted(publicModifier, mthReturnType, prefix, methodName, args)
                 .lines().map(l -> _indent + l).forEach(result::add);
 
             return result;
@@ -473,6 +653,8 @@ public class ClassBuilderInfo {
      * @since v3.0.1 - 2018-12-20
      */
     public static class MemberOrArgument {
+
+        private static final String GETTER_SETTER_ANNOTATION = "@%s(\"%s\")";
 
         private static final String GETTER_TEMPL = """
             public %s get%s() {
@@ -495,7 +677,7 @@ public class ClassBuilderInfo {
         /** List of classes/types or placeholders put into diamond operators to use as generics. */
         private final List<String> generics    = new ArrayList<>();
         /** List of annotations for this member. */
-        private final List<String> annotations = new ArrayList<>();
+        private final List<AnnotationInfo> annotations = new ArrayList<>();
 
         public MemberOrArgument(String _name, String _type, boolean _finalMember) {
             // repair reserved words by adding 'Param' as appendix, and when start with _ too
@@ -508,7 +690,7 @@ public class ClassBuilderInfo {
             this(_name, _type, false);
         }
 
-        public List<String> getAnnotations() {
+        public List<AnnotationInfo> getAnnotations() {
             return annotations;
         }
 
@@ -553,7 +735,7 @@ public class ClassBuilderInfo {
             }
 
             if (_includeAnnotations && !getAnnotations().isEmpty()) {
-                sb.append(String.join(" ", getAnnotations()))
+                sb.append(String.join(" ", getAnnotations().stream().map(e -> e.getAnnotationString()).toList()))
                         .append(" ");
             }
 
@@ -574,14 +756,33 @@ public class ClassBuilderInfo {
                 memberType += "<" + getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")) + ">";
             }
 
-            String getterSetterName = Util.snakeToCamelCase(Util.upperCaseFirstChar(getName()));
+            String getterSetterName = Util.kebabToCamelCase(Util.snakeToCamelCase(Util.upperCaseFirstChar(getName())));
+
+            String getterAnnotation = "";
+
+            if (isReservedMethodName(getterSetterName)) {
+                getterAnnotation = GETTER_SETTER_ANNOTATION.formatted(DBusMemberName.class.getSimpleName(), getterSetterName);
+
+                if (isReservedMethodName(getterSetterName)) {
+                    _allImports.add(DBusMemberName.class.getName());
+                }
+
+                getterSetterName += "FromBus";
+            }
+
             if (!isFinalArg()) {
+                if (!Util.isBlank(getterAnnotation)) {
+                    result.add(_indent + getterAnnotation);
+                }
                 SETTER_TEMPL.formatted(getterSetterName, memberType,
                     maybePrefix("arg", _prefix), DEFAULT_INDENT, getName(), maybePrefix("arg", _prefix))
                         .lines().map(l -> _indent + l).forEach(result::add);
             }
 
             addEmptyLineIfNeeded(result);
+            if (!Util.isBlank(getterAnnotation)) {
+                result.add(_indent + getterAnnotation);
+            }
             GETTER_TEMPL.formatted(memberType, getterSetterName, DEFAULT_INDENT, getName())
                 .lines().map(l -> _indent + l).forEach(result::add);
 
@@ -657,13 +858,14 @@ public class ClassBuilderInfo {
             if (!getSuperArguments().isEmpty()) {
                 assignments = " ".repeat(_indent.length() / 2) + "super(" + getSuperArguments().stream()
                     .map(e -> maybePrefix(e.getName(), _argumentPrefix))
-                    .collect(Collectors.joining(", ")) + ");";
+                    .collect(Collectors.joining(", ")) + ");" + System.lineSeparator();
             }
 
             if (!getArguments().isEmpty()) {
                 List<String> assigns = new ArrayList<>();
+                String innerIndent = " ".repeat(_indent.length() / 2);
                 for (MemberOrArgument e : getArguments()) {
-                    assigns.add(_indent + "this." + e.getName() + " = " + maybePrefix(e.getName(), _argumentPrefix) + ";");
+                    assigns.add(innerIndent + "this." + e.getName() + " = " + maybePrefix(e.getName(), _argumentPrefix) + ";");
                 }
                 assignments += String.join(System.lineSeparator(), assigns);
             }

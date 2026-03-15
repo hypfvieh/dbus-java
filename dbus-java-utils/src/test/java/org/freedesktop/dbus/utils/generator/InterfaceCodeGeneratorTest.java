@@ -17,10 +17,14 @@ import java.util.stream.Stream;
 class InterfaceCodeGeneratorTest {
 
     static InterfaceCodeGenerator loadDBusXmlFile(File _inputFile, String _objectPath, String _busName) {
+        return loadDBusXmlFile(false, _inputFile, _objectPath, _busName);
+    }
+
+    static InterfaceCodeGenerator loadDBusXmlFile(boolean _createPropertyMethods, File _inputFile, String _objectPath, String _busName) {
         if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
 
-            return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, false, null, false);
+            return new InterfaceCodeGenerator(false, introspectionData, _objectPath, _busName, null, _createPropertyMethods, null, false);
         } else {
             fail("No valid busName given");
         }
@@ -64,6 +68,66 @@ class InterfaceCodeGeneratorTest {
         assertFalse(clzContent.contains("this._properties"));
         assertFalse(clzContent.contains("this._path"));
         assertFalse(clzContent.contains("this._interfaceName"));
+    }
+
+    @Test
+    void testHandleKebabCase() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.PowerProfileMonitor.xml"),
+                "/", "org.freedesktop.portal.PowerProfileMonitor");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(1, analyze.size());
+
+        String clzContent = analyze.get(analyze.keySet().iterator().next());
+
+        assertTrue(clzContent.contains("@DBusBoundProperty(name = \"power-saver-enabled\")"));
+        assertTrue(clzContent.contains("boolean isPowerSaverEnabled();"));
+    }
+
+    @Test
+    void testHandleReservedMethodNames() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.Clipboard.xml"),
+                "/", "org.freedesktop.portal.Clipboard");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(1, analyze.size());
+
+        String clzContent = analyze.get(analyze.keySet().iterator().next());
+
+        assertTrue(clzContent.contains("@DBusMemberName(\"Serial\")"));
+        assertTrue(clzContent.contains("public UInt32 getSerialFromBus()"));
+    }
+
+    @Test
+    void testHandleStructSignals() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+            new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.GlobalShortcuts.xml"),
+            "/", "org.freedesktop.portal.GlobalShortcuts");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(3, analyze.size());
+
+        String primaryFile = analyze.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("GlobalShortcuts.java"))
+            .findFirst()
+            .orElseThrow()
+            .getValue();
+
+        assertTrue(primaryFile.contains("public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {"));
+        assertTrue(primaryFile.contains("private final List<ShortcutsChangedShortcutsStruct> shortcuts;"));
+        assertTrue(primaryFile.contains("public List<ShortcutsChangedShortcutsStruct> getShortcuts() {"));
+
+        String secondaryFile = analyze.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("ShortcutsChangedShortcutsStruct.java"))
+            .findFirst()
+            .orElseThrow()
+            .getValue();
+
+        assertTrue(secondaryFile.contains("private final String member0;"));
+        assertTrue(secondaryFile.contains("private final Map<String, Variant<?>> member1;"));
+
     }
 
     @Test

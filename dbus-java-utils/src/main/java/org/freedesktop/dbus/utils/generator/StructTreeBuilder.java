@@ -5,6 +5,8 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo.AnnotArgs;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
@@ -137,7 +139,7 @@ public class StructTreeBuilder {
         for (StructTree inTree : _list) {
 
             MemberOrArgument member = new MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
-            member.getAnnotations().add("@Position(" + position + ")");
+            member.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(position)));
 
             String constructorArg = "member" + position;
 
@@ -180,8 +182,6 @@ public class StructTreeBuilder {
                 classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
                 retval = null;
             }
-
-            root.getImports().add(Position.class.getName()); // add position annotation as include
 
             root.getImports().add(inTree.getDataType().getName());
             root.getMembers().add(member);
