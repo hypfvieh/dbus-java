@@ -476,7 +476,7 @@ public class ClassBuilderInfo {
         }
 
         private String handleArg(Object _value) {
-            if (_value instanceof String s) {
+            if (_value instanceof String s && !s.endsWith(".class")) {
                 return "\"" + s + "\"";
             } else {
                 return String.valueOf(_value);

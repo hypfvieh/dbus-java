@@ -131,6 +131,20 @@ class InterfaceCodeGeneratorTest {
     }
 
     @Test
+    void testIssue306() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.impl.portal.Notification.xml"),
+                "/", "org.freedesktop.impl.portal.Notification");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(1, analyze.size());
+
+        String clzContent = analyze.get(analyze.keySet().iterator().next());
+
+        assertTrue(clzContent.contains("@DBusBoundProperty(type = PropertySupportedOptionsType.class)"));
+    }
+
+    @Test
     void testCreateSampleStructArgs() throws Exception {
         InterfaceCodeGenerator ci2 = loadDBusXmlFile(
                 new File("src/test/resources/CreateInterface/sample_struct_args.xml"), "/", "org.example");
