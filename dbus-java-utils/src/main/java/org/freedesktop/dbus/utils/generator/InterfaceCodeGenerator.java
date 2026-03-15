@@ -48,6 +48,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 public class InterfaceCodeGenerator {
 
+    private static final String STRUCT_CLASS_SUFFIX = "Struct";
+
     private final DocumentBuilderFactory docFac = DocumentBuilderFactory.newInstance();
     private final Logger                 logger = LoggerFactory.getLogger(getClass());
 
@@ -334,7 +336,7 @@ public class InterfaceCodeGenerator {
                 List<String> genericTypes = new ArrayList<>();
 
                 if (avoidUsingTuple) {
-                    resultType = buildStructClass(dbusSignatures, methodElementName + "Struct", _clzBldr, additionalClasses);
+                    resultType = buildStructClass(dbusSignatures, methodElementName + STRUCT_CLASS_SUFFIX, _clzBldr, additionalClasses);
                 } else {
                     resultType = createTuple(outputArgs, methodElementName + "Tuple", _clzBldr, additionalClasses, genericTypes);
                 }
@@ -379,7 +381,7 @@ public class InterfaceCodeGenerator {
         if (_argTypeStringFromElement.contains("(")) { // this argument requires some sort of struct
             String structPart = _argTypeStringFromElement.replaceAll("(\\(.+\\))", "$1");
             String paramName = Util.defaultString(Util.upperCaseFirstChar(Util.snakeToCamelCase(_argName)), "");
-            String parentType = buildStructClass(structPart, _methodElementName + paramName + "Struct", _clzBldr, _additionalClasses);
+            String parentType = buildStructClass(structPart, _methodElementName + paramName + STRUCT_CLASS_SUFFIX, _clzBldr, _additionalClasses);
             if (parentType != null) {
                 argType = parentType;
             } else {
@@ -431,7 +433,7 @@ public class InterfaceCodeGenerator {
         } else if (attrType.contains("(")) {
             // contains structure
             String structPart = attrType.replaceAll("(\\(.+\\))", "$1");
-            type = buildStructClass(structPart, "Property" + attrName + "Struct", _clzBldr, additionalClasses);
+            type = buildStructClass(structPart, "Property" + attrName + STRUCT_CLASS_SUFFIX, _clzBldr, additionalClasses);
             isStruct = true;
         } else {
             type = TypeConverter.getJavaTypeFromDBusType(attrType, _clzBldr.getImports());
@@ -615,7 +617,7 @@ public class InterfaceCodeGenerator {
             String structClassName;
 
             if (data.dbusSig().contains("(")) {
-                String subStructFqcn = structFqcn + Util.upperCaseFirstChar(Objects.toString(data.name(), "")) + "Struct";
+                String subStructFqcn = structFqcn + Util.upperCaseFirstChar(Objects.toString(data.name(), "")) + STRUCT_CLASS_SUFFIX;
                 structClassName = new StructTreeBuilder(argumentPrefix, generatedStructClassNames)
                     .buildStructClasses(data.dbusSig(), subStructFqcn, _packageName, _structClasses);
             } else {

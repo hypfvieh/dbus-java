@@ -199,7 +199,7 @@ public class ClassBuilderInfo {
 
         for (AnnotationInfo annotation : annotations) {
             allImports.add(annotation.getAnnotationClass().getName());
-            allImports.addAll(annotation.getAdditionalImports().stream().map(e -> e.getName()).toList());
+            allImports.addAll(annotation.getAdditionalImports().stream().map(Class::getName).toList());
 
             String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
             if (annotation.getAnnotationParams() != null) {
@@ -237,7 +237,7 @@ public class ClassBuilderInfo {
             if (!member.getAnnotations().isEmpty()) {
                 member.getAnnotations().stream().forEach(l -> {
                    content.add(memberIndent + l.getAnnotationString());
-                   allImports.addAll(l.getAdditionalImports().stream().map(e -> e.getName()).toList());
+                   allImports.addAll(l.getAdditionalImports().stream().map(Class::getName).toList());
                    allImports.add(l.getAnnotationClass().getName());
                 });
             }
