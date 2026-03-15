@@ -21,4 +21,15 @@ class UtilTest {
             assertEquals(_testVal, result);
         }
     }
+
+    @ParameterizedTest(name = "{index}: {0}")
+    @CsvSource({
+        "No Snake,This is no snake,This is no snake",
+        "Snake,This_is_a_snake,ThisIsASnake",
+        "Partial Snake,This_is_partial snake,ThisIsPartial snake",
+        "Snake with numbers,This_is_0_8_15_snake,ThisIs0815Snake",
+    })
+    void testSnakeToCamelCase(String _name, String _input, String _expected) {
+        assertEquals(_expected, Util.snakeToCamelCase(_input));
+    }
 }

@@ -19,6 +19,7 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.XmlUtil;
 import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
+import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo.AnnotArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -186,7 +187,8 @@ public class InterfaceCodeGenerator {
         interfaceClass.setClassName(className);
         if (forcePackageName != null) {
             interfaceClass.getAnnotations().add(new AnnotationInfo(DBusInterfaceName.class,
-                "\"" + originalPackageName + "." + className + "\""));
+                AnnotArgs.create().add(originalPackageName + "." + className)
+                ));
         }
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
@@ -197,7 +199,7 @@ public class InterfaceCodeGenerator {
             switch (element.getTagName().toLowerCase()) {
                 case "method" -> additionalClasses.addAll(extractMethods(element, interfaceClass));
                 case "property" -> additionalClasses.addAll(extractProperties(element, interfaceClass));
-                case "signal" -> extractSignals(element, interfaceClass);
+                case "signal" -> additionalClasses.addAll(extractSignals(element, interfaceClass));
             }
         }
 
@@ -214,11 +216,12 @@ public class InterfaceCodeGenerator {
      *
      * @param _signalElement signal xml element
      * @param _clzBldr {@link ClassBuilderInfo} object
+     * @return list containing additionally created class or empty list
      *
      * @throws IOException on IO Error
      * @throws DBusException on DBus Error
      */
-    private void extractSignals(Element _signalElement, ClassBuilderInfo _clzBldr) throws IOException, DBusException {
+    private List<ClassBuilderInfo> extractSignals(Element _signalElement, ClassBuilderInfo _clzBldr) throws IOException, DBusException {
 
         String className = _signalElement.getAttribute("name");
         if (className.contains(".")) {
@@ -234,6 +237,7 @@ public class InterfaceCodeGenerator {
 
         _clzBldr.getInnerClasses().add(innerClass);
         List<MemberOrArgument> argsList = new ArrayList<>();
+        List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
 
         if (!_signalElement.hasChildNodes()) { // signal without any input/output?!
             logger.info("Signal without any input/output arguments. Creating empty signal class: {}", innerClass.getFqcn());
@@ -244,8 +248,11 @@ public class InterfaceCodeGenerator {
 
             int unknownArgCnt = 0;
             for (Element argElm : signalArgs) {
-                String argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
+                // _clzBldr, additionalClasses, methodElementName, argElm, argName
                 String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
+
+                String argType =  extractOrCreateArgType(_clzBldr, additionalClasses, className, argElm.getAttribute("type"), argName);
+                TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
                 if (Util.isBlank(argName)) {
                     argName = "arg" + unknownArgCnt;
                     unknownArgCnt++;
@@ -269,6 +276,8 @@ public class InterfaceCodeGenerator {
         classConstructor.getSuperArguments().addAll(argsList);
 
         innerClass.getConstructors().add(classConstructor);
+
+        return additionalClasses;
     }
 
     /**
@@ -300,13 +309,7 @@ public class InterfaceCodeGenerator {
                 String argType;
                 String argName = argElm.getAttribute("name");
 
-                if (argElm.getAttribute("type").contains("(")) { // this argument requires some sort of struct
-                    String structPart = argElm.getAttribute("type").replaceAll("(\\(.+\\))", "$1");
-                    String paramName = Util.defaultString(Util.upperCaseFirstChar(Util.snakeToCamelCase(argName)), "");
-                    argType = buildStructClass(structPart, methodElementName + paramName + "Struct", _clzBldr, additionalClasses);
-                } else {
-                    argType = TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
-                }
+                argType = extractOrCreateArgType(_clzBldr, additionalClasses, methodElementName, argElm.getAttribute("type"), argName);
 
                 if (Util.isBlank(argName)) {
                     argName = "arg" + unknownArgNameCnt;
@@ -368,6 +371,24 @@ public class InterfaceCodeGenerator {
 
         return additionalClasses;
 
+    }
+
+    private String extractOrCreateArgType(ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _additionalClasses,
+        String _methodElementName, String _argTypeStringFromElement, String _argName) throws DBusException {
+        String argType;
+        if (_argTypeStringFromElement.contains("(")) { // this argument requires some sort of struct
+            String structPart = _argTypeStringFromElement.replaceAll("(\\(.+\\))", "$1");
+            String paramName = Util.defaultString(Util.upperCaseFirstChar(Util.snakeToCamelCase(_argName)), "");
+            String parentType = buildStructClass(structPart, _methodElementName + paramName + "Struct", _clzBldr, _additionalClasses);
+            if (parentType != null) {
+                argType = parentType;
+            } else {
+                argType = null;
+            }
+        } else {
+            argType = TypeConverter.getJavaTypeFromDBusType(_argTypeStringFromElement, _clzBldr.getImports());
+        }
+        return argType;
     }
 
     /**
@@ -444,34 +465,41 @@ public class InterfaceCodeGenerator {
 
                 String rtnType = origType != null ? origType : clzzName;
 
-                ClassMethod classMethod = new ClassMethod(
-                    ("boolean".equalsIgnoreCase(clzzName) ? "is" : "get") + attrName, rtnType, false);
+                String methodPrefix = "boolean".equalsIgnoreCase(clzzName) ? "is" : "get";
+                ClassMethod classMethod = new ClassMethod(attrName, rtnType, methodPrefix, false);
                 _clzBldr.getMethods().add(classMethod);
 
+                AnnotArgs annotArgs = AnnotArgs.create();
+
                 if (propertyTypeRef != null) {
-                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName() + "(type = " + propertyTypeRef.getClassName() + ".class)");
+                    annotArgs.add("type", propertyTypeRef.getClassName() + ".class");
                 } else if (isStruct) {
-                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName() + "(type = " + clzzName + ".class)");
-                } else {
-                    classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+                    annotArgs.add("type", clzzName + ".class");
                 }
+
+                classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, annotArgs));
+
                 _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
 
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
-                ClassMethod classMethod = new ClassMethod("set" + attrName, "void", false);
+
+                ClassMethod classMethod = new ClassMethod(attrName, "void", "set", false);
                 classMethod.getArguments().add(new MemberOrArgument(attrName.substring(0, 1).toLowerCase() + attrName.substring(1), clzzName));
                 _clzBldr.getMethods().add(classMethod);
-                classMethod.getAnnotations().add("@" + DBusBoundProperty.class.getSimpleName());
+
+                classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, null));
+
                 _clzBldr.getImports().add(DBusBoundProperty.class.getName());
             }
         } else {
-            String annotationParams = "name = \"" + attrName + "\", "
-                + "type = " + clzzName + ".class, "
-                + "access = " + DBusProperty.Access.class.getSimpleName() + "." + access;
+            AnnotArgs annotArgs = AnnotArgs.create()
+                .add("name", attrName)
+                .add("type", clzzName)
+                .add("access", DBusProperty.Access.class.getSimpleName() + "." + access);
 
-            AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotationParams);
+            AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotArgs);
             _clzBldr.getAnnotations().add(annotationInfo);
         }
 
@@ -511,7 +539,7 @@ public class InterfaceCodeGenerator {
             String genericName = findNextGenericName(genericTypes.keySet());
 
             genericTypes.put(genericName, entry.getType());
-            entry.getAnnotations().add("@Position(" + position++ + ")");
+            entry.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(position++)));
             entry.setType(genericName);
             cnstrctArgs.add(new MemberOrArgument(entry.getName(), genericName));
         }
@@ -597,9 +625,8 @@ public class InterfaceCodeGenerator {
             }
 
             MemberOrArgument argument = new MemberOrArgument(data.name(), structClassName, true);
-            argument.getAnnotations().add("@Position(" + i + ")");
+            argument.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(i)));
             root.getMembers().add(argument);
-            root.getImports().add(Position.class.getName());
 
             classConstructor.getArguments().add(new MemberOrArgument(data.name(), structClassName));
         }

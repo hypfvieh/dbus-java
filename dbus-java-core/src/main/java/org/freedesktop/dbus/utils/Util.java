@@ -163,18 +163,33 @@ public final class Util {
      * @return camel case string or input if nothing todo. Returns null if input was null.
      */
     public static String snakeToCamelCase(String _input) {
+        return toCamelCase("_", _input);
+    }
+
+    /**
+     * Converts a kabab-case-string to camel case string.
+     * <br>
+     * Eg. this-is-kebab-case &rarr; thisIsSnakeCase
+     * @param _input string
+     * @return camel case string or input if nothing todo. Returns null if input was null.
+     */
+    public static String kebabToCamelCase(String _input) {
+        return toCamelCase("-", _input);
+    }
+
+    private static String toCamelCase(String _delimiter, String _input) {
         if (isBlank(_input)) {
             return _input;
         }
 
-        Pattern compile = Pattern.compile("_[a-zA-Z]");
+        Pattern compile = Pattern.compile(Pattern.quote(_delimiter) + "[a-zA-Z0-9]");
         Matcher matcher = compile.matcher(_input);
 
         String result = _input;
 
         while (matcher.find()) {
             String match = matcher.group();
-            String replacement = match.replace("_", "");
+            String replacement = match.replace(_delimiter, "");
             replacement = replacement.toUpperCase();
 
             result = result.replaceFirst(match, replacement);
