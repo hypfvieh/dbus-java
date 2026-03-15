@@ -88,7 +88,8 @@ The library will remain open source and MIT licensed and can still be used, fork
      - Virtual-Threads can be enabled/disabled for each of the different executor services used in `ReceivingService`: `SIGNAL`, `ERROR`, `METHODCALL`, `METHODRETURN`
      - default remains native threads on all executors
    - Fixed possible NullPointerException in SASL auth ([#294](https://github.com/hypfvieh/dbus-java/issues/294))
-   - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298)) 
+   - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298))
+   - Fixed various issues with `InterfaceCodeGenerator` ([#302](https://github.com/hypfvieh/dbus-java/issues/302), [#303](https://github.com/hypfvieh/dbus-java/issues/303), [#304], (https://github.com/hypfvieh/dbus-java/issues/304), [#306](https://github.com/hypfvieh/dbus-java/issues/306)
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
