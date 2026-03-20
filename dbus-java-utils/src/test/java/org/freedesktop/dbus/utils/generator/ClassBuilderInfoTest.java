@@ -3,6 +3,7 @@ package org.freedesktop.dbus.utils.generator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.freedesktop.dbus.utils.generator.type.ClassBuilderInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;

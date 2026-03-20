@@ -5,11 +5,12 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.Util;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo.AnnotArgs;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassConstructor;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.ClassType;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.MemberOrArgument;
+import org.freedesktop.dbus.utils.generator.type.AnnotationInfo;
+import org.freedesktop.dbus.utils.generator.type.AnnotationInfo.AnnotArgs;
+import org.freedesktop.dbus.utils.generator.type.ClassBuilderInfo;
+import org.freedesktop.dbus.utils.generator.type.ClassBuilderInfo.ClassType;
+import org.freedesktop.dbus.utils.generator.type.ClassConstructor;
+import org.freedesktop.dbus.utils.generator.type.MemberOrArgument;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -134,11 +135,11 @@ public class StructTreeBuilder {
 
         ClassBuilderInfo root = _root;
         ClassBuilderInfo retval = null;
-        ClassConstructor classConstructor = new ClassConstructor();
+        ClassConstructor classConstructor = new ClassConstructor(_root, root.getClassName());
 
         for (StructTree inTree : _list) {
 
-            MemberOrArgument member = new MemberOrArgument("member" + position, inTree.getDataType().getName(), true);
+            MemberOrArgument member = new MemberOrArgument(_root, "member" + position, inTree.getDataType().getName(), true);
             member.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(position)));
 
             String constructorArg = "member" + position;
@@ -155,7 +156,7 @@ public class StructTreeBuilder {
                 temp.setPackageName(_root.getPackageName());
                 temp.setExtendClass(Struct.class.getName());
                 temp.setClassType(ClassType.CLASS);
-                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, temp.getClassName()));
+                classConstructor.getArguments().add(new MemberOrArgument(_root, constructorArg, temp.getClassName()));
                 member.setType(temp.getClassName());
                 createNested(inTree.getSubType(), _structFqcnBase, temp, _classes);
 
@@ -174,12 +175,12 @@ public class StructTreeBuilder {
                 }
                 root.getImports().addAll(temp.getImports());
 
-                MemberOrArgument argument = new MemberOrArgument(constructorArg, inTree.getDataType().getName());
+                MemberOrArgument argument = new MemberOrArgument(_root, constructorArg, inTree.getDataType().getName());
                 argument.getGenerics().addAll(member.getGenerics());
                 classConstructor.getArguments().add(argument);
                 retval = null;
             } else {
-                classConstructor.getArguments().add(new MemberOrArgument(constructorArg, inTree.getDataType().getName()));
+                classConstructor.getArguments().add(new MemberOrArgument(_root, constructorArg, inTree.getDataType().getName()));
                 retval = null;
             }
 
