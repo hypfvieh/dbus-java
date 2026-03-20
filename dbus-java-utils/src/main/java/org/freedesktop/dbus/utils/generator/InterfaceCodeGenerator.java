@@ -18,8 +18,10 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.dbus.utils.Util;
 import org.freedesktop.dbus.utils.XmlUtil;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.*;
-import org.freedesktop.dbus.utils.generator.ClassBuilderInfo.AnnotationInfo.AnnotArgs;
+import org.freedesktop.dbus.utils.generator.type.*;
+import org.freedesktop.dbus.utils.generator.type.AnnotationInfo.AnnotArgs;
+import org.freedesktop.dbus.utils.generator.type.AnnotationInfo.AnnotArgs.AnnotClass;
+import org.freedesktop.dbus.utils.generator.type.ClassBuilderInfo.ClassType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -250,10 +252,9 @@ public class InterfaceCodeGenerator {
 
             int unknownArgCnt = 0;
             for (Element argElm : signalArgs) {
-                // _clzBldr, additionalClasses, methodElementName, argElm, argName
                 String argName = Util.snakeToCamelCase(argElm.getAttribute("name"));
 
-                String argType =  extractOrCreateArgType(_clzBldr, additionalClasses, className, argElm.getAttribute("type"), argName);
+                String argType = extractOrCreateArgType(_clzBldr, additionalClasses, className, argElm.getAttribute("type"), argName);
                 TypeConverter.getJavaTypeFromDBusType(argElm.getAttribute("type"), _clzBldr.getImports());
                 if (Util.isBlank(argName)) {
                     argName = "arg" + unknownArgCnt;
@@ -263,18 +264,18 @@ public class InterfaceCodeGenerator {
             }
 
             for (Entry<String, String> argEntry : args.entrySet()) {
-                innerClass.getMembers().add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), true));
-                argsList.add(new MemberOrArgument(argEntry.getKey(), argEntry.getValue(), false));
+                innerClass.getMembers().add(new MemberOrArgument(innerClass, argEntry.getKey(), argEntry.getValue(), true));
+                argsList.add(new MemberOrArgument(innerClass, argEntry.getKey(), argEntry.getValue(), false));
             }
 
         }
 
-        ClassConstructor classConstructor = new ClassBuilderInfo.ClassConstructor();
+        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, className);
 
         classConstructor.getArguments().addAll(argsList);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
 
-        classConstructor.getSuperArguments().add(new MemberOrArgument("path", "String", false));
+        classConstructor.getSuperArguments().add(new MemberOrArgument(_clzBldr, "path", "String", false));
         classConstructor.getSuperArguments().addAll(argsList);
 
         innerClass.getConstructors().add(classConstructor);
@@ -322,9 +323,9 @@ public class InterfaceCodeGenerator {
 
                 String dirAttr = argElm.getAttribute("direction");
                 if ("in".equals(dirAttr) || "".equals(dirAttr)) {
-                    inputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
+                    inputArgs.add(new MemberOrArgument(_clzBldr, argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports())));
                 } else if ("out".equals(dirAttr)) {
-                    outputArgs.add(new MemberOrArgument(argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
+                    outputArgs.add(new MemberOrArgument(_clzBldr, argName, TypeConverter.getProperJavaClass(argType, _clzBldr.getImports()), false));
                     dbusOutputArgTypes.add(argType);
                     dbusSignatures.add(new DuoData(argElm.getAttribute("type"), argName));
                 }
@@ -360,14 +361,14 @@ public class InterfaceCodeGenerator {
             }
 
             if (resultType != null) {
-                ClassMethod classMethod = new ClassMethod(methodElementName, resultType, false);
+                ClassMethod classMethod = new ClassMethod(_clzBldr, methodElementName, resultType, false);
                 classMethod.getArguments().addAll(inputArgs);
 
                 _clzBldr.getMethods().add(classMethod);
             }
         } else { // method has no arguments
 
-            ClassMethod classMethod = new ClassMethod(methodElementName, "void", false);
+            ClassMethod classMethod = new ClassMethod(_clzBldr, methodElementName, "void", false);
             _clzBldr.getMethods().add(classMethod);
         }
 
@@ -461,22 +462,21 @@ public class InterfaceCodeGenerator {
             clzzName = _clzBldr.getClassName() + "." + typeRefInterfaceName;
         }
 
+        String rtnType = origType != null ? origType : clzzName;
+
         if (propertyMethods) {
             if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
 
-                String rtnType = origType != null ? origType : clzzName;
-
-                String methodPrefix = "boolean".equalsIgnoreCase(clzzName) ? "is" : "get";
-                ClassMethod classMethod = new ClassMethod(attrName, rtnType, methodPrefix, false);
+                ClassMethod classMethod = new GetterMethod(_clzBldr, attrName, rtnType);
                 _clzBldr.getMethods().add(classMethod);
 
                 AnnotArgs annotArgs = AnnotArgs.create();
 
                 if (propertyTypeRef != null) {
-                    annotArgs.add("type", propertyTypeRef.getClassName() + ".class");
+                    annotArgs.add("type", AnnotClass.of(propertyTypeRef.getClassName()));
                 } else if (isStruct) {
-                    annotArgs.add("type", clzzName + ".class");
+                    annotArgs.add("type", AnnotClass.of(clzzName));
                 }
 
                 classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, annotArgs));
@@ -487,8 +487,9 @@ public class InterfaceCodeGenerator {
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
 
-                ClassMethod classMethod = new ClassMethod(attrName, "void", "set", false);
-                classMethod.getArguments().add(new MemberOrArgument(attrName.substring(0, 1).toLowerCase() + attrName.substring(1), clzzName));
+                ClassMethod classMethod = new SetterMethod(_clzBldr, attrName, rtnType);
+                classMethod.getArguments().add(new MemberOrArgument(_clzBldr, attrName.substring(0, 1).toLowerCase()
+                    + attrName.substring(1), clzzName));
                 _clzBldr.getMethods().add(classMethod);
 
                 classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, null));
@@ -543,10 +544,10 @@ public class InterfaceCodeGenerator {
             genericTypes.put(genericName, entry.getType());
             entry.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(position++)));
             entry.setType(genericName);
-            cnstrctArgs.add(new MemberOrArgument(entry.getName(), genericName));
+            cnstrctArgs.add(new MemberOrArgument(_parentClzBldr, entry.getName(), genericName));
         }
 
-        ClassConstructor cnstrct = new ClassConstructor();
+        ClassConstructor cnstrct = new ClassConstructor(_parentClzBldr, _className);
         cnstrct.getArguments().addAll(cnstrctArgs);
 
         info.getConstructors().add(cnstrct);
@@ -599,18 +600,19 @@ public class InterfaceCodeGenerator {
         return structClassName;
     }
 
-    private String buildStructClass(List<DuoData> _dbusTypeStr, String _structName, ClassBuilderInfo _packageName, List<ClassBuilderInfo> _structClasses) throws DBusException {
+    private String buildStructClass(List<DuoData> _dbusTypeStr, String _structName, ClassBuilderInfo _clzBldr, List<ClassBuilderInfo> _structClasses) throws DBusException {
 
+        String className = Util.upperCaseFirstChar(_structName);
         ClassBuilderInfo root = new ClassBuilderInfo(argumentPrefix);
-        root.setPackageName(_packageName.getPackageName());
-        root.setClassName(Util.upperCaseFirstChar(_structName));
+        root.setPackageName(_clzBldr.getPackageName());
+        root.setClassName(className);
         root.setExtendClass(Struct.class.getName());
         root.setClassType(ClassType.CLASS);
 
-        ClassConstructor classConstructor = new ClassConstructor();
+        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, className);
         root.getConstructors().add(classConstructor);
 
-        String structFqcn = _packageName.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
+        String structFqcn = _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
 
         for (int i = 0; i < _dbusTypeStr.size(); i++) {
             DuoData data = _dbusTypeStr.get(i);
@@ -619,18 +621,18 @@ public class InterfaceCodeGenerator {
             if (data.dbusSig().contains("(")) {
                 String subStructFqcn = structFqcn + Util.upperCaseFirstChar(Objects.toString(data.name(), "")) + STRUCT_CLASS_SUFFIX;
                 structClassName = new StructTreeBuilder(argumentPrefix, generatedStructClassNames)
-                    .buildStructClasses(data.dbusSig(), subStructFqcn, _packageName, _structClasses);
+                    .buildStructClasses(data.dbusSig(), subStructFqcn, _clzBldr, _structClasses);
             } else {
                 Set<String> addClasses = new HashSet<>();
                 structClassName = TypeConverter.getJavaTypeFromDBusType(data.dbusSig(), addClasses);
                 root.getImports().addAll(addClasses);
             }
 
-            MemberOrArgument argument = new MemberOrArgument(data.name(), structClassName, true);
+            MemberOrArgument argument = new MemberOrArgument(_clzBldr, data.name(), structClassName, true);
             argument.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(i)));
             root.getMembers().add(argument);
 
-            classConstructor.getArguments().add(new MemberOrArgument(data.name(), structClassName));
+            classConstructor.getArguments().add(new MemberOrArgument(_clzBldr, data.name(), structClassName));
         }
 
         _structClasses.add(root);

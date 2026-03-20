@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.utils.generator;
 
+import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
@@ -10,6 +11,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -81,8 +84,11 @@ class InterfaceCodeGeneratorTest {
 
         String clzContent = analyze.get(analyze.keySet().iterator().next());
 
-        assertTrue(clzContent.contains("@DBusBoundProperty(name = \"power-saver-enabled\")"));
-        assertTrue(clzContent.contains("boolean isPowerSaverEnabled();"));
+        assertLineEquals(12, clzContent, "    @DBusBoundProperty(name = \"power-saver-enabled\")");
+        assertLineEquals(13, clzContent, "    boolean isPowerSaverEnabled();");
+
+        assertLineEquals(15, clzContent, "    @DBusBoundProperty");
+        assertLineEquals(16, clzContent, "    UInt32 getVersion();");
     }
 
     @Test
@@ -96,8 +102,25 @@ class InterfaceCodeGeneratorTest {
 
         String clzContent = analyze.get(analyze.keySet().iterator().next());
 
-        assertTrue(clzContent.contains("@DBusMemberName(\"Serial\")"));
-        assertTrue(clzContent.contains("public UInt32 getSerialFromBus()"));
+        assertLineEquals(73, clzContent, "        public UInt32 getSerialFromBus() {");
+    }
+
+    @Test
+    void testHandleReservedMethodNames2() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/sample_reserved_names.xml"),
+                "/", "org.example.Reserved");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(1, analyze.size());
+
+        String clzContent = analyze.get(analyze.keySet().iterator().next());
+
+        assertLineEquals(12, clzContent, "    @DBusMemberName(\"getWireData\")");
+        assertLineEquals(13, clzContent, "    int getWireDataFromBus();");
+
+        assertLineNotEquals(23, clzContent, "        @DBusMemberName(\"serial\")");
+        assertLineEquals(24, clzContent, "        public DBusPath getSerialFromBus() {");
     }
 
     @Test
@@ -115,9 +138,9 @@ class InterfaceCodeGeneratorTest {
             .orElseThrow()
             .getValue();
 
-        assertTrue(primaryFile.contains("public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {"));
-        assertTrue(primaryFile.contains("private final List<ShortcutsChangedShortcutsStruct> shortcuts;"));
-        assertTrue(primaryFile.contains("public List<ShortcutsChangedShortcutsStruct> getShortcuts() {"));
+        assertLineEquals(101, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
+        assertLineEquals(99, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
+        assertLineEquals(111, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
 
         String secondaryFile = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("ShortcutsChangedShortcutsStruct.java"))
@@ -125,9 +148,10 @@ class InterfaceCodeGeneratorTest {
             .orElseThrow()
             .getValue();
 
-        assertTrue(secondaryFile.contains("private final String member0;"));
-        assertTrue(secondaryFile.contains("private final Map<String, Variant<?>> member1;"));
-
+        assertLineEquals(11, secondaryFile, "    @Position(0)");
+        assertLineEquals(12, secondaryFile, "    private final String member0;");
+        assertLineEquals(13, secondaryFile, "    @Position(1)");
+        assertLineEquals(14, secondaryFile, "    private final Map<String, Variant<?>> member1;");
     }
 
     @Test
@@ -141,7 +165,7 @@ class InterfaceCodeGeneratorTest {
 
         String clzContent = analyze.get(analyze.keySet().iterator().next());
 
-        assertTrue(clzContent.contains("@DBusBoundProperty(type = PropertySupportedOptionsType.class)"));
+        assertLineEquals(22, clzContent, "    @DBusBoundProperty(type = PropertySupportedOptionsType.class)");
     }
 
     @Test
@@ -154,10 +178,10 @@ class InterfaceCodeGeneratorTest {
 
         String clzContent = analyze.get(new File("org", "ExampleMethodExampleArgStruct.java"));
 
-        assertTrue(clzContent.contains("@Position(0)"), "Position annotation expected");
-        assertTrue(clzContent.contains("private final List<Integer> member0;"), "Final List<Integer> member expected");
-        assertTrue(clzContent.contains("public ExampleMethodExampleArgStruct(List<Integer> member0)"), "Constructor using List<Integer> expected");
-        assertTrue(clzContent.contains("public List<Integer> getMember0()"), "Getter for Member of type List<Integer> expected");
+        assertLineEquals(10, clzContent, "    @Position(0)");
+        assertLineEquals(11, clzContent, "    private final List<Integer> member0;");
+        assertLineEquals(13, clzContent, "    public ExampleMethodExampleArgStruct(List<Integer> member0) {");
+        assertLineEquals(17, clzContent, "    public List<Integer> getMember0() {");
     }
 
     @Test
@@ -205,5 +229,43 @@ class InterfaceCodeGeneratorTest {
             Arguments.of("ABCDE -> F", Set.of("A", "B", "C", "D", "E"), "F"),
             Arguments.of("ABCDEF -> G", Set.of("A", "B", "C", "D", "E", "F"), "G")
         );
+    }
+
+    static void assertLineEquals(int _lineNo, String _lines, String _compare) {
+        assertLineEquals(true, _lineNo, _lines, _compare);
+    }
+
+    static void assertLineNotEquals(int _lineNo, String _lines, String _compare) {
+        assertLineEquals(false, _lineNo, _lines, _compare);
+    }
+
+    /**
+     * Assert that the specified line is equal to the compare value.
+     * @param _notContains whether the line should or should not contain the compare value
+     * @param _lineNo line to compare (zero based)
+     * @param _lines string containing lines (will be splitted by line feed)
+     * @param _compare compare value
+     */
+    private static void assertLineEquals(boolean _notContains, int _lineNo, String _lines, String _compare) {
+        assertNotNull(_lines, "Lines required");
+        assertNotNull(_compare, "Compare line required");
+
+        List<String> list = Arrays.asList(_lines.split("\n"));
+        assertFalse(list.isEmpty(), "No lines to compare with");
+
+        if (_lineNo >= list.size()) {
+            fail("LineNo " + _lineNo + " is bigger than the available lines " + list.size());
+        } else if (_lineNo < 0) {
+            fail("LineNo must be >= 0");
+        }
+
+        if (_notContains != _compare.equals(list.get(_lineNo))) {
+            assertionFailure()
+            .message("Line " + _lineNo + " does not match")
+            .expected(_compare)
+            .actual(list.get(_lineNo))
+            .buildAndThrow();
+        }
+
     }
 }

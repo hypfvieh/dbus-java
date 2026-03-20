@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+    <interface name="org.example.Reserved">
+        <method name="getWireData">
+            <arg type="i" name="exampleArg" direction="out" />
+        </method>
+        
+        <signal name="ReservedMemberName">
+          <arg type="o" name="serial" direction="out"/>
+        </signal>
+    </interface>
+</node>
