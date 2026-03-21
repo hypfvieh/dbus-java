@@ -253,13 +253,12 @@ public class ClassBuilderInfo {
             }
         }
 
-        // add getter and setter
-        for (MemberOrArgument member : members) {
-            addEmptyLineIfNeeded(content);
-            content.addAll(member.generate(memberIndentCnt));
-        }
+        List<ClassMethod> allMethods = new ArrayList<>(getMethods());
 
-        for (ClassMethod mth : getMethods()) {
+        // add getter and setter
+        getMembers().stream().map(e -> e.generateMethods(memberIndentCnt)).forEach(allMethods::addAll);
+
+        for (ClassMethod mth : allMethods) {
             addEmptyLineIfNeeded(content);
             content.addAll(mth.generate(memberIndentCnt));
         }
