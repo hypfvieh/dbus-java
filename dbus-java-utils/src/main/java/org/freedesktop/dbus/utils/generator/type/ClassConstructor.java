@@ -29,10 +29,12 @@ public class ClassConstructor implements ICodeGenerator {
     private final ClassBuilderInfo classBuilderInfo;
 
     private final String className;
+    private final int indentLevel;
 
-    public ClassConstructor(ClassBuilderInfo _bldr, String _className) {
+    public ClassConstructor(ClassBuilderInfo _bldr, int _indentLevel, String _className) {
         classBuilderInfo = _bldr;
         className = _className;
+        indentLevel = _indentLevel;
     }
 
     public List<String> getThrowArguments() {
@@ -58,7 +60,7 @@ public class ClassConstructor implements ICodeGenerator {
 
     @Override
     public List<String> generate(int _indentLevel) {
-
+        int indent = Math.max(indentLevel, _indentLevel);
         List<MemberOrArgument> filteredSuperArguments = new ArrayList<>(getSuperArguments());
         filteredSuperArguments.removeIf(e -> getArguments().contains(e));
         String constructorArgs = "";
@@ -81,14 +83,14 @@ public class ClassConstructor implements ICodeGenerator {
         String prefix = getClassBuilderInfo().getArgumentPrefix();
 
         if (!getSuperArguments().isEmpty()) {
-            assignments = getIndent(_indentLevel / 2) + "super(" + getSuperArguments().stream()
+            assignments = getIndent(indent / 2) + "super(" + getSuperArguments().stream()
                 .map(e -> ClassBuilderInfo.maybePrefix(e.getName(), prefix))
                 .collect(Collectors.joining(", ")) + ");" + System.lineSeparator();
         }
 
         if (!getArguments().isEmpty()) {
             List<String> assigns = new ArrayList<>();
-            String innerIndent = getIndent(_indentLevel / 2);
+            String innerIndent = getIndent(indent);
             for (MemberOrArgument e : getArguments()) {
                 assigns.add(innerIndent + "this." + e.getName() + " = " + ClassBuilderInfo.maybePrefix(e.getName(), prefix) + ";");
             }
@@ -96,7 +98,7 @@ public class ClassConstructor implements ICodeGenerator {
         }
 
         return CONSTRUCTOR_TEMPL.formatted(getClassName(), constructorArgs, throwArgs, assignments)
-            .lines().map(l -> getIndent(_indentLevel) + l).toList();
+            .lines().map(l -> getIndent(indent) + l).toList();
     }
 
     public String argumentsAsString() {

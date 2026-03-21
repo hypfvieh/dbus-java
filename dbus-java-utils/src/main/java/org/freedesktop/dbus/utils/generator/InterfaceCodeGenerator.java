@@ -270,7 +270,7 @@ public class InterfaceCodeGenerator {
 
         }
 
-        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, className);
+        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 0, className);
 
         classConstructor.getArguments().addAll(argsList);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());
@@ -487,7 +487,7 @@ public class InterfaceCodeGenerator {
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
 
-                ClassMethod classMethod = new SetterMethod(_clzBldr, attrName, rtnType);
+                ClassMethod classMethod = new SetterMethod(_clzBldr, 0, attrName, rtnType);
                 classMethod.getArguments().add(new MemberOrArgument(_clzBldr, attrName.substring(0, 1).toLowerCase()
                     + attrName.substring(1), clzzName));
                 _clzBldr.getMethods().add(classMethod);
@@ -544,10 +544,10 @@ public class InterfaceCodeGenerator {
             genericTypes.put(genericName, entry.getType());
             entry.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(position++)));
             entry.setType(genericName);
-            cnstrctArgs.add(new MemberOrArgument(_parentClzBldr, entry.getName(), genericName));
+            cnstrctArgs.add(new MemberOrArgument(info, entry.getName(), genericName));
         }
 
-        ClassConstructor cnstrct = new ClassConstructor(_parentClzBldr, _className);
+        ClassConstructor cnstrct = new ClassConstructor(info, 0, _className);
         cnstrct.getArguments().addAll(cnstrctArgs);
 
         info.getConstructors().add(cnstrct);
@@ -609,7 +609,7 @@ public class InterfaceCodeGenerator {
         root.setExtendClass(Struct.class.getName());
         root.setClassType(ClassType.CLASS);
 
-        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, className);
+        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 0, className);
         root.getConstructors().add(classConstructor);
 
         String structFqcn = _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName);

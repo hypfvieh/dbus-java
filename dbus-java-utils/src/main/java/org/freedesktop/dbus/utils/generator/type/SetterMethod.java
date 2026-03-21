@@ -9,23 +9,26 @@ public class SetterMethod extends ClassMethod {
         %s%s
         }
         """;
+    private final int indentLevel;
 
-    public SetterMethod(ClassBuilderInfo _bldr, String _name, String _setterType) {
+    public SetterMethod(ClassBuilderInfo _bldr, int _indentLevel, String _name, String _setterType) {
         super(_bldr, _name, "void", "set", false);
+        indentLevel = _indentLevel;
         getArguments().add(new MemberOrArgument(_bldr, _name, _setterType));
     }
 
     @Override
     protected List<String> formatMethod(int _indentLvl, String _modifier, String _returnType, String _methodName, String _args) {
+        int indent = Math.max(indentLevel, _indentLvl);
 
         if (getArguments() == null || getArguments().isEmpty()) {
-            return super.formatMethod(_indentLvl, _modifier, _returnType, _methodName, _args);
+            return super.formatMethod(indent, _modifier, _returnType, _methodName, _args);
         }
 
         String content = String.format("this.%s = %s;", getArguments().getFirst().getName(), getArguments().getFirst().getName());
 
-        return SETTER_METHOD_TEMPL.formatted(_modifier, _returnType, _methodName, _args,
-            getIndent(Math.min(1, _indentLvl - 1)), content)
-        .lines().map(l -> getIndent(_indentLvl) + l).toList();
+        return SETTER_METHOD_TEMPL.formatted("public ", _returnType, _methodName, _args,
+            getIndent(indent), content)
+        .lines().map(l -> getIndent(indent) + l).toList();
     }
 }

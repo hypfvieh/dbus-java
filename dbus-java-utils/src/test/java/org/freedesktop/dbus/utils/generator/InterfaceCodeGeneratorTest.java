@@ -169,6 +169,65 @@ class InterfaceCodeGeneratorTest {
     }
 
     @Test
+    void testStructFormatting() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.Usb.xml"),
+                "/", "org.freedesktop.portal.Usb");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(6, analyze.size());
+
+        String clzContent = analyze.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("AcquireDevicesDevicesStruct.java"))
+            .findFirst()
+            .map(e -> e.getValue())
+            .orElseThrow();
+
+        assertLineEquals(16, clzContent, "    public AcquireDevicesDevicesStruct(String member0, Map<String, Variant<?>> member1) {");
+        assertLineEquals(17, clzContent, "        this.member0 = member0;");
+        assertLineEquals(18, clzContent, "        this.member1 = member1;");
+
+        assertLineEquals(21, clzContent, "    public String getMember0() {");
+        assertLineEquals(22, clzContent, "        return member0;");
+
+        assertLineEquals(25, clzContent, "    public Map<String, Variant<?>> getMember1() {");
+        assertLineEquals(26, clzContent, "        return member1;");
+    }
+
+    @Test
+    void testTupleFormatting() throws Exception {
+        InterfaceCodeGenerator ci2 = loadDBusXmlFile(true,
+                new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.Documents.xml"),
+                "/", "org.freedesktop.portal.Documents");
+        Map<File, String> analyze = ci2.analyze(true);
+
+        assertEquals(4, analyze.size());
+
+        String clzContent = analyze.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("AddFullTuple.java"))
+            .findFirst()
+            .map(e -> e.getValue())
+            .orElseThrow();
+
+        assertLineEquals(14, clzContent, "    public AddFullTuple(A docIds, B extraOut) {");
+        assertLineEquals(15, clzContent, "        this.docIds = docIds;");
+        assertLineEquals(16, clzContent, "        this.extraOut = extraOut;");
+
+        assertLineEquals(19, clzContent, "    public A getDocIds() {");
+        assertLineEquals(20, clzContent, "        return docIds;");
+
+        assertLineEquals(23, clzContent, "    public void setDocIds(A docIds) {");
+        assertLineEquals(24, clzContent, "        this.docIds = docIds;");
+
+        assertLineEquals(27, clzContent, "    public B getExtraOut() {");
+        assertLineEquals(28, clzContent, "        return extraOut;");
+
+        assertLineEquals(31, clzContent, "    public void setExtraOut(B extraOut) {");
+        assertLineEquals(32, clzContent, "        this.extraOut = extraOut;");
+
+    }
+
+    @Test
     void testCreateSampleStructArgs() throws Exception {
         InterfaceCodeGenerator ci2 = loadDBusXmlFile(
                 new File("src/test/resources/CreateInterface/sample_struct_args.xml"), "/", "org.example");

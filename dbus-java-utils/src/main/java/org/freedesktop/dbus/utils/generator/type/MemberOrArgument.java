@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author hypfvieh
  * @since v3.0.1 - 2018-12-20
  */
-public class MemberOrArgument implements ICodeGenerator {
+public class MemberOrArgument {
 
     /** Name of member/field. */
     private final String       name;
@@ -78,25 +78,25 @@ public class MemberOrArgument implements ICodeGenerator {
         return sb.toString();
     }
 
-    @Override
     public ClassBuilderInfo getClassBuilderInfo() {
         return classBuilderInfo;
     }
 
-    @Override
-    public List<String> generate(int _indentLevel) {
-        List<String> result = new ArrayList<>();
+    public List<ClassMethod> generateMethods(int _indentLevel) {
+        List<ClassMethod> result = new ArrayList<>();
         String memberType = TypeConverter.getProperJavaClass(getType(), getClassBuilderInfo().getImports());
 
         if (!getGenerics().isEmpty()) {
-            memberType += "<" + getGenerics().stream().map(c -> TypeConverter.convertJavaType(c, false)).collect(Collectors.joining(", ")) + ">";
+            memberType += "<" + getGenerics().stream()
+                .map(c -> TypeConverter.convertJavaType(c, false))
+                .collect(Collectors.joining(", ")) + ">";
         }
 
-        GetterMethod getterMethod = new GetterMethod(getClassBuilderInfo(), getName(), memberType, this);
+        GetterMethod getterMethod = new GetterMethod(getClassBuilderInfo(), _indentLevel, getName(), memberType, this);
+        result.add(getterMethod);
 
-        getClassBuilderInfo().getMethods().add(getterMethod);
         if (!isFinalArg()) {
-            getClassBuilderInfo().getMethods().add(new SetterMethod(getClassBuilderInfo(), getName(), memberType));
+            result.add(new SetterMethod(getClassBuilderInfo(), _indentLevel, getName(), memberType));
         }
 
         return result;

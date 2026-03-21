@@ -90,6 +90,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed possible NullPointerException in SASL auth ([#294](https://github.com/hypfvieh/dbus-java/issues/294))
    - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298))
    - Fixed various issues with `InterfaceCodeGenerator` ([#302](https://github.com/hypfvieh/dbus-java/issues/302), [#303](https://github.com/hypfvieh/dbus-java/issues/303), [#304], (https://github.com/hypfvieh/dbus-java/issues/304), [#306](https://github.com/hypfvieh/dbus-java/issues/306)
+   - Refactoring and overhaul of `InterfaceCodeGenerator` to improve code, reduce duplications and allow easier fixing/extending
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 

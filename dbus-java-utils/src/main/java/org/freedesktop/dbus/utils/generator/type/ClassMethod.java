@@ -128,7 +128,7 @@ public class ClassMethod implements ICodeGenerator {
             result.addAll(currentAnnotations.stream().map(a -> getIndent(_indentLevel) + a.getAnnotationString()).toList());
         }
 
-        String publicModifier = getClassBuilderInfo().getClassType() != ClassType.INTERFACE ? "public " : "";
+        String publicModifier = getClassBuilderInfo().getClassType() != ClassType.INTERFACE ? "public" : "";
         String mthReturnType = getReturnType() == null ? "void"
             : TypeConverter.getProperJavaClass(getReturnType(), getClassBuilderInfo().getImports());
         String args = "";
@@ -145,7 +145,7 @@ public class ClassMethod implements ICodeGenerator {
     }
 
     protected List<String> formatMethod(int _indentLvl, String _modifier, String _returnType, String _methodName, String _args) {
-        return METHOD_TEMPL.formatted(_modifier, _returnType, _methodName, _args)
+        return METHOD_TEMPL.formatted(Util.isBlank(_modifier) ? "" : " " + _modifier, _returnType, _methodName, _args)
         .lines().map(l -> getIndent(_indentLvl) + l).toList();
     }
 

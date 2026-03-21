@@ -93,7 +93,7 @@ public class StructTreeBuilder {
             }
 
             if (!treeItem.getSubType().isEmpty()) {
-                createNested(treeItem.getSubType(), _structBaseFqcn, root, _generatedClasses);
+                createNested(1, treeItem.getSubType(), _structBaseFqcn, root, _generatedClasses);
             }
         }
 
@@ -123,6 +123,7 @@ public class StructTreeBuilder {
     /**
      * Create nested Struct class.
      *
+     * @param _nestedLevel nested depth level
      * @param _list List of struct tree elements
      * @param _structFqcnBase base classname of created struct class
      * @param _root root class of this struct (maybe other struct)
@@ -130,12 +131,12 @@ public class StructTreeBuilder {
      *
      * @return last created struct or null
      */
-    private ClassBuilderInfo createNested(List<StructTree> _list, String _structFqcnBase, ClassBuilderInfo _root, List<ClassBuilderInfo> _classes) {
+    private ClassBuilderInfo createNested(int _nestedLevel, List<StructTree> _list, String _structFqcnBase, ClassBuilderInfo _root, List<ClassBuilderInfo> _classes) {
         int position = 0;
 
         ClassBuilderInfo root = _root;
         ClassBuilderInfo retval = null;
-        ClassConstructor classConstructor = new ClassConstructor(_root, root.getClassName());
+        ClassConstructor classConstructor = new ClassConstructor(_root, _nestedLevel, root.getClassName());
 
         for (StructTree inTree : _list) {
 
@@ -158,7 +159,7 @@ public class StructTreeBuilder {
                 temp.setClassType(ClassType.CLASS);
                 classConstructor.getArguments().add(new MemberOrArgument(_root, constructorArg, temp.getClassName()));
                 member.setType(temp.getClassName());
-                createNested(inTree.getSubType(), _structFqcnBase, temp, _classes);
+                createNested(_nestedLevel + 1, inTree.getSubType(), _structFqcnBase, temp, _classes);
 
                 _classes.add(temp);
                 retval = temp;
@@ -167,7 +168,7 @@ public class StructTreeBuilder {
 
                 temp.setClassName(root.getClassName());
                 temp.setPackageName(root.getPackageName());
-                ClassBuilderInfo x = createNested(inTree.getSubType(), _structFqcnBase, temp, _classes);
+                ClassBuilderInfo x = createNested(_nestedLevel + 1, inTree.getSubType(), _structFqcnBase, temp, _classes);
                 if (x != null) {
                     member.getGenerics().add(x.getClassName());
                 } else {
