@@ -87,7 +87,7 @@ class InterfaceCodeGeneratorTest {
         assertLineEquals(12, clzContent, "    @DBusBoundProperty(name = \"power-saver-enabled\")");
         assertLineEquals(13, clzContent, "    boolean isPowerSaverEnabled();");
 
-        assertLineEquals(15, clzContent, "    @DBusBoundProperty");
+        assertLineEquals(15, clzContent, "    @DBusBoundProperty(name = \"version\")");
         assertLineEquals(16, clzContent, "    UInt32 getVersion();");
     }
 

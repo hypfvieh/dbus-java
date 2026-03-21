@@ -111,7 +111,9 @@ public class ClassMethod implements ICodeGenerator {
 
                 // add "name" definition if original name differs from reformatted name
                 // e.g. some-name != someName
-                if (!reformatName().equals(getName())) {
+                String reformattedMethodName = reformatName();
+                if (!reformattedMethodName.equals(getName())
+                    || !Util.upperCaseFirstChar(getName()).equals(reformattedMethodName)) {
                     currentAnnotations.stream().filter(e -> e.getAnnotationClass() == DBusBoundProperty.class)
                     .forEach(e -> e.getAnnotationParams().put("name", getName()));
 
