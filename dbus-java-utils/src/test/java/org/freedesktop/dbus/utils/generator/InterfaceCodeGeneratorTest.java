@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -180,7 +181,7 @@ class InterfaceCodeGeneratorTest {
         String clzContent = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("AcquireDevicesDevicesStruct.java"))
             .findFirst()
-            .map(e -> e.getValue())
+            .map(Entry::getValue)
             .orElseThrow();
 
         assertLineEquals(16, clzContent, "    public AcquireDevicesDevicesStruct(String member0, Map<String, Variant<?>> member1) {");
@@ -206,7 +207,7 @@ class InterfaceCodeGeneratorTest {
         String clzContent = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("AddFullTuple.java"))
             .findFirst()
-            .map(e -> e.getValue())
+            .map(Entry::getValue)
             .orElseThrow();
 
         assertLineEquals(14, clzContent, "    public AddFullTuple(A docIds, B extraOut) {");
