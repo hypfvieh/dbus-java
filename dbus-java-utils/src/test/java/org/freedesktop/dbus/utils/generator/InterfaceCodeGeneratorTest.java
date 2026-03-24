@@ -139,9 +139,16 @@ class InterfaceCodeGeneratorTest {
             .orElseThrow()
             .getValue();
 
-        assertLineEquals(101, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
         assertLineEquals(99, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
+
+        assertLineEquals(101, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
+        assertLineEquals(102, primaryFile, "            super(path, sessionHandle, shortcuts);");
+        assertLineEquals(103, primaryFile, "            this.sessionHandle = sessionHandle;");
+        assertLineEquals(104, primaryFile, "            this.shortcuts = shortcuts;");
+
+        assertLineEquals(108, primaryFile, "            return sessionHandle;");
         assertLineEquals(111, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
+        assertLineEquals(112, primaryFile, "            return shortcuts;");
 
         String secondaryFile = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("ShortcutsChangedShortcutsStruct.java"))

@@ -60,7 +60,6 @@ public class ClassConstructor implements ICodeGenerator {
 
     @Override
     public List<String> generate(int _indentLevel) {
-        int indent = Math.max(indentLevel, _indentLevel);
         List<MemberOrArgument> filteredSuperArguments = new ArrayList<>(getSuperArguments());
         filteredSuperArguments.removeIf(e -> getArguments().contains(e));
         String constructorArgs = "";
@@ -83,14 +82,14 @@ public class ClassConstructor implements ICodeGenerator {
         String prefix = getClassBuilderInfo().getArgumentPrefix();
 
         if (!getSuperArguments().isEmpty()) {
-            assignments = getIndent(indent / 2) + "super(" + getSuperArguments().stream()
+            assignments = getIndent(_indentLevel) + "super(" + getSuperArguments().stream()
                 .map(e -> ClassBuilderInfo.maybePrefix(e.getName(), prefix))
                 .collect(Collectors.joining(", ")) + ");" + System.lineSeparator();
         }
 
         if (!getArguments().isEmpty()) {
             List<String> assigns = new ArrayList<>();
-            String innerIndent = getIndent(indent);
+            String innerIndent = getIndent(_indentLevel);
             for (MemberOrArgument e : getArguments()) {
                 assigns.add(innerIndent + "this." + e.getName() + " = " + ClassBuilderInfo.maybePrefix(e.getName(), prefix) + ";");
             }
@@ -98,7 +97,7 @@ public class ClassConstructor implements ICodeGenerator {
         }
 
         return CONSTRUCTOR_TEMPL.formatted(getClassName(), constructorArgs, throwArgs, assignments)
-            .lines().map(l -> getIndent(indent) + l).toList();
+            .lines().map(l -> getIndent(_indentLevel + indentLevel) + l).toList();
     }
 
     public String argumentsAsString() {

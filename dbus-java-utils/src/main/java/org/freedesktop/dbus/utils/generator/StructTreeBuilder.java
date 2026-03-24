@@ -136,7 +136,7 @@ public class StructTreeBuilder {
 
         ClassBuilderInfo root = _root;
         ClassBuilderInfo retval = null;
-        ClassConstructor classConstructor = new ClassConstructor(_root, _nestedLevel, root.getClassName());
+        ClassConstructor classConstructor = new ClassConstructor(_root, 0, root.getClassName());
 
         for (StructTree inTree : _list) {
 

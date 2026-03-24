@@ -170,7 +170,8 @@ public class ClassBuilderInfo {
     private List<String> createClassFileContent(boolean _staticClass, Set<String> _otherImports) {
 
         final int memberIndentCnt = _staticClass ? 2 : 1;
-        final String classIndent = ICodeGenerator.INDENT.repeat(_staticClass ? 1 : 0);
+        final int classIndentCnt = _staticClass ? 1 : 0;
+        final String classIndent = ICodeGenerator.INDENT.repeat(classIndentCnt);
         final String memberIndent = ICodeGenerator.INDENT.repeat(memberIndentCnt);
 
         Set<String> allImports = new TreeSet<>();
@@ -248,15 +249,14 @@ public class ClassBuilderInfo {
         if (!getConstructors().isEmpty()) {
             for (ClassConstructor constructor : getConstructors()) {
                 addEmptyLineIfNeeded(content);
-                int outerIndent = _staticClass ? 2 : 1;
-                content.addAll(constructor.generate(outerIndent));
+                content.addAll(constructor.generate(1));
             }
         }
 
         List<ClassMethod> allMethods = new ArrayList<>(getMethods());
 
         // add getter and setter
-        getMembers().stream().map(e -> e.generateMethods(memberIndentCnt)).forEach(allMethods::addAll);
+        getMembers().stream().map(e -> e.generateMethods(1)).forEach(allMethods::addAll);
 
         for (ClassMethod mth : allMethods) {
             addEmptyLineIfNeeded(content);

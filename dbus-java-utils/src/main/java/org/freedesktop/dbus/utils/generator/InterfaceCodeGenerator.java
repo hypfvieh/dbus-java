@@ -270,7 +270,7 @@ public class InterfaceCodeGenerator {
 
         }
 
-        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 0, className);
+        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 1, className);
 
         classConstructor.getArguments().addAll(argsList);
         classConstructor.getThrowArguments().add(DBusException.class.getSimpleName());

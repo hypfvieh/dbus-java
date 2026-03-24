@@ -4,7 +4,8 @@ import java.util.List;
 
 public class GetterMethod extends ClassMethod {
 
-    private static final String GETTER_METHOD_TEMPL = """
+    private static final String GETTER_METHOD_TEMPL =
+        """
         %s%s %s(%s) {
         %s%s
         }
@@ -25,16 +26,17 @@ public class GetterMethod extends ClassMethod {
 
     @Override
     protected List<String> formatMethod(int _indentLvl, String _modifier, String _returnType, String _methodName, String _args) {
-        int indent = Math.max(_indentLvl, indentLevel);
         if (argument == null) {
-            return super.formatMethod(indent, _modifier, _returnType, _methodName, _args);
+            return super.formatMethod(_indentLvl, _modifier, _returnType, _methodName, _args);
         }
 
         String content = String.format("return %s;", argument.getName());
 
-        return GETTER_METHOD_TEMPL.formatted("public ", _returnType, _methodName, _args,
-            getIndent(indent), content)
-        .lines().map(l -> getIndent(indent) + l).toList();
+        var result = GETTER_METHOD_TEMPL.formatted("public ", _returnType, _methodName, _args,
+            getIndent(indentLevel), content)
+        .lines().map(l -> getIndent(_indentLvl) + l).toList();
+
+        return result;
     }
 
 }
