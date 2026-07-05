@@ -170,41 +170,23 @@ public class DirectConnection extends AbstractConnection {
 
     @Override
     public <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
-        Queue<DBusSigHandler<? extends DBusSignal>> v = getHandledSignals().get(_rule);
-        if (v != null) {
-            v.remove(_handler);
-            if (v.isEmpty()) {
-                getHandledSignals().remove(_rule);
-            }
-        }
-    }
-
-    @Override
-    public <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
-        Queue<DBusSigHandler<? extends DBusSignal>> v =
-                getHandledSignals().computeIfAbsent(_rule, val -> new ConcurrentLinkedQueue<>());
-
-        v.add(_handler);
-        return () -> removeSigHandler(_rule, _handler);
+        removeFromSignalMap(getHandledSignals(), _rule, _handler, () -> getHandledSignals().remove(_rule));
     }
 
     @Override
     protected void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        Queue<DBusSigHandler<DBusSignal>> v = getGenericHandledSignals().get(_rule);
-        if (v != null) {
-            v.remove(_handler);
-            if (v.isEmpty()) {
-                getGenericHandledSignals().remove(_rule);
-            }
-        }
+        removeFromSignalMap(getGenericHandledSignals(), _rule, _handler, () -> getGenericHandledSignals().remove(_rule));
+    }
+
+    @Override
+    public <T extends DBusSignal> AutoCloseable addSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler) throws DBusException {
+        addToSignalMap(getHandledSignals(), _rule, _handler, () -> {});
+        return () -> removeSigHandler(_rule, _handler);
     }
 
     @Override
     protected AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        Queue<DBusSigHandler<DBusSignal>> v =
-                getGenericHandledSignals().computeIfAbsent(_rule, val -> new ConcurrentLinkedQueue<>());
-
-        v.add(_handler);
+        addToSignalMap(getGenericHandledSignals(), _rule, _handler, () -> {});
         return () -> removeGenericSigHandler(_rule, _handler);
     }
 

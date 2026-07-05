@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.messages;
 
+import java.util.concurrent.TimeUnit;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
@@ -86,9 +87,15 @@ public class MethodCall extends MethodBase {
             return reply;
         }
 
+        long remainingNanos = TimeUnit.MILLISECONDS.toNanos(_timeout);
+        long deadline = System.nanoTime() + remainingNanos;
+
         try {
-            wait(_timeout);
-        } catch (InterruptedException _exI) {
+            while (null == reply && remainingNanos > 0) {
+                TimeUnit.NANOSECONDS.timedWait(this, remainingNanos);
+                remainingNanos = deadline - System.nanoTime();
+            }
+        } catch (InterruptedException _ex) {
             Thread.currentThread().interrupt(); // keep interrupted state
         }
 

@@ -42,10 +42,8 @@ public class ReceivingService {
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
 
         Arrays.stream(ExecutorNames.values())
-        .forEach(t -> {
-            executors.put(t,
-                Executors.newFixedThreadPool(rsCfg.getPoolSize(t), createFactory(prefix + t.getThreadName() + "-", _rsCfg.isVirtual(t), _rsCfg.getPriority(t))));
-        });
+        .forEach(t -> executors.put(t,
+            Executors.newFixedThreadPool(rsCfg.getPoolSize(t), createFactory(prefix + t.getThreadName() + "-", rsCfg.isVirtual(t), rsCfg.getPriority(t)))));
 
         retryHandler = rsCfg.getRetryHandler();
     }

@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections.impl;
 
 import static org.freedesktop.dbus.utils.AddressBuilder.getDbusMachineId;
 
+import java.util.Optional;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
@@ -122,21 +123,23 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
         }
 
         // no unix transport but address wants to use a unix socket
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
-                && _address != null
-                && _address.isBusType("UNIX")) {
-            throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
-        }
+        validateTransportAvailable("UNIX", _address,
+            "No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
 
         // no tcp transport but TCP address given
-        if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
-                && _address != null
-                && _address.isBusType("TCP")) {
-            throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
-        }
+        validateTransportAvailable("TCP", _address,
+            "No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
 
         return _address;
 
+    }
+
+    private static void validateTransportAvailable(String _type, BusAddress _address, String _errorMessage) {
+        if (!TransportBuilder.getRegisteredBusTypes().contains(_type)
+            && _address != null
+            && _address.isBusType(_type)) {
+            throw new AddressResolvingException(_errorMessage);
+        }
     }
 
     /**
@@ -176,10 +179,23 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
                 }
             }
         } else {
-            c = new DBusConnection(shared, machineId, connectionConfig, transportCfg, rcvSvcCfg);
+            c = new DBusConnection(false, machineId, connectionConfig, transportCfg, rcvSvcCfg);
         }
 
-        c.connectImpl();
+        try {
+            c.connectImpl();
+        } catch (DBusException _ex) {
+            if (shared) {
+                // remove shared connection if connection failed
+                synchronized (DBusConnection.CONNECTIONS) {
+                    DBusConnection removedConnection = DBusConnection.CONNECTIONS.remove(transportCfg.getBusAddress().toString());
+                    if (removedConnection != null) {
+                        removedConnection.close();
+                    }
+                }
+            }
+            throw _ex;
+        }
         return c;
     }
 
@@ -193,15 +209,12 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
     private DBusConnection getSharedConnection(String _busAddr) {
         synchronized (DBusConnection.CONNECTIONS) {
             DBusConnection c = DBusConnection.CONNECTIONS.get(_busAddr);
-            if (c != null) {
-                if (!c.isConnected()) {
-                    DBusConnection.CONNECTIONS.remove(_busAddr);
-                    return null;
-                } else {
-                    return c;
-                }
+            if (c != null && !c.isConnected()) {
+                Optional.ofNullable(DBusConnection.CONNECTIONS.remove(_busAddr))
+                    .ifPresent(DBusConnection::close);
+                return null;
             }
+            return c;
         }
-        return null;
     }
 }

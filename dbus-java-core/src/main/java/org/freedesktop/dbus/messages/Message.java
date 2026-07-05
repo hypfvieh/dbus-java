@@ -454,7 +454,7 @@ public class Message {
      * @return The value of the field or null if unset.
      */
     protected Object getHeader(byte _type) {
-        return headers.length == 0 || headers.length < _type ? null : headers[_type];
+        return headers.length == 0 || headers.length <= _type ? null : headers[_type];
     }
 
     /**
@@ -924,20 +924,20 @@ public class Message {
                 _offsets[OFFSET_DATA] += 4;
                 break;
             case STRING:
-                int length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                int length = validateLengthLimit(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4), _dataBuf.length);
                 _offsets[OFFSET_DATA] += 4;
                 rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8);
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case OBJECT_PATH:
-                length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                length = validateLengthLimit(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4), _dataBuf.length);
                 _offsets[OFFSET_DATA] += 4;
-                rv = new DBusPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
+                rv = new DBusPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8));
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case SIGNATURE:
-                length = _dataBuf[_offsets[OFFSET_DATA]++] & 0xFF;
-                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length);
+                length = validateLengthLimit(_dataBuf[_offsets[OFFSET_DATA]++] & 0xFF, _dataBuf.length);
+                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8);
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             default:
@@ -953,6 +953,24 @@ public class Message {
         }
 
         return rv;
+    }
+
+    /**
+     * Validates that the provided length is within the bounds of the buffer.
+     * @param _length length to validate
+     * @param _bufferLen length of the buffer
+     * @return validated length as integer
+     * @throws MessageFormatException when the length is out of bounds
+     */
+    private int validateLengthLimit(long _length, int _bufferLen) throws MessageFormatException {
+        if (_length > Integer.MAX_VALUE) {
+            throw new MessageFormatException("Length limit exceeded: " + _length);
+        } else if (_length < 0) {
+            throw new MessageFormatException("Invalid length: " + _length);
+        } else if (_bufferLen < _length) {
+            throw new MessageFormatException("Length of " + _length + " exceeds buffer size");
+        }
+        return (int) _length;
     }
 
     /**

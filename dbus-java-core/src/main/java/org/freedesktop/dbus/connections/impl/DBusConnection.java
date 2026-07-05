@@ -392,29 +392,20 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
         removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).withPath(objectPath).build(), _handler);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(_rule);
-
-        if (null != dbusSignalList) {
-            dbusSignalList.remove(_handler);
-            if (dbusSignalList.isEmpty()) {
-                getHandledSignals().remove(_rule);
-                try {
-                    dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected _ex) {
-                    logger.debug("No connection.", _ex);
-                } catch (DBusExecutionException _ex) {
-                    logger.debug("Error removing signal", _ex);
-                    throw new DBusException(_ex);
-                }
+        removeFromSignalMap(getHandledSignals(), _rule, _handler, () -> {
+            try {
+                dbus.RemoveMatch(_rule.toString());
+            } catch (NotConnected _ex) {
+                logger.debug("No connection", _ex);
+            } catch (DBusExecutionException _ex) {
+                logger.debug("Error removing signal", _ex);
+                throw new DBusException(_ex);
             }
-        }
+        });
     }
 
     /**
@@ -485,27 +476,15 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
         Objects.requireNonNull(_rule, "Match rule cannot be null");
         Objects.requireNonNull(_handler, "Handler cannot be null");
 
-        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
-
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList =
-            getHandledSignals().computeIfAbsent(_rule, v -> {
-                Queue<DBusSigHandler<? extends DBusSignal>> signalList  = new ConcurrentLinkedQueue<>();
-                addMatch.set(true);
-                return signalList;
-            });
-
-        // add handler to signal list
-        dbusSignalList.add(_handler);
-
-        // add match rule if this rule is new
-        if (addMatch.get()) {
+        addToSignalMap(getHandledSignals(), _rule, _handler, () -> {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
                 logger.debug("Cannot add match rule: {}", _rule, _ex);
-                throw new DBusException("Cannot add match rule.", _ex);
+                throw new DBusException("Cannot add match rule", _ex);
             }
-        }
+        });
+
         return () -> removeSigHandler(_rule, _handler);
     }
 
@@ -592,45 +571,29 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
 
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(_rule);
-        if (null != genericSignalsList) {
-            genericSignalsList.remove(_handler);
-            if (genericSignalsList.isEmpty()) {
-                getGenericHandledSignals().remove(_rule);
-                try {
-                    dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected _ex) {
-                    logger.debug("No connection.", _ex);
-                } catch (DBusExecutionException _ex) {
-                    logger.debug("Error removing generic signal", _ex);
-                    throw new DBusException(_ex);
-                }
+        removeFromSignalMap(getGenericHandledSignals(), _rule, _handler, () -> {
+            try {
+                dbus.RemoveMatch(_rule.toString());
+            } catch (NotConnected _ex) {
+                logger.debug("No connection", _ex);
+            } catch (DBusExecutionException _ex) {
+                logger.debug("Error removing generic signal", _ex);
+                throw new DBusException(_ex);
             }
-        }
+        });
     }
 
     @Override
     public AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
-
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList =
-                getGenericHandledSignals().computeIfAbsent(_rule, v -> {
-                    Queue<DBusSigHandler<DBusSignal>> signalsList = new ConcurrentLinkedQueue<>();
-                    addMatch.set(true);
-
-                    return signalsList;
-                });
-
-        genericSignalsList.add(_handler);
-
-        if (addMatch.get()) {
+        addToSignalMap(getGenericHandledSignals(), _rule, _handler, () -> {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
                 logger.debug("Error adding signal handler", _ex);
                 throw new DBusException(_ex.getMessage());
             }
-        }
+        });
+
         return () -> removeGenericSigHandler(_rule, _handler);
     }
 

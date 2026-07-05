@@ -1,5 +1,7 @@
 package org.freedesktop.dbus.connections;
 
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.freedesktop.dbus.DBusAsyncReply;
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -24,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
+import org.freedesktop.dbus.utils.IThrowingRunnable;
 
 /**
  * Handles a connection to DBus.
@@ -98,6 +101,72 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
      * @throws DBusException on error
      */
     protected abstract AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
+
+    /**
+     * Removes a signal handler from the signal map based on the specified match rule.
+     * If the queue associated with the match rule becomes empty after removal, the match rule
+     * is removed from the map, and the provided callback is executed.
+     *
+     * @param _map        The signal map containing match rules mapped to queues of signal handlers.
+     * @param _rule       The match rule used to locate the corresponding queue in the signal map.
+     * @param _handler    The signal handler to remove from the queue associated with the match rule.
+     * @param _onEmpty    A callback to execute if the queue associated with the match rule becomes
+     *                    empty after removing the handler. Can be null.
+     * @throws DBusException If an error occurs during the execution of the callback when the queue
+     *                       is empty.
+     */
+    protected <H extends DBusSigHandler<?>> void removeFromSignalMap(
+        Map<DBusMatchRule, Queue<H>> _map,  DBusMatchRule _rule, H _handler, IThrowingRunnable<DBusException> _onEmpty) throws DBusException {
+
+        synchronized (_map) {
+            Queue<H> queue = _map.get(_rule);
+            if (queue != null) {
+                queue.remove(_handler);
+                if (queue.isEmpty()) {
+                    _map.remove(_rule);
+                    if (_onEmpty != null) {
+                        _onEmpty.run();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds a signal handler to the signal map for a given match rule. If the match rule
+     * is newly added to the map, an optional runnable action is executed.
+     *
+     * @param <H>        The type of the signal handler, extending {@link DBusSigHandler}.
+     * @param _map       The map storing the match rules and their corresponding handler queues.
+     * @param _rule      The match rule that defines the criteria for the signal.
+     * @param _handler   The signal handler to be added to the queue associated with the match rule.
+     * @param _onNew     An optional action to execute if the match rule is newly added to the map.
+     *                   This action may throw a {@link DBusException}.
+     * @throws DBusException If the optional action provided by _onNew encounters an exception.
+     */
+    protected <H extends DBusSigHandler<?>> void addToSignalMap(Map<DBusMatchRule, Queue<H>> _map, DBusMatchRule _rule, H _handler,
+        IThrowingRunnable<DBusException> _onNew) throws DBusException {
+
+        synchronized (_map) {
+            AtomicBoolean isNew = new AtomicBoolean(false);
+
+            Queue<H> queue = _map.computeIfAbsent(_rule, v -> {
+                isNew.set(true);
+                return new ConcurrentLinkedQueue<>();
+            });
+
+            queue.add(_handler);
+
+            if (_onNew != null && isNew.get()) {
+                try {
+                    _onNew.run();
+                } catch (DBusException _ex) {
+                    queue.remove(_handler);
+                    throw _ex;
+                }
+            }
+        }
+    }
 
     /**
      * If given type is null, will try to find suitable types by examining the given ifaces.

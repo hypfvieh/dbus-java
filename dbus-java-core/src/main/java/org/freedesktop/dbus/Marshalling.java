@@ -26,6 +26,8 @@ public final class Marshalling {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
 
+    private static final int MAXIMUM_RECURSION_DEPTH = 32;
+
     /** Used as initial and incremental size of StringBuffer array when resolving DBusTypes recursively. */
     private static final int INITIAL_BUFFER_SZ = 10;
 
@@ -188,6 +190,9 @@ public final class Marshalling {
 
     @SuppressWarnings("checkstyle:parameterassignment")
     private static String[] recursiveGetDBusType(StringBuffer[] _out, Type _dataType, boolean _basic, int _level) throws DBusException {
+        if (_level > MAXIMUM_RECURSION_DEPTH) {
+            throw new DBusException("Maximum recursion depth exceeded");
+        }
         if (_out.length <= _level) {
             StringBuffer[] newout = new StringBuffer[_level + INITIAL_BUFFER_SZ];
             System.arraycopy(_out, 0, newout, 0, _out.length);
@@ -368,7 +373,7 @@ public final class Marshalling {
     * @throws DBusException on error
     */
     public static int getJavaType(String _dbusType, List<Type> _resultValue, int _limit) throws DBusException {
-        if (null == _dbusType || _dbusType.isEmpty() || 0 == _limit) {
+        if (null == _dbusType || _dbusType.isEmpty() || 0 == _limit || _limit > MAXIMUM_RECURSION_DEPTH) {
             return 0;
         }
 

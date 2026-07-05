@@ -150,8 +150,11 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
                             DBusCallInfo info = new DBusCallInfo(_err);
                             getInfoMap().put(Thread.currentThread(), info);
 
-                            fcbh.handleError(_err.getException());
-                            getInfoMap().remove(Thread.currentThread());
+                            try {
+                                fcbh.handleError(_err.getException());
+                            } finally {
+                                getInfoMap().remove(Thread.currentThread());
+                            }
 
                         } catch (Exception _ex) {
                             getLogger().debug("Exception while running error callback.", _ex);
@@ -206,10 +209,13 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
                             getLogger().trace("Running Callback for {}", _mr);
                             DBusCallInfo info = new DBusCallInfo(_mr);
                             getInfoMap().put(Thread.currentThread(), info);
-                            Object convertRV = RemoteInvocationHandler.convertRV(_mr.getParameters(), fasr.getMethod(),
-                                    fasr.getConnection());
-                            fcbh.handle(convertRV);
-                            getInfoMap().remove(Thread.currentThread());
+                            try {
+                                Object convertRV = RemoteInvocationHandler.convertRV(_mr.getParameters(), fasr.getMethod(),
+                                        fasr.getConnection());
+                                fcbh.handle(convertRV);
+                            } finally {
+                                getInfoMap().remove(Thread.currentThread());
+                            }
 
                         } catch (Exception _ex) {
                             getLogger().debug("Exception while running callback.", _ex);

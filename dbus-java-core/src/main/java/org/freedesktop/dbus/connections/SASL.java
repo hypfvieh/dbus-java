@@ -3,6 +3,7 @@ package org.freedesktop.dbus.connections;
 import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
 
 import com.sun.security.auth.module.UnixSystem;
+import java.nio.file.StandardCopyOption;
 import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -75,9 +76,12 @@ public class SASL {
     private String cookie    = "";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Random secureRandom = new SecureRandom();
+
+    private final SaslConfig saslConfig;
+
     /** whether file descriptor passing is supported on the current connection. */
     private boolean fileDescriptorSupported;
-    private final SaslConfig saslConfig;
 
     /**
      * Create a new SASL auth handler.
@@ -164,10 +168,14 @@ public class SASL {
                 String s = null;
                 while (null != (s = r.readLine())) {
                     String[] line = s.split(" ");
-                    long time = Long.parseLong(line[1]);
-                    // expire stale cookies
-                    if ((_timestamp - time) < COOKIE_TIMEOUT) {
-                        lines.add(s);
+                    try {
+                        long time = Long.parseLong(line[1]);
+                        // expire stale cookies
+                        if ((_timestamp - time) < COOKIE_TIMEOUT) {
+                            lines.add(s);
+                        }
+                    } catch (NumberFormatException _ex) {
+                        logger.warn("Ignoring malformed cookie line {}", s);
                     }
                 }
             }
@@ -181,14 +189,10 @@ public class SASL {
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
         // atomically move to old file
-        if (!temp.renameTo(cookiefile)) {
-            if (!cookiefile.delete()) {
-                logger.warn("Unable to delete cookie file {}", cookiefile);
-            } else {
-                if (!temp.renameTo(cookiefile)) {
-                    logger.warn("Unable to rename cookie file {} to {}", temp, cookiefile);
-                }
-            }
+        try {
+            Files.move(temp.toPath(), cookiefile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.warn("Unable to atomically move cookie file {} to {}", temp, cookiefile);
         }
 
         // remove lock
@@ -313,7 +317,7 @@ public class SASL {
             byte[] buf = new byte[8];
 
             // ensure we get a (more or less unique) positive long
-            long seed = Optional.of(System.nanoTime()).map(t -> t < 0 ? t * -1 : t).get();
+            long seed = secureRandom.nextLong(0, Long.MAX_VALUE);
 
             Message.marshallintBig(seed, buf, 0, 8);
             String clientchallenge = stupidlyEncode(md.digest(buf));
@@ -324,6 +328,13 @@ public class SASL {
 
             while (lCookie == null && tm.getElapsed() < LOCK_TIMEOUT) {
                 lCookie = findCookie(context, id);
+                if (lCookie == null) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException _ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
 
             if (lCookie == null) {
@@ -605,6 +616,9 @@ public class SASL {
                             }
                             if (kuid >= 0) {
                                 kernelUid = stupidlyEncode("" + kuid);
+                            } else {
+                                state = SaslAuthState.FAILED;
+                                break;
                             }
                             state = SaslAuthState.WAIT_AUTH;
 

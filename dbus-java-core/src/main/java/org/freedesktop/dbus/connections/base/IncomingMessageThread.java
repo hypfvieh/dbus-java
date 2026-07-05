@@ -42,7 +42,7 @@ public class IncomingMessageThread extends Thread {
 
                     connection.handleMessage(msg);
                 }
-            } catch (DBusException | RejectedExecutionException | IllegalThreadPoolStateException _ex) {
+            } catch (DBusException | RuntimeException _ex) {
                 if (_ex instanceof FatalException) {
                     if (terminate) { // requested termination, ignore failures
                         return;

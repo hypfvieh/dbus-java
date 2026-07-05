@@ -221,14 +221,18 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
         receivingService.shutdown(10, TimeUnit.SECONDS);
 
         // stop potentially waiting method-calls
-        getLogger().debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
         Exception interrupt = _connectionError == null ? new IOException("Disconnecting") : _connectionError;
-        for (MethodCall mthCall : getPendingCalls().values()) {
-            try {
-                mthCall.setReply(getMessageFactory().createError(mthCall, interrupt));
-            } catch (DBusException _ex) {
-                getLogger().debug("Cannot set method reply to error", _ex);
+
+        synchronized (getPendingCalls()) {
+            getLogger().debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
+            for (MethodCall mthCall : getPendingCalls().values()) {
+                try {
+                    mthCall.setReply(getMessageFactory().createError(mthCall, interrupt));
+                } catch (DBusException _ex) {
+                    getLogger().debug("Cannot set method reply to error", _ex);
+                }
             }
+            getPendingCalls().clear();
         }
 
         // shutdown sender executor service, send all remaining messages in main thread when no exception caused disconnection
@@ -356,7 +360,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      *
      * @return true if connected
      */
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return transport != null && transport.isConnected();
     }
 

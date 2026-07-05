@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.transport.tcp;
 
+import java.security.SecureRandom;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -14,7 +15,7 @@ import java.util.Random;
 public class TcpTransportProvider implements ITransportProvider {
     public static final int     TCP_CONNECT_TIMEOUT = 100000;
 
-    private static final Random RANDOM              = new Random();
+    private static final Random RANDOM              = new SecureRandom();
 
     @Override
     public String getTransportName() {

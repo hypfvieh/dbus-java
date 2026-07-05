@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicLong;
+import org.freedesktop.dbus.utils.Util;
 
 /**
  * Represents one transport connection of any type.<br>
@@ -71,17 +72,7 @@ public class TransportConnection implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
-
-        if (writer != null) {
-            writer.close();
-        }
-
-        if (channel != null) {
-            channel.close();
-        }
+        Util.closeQuietly(reader, writer, channel);
     }
 
 }

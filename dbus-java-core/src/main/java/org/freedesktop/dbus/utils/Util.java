@@ -738,4 +738,19 @@ public final class Util {
         return _checkVal;
     }
 
+    /**
+     * Close the given closeables quietly.
+     * @param _closeables closeables to close
+     */
+    public static void closeQuietly(Closeable... _closeables) {
+        for (AutoCloseable c : _closeables) {
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (Exception e) {
+                    LOGGER.debug("Failed to close {}", c, e);
+                }
+            }
+        }
+    }
 }
