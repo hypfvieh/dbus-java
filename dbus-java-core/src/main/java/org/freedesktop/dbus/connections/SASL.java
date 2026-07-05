@@ -610,15 +610,13 @@ public class SASL {
                 switch (state) {
                     case INITIAL_STATE:
                         try {
-                            int kuid = -1;
                             if (_transport instanceof AbstractUnixTransport aut) {
-                                kuid = aut.getUid(_sock);
-                            }
-                            if (kuid >= 0) {
+                                int kuid = aut.getUid(_sock);
+                                if (kuid < 0) { // unix transport but peer UID could not be determined -> reject (no fail-open)
+                                    state = SaslAuthState.FAILED;
+                                    break;
+                                }
                                 kernelUid = stupidlyEncode("" + kuid);
-                            } else {
-                                state = SaslAuthState.FAILED;
-                                break;
                             }
                             state = SaslAuthState.WAIT_AUTH;
 

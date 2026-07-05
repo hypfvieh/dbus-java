@@ -72,7 +72,7 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     private final MessageFactory                                                  messageFactory;
     private final ConnectionConfig                                                connectionConfig;
 
-    private AbstractTransport                                                     transport;
+    private volatile AbstractTransport                                            transport;
 
     private volatile boolean                                                      disconnecting;
 
@@ -360,8 +360,9 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      *
      * @return true if connected
      */
-    public synchronized boolean isConnected() {
-        return transport != null && transport.isConnected();
+    public boolean isConnected() {
+        AbstractTransport t = transport; // read volatile field once to avoid a check-then-act race
+        return t != null && t.isConnected();
     }
 
     /**
