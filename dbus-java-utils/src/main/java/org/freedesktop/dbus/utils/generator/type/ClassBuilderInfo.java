@@ -205,7 +205,7 @@ public class ClassBuilderInfo {
 
             String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
             if (annotation.getAnnotationParams() != null) {
-                annotationCode += "(" + annotation.getAnnotationParams() + ")";
+                annotationCode += "(" + annotation.getAnnotationString() + ")";
             }
             content.add(annotationCode);
         }

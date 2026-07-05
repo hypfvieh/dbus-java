@@ -62,9 +62,9 @@ public final class Util {
      */
     public static Properties readProperties(File _file) {
         if (_file.exists()) {
-            try {
-                return readProperties(new FileInputStream(_file));
-            } catch (FileNotFoundException _ex) {
+            try (FileInputStream fis = new FileInputStream(_file)){
+                return readProperties(fis);
+            } catch (IOException _ex) {
                 LOGGER.info("Could not load properties file: {}", _file, _ex);
             }
         }
@@ -295,7 +295,7 @@ public final class Util {
      */
     public static List<String> getTextfileFromUrl(String _url, Charset _charset, boolean _silent) {
         if (_url == null) {
-            return null;
+            return List.of();
         }
         String fileUrl = _url;
         if (!fileUrl.contains("://")) {
@@ -426,7 +426,7 @@ public final class Util {
     public static String getCurrentUser() {
         String[] sysPropParms = new String[] {"user.name", "USER", "USERNAME"};
         for (String sysPropParm : sysPropParms) {
-            String val = System.getProperty(sysPropParm);
+            String val = System.getenv(sysPropParm);
             if (!isEmpty(val)) {
                 return val;
             }
@@ -492,7 +492,7 @@ public final class Util {
         do {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 10; i++) {
-                sb.append((char) (Math.abs(RANDOM.nextInt(0, Integer.MAX_VALUE)) % 26) + 65);
+                sb.append((char) ((Math.abs(RANDOM.nextInt(0, Integer.MAX_VALUE)) % 26) + 65));
             }
             path = path.replaceAll("..........$", sb.toString());
             LoggerFactory.getLogger(Util.class).trace("Trying path {}", path);

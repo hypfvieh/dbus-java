@@ -229,7 +229,7 @@ public class InterfaceCodeGenerator {
 
         String className = _signalElement.getAttribute("name");
         if (className.contains(".")) {
-            className = className.substring(className.lastIndexOf('.'));
+            className = className.substring(className.lastIndexOf('.') + 1);
         }
 
         ClassBuilderInfo innerClass = new ClassBuilderInfo(argumentPrefix);
@@ -679,60 +679,62 @@ public class InterfaceCodeGenerator {
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
-            if ("--system".equals(p) || "-y".equals(p)) {
-                busType = DBusBusType.SYSTEM;
-            } else if ("--session".equals(p) || "-s".equals(p)) {
-                busType = DBusBusType.SESSION;
-            } else if ("--enable-dtd-validation".equals(p)) {
-                ignoreDtd = false;
-            } else if ("--help".equals(p) || "-h".equals(p)) {
-                printHelp();
-                System.exit(0);
-            } else if ("--all".equals(p) || "-a".equals(p)) {
-                noFilter = true;
-            } else if ("--argumentPrefix".equals(p)) {
-                if (_args.length > i) {
-                    argumentPrefix = _args[++i];
-                } else {
+            switch (p) {
+                case "--system", "-y" -> busType = DBusBusType.SYSTEM;
+                case "--session", "-s" -> busType = DBusBusType.SESSION;
+                case "--enable-dtd-validation" -> ignoreDtd = false;
+                case "--help", "-h" -> {
                     printHelp();
                     System.exit(0);
                 }
-            } else if ("--propertyMethods".equals(p) || "-m".equals(p)) {
-                propertyMethods = true;
-            } else if ("--disable-tuples".equals(p) || "-t".equals(p)) {
-                disableTuples = true;
-            } else if ("--package".equals(p) || "-p".equals(p)) {
-                if (_args.length > i) {
-                    forcePackageName = _args[++i];
-                } else {
-                    printHelp();
+                case "--all", "-a" -> noFilter = true;
+                case "--argumentPrefix" -> {
+                    if (_args.length > i + 1) {
+                        argumentPrefix = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
+                }
+                case "--propertyMethods", "-m" -> propertyMethods = true;
+                case "--disable-tuples", "-t" -> disableTuples = true;
+                case "--package", "-p" -> {
+                    if (_args.length > i + 1) {
+                        forcePackageName = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
+                }
+                case "--version", "-v" -> {
+                    version();
                     System.exit(0);
                 }
-            } else if ("--version".equals(p) || "-v".equals(p)) {
-                version();
-                System.exit(0);
-            } else if ("--outputDir".equals(p) || "-o".equals(p)) {
-                if (_args.length > i) {
-                    outputDir = _args[++i];
-                } else {
-                    printHelp();
-                    System.exit(0);
+                case "--outputDir", "-o" -> {
+                    if (_args.length > i + 1) {
+                        outputDir = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
                 }
-            } else if ("--inputFile".equals(p) || "-i".equals(p)) {
-                if (_args.length > i) {
-                    inputFile = _args[++i];
-                } else {
-                    printHelp();
-                    System.exit(0);
+                case "--inputFile", "-i" -> {
+                    if (_args.length > i + 1) {
+                        inputFile = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
                 }
-            } else {
-                if (null == busName) {
-                    busName = p;
-                } else if (null == objectPath) {
-                    objectPath = p;
-                } else {
-                    printHelp();
-                    System.exit(1);
+                case null, default -> {
+                    if (null == busName) {
+                        busName = p;
+                    } else if (null == objectPath) {
+                        objectPath = p;
+                    } else {
+                        printHelp();
+                        System.exit(1);
+                    }
                 }
             }
         }
@@ -818,10 +820,10 @@ public class InterfaceCodeGenerator {
         System.out.println("        --system           | -y           Use SYSTEM DBus");
         System.out.println("        --session          | -s           Use SESSION DBus");
         System.out.println("        --outputDir <Dir>  | -o <Dir>     Use <Dir> as output directory for all generated files");
-        System.out.println("        --packageName <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
+        System.out.println("        --package     <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
-        System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
+        System.out.println("        --propertyMethods  | -m           Generate setter/getter methods for properties");
         System.out.println();
         System.out.println("        --disable-tuples   | -t           Create Struct based classes for multi-value "
             + "return methods instead of creating Tuple classes (code will only work with dbus-java 5.2.0+)");

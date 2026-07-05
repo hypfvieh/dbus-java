@@ -47,7 +47,7 @@ public final class AddressBuilder {
         // no session address in process properties, try to get it from environment
         if (s == null) {
             // MacOS support: e.g DBUS_LAUNCHD_SESSION_BUS_SOCKET=/private/tmp/com.apple.launchd.4ojrKe6laI/unix_domain_listener
-            if (Util.isMacOs()) {
+            if (Util.isMacOs() && System.getenv(DBusSysProps.DBUS_SESSION_BUS_ADDRESS_MACOS) != null) {
                 s = "unix:path=" + System.getenv(DBusSysProps.DBUS_SESSION_BUS_ADDRESS_MACOS);
             } else { // all others (linux)
                 s = System.getenv(DBusSysProps.DBUS_SESSION_BUS_ADDRESS);
