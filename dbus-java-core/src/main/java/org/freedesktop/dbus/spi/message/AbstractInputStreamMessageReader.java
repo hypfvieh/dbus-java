@@ -240,15 +240,14 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
      * @param _width the width (in bytes) of the length field
      * @return the validated length as an integer
      * @throws DBusException if the extracted length exceeds the maximum allowed length
-     *                        or if the length is less than or equal to 0
+     *                        or if the length is negative
      */
     private int demarshallLength(byte[] _buf, int _ofs, byte _endian, int _width) throws DBusException {
-        // Message.demarshallint(tbuf, 0, endian, 4)
         long length = Message.demarshallint(_buf, _ofs, _endian, _width);
         if (length > Message.MAXIMUM_MESSAGE_LENGTH) {
             throw new DBusException("Message length exceeds maximum allowed length");
-        } else if (length <= 0) {
-            throw new DBusException("Message length must be greater than 0");
+        } else if (length < 0) { // 0 is valid, e.g. messages without a body
+            throw new DBusException("Message length must not be negative");
         }
         return (int) length;
     }

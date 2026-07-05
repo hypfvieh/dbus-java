@@ -83,17 +83,22 @@ public class MethodCall extends MethodBase {
     */
     public synchronized Message getReply(long _timeout) {
         logger.trace("Blocking on {}", this);
-        if (null != reply) {
+        if (reply != null) {
             return reply;
         }
 
-        long remainingNanos = TimeUnit.MILLISECONDS.toNanos(_timeout);
-        long deadline = System.nanoTime() + remainingNanos;
-
         try {
-            while (null == reply && remainingNanos > 0) {
-                TimeUnit.NANOSECONDS.timedWait(this, remainingNanos);
-                remainingNanos = deadline - System.nanoTime();
+            if (_timeout <= 0) { // 0/negative means wait indefinitely (like the previous wait(0))
+                while (reply == null) {
+                    wait();
+                }
+            } else {
+                long remainingNanos = TimeUnit.MILLISECONDS.toNanos(_timeout);
+                long deadline = System.nanoTime() + remainingNanos;
+                while (reply == null && remainingNanos > 0) {
+                    TimeUnit.NANOSECONDS.timedWait(this, remainingNanos);
+                    remainingNanos = deadline - System.nanoTime();
+                }
             }
         } catch (InterruptedException _ex) {
             Thread.currentThread().interrupt(); // keep interrupted state

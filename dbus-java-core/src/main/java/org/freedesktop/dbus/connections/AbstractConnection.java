@@ -161,7 +161,12 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
                 try {
                     _onNew.run();
                 } catch (DBusException _ex) {
+                    // rollback: drop the handler and remove the (now empty) rule so a later
+                    // addSigHandler retries the _onNew action (e.g. AddMatch) instead of assuming it succeeded
                     queue.remove(_handler);
+                    if (queue.isEmpty()) {
+                        _map.remove(_rule);
+                    }
                     throw _ex;
                 }
             }
