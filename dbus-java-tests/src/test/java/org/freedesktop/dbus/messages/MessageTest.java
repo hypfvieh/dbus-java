@@ -1,5 +1,6 @@
 package org.freedesktop.dbus.messages;
 
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message.ConstructorArgType;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.types.DBusListType;
@@ -56,6 +57,44 @@ public class MessageTest extends AbstractBaseTest {
         assertEquals((byte) 7, entry4[0]);
         assertEquals("org.freedesktop.DBus", entry4[1]);
 
+    }
+
+    @Test
+    void testPopulateIgnoresUnknownHeaderField() {
+        byte[] msg = {108, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0};
+
+        // valid header field array, but the first field code (index 8)
+        // is changed from 6 (DESTINATION) to 10 -> an unknown/out-of-range header field code.
+        // Per the D-Bus specification unknown header fields must be ignored
+        byte[] headers = {
+                61, 0, 0, 0, 0, 0, 0, 0, 10, 1, 115, 0, 5, 0, 0, 0, 58, 49, 46, 50, 48, 0, 0, 0, 5, 1,
+                117, 0, 1, 0, 0, 0, 8, 1, 103, 0, 1, 115, 0, 0, 7, 1, 115, 0, 20, 0, 0, 0, 111, 114,
+                103, 46, 102, 114, 101, 101, 100, 101, 115, 107, 116, 111, 112, 46, 68, 66, 117, 115,
+                0, 0, 0, 0
+        };
+        byte[] body = {};
+
+        assertDoesNotThrow(() -> new Message().populate(msg, headers, body, null));
+    }
+
+    @Test
+    void testExtractArrayRejectsOversizedLength() {
+        byte[] msg = {108, 1, 0, 1, 4, 0, 0, 0, 1, 0, 0, 0};
+
+        // header field array, but the SIGNATURE field value (index 36-39)
+        // is changed from "s" to "ay" -> the body is expected to be a byte array
+        byte[] headers = {
+                61, 0, 0, 0, 0, 0, 0, 0, 6, 1, 115, 0, 5, 0, 0, 0, 58, 49, 46, 50, 48, 0, 0, 0, 5, 1,
+                117, 0, 1, 0, 0, 0, 8, 1, 103, 0, 2, 97, 121, 0, 7, 1, 115, 0, 20, 0, 0, 0, 111, 114,
+                103, 46, 102, 114, 101, 101, 100, 101, 115, 107, 116, 111, 112, 46, 68, 66, 117, 115,
+                0, 0, 0, 0
+        };
+        // body = a byte-array length field claiming ~4 GiB (0xFFFFFFFF); ensure this is handled properly
+        byte[] body = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
+
+        Message m = new Message();
+        assertDoesNotThrow(() -> m.populate(msg, headers, body, null));
+        assertThrows(DBusException.class, m::getParameters);
     }
 
     static Stream<ParameterData> parameterSource() {

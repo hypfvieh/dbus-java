@@ -190,6 +190,10 @@ public class Message {
         for (Object o : list) {
             Object[] objArr = (Object[]) o;
             byte idx = (byte) objArr[0];
+            if (idx < 0 || idx >= headers.length) {
+                // ignore unknown/invalid header fields
+                continue;
+            }
             this.headers[idx] = objArr[1];
         }
     }
@@ -1036,10 +1040,14 @@ public class Message {
         _offsets[OFFSET_DATA] += 4;
         byte algn = (byte) getAlignment(_signatureBuf[++_offsets[OFFSET_SIG]]);
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
-        int length = (int) (size / algn);
-        if (length > AbstractConnection.MAX_ARRAY_LENGTH) {
-            throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
+        // validate the raw byte size (unsigned) before casting to int to avoid overflow to a negative length
+        if (size > AbstractConnection.MAX_ARRAY_LENGTH) {
+            throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH + " bytes");
         }
+        if (_offsets[OFFSET_DATA] + size > _dataBuf.length) {
+            throw new MarshallingException("Array length " + size + " exceeds remaining buffer size");
+        }
+        int length = (int) (size / algn);
 
         rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
 
