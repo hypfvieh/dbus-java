@@ -771,7 +771,12 @@ public final class Marshalling {
                 return new Object[] {o};
             } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
                 LOGGER.trace("(4) Deserializing Struct return");
-                return deSerializeParameters(_parameters, types, _conn, true);
+                // Either a single struct value is returned (parameters.length == 1, the value itself is the
+                // struct) or several top-level return values make up the struct
+                Object struct = parameters.length == 1
+                    ? deSerializeParameter(parameters[0], clz, _conn)
+                    : deSerializeParameter(parameters, clz, _conn);
+                return new Object[] {struct};
             }
         }
 
