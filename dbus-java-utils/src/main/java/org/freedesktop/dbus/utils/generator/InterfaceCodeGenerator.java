@@ -607,7 +607,7 @@ public class InterfaceCodeGenerator {
         root.setExtendClass(Struct.class.getName());
         root.setClassType(ClassType.CLASS);
 
-        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 0, className);
+        ClassConstructor classConstructor = new ClassConstructor(root, 0, className);
         root.getConstructors().add(classConstructor);
 
         String structFqcn = _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
@@ -626,11 +626,11 @@ public class InterfaceCodeGenerator {
                 root.getImports().addAll(addClasses);
             }
 
-            MemberOrArgument argument = new MemberOrArgument(_clzBldr, data.name(), structClassName, true);
+            MemberOrArgument argument = new MemberOrArgument(root, data.name(), structClassName, true);
             argument.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(i)));
             root.getMembers().add(argument);
 
-            classConstructor.getArguments().add(new MemberOrArgument(_clzBldr, data.name(), structClassName));
+            classConstructor.getArguments().add(new MemberOrArgument(root, data.name(), structClassName));
         }
 
         _structClasses.add(root);

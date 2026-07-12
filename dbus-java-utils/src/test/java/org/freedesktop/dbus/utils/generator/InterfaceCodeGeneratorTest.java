@@ -51,6 +51,14 @@ class InterfaceCodeGeneratorTest {
         GeneratedCodeCompiler.assertCompiles("writable property (--propertyMethods)", generated);
     }
 
+    @Test
+    void testGeneratedDisableTuplesStructsCompile() throws Exception {
+        // --disable-tuples generates Struct classes for multi-value returns; these must carry their own imports
+        String xml = Util.readFileToString(new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.Documents.xml"));
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.freedesktop.portal.Documents", null, false, null, true);
+        GeneratedCodeCompiler.assertCompiles("Documents (--disable-tuples)", gen.analyze(true));
+    }
+
     static InterfaceCodeGenerator loadDBusXmlFile(boolean _createPropertyMethods, File _inputFile, String _objectPath, String _busName) {
         if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
@@ -166,16 +174,18 @@ class InterfaceCodeGeneratorTest {
             .orElseThrow()
             .getValue();
 
-        assertLineEquals(99, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
+        assertLineEquals(100, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
 
-        assertLineEquals(101, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
-        assertLineEquals(102, primaryFile, "            super(path, sessionHandle, shortcuts);");
-        assertLineEquals(103, primaryFile, "            this.sessionHandle = sessionHandle;");
-        assertLineEquals(104, primaryFile, "            this.shortcuts = shortcuts;");
+        assertLineEquals(102, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
+        assertLineEquals(103, primaryFile, "            super(path, sessionHandle, shortcuts);");
+        assertLineEquals(104, primaryFile, "            this.sessionHandle = sessionHandle;");
+        assertLineEquals(105, primaryFile, "            this.shortcuts = shortcuts;");
 
-        assertLineEquals(108, primaryFile, "            return sessionHandle;");
-        assertLineEquals(111, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
-        assertLineEquals(112, primaryFile, "            return shortcuts;");
+        assertLineEquals(109, primaryFile, "            return sessionHandle;");
+        assertLineEquals(112, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
+        assertLineEquals(113, primaryFile, "            return shortcuts;");
+
+        GeneratedCodeCompiler.assertCompiles("GlobalShortcuts (struct signals)", analyze);
 
         String secondaryFile = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("ShortcutsChangedShortcutsStruct.java"))
