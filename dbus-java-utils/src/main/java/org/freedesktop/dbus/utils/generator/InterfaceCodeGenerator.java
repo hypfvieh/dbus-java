@@ -4,7 +4,6 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -187,13 +186,13 @@ public class InterfaceCodeGenerator {
         ClassBuilderInfo interfaceClass = new ClassBuilderInfo(argumentPrefix);
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
-        interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
-        interfaceClass.setClassName(className);
         if (forcePackageName != null) {
-            interfaceClass.getAnnotations().add(new AnnotationInfo(DBusInterfaceName.class,
-                AnnotArgs.create().add(originalPackageName + "." + className)
-                ));
+            // generated package differs from the DBus namespace -> preserve the original interface name
+            interfaceClass.setDbusPackageName(interfaceName);
+        } else {
+            interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
         }
+        interfaceClass.setClassName(className);
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
         List<ClassBuilderInfo> additionalClasses = new ArrayList<>();

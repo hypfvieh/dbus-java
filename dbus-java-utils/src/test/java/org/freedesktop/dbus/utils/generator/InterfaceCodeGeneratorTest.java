@@ -59,6 +59,52 @@ class InterfaceCodeGeneratorTest {
         GeneratedCodeCompiler.assertCompiles("Documents (--disable-tuples)", gen.analyze(true));
     }
 
+    @Test
+    void testForcedPackageEmitsSingleInterfaceNameAnnotation() throws Exception {
+        // forced package + mixed-case DBus namespace previously produced two @DBusInterfaceName annotations
+        // (one lower-cased) -> not repeatable -> compile error
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.freedesktop.NetworkManager.Device.Wireless">
+                <method name="Foo"/>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/",
+            "org.freedesktop.NetworkManager.Device.Wireless", "com.example.custom", false, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String src = generated.values().iterator().next();
+
+        int annotationCount = src.split("@DBusInterfaceName\\(", -1).length - 1;
+        assertEquals(1, annotationCount, "expected exactly one @DBusInterfaceName, was:\n" + src);
+        assertTrue(src.contains("@DBusInterfaceName(\"org.freedesktop.NetworkManager.Device.Wireless\")"),
+            "expected the original (mixed-case) interface name, was:\n" + src);
+        assertTrue(src.contains("package com.example.custom;"), "expected forced package, was:\n" + src);
+        GeneratedCodeCompiler.assertCompiles("forced package + mixed-case namespace", generated);
+    }
+
+    @Test
+    void testDictWithStructValueBecomesMap() throws Exception {
+        // a{s(ii)} must generate Map<String, GeneratedStruct>, not a plain Struct class
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.example.DictStruct">
+                <method name="GetData">
+                  <arg type="a{s(ii)}" name="data" direction="out"/>
+                </method>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.example.DictStruct", null, false, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String iface = generated.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("DictStruct.java"))
+            .findFirst().orElseThrow().getValue();
+
+        assertTrue(iface.contains("Map<String,"), "dict-with-struct value must be a Map, was:\n" + iface);
+        GeneratedCodeCompiler.assertCompiles("dict with struct value a{s(ii)}", generated);
+    }
+
     static InterfaceCodeGenerator loadDBusXmlFile(boolean _createPropertyMethods, File _inputFile, String _objectPath, String _busName) {
         if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
