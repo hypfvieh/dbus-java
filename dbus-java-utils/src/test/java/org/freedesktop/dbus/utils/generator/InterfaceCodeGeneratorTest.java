@@ -3,13 +3,6 @@ package org.freedesktop.dbus.utils.generator;
 import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.utils.Util;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -17,11 +10,45 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.utils.Util;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class InterfaceCodeGeneratorTest {
 
     static InterfaceCodeGenerator loadDBusXmlFile(File _inputFile, String _objectPath, String _busName) {
         return loadDBusXmlFile(false, _inputFile, _objectPath, _busName);
+    }
+
+    @Test
+    void testGeneratedWirelessInterfaceCompiles() throws Exception {
+        InterfaceCodeGenerator gen = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml"),
+                "/", "org.freedesktop.NetworkManager.Device.Wireless");
+        GeneratedCodeCompiler.assertCompiles("NetworkManager.Device.Wireless", gen.analyze(true));
+    }
+
+    @Test
+    void testGeneratedWritablePropertyCompiles() throws Exception {
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.example.PropIface">
+                <property name="SimpleProp" type="s" access="readwrite"/>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.example.PropIface", null, true, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String src = generated.values().iterator().next();
+
+        // setter must be a plain interface declaration: single argument, no body (old bug: duplicate arg + body)
+        assertTrue(src.contains("void setSimpleProp(String simpleProp);"),
+            "expected single-argument setter declaration, was:\n" + src);
+        assertFalse(src.contains("this."), "setter must not contain a method body, was:\n" + src);
+        GeneratedCodeCompiler.assertCompiles("writable property (--propertyMethods)", generated);
     }
 
     static InterfaceCodeGenerator loadDBusXmlFile(boolean _createPropertyMethods, File _inputFile, String _objectPath, String _busName) {

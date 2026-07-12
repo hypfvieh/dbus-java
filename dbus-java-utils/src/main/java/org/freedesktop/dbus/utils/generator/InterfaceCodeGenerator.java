@@ -411,13 +411,13 @@ public class InterfaceCodeGenerator {
         String attrAccess = _propertyElement.getAttribute("access");
         String attrType = _propertyElement.getAttribute("type");
 
-        String access;
+        DBusProperty.Access access;
         if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)) {
-            access = DBusProperty.Access.READ.name();
+            access = DBusProperty.Access.READ;
         } else if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)) {
-            access = DBusProperty.Access.WRITE.name();
+            access = DBusProperty.Access.WRITE;
         } else {
-            access = DBusProperty.Access.READ_WRITE.name();
+            access = DBusProperty.Access.READ_WRITE;
         }
         _clzBldr.getImports().add(DBusProperty.Access.class.getCanonicalName());
 
@@ -487,9 +487,7 @@ public class InterfaceCodeGenerator {
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
 
-                ClassMethod classMethod = new SetterMethod(_clzBldr, 0, attrName, rtnType);
-                classMethod.getArguments().add(new MemberOrArgument(_clzBldr, attrName.substring(0, 1).toLowerCase()
-                    + attrName.substring(1), clzzName));
+                ClassMethod classMethod = new SetterMethod(_clzBldr, 0, attrName, rtnType, true);
                 _clzBldr.getMethods().add(classMethod);
 
                 classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, null));
@@ -499,8 +497,8 @@ public class InterfaceCodeGenerator {
         } else {
             AnnotArgs annotArgs = AnnotArgs.create()
                 .add("name", attrName)
-                .add("type", clzzName)
-                .add("access", DBusProperty.Access.class.getSimpleName() + "." + access);
+                .add("type", AnnotClass.of(clzzName))
+                .add("access", access);
 
             AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotArgs);
             _clzBldr.getAnnotations().add(annotationInfo);
