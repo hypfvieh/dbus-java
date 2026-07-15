@@ -41,3 +41,34 @@ data is handled completely transparently.
 *Note:* The one issue that this does have is that the method calls are all
 blocking.  If the remote application has an issue, your application will stall
 until the method call times out.
+
+## Controlling Remote Method Call Behavior
+
+When calling remote D-Bus methods, you can influence how the call is handled by using annotations on the methods declared in your interface. These annotations allow you to set specific flags in the D-Bus message header.
+
+### Available Annotations
+
+*   **`@MethodNoReply`**
+    Method does not return replies or error replies, even if it is of a type that can have a reply.
+    ```java
+    @MethodNoReply
+    int add(int _a, int _b);
+    ```
+    Returns null even for the arguments from the example above.
+
+*   **`@MethodAllowInteractiveAutorization`**
+    This annotation signals the D-Bus daemon that the caller is ready to wait for interactive authorization (e.g., Polkit password prompts). It is useful when unprivileged code calls a privileged method, and an authorization framework that supports user interaction is in place.
+
+    As an example, let's take a call to a remote Systemd manager object method that requires elevated privileges to execute. Use [the code from the example](https://github.com/hypfvieh/dbus-java/tree/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/systemd/SystemdUnitsManagment.java):
+    ```java
+    @DBusMemberName(value = "StartUnit")
+    @MethodAllowInteractiveAutorization
+    DBusPath startUnit(String name, String mode);
+
+    @DBusMemberName(value = "StopUnit")
+    @MethodAllowInteractiveAutorization
+    DBusPath stopUnit(String name, String mode);
+    ```
+    After calling the method, the user authorization window is guaranteed to be displayed if it needed.
+
+*Note:* More info about this you can find [here](https://dbus.freedesktop.org/doc/dbus-specification.html).
