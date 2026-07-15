@@ -2,12 +2,15 @@ package org.freedesktop.dbus.test;
 
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.Marshalling;
+import org.freedesktop.dbus.annotations.MethodAllowInteractiveAutorization;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.helper.SampleException;
 import org.freedesktop.dbus.test.helper.callbacks.handler.CallbackHandlerImpl;
+import org.freedesktop.dbus.test.helper.interfaces.RemoteInteractiveInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,5 +97,30 @@ public class MethodTest extends AbstractDBusBaseTest {
 
         assertEquals(0, cbWhichWorks.getTestErrorCalls());
         assertEquals(1, cbWhichThrows.getTestErrorCalls());
+    }
+
+    @Test
+    public void testInteractiveAutorizationFlag() throws DBusException, NoSuchMethodException {
+        logger.debug("Testing @MethodAllowInteractiveAutorization");
+
+        // Test if annotation is present
+        Method method = RemoteInteractiveInterface.class.getMethod("interactiveMethod");
+        assertTrue(method.isAnnotationPresent(MethodAllowInteractiveAutorization.class),
+                "Method should have @MethodAllowInteractiveAutorization annotation");
+
+        // Test if annotation value is true
+        MethodAllowInteractiveAutorization annotation =
+            method.getAnnotation(MethodAllowInteractiveAutorization.class);
+        assertTrue(annotation.value(), "Default value should be true");
+
+        RemoteInteractiveInterface tri = (RemoteInteractiveInterface) clientconn.getPeerRemoteObject(getTestBusName(), getTestObjectPath());
+
+        // Try to invoke annotated method
+        try {
+            tri.interactiveMethod();
+            logger.debug("Method with @MethodAllowInteractiveAutorization called successfully");
+        } catch (Exception _ex) {
+            fail("Method with @MethodAllowInteractiveAutorization should not throw: " + _ex.getMessage());
+        }
     }
 }
