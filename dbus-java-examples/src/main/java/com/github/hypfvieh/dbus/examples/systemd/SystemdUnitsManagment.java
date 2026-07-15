@@ -51,7 +51,7 @@ public final class SystemdUnitsManagment {
                 SimpleSystemdManagerInterface.class
             );
 
-            System.out.println(sysdManager.stopUnit("httpd.service", "replace"));
+            System.out.println(sysdManager.stopUnit("your.service", "replace"));
 
         }
     }
