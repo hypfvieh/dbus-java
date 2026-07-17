@@ -1,9 +1,16 @@
 package org.freedesktop.dbus.connections;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AGREE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AUTH;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.BEGIN;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.CANCEL;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.DATA;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.ERROR;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.NEGOTIATE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.OK;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.REJECTED;
 
 import com.sun.security.auth.module.UnixSystem;
-import java.nio.file.StandardCopyOption;
 import org.freedesktop.dbus.config.DBusSysProps;
 import org.freedesktop.dbus.connections.config.SaslConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -18,7 +25,11 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -26,13 +37,19 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 public class SASL {
     public static final int       AUTH_NONE                   = 0;
@@ -218,7 +235,7 @@ public class SASL {
         // atomically move to old file
         try {
             Files.move(temp.toPath(), cookiefile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
+        } catch (IOException _ex) {
             logger.warn("Unable to atomically move cookie file {} to {}", temp, cookiefile);
         }
 

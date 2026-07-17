@@ -4,17 +4,16 @@ import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.SASL.SaslMode;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Timeout;
 
 /**
  * Verifies that a SASL client which requested unix file descriptor support still completes the

@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.messages;
 
-import java.util.concurrent.TimeUnit;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.MessageFormatException;
 import org.freedesktop.dbus.messages.constants.ArgumentType;
@@ -10,6 +9,7 @@ import org.freedesktop.dbus.messages.constants.MessageTypes;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MethodCall extends MethodBase {
     private static long replyWaitTimeout = Duration.ofSeconds(20).toMillis();

@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.test;
 
-import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.test.helper.interfaces.SlowInterface;

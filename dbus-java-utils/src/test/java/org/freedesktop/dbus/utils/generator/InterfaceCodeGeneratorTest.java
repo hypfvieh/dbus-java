@@ -3,6 +3,13 @@ package org.freedesktop.dbus.utils.generator;
 import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.utils.Util;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -10,12 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
-import org.freedesktop.dbus.utils.Util;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class InterfaceCodeGeneratorTest {
 

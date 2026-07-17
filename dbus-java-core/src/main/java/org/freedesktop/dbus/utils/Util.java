@@ -62,7 +62,7 @@ public final class Util {
      */
     public static Properties readProperties(File _file) {
         if (_file.exists()) {
-            try (FileInputStream fis = new FileInputStream(_file)){
+            try (FileInputStream fis = new FileInputStream(_file)) {
                 return readProperties(fis);
             } catch (IOException _ex) {
                 LOGGER.info("Could not load properties file: {}", _file, _ex);
@@ -747,8 +747,8 @@ public final class Util {
             if (c != null) {
                 try {
                     c.close();
-                } catch (Exception e) {
-                    LOGGER.debug("Failed to close {}", c, e);
+                } catch (Exception _ex) {
+                    LOGGER.debug("Failed to close {}", c, _ex);
                 }
             }
         }

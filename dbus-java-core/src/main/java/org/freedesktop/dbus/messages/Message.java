@@ -1033,7 +1033,6 @@ public class Message {
      */
     private Object extractArray(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options, ExtractMethod _extractMethod)
             throws MarshallingException, DBusException {
-        Object rv;
         long size = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
 
         logger.trace("Reading array of size: {}", size);
@@ -1049,7 +1048,7 @@ public class Message {
         }
         int length = (int) (size / algn);
 
-        rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
+        Object rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
 
         if (_options.contained() && !(rv instanceof List) && !(rv instanceof Map)) {
             rv = ArrayFrob.listify(rv);

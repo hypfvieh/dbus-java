@@ -1,6 +1,5 @@
 package org.freedesktop.dbus.transport.tcp;
 
-import java.security.SecureRandom;
 import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
@@ -10,6 +9,7 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class TcpTransportProvider implements ITransportProvider {

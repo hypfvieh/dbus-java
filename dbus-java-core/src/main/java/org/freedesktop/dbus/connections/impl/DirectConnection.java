@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Handles a peer to peer connection between two applications without a bus daemon.
@@ -37,8 +35,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class DirectConnection extends AbstractConnection {
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final String machineId;
+    private final        Logger     logger            = LoggerFactory.getLogger(getClass());
+    private final        String     machineId;
 
     DirectConnection(ConnectionConfig _conCfg, TransportConfig _transportCfg, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_conCfg, _transportCfg, _rsCfg);
