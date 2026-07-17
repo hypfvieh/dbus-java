@@ -39,6 +39,13 @@ For maven this would look like this:
         <version>${project.version}</version>
     </dependency>
 ```
+
+If your application needs to pass **unix file descriptors**, choose the `dbus-java-transport-junixsocket`
+transport - it supports file descriptor passing out of the box. The `native-unixsocket` transport does not
+support file descriptors, and `jnr-unixsocket` only does so via an additional, unmaintained third-party
+native library (see the [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors)).
+File descriptors cannot be passed over TCP.
+
 2. (optional) Add in a logging framework of your choice to see the log messages.
   DBus-Java uses SLF4J internally for logging.
 ```

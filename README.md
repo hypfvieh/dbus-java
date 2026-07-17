@@ -47,6 +47,12 @@ To use file descriptors with dbus-java version 4.x before 4.3.1 you have to do t
 When using dbus-java-nativefd, you have to use version 2.x when using dbus-java 4.x/5.x and 1.x if you use dbus-java 3.x.
 DBus-java will automatically detect dbus-java-nativefd and will then provide access to file descriptors.
 
+Please note that `dbus-java-nativefd` is a third-party library which is **not** maintained by the dbus-java project.
+It relies on platform-specific native (JNI/C) code and is therefore not necessarily portable to every architecture.
+For this reason it is intentionally not bundled with dbus-java. Whenever possible, prefer the
+`dbus-java-transport-junixsocket` transport, which supports file descriptor passing without any additional dependency.
+The `dbus-java-transport-native-unixsocket` transport does not support file descriptor passing at all.
+
 If you are using version 4.3.1 or higher, you may simple switch to `dbus-java-transport-junixsocket` (instead of `dbus-java-transport-jnr-unixsocket` or `dbus-java-transport-native-unixsocket`).
 You do this by adding `dbus-java-transport-junixsocket` to your classpath.
 Remember to remove the other unixsocket implementations because you are not allowed to have multiple implementations of the same protocol at once.

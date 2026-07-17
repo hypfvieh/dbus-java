@@ -22,11 +22,20 @@ The following table contains a mapping of DBus types to DBus-Java types
 |{} dictionary |java.util.Map|
 |h             |org.freedesktop.dbus.FileDescriptor*|
 
-*File descriptor passing (`h`) requires a transport that supports it. When using the
-`dbus-java-transport-junixsocket` transport (recommended, available since dbus-java 4.3.1),
-file descriptors work out of the box - no additional dependency is required.
-See the [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors) for
-details and for the legacy setup using the `dbus-java-transport-jnr-unixsocket` transport.
+*File descriptor passing (`h`) depends on the transport you use:
+
+  * `dbus-java-transport-junixsocket` - **recommended**; file descriptors work out of the box
+    (since dbus-java 4.3.1), no additional dependency required.
+  * `dbus-java-transport-native-unixsocket` - does **not** support file descriptor passing.
+  * `dbus-java-transport-jnr-unixsocket` - supports file descriptors only in combination with an
+    additional, third-party native library
+    ([com.rm5248:dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd)). That library
+    relies on platform-specific native (JNI/C) code, is therefore **not** architecture-portable,
+    and is **not** shipped or maintained by the dbus-java project. If you need file descriptor
+    passing, prefer the `junixsocket` transport instead.
+  * `dbus-java-transport-tcp` - file descriptor passing is not possible over TCP.
+
+See the [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors) for setup details.
 
 ## Examples
 
