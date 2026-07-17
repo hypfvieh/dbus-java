@@ -47,20 +47,23 @@ final class MatchRuleMatcher {
 
             Object[] parameters = _msg.getParameters();
 
-            for (int i = 0; i < parameters.length; i++) {
-                if (!_compare.containsKey(i)) {
-                    continue;
+            // all configured argument constraints must match (logical AND)
+            for (Map.Entry<Integer, String> entry : _compare.entrySet()) {
+                int idx = entry.getKey();
+                if (idx >= parameters.length || idx >= dataType.size()) {
+                    return false;
                 }
-                if (dataType.get(i) instanceof Class<?> clz && clz.isAssignableFrom(String.class)) {
-                    String compareVal = _compare.get(i);
-                    return compareVal == parameters[i] || compareVal.equals(parameters[i]);
+                if (!(dataType.get(idx) instanceof Class<?> clz && clz.isAssignableFrom(String.class))) {
+                    return false;
+                }
+                if (!entry.getValue().equals(parameters[idx])) {
+                    return false;
                 }
             }
+            return true;
         } catch (DBusException _ex) {
             throw new DBusExecutionException("Unable to get parameters from signal", _ex);
         }
-
-        return false;
     }
 
     /**
@@ -101,28 +104,32 @@ final class MatchRuleMatcher {
 
             Object[] parameters = _msg.getParameters();
 
-            for (int i = 0; i < parameters.length; i++) {
-                if (!_compare.containsKey(i)) {
-                    continue;
+            // all configured argument-path constraints must match (logical AND)
+            for (Map.Entry<Integer, String> entry : _compare.entrySet()) {
+                int idx = entry.getKey();
+                if (idx >= parameters.length || idx >= dataType.size()) {
+                    return false;
                 }
-                if (dataType.get(i) instanceof Class<?> clz) {
-                    String matchVal;
-                    if (clz.isAssignableFrom(String.class)) {
-                        matchVal = (String) parameters[i];
-                    } else if (clz.isAssignableFrom(DBusPath.class)) {
-                        matchVal = ((DBusPath) parameters[i]).getPath();
-                    } else {
-                        continue; // not String or DBusPath, do not try to match
-                    }
-                    String compareVal = _compare.get(i);
-                    return compareVal == matchVal || matchesArg0Path(matchVal, compareVal);
+                if (!(dataType.get(idx) instanceof Class<?> clz)) {
+                    return false;
+                }
+                String matchVal;
+                if (clz.isAssignableFrom(String.class)) {
+                    matchVal = (String) parameters[idx];
+                } else if (clz.isAssignableFrom(DBusPath.class)) {
+                    matchVal = ((DBusPath) parameters[idx]).getPath();
+                } else {
+                    return false; // not String or DBusPath, cannot match this arg
+                }
+                String compareVal = entry.getValue();
+                if (!(compareVal.equals(matchVal) || matchesArg0Path(matchVal, compareVal))) {
+                    return false;
                 }
             }
+            return true;
         } catch (DBusException _ex) {
             throw new DBusExecutionException("Unable to get parameters from signal", _ex);
         }
-
-        return false;
     }
 
     private static boolean matchesArg0Path(String _matchVal, String _compareVal) {
@@ -145,7 +152,7 @@ final class MatchRuleMatcher {
      * @see <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#message-bus-routing-match-rules">DBus Specification</a>
      */
     static boolean matchPathNamespace(String _input, String _compare) {
-        if (DBusObjects.validateNotObjectPath(_compare) || DBusObjects.validateNotObjectPath(_compare)) {
+        if (DBusObjects.validateNotObjectPath(_input) || DBusObjects.validateNotObjectPath(_compare)) {
             return false;
         } else if (!_input.startsWith(_compare)) {
             return false;
