@@ -23,6 +23,7 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardOpenOption;
@@ -124,6 +125,37 @@ public class SASL {
         }
     }
 
+    /** Classification of a line read from the DBus cookie file. */
+    enum CookieLineState {
+        /** Well-formed and not yet expired - keep it. */
+        KEEP,
+        /** Well-formed but older than {@link #COOKIE_TIMEOUT} - drop silently. */
+        EXPIRED,
+        /** Not parseable (missing timestamp field or non-numeric timestamp) - drop and warn. */
+        MALFORMED
+    }
+
+    /**
+     * Classifies a single cookie file line. A line consists of {@code <id> <timestamp> <cookie>}; a line without a
+     * timestamp field (no space) or with a non-numeric timestamp is treated as malformed instead of throwing.
+     *
+     * @param _line raw line from the cookie file
+     * @param _timestamp current timestamp used to detect expired cookies
+     * @return classification of the line
+     */
+    static CookieLineState classifyCookieLine(String _line, long _timestamp) {
+        String[] parts = _line.split(" ");
+        if (parts.length < 2) {
+            return CookieLineState.MALFORMED;
+        }
+        try {
+            long time = Long.parseLong(parts[1]);
+            return (_timestamp - time) < COOKIE_TIMEOUT ? CookieLineState.KEEP : CookieLineState.EXPIRED;
+        } catch (NumberFormatException _ex) {
+            return CookieLineState.MALFORMED;
+        }
+    }
+
     @SuppressWarnings("checkstyle:emptyblock")
     private void addCookie(String _context, String _id, long _timestamp, String _cookie) throws IOException {
         File keyringDir = DBUS_KEYRINGS_DIR;
@@ -167,15 +199,10 @@ public class SASL {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)))) {
                 String s = null;
                 while (null != (s = r.readLine())) {
-                    String[] line = s.split(" ");
-                    try {
-                        long time = Long.parseLong(line[1]);
-                        // expire stale cookies
-                        if ((_timestamp - time) < COOKIE_TIMEOUT) {
-                            lines.add(s);
-                        }
-                    } catch (NumberFormatException _ex) {
-                        logger.warn("Ignoring malformed cookie line {}", s);
+                    switch (classifyCookieLine(s, _timestamp)) {
+                        case KEEP -> lines.add(s);
+                        case MALFORMED -> logger.warn("Ignoring malformed cookie line {}", s);
+                        case EXPIRED -> { } // silently drop stale cookie
                     }
                 }
             }
@@ -416,7 +443,7 @@ public class SASL {
                 byte[] buf = md.digest(prehash.getBytes());
                 String posthash = stupidlyEncode(buf);
                 logger.debug("Authenticating Hash; data={} remote-hash={} local-hash={}", prehash, hash, posthash);
-                if (0 == COL.compare(posthash, hash)) {
+                if (MessageDigest.isEqual(posthash.getBytes(StandardCharsets.US_ASCII), hash.getBytes(StandardCharsets.US_ASCII))) {
                     return SaslResult.OK;
                 } else {
                     return SaslResult.ERROR;
