@@ -29,6 +29,7 @@
         <menu name="Overview">
             <item name="Home" href="/index.html" />
             <item name="Quickstart" href="/quick-start.html" />
+            <item name="DBus Types" href="/dbus-types.html" />
             <item name="Code Generation" href="/code-generation.html" />
             <item name="Exporting Objects" href="/exporting-objects.html" />
             <item name="Calling Remote Objects" href="/remote-objects.html" />

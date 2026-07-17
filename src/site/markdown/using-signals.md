@@ -52,15 +52,15 @@ There are different `addSigHandler` methods depending on the use case.
 If you only want to listen for specific signals of a specific remote object, you should use something like:
 
 ```java
-MySignal remoteSignal connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
-connection.addSigHandler(MySignalClass.class, remoteSignal, new MySignalClassHandler());
+MySignal remoteSignal = connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
+connection.addSigHandler(MySignal.MySignalClass.class, remoteSignal, new MySignalClassHandler());
 ```
 
 If you want to listen to all object paths of an exported object you can use:
-`connection.addSigHandler(MySignalClass.class, new MySignalClassHandler())`.
+`connection.addSigHandler(MySignal.MySignalClass.class, new MySignalClassHandler())`.
 
 It is also possible to express a signal handler as Lambda e.g.:
-`connection.addSigHandler(MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
+`connection.addSigHandler(MySignal.MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
 
 To remove a handler you can either call `close()` on the object returned by the `addSigHandler` calls or use the appropriate `removeSigHandler` call.
 You don't have to remove your signal handler when you want to close the connection anyway. 
@@ -144,11 +144,11 @@ Example:
 ```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
     
     public MySignal(String _objPath, List<Integer> _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
 }
 ```
@@ -162,11 +162,11 @@ The example would then look like this:
 ```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
-       this(_objectPath, Arrays.asList(_arr), _text);
+       this(_objPath, Arrays.stream(_arr).boxed().toList(), _text);
     }
     
     public MySignal(String _objPath, List<Integer> _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
 }
 ```

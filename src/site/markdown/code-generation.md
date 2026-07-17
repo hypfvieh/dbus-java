@@ -45,3 +45,25 @@ Therefore it is recommended to run the code generator using Maven or your develo
           -Dexec.args="--inputFile /tmp/org.freedesktop.UDisks2.xml --outputDir /tmp/classes ' '"
 
 In both cases the generated classes/interfaces will be written to the provided output directory.
+
+## Command line options
+
+The most important options of `InterfaceCodeGenerator` are listed below. Run the generator with
+`--help` to see the full and authoritative list.
+
+|Option|Short|Description|
+|------|-----|-----------|
+|`--system`|`-y`|Read introspection data from the SYSTEM bus|
+|`--session`|`-s`|Read introspection data from the SESSION bus|
+|`--inputFile <File>`|`-i`|Use `<File>` (XML introspection) as input instead of querying a running bus|
+|`--outputDir <Dir>`|`-o`|Write all generated files to `<Dir>` (required)|
+|`--package <Pkg>`|`-p`|Use `<Pkg>` as the Java package instead of deriving it from the DBus namespace|
+|`--all`|`-a`|Generate all classes for the given bus name (do not filter)|
+|`--propertyMethods`|`-m`|Generate getter/setter methods for properties (see [Properties](./properties.html))|
+|`--disable-tuples`|`-t`|Generate `Struct` based classes for multi-value return methods instead of `Tuple` classes (**Caution:** the generated code only works with dbus-java 6.0.0+)|
+|`--argumentPrefix <Prefix>`| |Prepend `<Prefix>` to generated method arguments/parameters (e.g. `_` to match the dbus-java code style)|
+|`--enable-dtd-validation`| |Enable DTD validation of the introspection XML|
+
+When using `--inputFile`, the `busname`/`object` argument may be omitted (or `*` can be used) to
+extract all interfaces found in the file. If a non-blank `busname` is given, only interfaces
+starting with that name are extracted.

@@ -12,6 +12,10 @@ Here are some references to example code to demonstrate how to...
 
 ### Use structs
  * [StructServer/StructClient](https://github.com/hypfvieh/dbus-java/tree/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/struct)
+
+### Export properties using getters/setters (bound properties)
+ * [ExportObjectWithProperties](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/properties/ExportObjectWithProperties.java)
+ * See also the [Properties](./properties.html) guide
  
 ### Get a remote interface
  * [NetworkManagerExample](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/networkmanager/NetworkManagerExample.java)
@@ -26,7 +30,18 @@ Here are some references to example code to demonstrate how to...
  
 ### Use EmbeddedDBusDaemon
  * [RunDaemon](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/daemon/RunDaemon.java)
- 
+
+### Run daemon and client in separate processes
+ * [RunTwoPartDaemon](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/daemon/twopart/RunTwoPartDaemon.java)
+ * [RunTwoPartClient](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/daemon/twopart/RunTwoPartClient.java)
+
+### Call privileged methods (e.g. systemd)
+ * [SystemdUnitsManagment](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/systemd/SystemdUnitsManagment.java)
+
 ### Using Variant<?> with proper type
  * [NetworkManagerExample3](https://github.com/hypfvieh/dbus-java/blob/master/dbus-java-examples/src/main/java/com/github/hypfvieh/dbus/examples/networkmanager/NetworkManagerExample3.java)
+ * See also the [Variant](./variant-handling.html) guide (including `VariantBuilder`)
  * See also: [Issue 74](https://github.com/hypfvieh/dbus-java/issues/74#issuecomment-1280768515)
+
+### Generate Java interfaces from introspection data
+ * See the [Code Generation](./code-generation.html) guide

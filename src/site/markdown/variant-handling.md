@@ -32,9 +32,11 @@ therefore a `List` that was used in Java will become an array in DBus terms.
 
 That means, serializing `Variant<List<Integer>>` will create the same DBus signature as serializing `Variant<int[]>` or `Variant<Integer[]>`.  
 
-When getting data from the bus to convert back to `Variant<List<Integer>>` the information that the Variant
-should contain a `List` and not an array is not present. 
-From DBus standpoint the data is organized as array therefore the Variant will contain an array of int (`int[]`) and not a `List<Integer>`.
+When getting data from the bus, the information whether the `Variant` originally held a `List` or an array is not present -
+from the DBus standpoint the data is always organized as an array. Since dbus-java 5.1.0 such data is therefore **always**
+deserialized as a `List` (see the section "Changes introduced with dbus-java 5.1.0" below).
+So a `Variant<int[]>` that was sent will be received as a `Variant<List<Integer>>` - a `Variant<?>` will never contain an
+array after deserialization.
 
 ## How to put a Collection / Map into a `Variant<?>`
 
@@ -62,6 +64,18 @@ Usage with `Variant<?>` constructor:
 `new Variant<>(List.of("foo", "bar"), Marshalling.convertJavaClassesToSignature(List.class, String.class))`;
 `new Variant<>(Set.of(1, 2, 3), Marshalling.convertJavaClassesToSignature(Set.class, Integer.class))`;
 `new Variant<>(Map.of("foo", true, "bar", false), Marshalling.convertJavaClassesToSignature(Map.class, String.class, Boolean.class));`
+
+### Using `VariantBuilder`
+
+Since dbus-java 5.1.1 there is a more convenient way to build a `Variant<?>` around a Collection or Map without
+having to compute the signature yourself: `org.freedesktop.dbus.types.VariantBuilder`.
+You declare the container type and its generic types, and the builder derives the correct signature for you.
+
+```java
+Variant<List<String>>          v1 = VariantBuilder.of(List.class).withGenericTypes(String.class).create(List.of("foo", "bar"));
+Variant<Set<Integer>>          v2 = VariantBuilder.of(Set.class).withGenericTypes(Integer.class).create(Set.of(1, 2, 3));
+Variant<Map<String, Boolean>>  v3 = VariantBuilder.of(Map.class).withGenericTypes(String.class, Boolean.class).create(Map.of("foo", true));
+```
 
 ## Changes introduced with dbus-java 5.1.0
 

@@ -14,34 +14,37 @@ The following table contains a mapping of DBus types to DBus-Java types
 |t             |org.freedesktop.dbus.types.UInt64|
 |d             |double   |
 |s             |String   |
-|o             |org.freedesktop.dbus.ObjectPath|
-|g             |???      |
+|o             |org.freedesktop.dbus.DBusPath|
+|g             |String (a DBus type signature)|
 |a             |java.util.List|
 |() struct     |org.freedesktop.dbus.Struct|
-|v             |org.freedesktop.types.Variant|
+|v             |org.freedesktop.dbus.types.Variant|
 |{} dictionary |java.util.Map|
 |h             |org.freedesktop.dbus.FileDescriptor*|
 
-*File Descriptor passing is not enabled by default - you need to add the
-3rd-party component [dbus-java-nativefd](https://github.com/rm5248/dbus-java-nativefd)
+*File descriptor passing (`h`) requires a transport that supports it. When using the
+`dbus-java-transport-junixsocket` transport (recommended, available since dbus-java 4.3.1),
+file descriptors work out of the box - no additional dependency is required.
+See the [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors) for
+details and for the legacy setup using the `dbus-java-transport-jnr-unixsocket` transport.
 
 ## Examples
 
 If we have the DBus signature for a method of `iid`, that means the method
 looks like the following:
 
-```
-void methodname( int a, int b, double c );
+```java
+void methodname(int a, int b, double c);
 ```
 
 A DBus signature of `ai` would be a list of integers:
 
-```
-void methodname( List<int> a );
+```java
+void methodname(List<Integer> a);
 ```
 
-A Dbus signature of `asid` would be the following:
+A DBus signature of `asid` would be the following:
 
-```
-void methodname( List<String> a, int b, double c );
+```java
+void methodname(List<String> a, int b, double c);
 ```

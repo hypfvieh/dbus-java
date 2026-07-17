@@ -203,7 +203,7 @@ public class ImportMyObject {
 
 ## Implementing the Properties Interface
 
-As an alternative to the above, you can use DBus's `org.freedesktop.dbus.Properties` interface.
+As an alternative to the above, you can use DBus's `org.freedesktop.dbus.interfaces.Properties` interface.
 
 If you are exporting your own service, this means that you `extends Properties` in your interface,
 and provide the required implementations of the `Get()`, `GetAll()` and `Set()` methods in your 
@@ -236,6 +236,10 @@ or when you need to access these properties.
 
 ```java
 package com.acme;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.freedesktop.dbus.types.Variant;
 
 public class MyObject implements MyInterface {
 
