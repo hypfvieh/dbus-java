@@ -91,6 +91,17 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298))
    - Fixed various issues with `InterfaceCodeGenerator` ([#302](https://github.com/hypfvieh/dbus-java/issues/302), [#303](https://github.com/hypfvieh/dbus-java/issues/303), [#304], (https://github.com/hypfvieh/dbus-java/issues/304), [#306](https://github.com/hypfvieh/dbus-java/issues/306)
    - Refactoring and overhaul of `InterfaceCodeGenerator` to improve code, reduce duplications and allow easier fixing/extending
+   - Hardened message parsing against malformed or malicious wire data: unknown header field codes are now ignored instead of throwing, oversized arrays are rejected before the length is truncated by an `int` cast, and the data offset is included when validating string/signature lengths (previously an `ArrayIndexOutOfBoundsException`/`StringIndexOutOfBoundsException` could tear down the connection)
+   - Enforce an actual recursion-depth limit when converting wire types to Java types in `Marshalling` (the previous check accidentally used the type count instead of the nesting depth)
+   - Remove the empty match-rule queue when `AddMatch` fails, so a later `addSigHandler` re-sends `AddMatch` instead of silently never subscribing
+   - Disconnect the connection on an unexpected `RuntimeException` in the incoming-message thread instead of spinning in a busy-loop / flooding the log (`DBusException` still logs and continues)
+   - Notify and clean up pending async callbacks (`CallbackHandler`) on disconnect instead of leaking them
+   - Added a read-timeout watchdog for the SASL handshake to prevent connections from hanging indefinitely (e.g. Slowloris-style stalls over TCP)
+   - Fixed `disconnect()` stalling for the whole receiving-service shutdown timeout when called from within a signal handler
+   - Use constant-time comparison for `DBUS_COOKIE_SHA1` hash verification
+   - Fixed possible `ArrayIndexOutOfBoundsException` when parsing malformed cookie lines during SASL auth
+   - Bounded the pending-error queue to avoid unbounded memory growth for unhandled errors
+   - Clean up sender/receiver executor services when the connection fails to establish
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
