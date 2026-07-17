@@ -127,9 +127,8 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
                 .orElseThrow();
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
-            if (_ex instanceof IOException ioe) {
-                internalDisconnect(ioe);
-            }
+            senderService.shutdownNow();
+            receivingService.shutdownNow();
             throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }
     }
