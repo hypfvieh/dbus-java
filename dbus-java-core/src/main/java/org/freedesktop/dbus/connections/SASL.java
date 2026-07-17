@@ -544,22 +544,15 @@ public class SASL {
                             }
                             break;
                         case ERROR:
-                            // when asking for file descriptor support, ERROR means FD support is not supported
-                            if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
-                                state = SaslAuthState.FINISHED;
-                                logger.trace("File descriptors NOT supported by server");
-                                fileDescriptorSupported = false;
-                                send(_sock, BEGIN);
-                            } else {
-                                send(_sock, CANCEL);
-                                state = SaslAuthState.WAIT_REJECT;
-                            }
+                            // ERROR during the authentication exchange -> abort and wait for REJECTED
+                            send(_sock, CANCEL);
+                            state = SaslAuthState.WAIT_REJECT;
                             break;
                         case OK:
                             logger.trace("Authenticated");
 
                             if (saslConfig.isFileDescriptorSupport()) {
-                                state = SaslAuthState.WAIT_DATA;
+                                state = SaslAuthState.NEGOTIATE_UNIX_FD;
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
                                 send(_sock, NEGOTIATE_UNIX_FD);
@@ -568,18 +561,31 @@ public class SASL {
                                 send(_sock, BEGIN);
                             }
                             break;
-                        case AGREE_UNIX_FD:
-                            if (saslConfig.isFileDescriptorSupport()) {
-                                state = SaslAuthState.FINISHED;
-                                logger.trace("File descriptors supported by server");
-                                fileDescriptorSupported = true;
-                                send(_sock, BEGIN);
-                            }
-                            break;
                         default:
                             send(_sock, ERROR, INVALID_CMD_ERR);
                             break;
                         }
+                    break;
+                case NEGOTIATE_UNIX_FD:
+                    c = receive(_sock);
+                    switch (c.getCommand()) {
+                        case AGREE_UNIX_FD:
+                            logger.trace("File descriptors supported by server");
+                            fileDescriptorSupported = true;
+                            send(_sock, BEGIN);
+                            state = SaslAuthState.FINISHED;
+                            break;
+                        case ERROR:
+                            // server does not support unix fd passing -> continue gracefully without it
+                            logger.trace("File descriptors NOT supported by server");
+                            fileDescriptorSupported = false;
+                            send(_sock, BEGIN);
+                            state = SaslAuthState.FINISHED;
+                            break;
+                        default:
+                            send(_sock, ERROR, INVALID_CMD_ERR);
+                            break;
+                    }
                     break;
                 case WAIT_OK:
                     c = receive(_sock);
@@ -844,7 +850,7 @@ public class SASL {
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
             if (0 == COL.compare(ss[0], "OK")) {
                 command = OK;
-                data = ss[1];
+                data = ss.length < 2 ? null : ss[1];
             } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;
                 if (ss.length > 1) {
@@ -880,7 +886,8 @@ public class SASL {
                 command = CANCEL;
             } else if (0 == COL.compare(ss[0], "ERROR")) {
                 command = ERROR;
-                data = ss[1];
+                // the error message is optional per the D-Bus spec (e.g. a bare "ERROR")
+                data = ss.length < 2 ? null : ss[1];
             } else if (0 == COL.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
                 command = NEGOTIATE_UNIX_FD;
             } else if (0 == COL.compare(ss[0], "AGREE_UNIX_FD")) {
