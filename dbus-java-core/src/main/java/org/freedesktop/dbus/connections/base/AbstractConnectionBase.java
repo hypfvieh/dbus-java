@@ -15,6 +15,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.FatalDBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
@@ -227,7 +228,17 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
             getLogger().debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
             for (MethodCall mthCall : getPendingCalls().values()) {
                 try {
-                    mthCall.setReply(getMessageFactory().createError(mthCall, interrupt));
+                    Error errorReply = getMessageFactory().createError(mthCall, interrupt);
+                    mthCall.setReply(errorReply);
+                    // also fail any registered async callback so it learns about the disconnect (and is removed -> no leak)
+                    CallbackHandler<?> callback = getCallbackManager().removeCallback(mthCall);
+                    if (callback != null) {
+                        try {
+                            callback.handleError(errorReply.getException());
+                        } catch (Exception _ex) {
+                            getLogger().debug("Exception while running disconnect error callback", _ex);
+                        }
+                    }
                 } catch (DBusException _ex) {
                     getLogger().debug("Cannot set method reply to error", _ex);
                 }
