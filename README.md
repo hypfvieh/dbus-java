@@ -102,6 +102,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed possible `ArrayIndexOutOfBoundsException` when parsing malformed cookie lines during SASL auth
    - Bounded the pending-error queue to avoid unbounded memory growth for unhandled errors
    - Clean up sender/receiver executor services when the connection fails to establish
+   - Added support for interactive authorization ([#PR313](https://github.com/hypfvieh/dbus-java/issues/313)), thanks to ([unfamiliarS](https://github.com/unfamiliarS)
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
