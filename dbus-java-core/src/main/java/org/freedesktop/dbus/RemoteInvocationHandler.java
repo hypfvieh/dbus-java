@@ -1,6 +1,7 @@
 package org.freedesktop.dbus;
 
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
+import org.freedesktop.dbus.annotations.MethodAllowInteractiveAutorization;
 import org.freedesktop.dbus.annotations.MethodNoReply;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.errors.NoReply;
@@ -195,6 +196,9 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
         if (_m.isAnnotationPresent(MethodNoReply.class)) {
             flags |= Flags.NO_REPLY_EXPECTED;
+        }
+        if (_m.isAnnotationPresent(MethodAllowInteractiveAutorization.class)) {
+            flags |= Flags.ALLOW_INTERACTIVE_AUTHORIZATION;
         }
         try {
             String name = DBusNamingUtil.getMethodName(_m);

@@ -10,6 +10,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.test.helper.interfaces.RemoteInteractiveInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleNewInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface;
 import org.freedesktop.dbus.test.helper.interfaces.SampleRemoteInterface2;
@@ -26,7 +27,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 @SuppressWarnings({"checkstyle:methodname"})
-public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties {
+public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface2, SampleRemoteInterfaceEnum, Properties, RemoteInteractiveInterface {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -90,6 +91,11 @@ public class SampleClass implements SampleRemoteInterface, SampleRemoteInterface
         } catch (InterruptedException _ex) {
         }
         logger.debug("Done sleeping.");
+    }
+
+    @Override
+    public void interactiveMethod() {
+        logger.debug("testInteractiveMethod called");
     }
 
     @Override
