@@ -165,7 +165,7 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
             }
 
         } else {
-            getPendingErrorQueue().add(_err);
+            addPendingError(_err);
         }
     }
 
