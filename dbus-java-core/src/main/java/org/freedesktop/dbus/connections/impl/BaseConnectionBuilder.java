@@ -187,6 +187,26 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
         return self();
     }
 
+    /**
+     * Controls whether {@code org.freedesktop.DBus.ObjectManager} is handled automatically for exported
+     * objects implementing that interface.
+     * <p>
+     * By default (false), dbus-java answers {@code GetManagedObjects} itself (by enumerating the exported
+     * sub-tree and collecting the properties of each object) and automatically emits {@code InterfacesAdded}
+     * and {@code InterfacesRemoved} when objects below an ObjectManager are exported/unexported.
+     * </p>
+     * <p>
+     * Set this to true to take full manual control: the exported object's own {@code GetManagedObjects}
+     * implementation is used and the application is responsible for emitting the signals.
+     * </p>
+     * @param _manual true to disable the automatic ObjectManager handling
+     * @return this
+     */
+    public R withManualObjectManager(boolean _manual) {
+        connectionConfig.setManualObjectManager(_manual);
+        return self();
+    }
+
     public abstract C build() throws DBusException;
 
     /**

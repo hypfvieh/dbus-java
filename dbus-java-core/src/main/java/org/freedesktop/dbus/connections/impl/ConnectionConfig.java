@@ -11,6 +11,7 @@ public class ConnectionConfig {
     private IDisconnectCallback disconnectCallback;
     private Consumer<DBusSignal> unknownSignalHandler;
     private boolean autoEmitPropertiesChanged;
+    private boolean manualObjectManager;
 
     public boolean isExportWeakReferences() {
         return exportWeakReferences;
@@ -50,6 +51,14 @@ public class ConnectionConfig {
 
     public void setAutoEmitPropertiesChanged(boolean _autoEmitPropertiesChanged) {
         autoEmitPropertiesChanged = _autoEmitPropertiesChanged;
+    }
+
+    public boolean isManualObjectManager() {
+        return manualObjectManager;
+    }
+
+    public void setManualObjectManager(boolean _manualObjectManager) {
+        manualObjectManager = _manualObjectManager;
     }
 
 }

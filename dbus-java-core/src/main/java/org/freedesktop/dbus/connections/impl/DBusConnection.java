@@ -339,6 +339,28 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
     }
 
     /**
+     * Exports a ready-to-use {@code org.freedesktop.DBus.ObjectManager} at the given object path.
+     * <p>
+     * The manager answers {@code GetManagedObjects} automatically (by enumerating the exported objects
+     * below {@code _path}) and, together with the automatic ObjectManager handling, emits
+     * {@code InterfacesAdded}/{@code InterfacesRemoved} when objects below it are exported/unexported.
+     * You do not need to implement {@link org.freedesktop.dbus.interfaces.ObjectManager} yourself.
+     * </p>
+     * <p>
+     * Has no automatic effect if the connection was configured with
+     * {@code withManualObjectManager(true)} - in that case the exported manager behaves like any other
+     * exported object.
+     * </p>
+     *
+     * @param _path object path for the ObjectManager (root of the managed sub-tree)
+     *
+     * @throws DBusException if the object path is already in use or invalid
+     */
+    public void exportObjectManager(String _path) throws DBusException {
+        exportObject(_path, new DBusObjectManager(_path));
+    }
+
+    /**
      * Returns the unique name of this connection.
      *
      * @return unique name

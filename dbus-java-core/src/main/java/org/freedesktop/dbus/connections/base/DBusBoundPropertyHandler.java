@@ -378,7 +378,7 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
      *
      * @throws DBusException when the DBus type cannot be determined
      */
-    private Variant<?> toVariant(Object _value, Type _type) throws DBusException {
+    protected Variant<?> toVariant(Object _value, Type _type) throws DBusException {
         if (_value.getClass().isArray() || _value instanceof Collection || _value instanceof Map) {
             String signature = String.join("", Marshalling.getDBusType(_type));
             return new Variant<>(_value, signature);

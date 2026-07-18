@@ -246,6 +246,27 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
                 getObjectTree().add(_objectPath, eo, eo.getIntrospectiondata());
             }
         });
+
+        // automatically announce the new object to an ObjectManager above it (unless manual handling)
+        emitInterfacesAdded(_objectPath);
+    }
+
+    @Override
+    public void unExportObject(String _objectpath) {
+        // collect the object's interfaces before removal so an InterfacesRemoved signal can be emitted
+        List<String> interfaceNames = null;
+        if (!getConnectionConfig().isManualObjectManager()) {
+            ExportedObject eo = doWithExportedObjectsAndReturn(RuntimeException.class, eos -> eos.get(_objectpath));
+            if (eo != null) {
+                interfaceNames = collectInterfaceNames(eo);
+            }
+        }
+
+        super.unExportObject(_objectpath);
+
+        if (interfaceNames != null) {
+            emitInterfacesRemoved(_objectpath, interfaceNames);
+        }
     }
 
     /**
