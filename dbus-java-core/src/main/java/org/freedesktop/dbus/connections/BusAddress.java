@@ -4,6 +4,8 @@ import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,7 +14,8 @@ import java.util.stream.Collectors;
  * The address will define which transport to use.
  */
 public class BusAddress {
-    private static final Logger       LOGGER     = LoggerFactory.getLogger(BusAddress.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BusAddress.class);
+    private static final char[] HEX    = "0123456789ABCDEF".toCharArray();
 
     private String                    type;
     private final Map<String, String> parameters = new LinkedHashMap<>();
@@ -45,10 +48,43 @@ public class BusAddress {
      * @since 4.2.0 - 2022-07-18
      */
     public static BusAddress of(String _address) {
+        List<BusAddress> all = parseAll(_address);
+        if (all.isEmpty()) {
+            throw new InvalidBusAddressException("Bus address is invalid: " + _address);
+        }
+        return all.getFirst();
+    }
+
+    /**
+     * Parses an address string which may contain multiple {@code ;}-separated addresses (as defined by
+     * the D-Bus specification) into a list of {@link BusAddress} objects, in the order given.
+     *
+     * @param _address address String, never null or empty
+     *
+     * @return list of BusAddress (never empty)
+     * @since 6.0.0 - 2026-07-18
+     */
+    public static List<BusAddress> parseAll(String _address) {
         if (_address == null || _address.isEmpty()) {
             throw new InvalidBusAddressException("Bus address is blank");
         }
 
+        List<BusAddress> result = new ArrayList<>();
+        for (String single : _address.split(";")) {
+            if (single.isBlank()) {
+                continue;
+            }
+            result.add(parseSingle(single));
+        }
+
+        if (result.isEmpty()) {
+            throw new InvalidBusAddressException("Bus address is invalid: " + _address);
+        }
+
+        return result;
+    }
+
+    private static BusAddress parseSingle(String _address) {
         BusAddress busAddress = new BusAddress(null);
 
         LOGGER.trace("Parsing bus address: {}", _address);
@@ -65,10 +101,14 @@ public class BusAddress {
 
         LOGGER.trace("Transport type: {}", busAddress.type);
 
-        String[] ps = ss[1].split(",");
-        for (String p : ps) {
-            String[] kv = p.split("=", 2);
-            busAddress.addParameter(kv[0], kv[1]);
+        if (!ss[1].isEmpty()) {
+            for (String p : ss[1].split(",")) {
+                if (p.isEmpty()) {
+                    continue;
+                }
+                String[] kv = p.split("=", 2);
+                busAddress.addParameter(kv[0], kv.length > 1 ? unescapeValue(kv[1]) : "");
+            }
         }
 
         LOGGER.trace("Transport options: {}", busAddress.parameters);
@@ -127,7 +167,65 @@ public class BusAddress {
 
     @Override
     public final String toString() {
-        return type + ":" + parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(","));
+        return type + ":" + parameters.entrySet().stream()
+            .map(e -> e.getKey() + "=" + escapeValue(e.getValue()))
+            .collect(Collectors.joining(","));
+    }
+
+    /**
+     * Decodes a {@code %HH}-escaped address parameter value (D-Bus address escaping) back to its raw
+     * value. Decoding is byte-based (UTF-8); a {@code %} not followed by two hex digits is left as-is.
+     *
+     * @param _value escaped value
+     * @return decoded value
+     */
+    private static String unescapeValue(String _value) {
+        if (_value.indexOf('%') < 0) {
+            return _value; // nothing to unescape
+        }
+
+        byte[] raw = _value.getBytes(StandardCharsets.UTF_8);
+        ByteArrayOutputStream out = new ByteArrayOutputStream(raw.length);
+        for (int i = 0; i < raw.length; i++) {
+            byte b = raw[i];
+            if (b == '%' && i + 2 < raw.length && isHex(raw[i + 1]) && isHex(raw[i + 2])) {
+                out.write((Character.digit(raw[i + 1], 16) << 4) | Character.digit(raw[i + 2], 16));
+                i += 2;
+            } else {
+                out.write(b);
+            }
+        }
+        return out.toString(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Escapes an address parameter value according to the D-Bus address escaping rules: every byte which
+     * is not in the optionally-escaped set {@code [-0-9A-Za-z_/.*]} is replaced by {@code %HH}.
+     *
+     * @param _value raw value
+     * @return escaped value
+     */
+    private static String escapeValue(String _value) {
+        byte[] raw = _value.getBytes(StandardCharsets.UTF_8);
+        StringBuilder sb = new StringBuilder(raw.length);
+        for (byte b : raw) {
+            int c = b & 0xFF;
+            if (isOptionallyEscaped(c)) {
+                sb.append((char) c);
+            } else {
+                sb.append('%').append(HEX[(c >> 4) & 0xF]).append(HEX[c & 0xF]);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isOptionallyEscaped(int _c) {
+        return _c == '-' || _c == '_' || _c == '/' || _c == '.' || _c == '*'
+            || _c >= '0' && _c <= '9' || _c >= 'A' && _c <= 'Z' || _c >= 'a' && _c <= 'z';
+    }
+
+    private static boolean isHex(byte _b) {
+        return _b >= '0' && _b <= '9' || _b >= 'a' && _b <= 'f' || _b >= 'A' && _b <= 'F';
     }
 
     /**
