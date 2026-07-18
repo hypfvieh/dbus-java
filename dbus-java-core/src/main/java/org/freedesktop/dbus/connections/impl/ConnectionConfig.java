@@ -10,6 +10,7 @@ public class ConnectionConfig {
     private boolean importWeakReferences;
     private IDisconnectCallback disconnectCallback;
     private Consumer<DBusSignal> unknownSignalHandler;
+    private boolean autoEmitPropertiesChanged;
 
     public boolean isExportWeakReferences() {
         return exportWeakReferences;
@@ -41,6 +42,14 @@ public class ConnectionConfig {
 
     public void setUnknownSignalHandler(Consumer<DBusSignal> _unknownSignalHandler) {
         unknownSignalHandler = _unknownSignalHandler;
+    }
+
+    public boolean isAutoEmitPropertiesChanged() {
+        return autoEmitPropertiesChanged;
+    }
+
+    public void setAutoEmitPropertiesChanged(boolean _autoEmitPropertiesChanged) {
+        autoEmitPropertiesChanged = _autoEmitPropertiesChanged;
     }
 
 }

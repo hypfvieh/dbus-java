@@ -169,6 +169,24 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
         return self();
     }
 
+    /**
+     * Enables automatic emission of the {@code org.freedesktop.DBus.Properties.PropertiesChanged}
+     * signal whenever a property backed by {@link org.freedesktop.dbus.annotations.DBusBoundProperty}
+     * is successfully changed via the DBus {@code Properties.Set} method.
+     * <p>
+     * Disabled by default for backwards compatibility. When enabled, the actual emission behavior of
+     * each property is controlled by its
+     * {@link org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal} value
+     * ({@code TRUE} = emit with value, {@code INVALIDATES} = emit without value, {@code CONST}/{@code FALSE} = no signal).
+     * </p>
+     * @param _autoEmit true to enable automatic PropertiesChanged emission
+     * @return this
+     */
+    public R withAutoEmitPropertiesChanged(boolean _autoEmit) {
+        connectionConfig.setAutoEmitPropertiesChanged(_autoEmit);
+        return self();
+    }
+
     public abstract C build() throws DBusException;
 
     /**

@@ -172,6 +172,30 @@ public class ExportMyObject {
 }
 ```
 
+#### Automatic `PropertiesChanged` signals
+
+By default dbus-java does **not** emit the `org.freedesktop.DBus.Properties.PropertiesChanged`
+signal when a bound property is changed via `Properties.Set` (kept off for backwards
+compatibility). You can enable this on the connection builder:
+
+```java
+DBusConnection conn = DBusConnectionBuilder.forSessionBus()
+    .withAutoEmitPropertiesChanged(true)
+    .build();
+```
+
+When enabled, the emission is controlled per property by the
+`org.freedesktop.DBus.Property.EmitsChangedSignal` annotation
+(`@DBusBoundProperty(emitChangeSignal = ...)`, or the interface-wide
+`@PropertiesEmitsChangedSignal`):
+
+  * `TRUE` (default) - emit `PropertiesChanged` including the new value,
+  * `INVALIDATES` - emit `PropertiesChanged` listing the property as invalidated (without value),
+  * `CONST` / `FALSE` - do not emit a signal.
+
+The signal is only emitted after the setter completed successfully. The value is read back via the
+property's getter (falling back to the value that was set if the property is write-only).
+
 ### Using The Exported Object
 
 And finally making use of the exported interface in client code.
