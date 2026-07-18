@@ -97,6 +97,82 @@ public class MessageTest extends AbstractBaseTest {
         assertThrows(DBusException.class, m::getParameters);
     }
 
+    @Test
+    void testExtractRejectsDeeplyNestedVariants() {
+        int nesting = 200; // far beyond Message.MAXIMUM_EXTRACT_DEPTH (64)
+
+        // body: `nesting` nested variants ("v" in "v" in ...) ending in a single byte value
+        byte[] body = new byte[nesting * 3 + 4];
+        int i = 0;
+        for (int d = 0; d < nesting; d++) {
+            body[i++] = 1;    // signature length
+            body[i++] = 'v';  // variant type code
+            body[i++] = 0;    // nul terminator
+        }
+        body[i++] = 1;        // signature length
+        body[i++] = 'y';      // byte type code (terminal)
+        body[i++] = 0;        // nul terminator
+        body[i] = 0x42;       // the byte value
+
+        byte[] msg = {108, 1, 0, 1,
+            (byte) body.length, (byte) (body.length >>> 8), (byte) (body.length >>> 16), (byte) (body.length >>> 24),
+            1, 0, 0, 0};
+        byte[] headers = headerWithSignature((byte) 'v');
+
+        Message m = new Message();
+        assertDoesNotThrow(() -> m.populate(msg, headers, body, null));
+        DBusException ex = assertThrows(DBusException.class, m::getParameters);
+        assertTrue(ex.getMessage() != null && ex.getMessage().contains("nesting depth"),
+            "expected nesting depth error, got: " + ex.getMessage());
+    }
+
+    @Test
+    void testExtractFileDescriptorRejectsOutOfBoundsIndex() {
+        // signature "h": body is a 4-byte fd index (0), but no file descriptors were received
+        byte[] msg = {108, 1, 0, 1, 4, 0, 0, 0, 1, 0, 0, 0};
+        byte[] headers = headerWithSignature((byte) 'h');
+        byte[] body = {0, 0, 0, 0};
+
+        Message m = new Message();
+        assertDoesNotThrow(() -> m.populate(msg, headers, body, null));
+        DBusException ex = assertThrows(DBusException.class, m::getParameters);
+        assertTrue(ex.getMessage() != null && ex.getMessage().contains("out of bounds"),
+            "expected out-of-bounds error, got: " + ex.getMessage());
+    }
+
+    @Test
+    void testPopulateRejectsUnixFdCountMismatch() {
+        // header declares 2 unix fds (UNIX_FDS field 9), but none are actually received
+        byte[] msg = {108, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0};
+        byte[] headers = {
+            8, 0, 0, 0,     // header array length (8 bytes of elements)
+            0, 0, 0, 0,     // padding to 8-align the first struct
+            9, 1, 117, 0,   // field UNIX_FDS(9), variant signature "u"
+            2, 0, 0, 0      // UInt32 value = 2
+        };
+        byte[] body = {};
+
+        Message m = new Message();
+        DBusException ex = assertThrows(DBusException.class, () -> m.populate(msg, headers, body, null));
+        assertTrue(ex.getMessage() != null && ex.getMessage().contains("unix file descriptors"),
+            "expected fd count mismatch error, got: " + ex.getMessage());
+    }
+
+    /**
+     * Returns a valid message header (as used by {@link #testReadMessageHeader()}) whose SIGNATURE field
+     * value byte is replaced by the given type code.
+     */
+    private static byte[] headerWithSignature(byte _sigChar) {
+        byte[] headers = {
+                61, 0, 0, 0, 0, 0, 0, 0, 6, 1, 115, 0, 5, 0, 0, 0, 58, 49, 46, 50, 48, 0, 0, 0, 5, 1,
+                117, 0, 1, 0, 0, 0, 8, 1, 103, 0, 1, 115, 0, 0, 7, 1, 115, 0, 20, 0, 0, 0, 111, 114,
+                103, 46, 102, 114, 101, 101, 100, 101, 115, 107, 116, 111, 112, 46, 68, 66, 117, 115,
+                0, 0, 0, 0
+        };
+        headers[37] = _sigChar; // SIGNATURE field value ('s' -> given type code)
+        return headers;
+    }
+
     static Stream<ParameterData> parameterSource() {
         return Stream.of(
             new ParameterData("Complex constructor", List.of(new Type[] {long.class, String.class, byte[].class, String.class, Map.class}, new Type[] {String.class}),

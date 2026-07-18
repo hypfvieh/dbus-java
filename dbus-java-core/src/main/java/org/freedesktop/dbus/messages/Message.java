@@ -41,11 +41,14 @@ public class Message {
     public static final int             MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
     public static final int             MAXIMUM_NUM_UNIX_FDS   = MAXIMUM_MESSAGE_LENGTH / 4;
 
+    /** Maximum container nesting depth honoured while demarshalling values (guards against deeply nested variants). */
+    public static final int             MAXIMUM_EXTRACT_DEPTH  = 64;
+
     /** The current protocol major version. */
     public static final byte            PROTOCOL               = 1;
 
     /** Default extraction options. */
-    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, List.of());
+    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, List.of(), 0);
 
     /** Position of data offset in int array. */
     private static final int            OFFSET_DATA            = 1;
@@ -195,6 +198,18 @@ public class Message {
                 continue;
             }
             this.headers[idx] = objArr[1];
+        }
+
+        // validate the declared number of unix file descriptors against what was actually received
+        if (this.headers[HeaderField.UNIX_FDS] instanceof UInt32 declaredFds) {
+            long declared = declaredFds.longValue();
+            if (declared > MAXIMUM_NUM_UNIX_FDS) {
+                throw new MarshallingException("Message declares too many unix file descriptors: " + declared);
+            }
+            if (declared != filedescriptors.size()) {
+                throw new MarshallingException("Message declares " + declared
+                    + " unix file descriptors but " + filedescriptors.size() + " were received");
+            }
         }
     }
 
@@ -836,6 +851,10 @@ public class Message {
     private Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options)
             throws DBusException {
 
+        if (_options.depth() > MAXIMUM_EXTRACT_DEPTH) {
+            throw new MarshallingException("Maximum container nesting depth (" + MAXIMUM_EXTRACT_DEPTH + ") exceeded");
+        }
+
         logger.trace("Extracting type: {} from offset {}", (char) _signatureBuf[_offsets[OFFSET_SIG]],
                 _offsets[OFFSET_DATA]);
 
@@ -924,8 +943,13 @@ public class Message {
                 });
                 break;
             case FILEDESCRIPTOR:
-                rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+                int fdIndex = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
+                if (fdIndex < 0 || fdIndex >= filedescriptors.size()) {
+                    throw new MarshallingException("File descriptor index " + fdIndex
+                        + " out of bounds (received " + filedescriptors.size() + " file descriptors)");
+                }
+                rv = filedescriptors.get(fdIndex);
                 break;
             case STRING:
                 int length = validateLengthLimit(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4), _offsets[OFFSET_DATA] + 4, _dataBuf.length);
@@ -1075,7 +1099,8 @@ public class Message {
         };
         String sig = (String) extract(SIGNATURE_STRING, _dataBuf, newofs, _options)[0];
         newofs[OFFSET_SIG] = 0;
-        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs, _options)[0]);
+        // extract the variant content one nesting level deeper so nested variants are depth-limited
+        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs, ExtractOptions.copyWithContainedFlag(_options, true))[0]);
         _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
 
         return rv;
@@ -1382,7 +1407,7 @@ public class Message {
         if (_constructorArgs != null && !_constructorArgs.isEmpty()) {
             List<Type> dataType = new ArrayList<>();
             Marshalling.getJavaType(getSig(), dataType, -1);
-            options = new ExtractOptions(DEFAULT_OPTIONS.contained(), usesPrimitives(_constructorArgs, dataType));
+            options = new ExtractOptions(DEFAULT_OPTIONS.contained(), usesPrimitives(_constructorArgs, dataType), 0);
         }
 
         if (sig != null && body != null && body.length != 0) {
@@ -1763,11 +1788,12 @@ public class Message {
      */
     record ExtractOptions(
         boolean contained,
-        List<ConstructorArgType> arrayConvert
+        List<ConstructorArgType> arrayConvert,
+        int depth
         ) {
 
         static ExtractOptions copyWithContainedFlag(ExtractOptions _toCopy, boolean _containedFlag) {
-            return new ExtractOptions(_containedFlag, _toCopy.arrayConvert());
+            return new ExtractOptions(_containedFlag, _toCopy.arrayConvert(), _toCopy.depth() + 1);
         }
     }
 
