@@ -273,8 +273,21 @@ public class EmbeddedDBusDaemon implements Closeable {
         bindCallback = _callback;
     }
 
+    /**
+     * Whether this daemon offers the {@code org.freedesktop.DBus.Debug.Stats} interface.
+     * <p>
+     * The default embedded daemon behaves like a production reference daemon and does not expose any debug interface.
+     * Subclasses may override this to enable debug features.
+     * </p>
+     *
+     * @return {@code false} for the default embedded daemon
+     */
+    protected boolean isDebugStatsEnabled() {
+        return false;
+    }
+
     private synchronized void setDaemonAndStart(AbstractTransport _transport) {
-        daemon = new DBusDaemon(_transport);
+        daemon = new DBusDaemon(_transport, isDebugStatsEnabled());
         daemon.start();
     }
 

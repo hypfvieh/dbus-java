@@ -8,10 +8,13 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode
 import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
+import org.freedesktop.dbus.errors.ServiceUnknown;
+import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
+import org.freedesktop.dbus.interfaces.Debug;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Monitoring;
@@ -78,9 +81,24 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private final AbstractTransport                                             transport;
 
+    /** Whether the {@code org.freedesktop.DBus.Debug.Stats} interface is offered to clients. */
+    private final boolean                                                       debugFeaturesEnabled;
+
     public DBusDaemon(AbstractTransport _transport) {
+        this(_transport, false);
+    }
+
+    /**
+     * Creates a new daemon.
+     *
+     * @param _transport transport to listen on
+     * @param _debugFeaturesEnabled whether to offer the {@code org.freedesktop.DBus.Debug.Stats} interface; a default
+     *            daemon behaves like a production reference daemon and does not expose it
+     */
+    public DBusDaemon(AbstractTransport _transport, boolean _debugFeaturesEnabled) {
         setName(getClass().getSimpleName() + "-Thread");
         transport = _transport;
+        debugFeaturesEnabled = _debugFeaturesEnabled;
         names.put(DBUS_BUSNAME, null);
     }
 
@@ -489,7 +507,7 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer implements DBus, Introspectable, Peer, Monitoring {
+    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Debug.Stats {
 
         private final String machineId;
         private ConnectionStruct connStruct;
@@ -798,6 +816,21 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public String Introspect() {
+            String debugStatsInterface = !debugFeaturesEnabled ? "" : """
+                  <interface name="org.freedesktop.DBus.Debug.Stats">
+                    <method name="GetStats">
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="GetConnectionStats">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="GetAllMatchRules">
+                      <arg direction="out" type="a{sas}"/>
+                    </method>
+                  </interface>
+                """;
+
             return """
                 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
                 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -875,7 +908,7 @@ public class DBusDaemon extends Thread implements Closeable {
                       <arg type="s"/>
                     </signal>
                   </interface>
-                </node>""";
+                """ + debugStatsInterface + "</node>";
         }
 
         @Override
@@ -911,6 +944,83 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String GetMachineId() {
             return machineId;
+        }
+
+        /**
+         * Guard for the {@code org.freedesktop.DBus.Debug.Stats} methods. On a daemon without debug features enabled
+         * the interface must appear as if it did not exist, mirroring a production reference daemon.
+         */
+        private void requireDebugEnabled() {
+            if (!debugFeaturesEnabled) {
+                throw new UnknownMethod("This service does not implement org.freedesktop.DBus.Debug.Stats");
+            }
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetStats() {
+            requireDebugEnabled();
+
+            int totalRules = 0;
+            for (ConnectionStruct cs : conns.keySet()) {
+                synchronized (cs.rules) {
+                    totalRules += cs.rules.size();
+                }
+            }
+
+            Map<String, Variant<?>> stats = new LinkedHashMap<>();
+            stats.put("ActiveConnections", new Variant<>(new UInt32(conns.size())));
+            stats.put("BusNames", new Variant<>(new UInt32(names.size())));
+            stats.put("MatchRules", new Variant<>(new UInt32(totalRules)));
+            stats.put("SerialNumber", new Variant<>(new UInt32(nextUnique.get())));
+            return stats;
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetConnectionStats(String _busName) {
+            requireDebugEnabled();
+
+            ConnectionStruct cs = names.get(_busName);
+            if (cs == null) {
+                throw new ServiceUnknown(String.format("The name `%s' does not exist", _busName));
+            }
+
+            int busNames = 0;
+            synchronized (names) {
+                for (ConnectionStruct owner : names.values()) {
+                    if (owner == cs) {
+                        busNames++;
+                    }
+                }
+            }
+
+            int matchRules;
+            synchronized (cs.rules) {
+                matchRules = cs.rules.size();
+            }
+
+            Map<String, Variant<?>> stats = new LinkedHashMap<>();
+            stats.put("UniqueName", new Variant<>(cs.unique));
+            stats.put("MatchRules", new Variant<>(new UInt32(matchRules)));
+            stats.put("BusNames", new Variant<>(new UInt32(busNames)));
+            return stats;
+        }
+
+        @Override
+        public Map<String, String[]> GetAllMatchRules() {
+            requireDebugEnabled();
+
+            Map<String, String[]> result = new LinkedHashMap<>();
+            for (ConnectionStruct cs : conns.keySet()) {
+                if (cs.unique == null) {
+                    continue;
+                }
+                String[] rules;
+                synchronized (cs.rules) {
+                    rules = cs.rules.stream().map(DBusMatchRule::toString).toArray(String[]::new);
+                }
+                result.put(cs.unique, rules);
+            }
+            return result;
         }
 
     }
