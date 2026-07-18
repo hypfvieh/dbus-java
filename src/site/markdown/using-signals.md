@@ -92,6 +92,25 @@ For more information on MatchRules see [DBus-Specification](https://dbus.freedes
 Please note: dbus-java does not support the eavesdrop option. 
 Eavesdrop is deprecated according to specification, therefore there are no plans to add it.
 
+### Monitoring the bus (`BecomeMonitor`)
+
+If you need to observe traffic that is not addressed to your connection, use the specification-compliant
+monitor mechanism instead of eavesdropping. Calling `becomeMonitor(...)` on a `DBusConnection` turns it
+into a *monitor connection* which receives copies of the messages flowing over the bus:
+
+```java
+try (DBusConnection monitor = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+    // empty rule list = monitor all messages; otherwise pass DBusMatchRule instances to filter
+    monitor.becomeMonitor(List.of(), msg ->
+        System.out.println("saw " + msg.getInterface() + "." + msg.getName() + " on " + msg.getPath()));
+    // ... keep the connection open while monitoring ...
+}
+```
+
+A monitor connection loses its bus names and match rules and **must not send messages** anymore, so use a
+dedicated (private) connection for it. Becoming a monitor usually requires elevated privileges on the bus.
+Note that the callback receives raw `org.freedesktop.dbus.messages.Message` objects.
+
 ## Signals and constructors
 
 A signal class can have multiple constructors. 

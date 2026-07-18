@@ -14,6 +14,7 @@ import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.MatchRuleParser;
@@ -141,6 +142,9 @@ public class DBusDaemon extends Thread implements Closeable {
                             send(connectionStruct, messageFactory.createError(DBUS_BUSNAME, null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
 
+                        // deliver a copy of every message flowing through the bus to monitor connections
+                        deliverToMonitors(m);
+
                         if (DBUS_BUSNAME.equals(m.getDestination())) {
                             dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
@@ -192,6 +196,9 @@ public class DBusDaemon extends Thread implements Closeable {
             }
 
             CON_LOOP: for (Entry<ConnectionStruct, DBusDaemonReaderThread> cs : l.entrySet()) {
+                if (cs.getKey().monitor) {
+                    continue; // monitors are served separately via deliverToMonitors
+                }
                 for (DBusMatchRule rule : cs.getKey().rules) {
                     if (rule.matches(_msg)) {
                         LOGGER.debug("Cloning message for matchrule \"{}\" for connection {} (origin={})",
@@ -208,6 +215,40 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
         }
+    }
+
+    /**
+     * Delivers a copy of the given message to all monitor connections whose monitor match rules match
+     * (an empty rule set matches everything).
+     *
+     * @param _msg the message flowing through the bus
+     */
+    private void deliverToMonitors(Message _msg) {
+        Map<ConnectionStruct, DBusDaemonReaderThread> l;
+        synchronized (conns) {
+            l = new HashMap<>(conns);
+        }
+
+        for (ConnectionStruct cs : l.keySet()) {
+            if (!cs.monitor) {
+                continue;
+            }
+            if (cs.monitorRules.isEmpty() || monitorRulesMatch(cs, _msg)) {
+                LOGGER.trace("Delivering monitored message {} to monitor {}", _msg, cs.unique);
+                send(cs, _msg);
+            }
+        }
+    }
+
+    private static boolean monitorRulesMatch(ConnectionStruct _cs, Message _msg) {
+        synchronized (_cs.monitorRules) {
+            for (DBusMatchRule rule : _cs.monitorRules) {
+                if (rule.matches(_msg)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void logMessage(String _logStr, Message _m, String _connUniqueId) {
@@ -418,9 +459,15 @@ public class DBusDaemon extends Thread implements Closeable {
         private String                          unique;
         private Supplier<Thread>                threadSupplier;
 
+        /** Whether this connection became a monitor connection (via BecomeMonitor). */
+        private boolean                         monitor;
+        /** Match rules restricting the monitored messages (empty = match all). */
+        private final Set<DBusMatchRule>        monitorRules;
+
         ConnectionStruct(TransportConnection _c) {
             connection = _c;
             rules = Collections.synchronizedSet(new LinkedHashSet<>());
+            monitorRules = Collections.synchronizedSet(new LinkedHashSet<>());
         }
 
         @Override
@@ -442,7 +489,7 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer implements DBus, Introspectable, Peer {
+    public class DBusServer implements DBus, Introspectable, Peer, Monitoring {
 
         private final String machineId;
         private ConnectionStruct connStruct;
@@ -670,6 +717,16 @@ public class DBusDaemon extends Thread implements Closeable {
             Object rv = null;
             MessageFactory messageFactory = _connStruct.connection.getMessageFactory();
 
+            // BecomeMonitor takes an array argument; the reflective dispatch below matches on the runtime
+            // classes of the deserialized arguments (a D-Bus array deserializes to a List, not String[]),
+            // so it is handled explicitly here.
+            if ("BecomeMonitor".equals(_msg.getName())) {
+                this.connStruct = _connStruct;
+                BecomeMonitor(extractRuleStrings(args), new UInt32(0));
+                send(_connStruct, messageFactory.createMethodReturn(DBUS_BUSNAME, (MethodCall) _msg, null), true);
+                return;
+            }
+
             try {
                 meth = DBusServer.class.getMethod(_msg.getName(), cs);
                 try {
@@ -697,6 +754,41 @@ public class DBusDaemon extends Thread implements Closeable {
                         "org.freedesktop.DBus.Error.UnknownMethod", _msg.getSerial(), "s", "This service does not support " + _msg.getName()));
             }
 
+        }
+
+        private static String[] extractRuleStrings(Object[] _args) {
+            if (_args.length == 0 || _args[0] == null) {
+                return new String[0];
+            }
+            Object first = _args[0];
+            if (first instanceof String[] sa) {
+                return sa;
+            } else if (first instanceof Collection<?> c) {
+                return c.stream().map(String::valueOf).toArray(String[]::new);
+            } else if (first instanceof Object[] oa) {
+                return Arrays.stream(oa).map(String::valueOf).toArray(String[]::new);
+            }
+            return new String[0];
+        }
+
+        @Override
+        public void BecomeMonitor(String[] _rule, UInt32 _flags) {
+            ConnectionStruct cs = connStruct;
+            if (cs == null) {
+                return;
+            }
+            cs.monitorRules.clear();
+            for (String ruleStr : _rule) {
+                try {
+                    cs.monitorRules.add(MatchRuleParser.convertMatchRule(ruleStr));
+                } catch (RuntimeException _ex) {
+                    LOGGER.warn("Ignoring invalid monitor match rule '{}'", ruleStr, _ex);
+                }
+            }
+            // a monitor connection loses its normal match rules and only receives monitored traffic
+            cs.rules.clear();
+            cs.monitor = true;
+            LOGGER.debug("Connection {} became a monitor ({} rule(s))", cs.unique, cs.monitorRules.size());
         }
 
         @Override

@@ -17,8 +17,10 @@ import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
 import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusMonitorHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -295,6 +297,45 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
         }
 
         doWithBusNames(bn -> bn.add(_busname));
+    }
+
+    /**
+     * Turns this connection into a <em>monitor connection</em> by calling
+     * {@code org.freedesktop.DBus.Monitoring.BecomeMonitor} on the bus.
+     * <p>
+     * After this call, the connection receives copies of the messages flowing over the bus (as
+     * permitted by the given match rules) via the supplied {@link DBusMonitorHandler} instead of the
+     * connection's normal message handling. A monitor connection loses its bus names and its match
+     * rules and <strong>must not send messages</strong> anymore; use a dedicated (private) connection
+     * for monitoring.
+     * </p>
+     * <p>
+     * An empty (or {@code null}) rule list is a shorthand for matching all messages. Note that
+     * eavesdrop-style match rule keys are intentionally not supported by this library; {@code BecomeMonitor}
+     * is the specification-compliant replacement for eavesdropping.
+     * </p>
+     *
+     * @param _rules match rules limiting the monitored messages, empty/{@code null} matches everything
+     * @param _handler callback receiving the monitored messages
+     *
+     * @throws DBusException when the BecomeMonitor call fails (e.g. insufficient privileges)
+     */
+    public void becomeMonitor(List<DBusMatchRule> _rules, DBusMonitorHandler _handler) throws DBusException {
+        Objects.requireNonNull(_handler, "Monitor handler required");
+
+        String[] ruleStrings = _rules == null ? new String[0]
+            : _rules.stream().map(DBusMatchRule::toString).toArray(String[]::new);
+
+        // activate monitor mode before the call; replies to our own pending calls (the BecomeMonitor
+        // reply itself) are still processed normally, everything else is routed to the handler
+        setMonitorHandler(_handler);
+        try {
+            Monitoring monitoring = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", Monitoring.class);
+            monitoring.BecomeMonitor(ruleStrings, new UInt32(0));
+        } catch (RuntimeException _ex) {
+            setMonitorHandler(null);
+            throw _ex;
+        }
     }
 
     /**

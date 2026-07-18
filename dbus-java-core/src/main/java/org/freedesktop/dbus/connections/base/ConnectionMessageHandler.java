@@ -13,6 +13,7 @@ import org.freedesktop.dbus.errors.UnknownObject;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
+import org.freedesktop.dbus.interfaces.DBusMonitorHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.messages.*;
@@ -34,8 +35,28 @@ import java.util.Queue;
  */
 public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyHandler permits AbstractConnection {
 
+    /** When set, this connection acts as a monitor and raw messages are delivered to this handler. */
+    private volatile DBusMonitorHandler monitorHandler;
+
     protected ConnectionMessageHandler(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         super(_conCfg, _transportConfig, _rsCfg);
+    }
+
+    /**
+     * Sets (or clears with {@code null}) the monitor handler. When set, this connection is treated as a
+     * monitor connection: incoming messages are delivered to the handler instead of the normal dispatch.
+     *
+     * @param _monitorHandler monitor handler or {@code null} to leave monitor mode
+     */
+    protected void setMonitorHandler(DBusMonitorHandler _monitorHandler) {
+        monitorHandler = _monitorHandler;
+    }
+
+    /**
+     * @return true if this connection currently is a monitor connection
+     */
+    protected boolean isMonitor() {
+        return monitorHandler != null;
     }
 
     @Override
@@ -241,6 +262,16 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
      * @throws DBusException
      */
     void handleMessage(Message _message) throws DBusException {
+        DBusMonitorHandler monitor = monitorHandler;
+        if (monitor != null && !isReplyToPendingCall(_message)) {
+            try {
+                monitor.handle(_message);
+            } catch (RuntimeException _ex) {
+                getLogger().warn("Monitor handler failed for message {}", _message, _ex);
+            }
+            return;
+        }
+
         if (_message instanceof DBusSignal sig) {
             handleMessage(sig, true);
         } else if (_message instanceof MethodCall mc) {
@@ -250,6 +281,25 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
         } else if (_message instanceof Error err) {
             handleMessage(err);
         }
+    }
+
+    /**
+     * Checks whether the given message is a reply (return or error) to a call this connection is still
+     * awaiting. Used so a monitor connection can still complete its own {@code BecomeMonitor} call.
+     *
+     * @param _message message to check
+     * @return true if the message replies to a pending call of this connection
+     */
+    private boolean isReplyToPendingCall(Message _message) {
+        long replySerial;
+        if (_message instanceof MethodReturn mr) {
+            replySerial = mr.getReplySerial();
+        } else if (_message instanceof Error err) {
+            replySerial = err.getReplySerial();
+        } else {
+            return false;
+        }
+        return getPendingCalls() != null && getPendingCalls().containsKey(replySerial);
     }
 
     private void handleMessage(final MethodCall _methodCall) throws DBusException {
