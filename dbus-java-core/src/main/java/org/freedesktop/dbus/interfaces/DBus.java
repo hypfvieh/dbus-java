@@ -203,6 +203,14 @@ public interface DBus extends DBusInterface {
     String GetId();
 
     /**
+     * Reloads the bus daemon's configuration.
+     * <p>
+     * For daemons that do not use a configuration file (such as the embedded daemon) this is a no-op.
+     * </p>
+     */
+    void ReloadConfig();
+
+    /**
     * Signal sent when the owner of a name changes
     */
     @SuppressWarnings("checkstyle:visibilitymodifier")
@@ -259,6 +267,26 @@ public interface DBus extends DBusInterface {
         @Override
         public String toString() {
             return getClass().getSimpleName() + " [name=" + name + "]";
+        }
+
+    }
+
+    /**
+     * Signal sent when the list of activatable services on the bus changes.
+     * <p>
+     * The embedded daemon does not perform service activation and therefore never emits this signal; it is declared
+     * for spec completeness so clients may subscribe to it.
+     * </p>
+     */
+    class ActivatableServicesChanged extends DBusSignal {
+
+        public ActivatableServicesChanged(String _path) throws DBusException {
+            super(_path);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " []";
         }
 
     }

@@ -8,8 +8,10 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode
 import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
+import org.freedesktop.dbus.errors.PropertyReadOnly;
 import org.freedesktop.dbus.errors.ServiceUnknown;
 import org.freedesktop.dbus.errors.UnknownMethod;
+import org.freedesktop.dbus.errors.UnknownProperty;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
@@ -19,6 +21,7 @@ import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.MatchRuleParser;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -507,7 +510,7 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Debug.Stats {
+    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Properties, Debug.Stats {
 
         private final String machineId;
         private ConnectionStruct connStruct;
@@ -745,6 +748,14 @@ public class DBusDaemon extends Thread implements Closeable {
                 return;
             }
 
+            // Properties.Get/GetAll/Set are handled explicitly: the reflective dispatch below cannot marshal the
+            // generic return type of Properties.Get (its wire signature is a VARIANT "v").
+            if ("Get".equals(_msg.getName()) || "GetAll".equals(_msg.getName()) || "Set".equals(_msg.getName())) {
+                this.connStruct = _connStruct;
+                handlePropertiesCall(_connStruct, (MethodCall) _msg, args, messageFactory);
+                return;
+            }
+
             try {
                 meth = DBusServer.class.getMethod(_msg.getName(), cs);
                 try {
@@ -907,6 +918,31 @@ public class DBusDaemon extends Thread implements Closeable {
                     <signal name="NameAcquired">
                       <arg type="s"/>
                     </signal>
+                    <signal name="ActivatableServicesChanged">
+                    </signal>
+                    <property name="Features" type="as" access="read"/>
+                    <property name="Interfaces" type="as" access="read"/>
+                  </interface>
+                  <interface name="org.freedesktop.DBus.Properties">
+                    <method name="Get">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="v"/>
+                    </method>
+                    <method name="GetAll">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="Set">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="v"/>
+                    </method>
+                    <signal name="PropertiesChanged">
+                      <arg type="s"/>
+                      <arg type="a{sv}"/>
+                      <arg type="as"/>
+                    </signal>
                   </interface>
                 """ + debugStatsInterface + "</node>";
         }
@@ -944,6 +980,94 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String GetMachineId() {
             return machineId;
+        }
+
+        @Override
+        public void ReloadConfig() {
+            // the embedded daemon has no configuration file to reload
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <A> A Get(String _interfaceName, String _propertyName) {
+            return (A) getBusProperty(_interfaceName, _propertyName);
+        }
+
+        @Override
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
+            throw new PropertyReadOnly("Property " + _propertyName + " is read only");
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
+            Map<String, Variant<?>> result = new LinkedHashMap<>();
+            if (DBUS_BUSNAME.equals(_interfaceName)) {
+                result.put("Features", new Variant<>(busFeatures()));
+                result.put("Interfaces", new Variant<>(busInterfaces()));
+            }
+            return result;
+        }
+
+        /**
+         * Handles a {@code org.freedesktop.DBus.Properties} call against the bus object, marshalling the reply with the
+         * correct wire signatures ("v" for Get, "a{sv}" for GetAll).
+         */
+        private void handlePropertiesCall(ConnectionStruct _connStruct, MethodCall _msg, Object[] _args, MessageFactory _messageFactory) throws DBusException {
+            try {
+                switch (_msg.getName()) {
+                    case "Get" -> {
+                        Object value = getBusProperty((String) _args[0], (String) _args[1]);
+                        send(_connStruct, _messageFactory.createMethodReturn(DBUS_BUSNAME, _msg, "v", new Variant<>(value)), true);
+                    }
+                    case "GetAll" -> {
+                        Map<String, Variant<?>> all = GetAll((String) _args[0]);
+                        send(_connStruct, _messageFactory.createMethodReturn(DBUS_BUSNAME, _msg, "a{sv}", all), true);
+                    }
+                    case "Set" -> Set((String) _args[0], (String) _args[1], _args.length > 2 ? _args[2] : null);
+                    default -> throw new UnknownMethod("This service does not support " + _msg.getName());
+                }
+            } catch (DBusExecutionException _ex) {
+                LOGGER.debug("", _ex);
+                send(_connStruct, _messageFactory.createError(DBUS_BUSNAME, _msg, _ex));
+            }
+        }
+
+        /**
+         * Returns the value of a property of the bus object. Only the {@code org.freedesktop.DBus} interface exposes
+         * properties ({@code Features} and {@code Interfaces}).
+         */
+        private Object getBusProperty(String _interfaceName, String _propertyName) {
+            if (DBUS_BUSNAME.equals(_interfaceName)) {
+                switch (_propertyName) {
+                    case "Features":
+                        return busFeatures();
+                    case "Interfaces":
+                        return busInterfaces();
+                    default:
+                }
+            }
+            throw new UnknownProperty(String.format("No such property '%s' on interface '%s'", _propertyName, _interfaceName));
+        }
+
+        /**
+         * The bus features. The embedded daemon supports none of the reference features (header filtering, systemd
+         * activation, SELinux/AppArmor mediation), so an empty array is returned (which the specification permits).
+         */
+        private String[] busFeatures() {
+            return EMPTY_STRING_ARRAY;
+        }
+
+        /**
+         * The optional interfaces implemented by the bus object in addition to the core {@code org.freedesktop.DBus}
+         * interface (excluding Peer/Properties/Introspectable per specification).
+         */
+        private String[] busInterfaces() {
+            List<String> ifaces = new ArrayList<>();
+            ifaces.add("org.freedesktop.DBus.Monitoring");
+            if (debugFeaturesEnabled) {
+                ifaces.add("org.freedesktop.DBus.Debug.Stats");
+            }
+            return ifaces.toArray(EMPTY_STRING_ARRAY);
         }
 
         /**
