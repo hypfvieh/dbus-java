@@ -7,6 +7,9 @@ import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.exceptions.AuthenticationException;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
@@ -16,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -70,10 +74,10 @@ public class TcpTransport extends AbstractTransport {
         }
 
         if (!isBound()) {
-            InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
+            InetSocketAddress socketAddress = createBindAddress();
             serverSocket = ServerSocketChannel.open();
             serverSocket.configureBlocking(true);
-            getLogger().debug("Binding to {} using local port {}", getAddress().getHost(),
+            getLogger().debug("Binding to {} using local port {}", socketAddress.getAddress(),
                 getAddress().getPort());
 
             serverSocket.bind(socketAddress);
@@ -82,6 +86,27 @@ public class TcpTransport extends AbstractTransport {
                 writeNonceFile();
             }
         }
+    }
+
+    /**
+     * Creates the socket address to bind the server socket to, honouring the optional {@code bind} and {@code family}
+     * address parameters. When {@code bind} is missing, the advertised {@code host} is used; {@code bind=*} binds to all
+     * interfaces.
+     *
+     * @return bind address
+     * @throws IOException if the host/family cannot be resolved
+     */
+    private InetSocketAddress createBindAddress() throws IOException {
+        TcpBusAddress address = getAddress();
+        int port = address.getPort();
+        String bindHost = address.hasBind() ? address.getBind() : address.getHost();
+
+        if ("*".equals(bindHost)) {
+            InetAddress wildcard = wildcardAddress(address.getFamily());
+            return wildcard == null ? new InetSocketAddress(port) : new InetSocketAddress(wildcard, port);
+        }
+
+        return new InetSocketAddress(resolveWithFamily(bindHost, address.getFamily()), port);
     }
 
     @Override
@@ -101,10 +126,13 @@ public class TcpTransport extends AbstractTransport {
     @Override
     public SocketChannel connectImpl() throws IOException {
 
-        InetSocketAddress socketAddress = new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
         if (getAddress().isListeningSocket()) {
             throw new IOException("Connect connect to a listening socket (use listenImpl() instead)");
         }
+
+        InetSocketAddress socketAddress = getAddress().hasFamily()
+            ? new InetSocketAddress(resolveWithFamily(getAddress().getHost(), getAddress().getFamily()), getAddress().getPort())
+            : new InetSocketAddress(getAddress().getHost(), getAddress().getPort());
 
         socket = SocketChannel.open();
         socket.configureBlocking(true);
@@ -120,6 +148,52 @@ public class TcpTransport extends AbstractTransport {
         }
 
         return socket;
+    }
+
+    /**
+     * Resolves the given host to an {@link InetAddress} of the requested address family.
+     *
+     * @param _host host name or literal IP
+     * @param _family requested family ({@code ipv4}/{@code ipv6}) or null for no restriction
+     *
+     * @return matching address
+     * @throws IOException if the family is unknown or no matching address exists
+     */
+    private static InetAddress resolveWithFamily(String _host, String _family) throws IOException {
+        if (_family == null) {
+            return InetAddress.getByName(_host);
+        }
+
+        Class<? extends InetAddress> wanted = familyClass(_family);
+        for (InetAddress addr : InetAddress.getAllByName(_host)) {
+            if (wanted.isInstance(addr)) {
+                return addr;
+            }
+        }
+        throw new IOException("No " + _family + " address found for host '" + _host + "'");
+    }
+
+    /**
+     * Returns the wildcard ("any local") address for the given family, or null when no family is requested (in which
+     * case the caller should bind to the family-agnostic wildcard).
+     */
+    private static InetAddress wildcardAddress(String _family) throws IOException {
+        if (_family == null) {
+            return null;
+        }
+        return switch (_family.toLowerCase(Locale.US)) {
+            case "ipv4" -> InetAddress.getByName("0.0.0.0");
+            case "ipv6" -> InetAddress.getByName("::");
+            default -> throw new IOException("Unsupported address family '" + _family + "'");
+        };
+    }
+
+    private static Class<? extends InetAddress> familyClass(String _family) throws IOException {
+        return switch (_family.toLowerCase(Locale.US)) {
+            case "ipv4" -> Inet4Address.class;
+            case "ipv6" -> Inet6Address.class;
+            default -> throw new IOException("Unsupported address family '" + _family + "'");
+        };
     }
 
     /**

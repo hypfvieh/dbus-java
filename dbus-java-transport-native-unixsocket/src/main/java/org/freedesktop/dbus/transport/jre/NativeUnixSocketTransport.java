@@ -3,6 +3,7 @@ package org.freedesktop.dbus.transport.jre;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.connections.transports.UnixServerAddressResolver;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
 import java.io.IOException;
@@ -36,6 +37,9 @@ public class NativeUnixSocketTransport extends AbstractUnixTransport {
 
     NativeUnixSocketTransport(UnixBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         super(_address, _config);
+
+        // resolve dir/tmpdir/runtime (listen side) into a concrete path; native sockets do not support abstract
+        UnixServerAddressResolver.resolve(_address, false);
 
         if (_address.hasPath()) {
             unixSocketAddress = UnixDomainSocketAddress.of(_address.getPath());

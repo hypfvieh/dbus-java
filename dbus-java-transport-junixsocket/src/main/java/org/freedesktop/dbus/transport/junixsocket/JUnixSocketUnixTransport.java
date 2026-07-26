@@ -3,6 +3,7 @@ package org.freedesktop.dbus.transport.junixsocket;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.connections.transports.UnixServerAddressResolver;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.newsclub.net.unix.*;
 
@@ -20,6 +21,9 @@ public class JUnixSocketUnixTransport extends AbstractUnixTransport {
 
     public JUnixSocketUnixTransport(JUnixSocketBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         super(_address, _config);
+
+        // resolve dir/tmpdir/runtime (listen side) into a concrete path/abstract; use abstract for tmpdir only if the OS supports it
+        UnixServerAddressResolver.resolve(_address, AFSocket.supports(AFSocketCapability.CAPABILITY_ABSTRACT_NAMESPACE));
 
         StringBuilder path = new StringBuilder();
         if (_address.isAbstract()) {

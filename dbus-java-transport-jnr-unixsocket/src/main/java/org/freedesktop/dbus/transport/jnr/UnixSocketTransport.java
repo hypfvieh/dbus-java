@@ -8,6 +8,7 @@ import jnr.unixsocket.UnixSocketOptions;
 import org.freedesktop.dbus.connections.SASL;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractUnixTransport;
+import org.freedesktop.dbus.connections.transports.UnixServerAddressResolver;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.utils.Util;
 
@@ -30,6 +31,9 @@ public class UnixSocketTransport extends AbstractUnixTransport {
 
     UnixSocketTransport(JnrUnixBusAddress _address, TransportConfig _config) throws TransportConfigurationException {
         super(_address, _config);
+
+        // resolve dir/tmpdir/runtime (listen side) into a concrete path/abstract; jnr supports abstract sockets
+        UnixServerAddressResolver.resolve(_address, true);
 
         if (_address.isAbstract()) {
             unixSocketAddress = new UnixSocketAddress("\0" + _address.getAbstract());
