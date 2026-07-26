@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Random;
 
 public class TcpTransportProvider implements ITransportProvider {
@@ -39,6 +40,11 @@ public class TcpTransportProvider implements ITransportProvider {
     @Override
     public String getSupportedBusType() {
         return "TCP";
+    }
+
+    @Override
+    public List<String> getSupportedBusTypes() {
+        return List.of(getSupportedBusType(), "NONCE-TCP");
     }
 
     @Override

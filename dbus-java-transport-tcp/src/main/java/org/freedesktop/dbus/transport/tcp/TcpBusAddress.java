@@ -27,4 +27,26 @@ public class TcpBusAddress extends BusAddress {
         return Util.isValidNetworkPort(getParameterValue("port"), true) ? Integer.parseInt(getParameterValue("port")) : DEFAULT_PORT;
     }
 
+    /**
+     * Whether this is a {@code nonce-tcp} address (i.e. requires the nonce authentication handshake).
+     *
+     * @return true for nonce-tcp addresses
+     */
+    public boolean isNonceTcp() {
+        return isBusType("nonce-tcp");
+    }
+
+    public boolean hasNonceFile() {
+        return hasParameter("noncefile");
+    }
+
+    /**
+     * The path to the nonce file as given by the {@code noncefile} address parameter (may be {@code null}).
+     *
+     * @return nonce file path or null
+     */
+    public String getNonceFile() {
+        return getParameterValue("noncefile");
+    }
+
 }

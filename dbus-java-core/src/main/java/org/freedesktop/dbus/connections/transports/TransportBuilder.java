@@ -52,23 +52,30 @@ public final class TransportBuilder {
                 ? ServiceLoader.load(_layer, ITransportProvider.class)
                 : ServiceLoader.load(ITransportProvider.class, _clzLoader);
             for (ITransportProvider provider : spiLoader) {
-                String providerBusType = provider.getSupportedBusType();
-                if (providerBusType == null) { // invalid transport, ignore
+                List<String> providerBusTypes = provider.getSupportedBusTypes();
+                if (providerBusTypes == null || providerBusTypes.isEmpty()) { // invalid transport, ignore
                     LOGGER.warn("Transport {} is invalid: No bustype configured", provider.getClass());
                     continue;
                 }
-                providerBusType = providerBusType.toUpperCase(Locale.US);
 
-                LOGGER.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
+                for (String rawBusType : providerBusTypes) {
+                    if (rawBusType == null) { // skip invalid entries
+                        LOGGER.warn("Transport {} provides a null bustype, ignoring that entry", provider.getClass());
+                        continue;
+                    }
+                    String providerBusType = rawBusType.toUpperCase(Locale.US);
 
-                if (PROVIDERS.containsKey(key) && PROVIDERS.get(key).containsKey(providerBusType)) {
-                    throw new TransportRegistrationException("Found transport "
-                            + PROVIDERS.get(key).get(providerBusType).getClass().getName()
-                            + " and "
-                            + provider.getClass().getName() + " both providing transport for socket type "
-                            + providerBusType + ", please only add one of them to classpath.");
+                    LOGGER.debug("Found provider '{}' named '{}' providing bustype '{}'", provider.getClass().getSimpleName(), provider.getTransportName(), providerBusType);
+
+                    if (PROVIDERS.containsKey(key) && PROVIDERS.get(key).containsKey(providerBusType)) {
+                        throw new TransportRegistrationException("Found transport "
+                                + PROVIDERS.get(key).get(providerBusType).getClass().getName()
+                                + " and "
+                                + provider.getClass().getName() + " both providing transport for socket type "
+                                + providerBusType + ", please only add one of them to classpath.");
+                    }
+                    PROVIDERS.computeIfAbsent(key, x -> new HashMap<>()).put(providerBusType, provider);
                 }
-                PROVIDERS.computeIfAbsent(key, x -> new HashMap<>()).put(providerBusType, provider);
             }
             if (PROVIDERS.isEmpty()) {
                 throw new TransportRegistrationException("No dbus-java-transport found in classpath, please add a transport module");

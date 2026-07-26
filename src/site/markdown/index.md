@@ -36,6 +36,14 @@ A typical dependency set is `dbus-java-core` + one transport. See the
 [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors) for guidance on
 choosing a transport (for example when you need file descriptor support).
 
+### Transports that are not provided
+
+The `unixexec:` transport is intentionally not provided. Its model (spawning a helper and
+speaking D-Bus over that process' stdin/stdout) does not fit dbus-java's `SocketChannel`-based
+transport architecture, and the practical use cases are too rare to justify the effort. For the
+most common scenario - tunnelling D-Bus over SSH - a separate, third-party transport based on
+SSHj already exists.
+
 ## Where to go next
 
  * [Quickstart](./quick-start.html) - add the dependencies and open a connection
