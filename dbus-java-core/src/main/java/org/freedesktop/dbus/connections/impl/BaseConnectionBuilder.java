@@ -169,6 +169,44 @@ public abstract class BaseConnectionBuilder<R extends BaseConnectionBuilder<R, C
         return self();
     }
 
+    /**
+     * Enables automatic emission of the {@code org.freedesktop.DBus.Properties.PropertiesChanged}
+     * signal whenever a property backed by {@link org.freedesktop.dbus.annotations.DBusBoundProperty}
+     * is successfully changed via the DBus {@code Properties.Set} method.
+     * <p>
+     * Disabled by default for backwards compatibility. When enabled, the actual emission behavior of
+     * each property is controlled by its
+     * {@link org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal} value
+     * ({@code TRUE} = emit with value, {@code INVALIDATES} = emit without value, {@code CONST}/{@code FALSE} = no signal).
+     * </p>
+     * @param _autoEmit true to enable automatic PropertiesChanged emission
+     * @return this
+     */
+    public R withAutoEmitPropertiesChanged(boolean _autoEmit) {
+        connectionConfig.setAutoEmitPropertiesChanged(_autoEmit);
+        return self();
+    }
+
+    /**
+     * Controls whether {@code org.freedesktop.DBus.ObjectManager} is handled automatically for exported
+     * objects implementing that interface.
+     * <p>
+     * By default (false), dbus-java answers {@code GetManagedObjects} itself (by enumerating the exported
+     * sub-tree and collecting the properties of each object) and automatically emits {@code InterfacesAdded}
+     * and {@code InterfacesRemoved} when objects below an ObjectManager are exported/unexported.
+     * </p>
+     * <p>
+     * Set this to true to take full manual control: the exported object's own {@code GetManagedObjects}
+     * implementation is used and the application is responsible for emitting the signals.
+     * </p>
+     * @param _manual true to disable the automatic ObjectManager handling
+     * @return this
+     */
+    public R withManualObjectManager(boolean _manual) {
+        connectionConfig.setManualObjectManager(_manual);
+        return self();
+    }
+
     public abstract C build() throws DBusException;
 
     /**

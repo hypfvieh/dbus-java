@@ -102,7 +102,7 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
         int headerlen;
 
         if (header == null) {
-            headerlen = (int) Message.demarshallint(tbuf, 0, endian, 4);
+            headerlen = demarshallLength(tbuf, 0, endian, 4);
 
             /* n % 2^i = n & (2^i - 1) */
             final int modlen = headerlen & 7;
@@ -144,7 +144,7 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
 
         /* Read the body */
         if (body == null) {
-            body = new byte[(int) Message.demarshallint(buf, 4, endian, 4)];
+            body = new byte[demarshallLength(buf, 4, endian, 4)];
             len[3] = 0;
         }
 
@@ -230,4 +230,25 @@ public abstract class AbstractInputStreamMessageReader implements IMessageReader
         return getClass().getSimpleName() + " [inputChannel=" + inputChannel + ", socketProviderImpl=" + socketProviderImpl + "]";
     }
 
+    /**
+     * Extracts the length from a portion of a byte array, validates it,
+     * and returns the length as an integer.
+     *
+     * @param _buf the byte array containing the length to be extracted
+     * @param _ofs the offset in the array where the length starts
+     * @param _endian the endianness of the data
+     * @param _width the width (in bytes) of the length field
+     * @return the validated length as an integer
+     * @throws DBusException if the extracted length exceeds the maximum allowed length
+     *                        or if the length is negative
+     */
+    private int demarshallLength(byte[] _buf, int _ofs, byte _endian, int _width) throws DBusException {
+        long length = Message.demarshallint(_buf, _ofs, _endian, _width);
+        if (length > Message.MAXIMUM_MESSAGE_LENGTH) {
+            throw new DBusException("Message length exceeds maximum allowed length");
+        } else if (length < 0) { // 0 is valid, e.g. messages without a body
+            throw new DBusException("Message length must not be negative");
+        }
+        return (int) length;
+    }
 }

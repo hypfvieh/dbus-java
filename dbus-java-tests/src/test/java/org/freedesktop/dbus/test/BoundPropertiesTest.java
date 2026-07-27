@@ -4,6 +4,7 @@ import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
 
@@ -148,6 +152,119 @@ public class BoundPropertiesTest extends AbstractDBusDaemonBaseTest {
                 }
 
             }
+        }
+    }
+
+    @Test
+    public void testAutoEmitPropertiesChangedWhenEnabled() throws Exception {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false)
+            .withAutoEmitPropertiesChanged(true).build()) {
+            MyObject obj = new MyObject();
+            conn.requestBusName("com.acme");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                CountDownLatch latch = new CountDownLatch(1);
+                AtomicReference<Properties.PropertiesChanged> received = new AtomicReference<>();
+
+                try (AutoCloseable handler = innerConn.addSigHandler(Properties.PropertiesChanged.class, sig -> {
+                    if ("/com/acme/MyObject".equals(sig.getPath())) {
+                        received.set(sig);
+                        latch.countDown();
+                    }
+                })) {
+                    MyInterface myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
+                    myObject.setMyProperty("New value");
+
+                    assertTrue(latch.await(10, TimeUnit.SECONDS), "PropertiesChanged signal was not received");
+
+                    Properties.PropertiesChanged sig = received.get();
+                    assertEquals("com.acme.MyInterface", sig.getInterfaceName());
+                    assertTrue(sig.getPropertiesChanged().containsKey("MyProperty"), "changed map must contain the property");
+                    assertEquals("New value", sig.getPropertiesChanged().get("MyProperty").getValue());
+                    assertTrue(sig.getPropertiesRemoved().isEmpty(), "no invalidated properties expected");
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testNoPropertiesChangedWhenDisabledByDefault() throws Exception {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+            MyObject obj = new MyObject();
+            conn.requestBusName("com.acme");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                CountDownLatch latch = new CountDownLatch(1);
+
+                try (AutoCloseable handler = innerConn.addSigHandler(Properties.PropertiesChanged.class, sig -> {
+                    if ("/com/acme/MyObject".equals(sig.getPath())) {
+                        latch.countDown();
+                    }
+                })) {
+                    MyInterface myObject = innerConn.getRemoteObject("com.acme", "/com/acme/MyObject", MyInterface.class);
+                    myObject.setMyProperty("New value");
+
+                    assertFalse(latch.await(2, TimeUnit.SECONDS),
+                        "no PropertiesChanged signal expected when auto-emit is disabled (default)");
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testNoPropertiesChangedForFalseAnnotationEvenWhenEnabled() throws Exception {
+        try (DBusConnection conn = DBusConnectionBuilder.forSessionBus().withShared(false)
+            .withAutoEmitPropertiesChanged(true).build()) {
+            SilentPropObject obj = new SilentPropObject();
+            conn.requestBusName("com.acme.silent");
+            conn.exportObject(obj);
+
+            try (DBusConnection innerConn = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+                CountDownLatch latch = new CountDownLatch(1);
+
+                try (AutoCloseable handler = innerConn.addSigHandler(Properties.PropertiesChanged.class, sig -> {
+                    if ("/com/acme/silent/SilentObject".equals(sig.getPath())) {
+                        latch.countDown();
+                    }
+                })) {
+                    SilentPropInterface myObject = innerConn.getRemoteObject("com.acme.silent",
+                        "/com/acme/silent/SilentObject", SilentPropInterface.class);
+                    myObject.setSilentProperty("New value");
+
+                    assertFalse(latch.await(2, TimeUnit.SECONDS),
+                        "no PropertiesChanged signal expected for a property annotated with emitChangeSignal=FALSE");
+                }
+            }
+        }
+    }
+
+    @DBusInterfaceName("com.acme.silent.SilentPropInterface")
+    public interface SilentPropInterface extends DBusInterface {
+        @DBusBoundProperty(access = Access.READ, name = "SilentProperty", emitChangeSignal = EmitChangeSignal.FALSE)
+        String getSilentProperty();
+
+        @DBusBoundProperty(access = Access.WRITE, name = "SilentProperty", emitChangeSignal = EmitChangeSignal.FALSE)
+        void setSilentProperty(String _property);
+    }
+
+    public static class SilentPropObject implements SilentPropInterface {
+        private String silentProperty = "Initial value";
+
+        @Override
+        public String getSilentProperty() {
+            return silentProperty;
+        }
+
+        @Override
+        public void setSilentProperty(String _property) {
+            silentProperty = _property;
+        }
+
+        @Override
+        public String getObjectPath() {
+            return "/com/acme/silent/SilentObject";
         }
     }
 

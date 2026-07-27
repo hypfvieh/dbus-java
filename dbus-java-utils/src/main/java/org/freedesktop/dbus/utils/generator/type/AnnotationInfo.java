@@ -26,7 +26,8 @@ public class AnnotationInfo {
         if (_annotationParams != null) {
             _annotationParams.args.forEach(e -> {
                 annotationParams.put(e.key(), e.value());
-                if (e.value() != null && !e.value().getClass().getPackage().getName().startsWith("java.lang")) {
+                if (e.value() != null && !(e.value() instanceof AnnotClass) && !(e.value() instanceof Enum<?>)
+                    && !e.value().getClass().getPackage().getName().startsWith("java.lang")) {
                     additionalImports.add(e.value().getClass());
                 }
             });
@@ -77,6 +78,9 @@ public class AnnotationInfo {
     private String handleArg(Object _value) {
         if (_value instanceof AnnotClass ct) {
             return ct.fqcn() + ".class";
+        }
+        if (_value instanceof Enum<?> en) {
+            return en.getDeclaringClass().getSimpleName() + "." + en.name();
         }
         if (_value instanceof String s && !s.endsWith(".class")) {
             return "\"" + s + "\"";

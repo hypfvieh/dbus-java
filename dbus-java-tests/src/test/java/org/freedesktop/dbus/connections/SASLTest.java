@@ -2,6 +2,7 @@ package org.freedesktop.dbus.connections;
 
 import org.freedesktop.dbus.bin.EmbeddedDBusDaemon;
 import org.freedesktop.dbus.connections.SASL.Command;
+import org.freedesktop.dbus.connections.SASL.CookieLineState;
 import org.freedesktop.dbus.connections.SASL.SaslCommand;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
@@ -34,6 +35,31 @@ class SASLTest extends AbstractBaseTest {
         Command cmdData = new Command("AUTH ");
         assertEquals(SaslCommand.AUTH, cmdData.getCommand());
         assertNull(cmdData.getData());
+    }
+
+    @Test
+    void testClassifyCookieLineKeepsFreshEntry() {
+        // diff (now - time) < COOKIE_TIMEOUT (240) -> keep
+        assertEquals(CookieLineState.KEEP, SASL.classifyCookieLine("1 1000 abcdef", 1100));
+        assertEquals(CookieLineState.KEEP, SASL.classifyCookieLine("1 1000 abcdef", 1000));
+    }
+
+    @Test
+    void testClassifyCookieLineDropsExpiredEntry() {
+        // diff (now - time) >= COOKIE_TIMEOUT (240) -> expired
+        assertEquals(CookieLineState.EXPIRED, SASL.classifyCookieLine("1 1000 abcdef", 2000));
+    }
+
+    @Test
+    void testClassifyCookieLineWithoutSpaceIsMalformed() {
+        // a line without a space previously caused an ArrayIndexOutOfBoundsException on line[1]
+        assertEquals(CookieLineState.MALFORMED, SASL.classifyCookieLine("noSpaceHere", 1000));
+        assertEquals(CookieLineState.MALFORMED, SASL.classifyCookieLine("", 1000));
+    }
+
+    @Test
+    void testClassifyCookieLineWithNonNumericTimestampIsMalformed() {
+        assertEquals(CookieLineState.MALFORMED, SASL.classifyCookieLine("1 notanumber abcdef", 1000));
     }
 
     @Test

@@ -19,10 +19,18 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.ExportedObject;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.utils.DBusObjects;
+import org.freedesktop.dbus.utils.IThrowingRunnable;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
@@ -100,6 +108,77 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
     protected abstract AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException;
 
     /**
+     * Removes a signal handler from the signal map based on the specified match rule.
+     * If the queue associated with the match rule becomes empty after removal, the match rule
+     * is removed from the map, and the provided callback is executed.
+     *
+     * @param _map        The signal map containing match rules mapped to queues of signal handlers.
+     * @param _rule       The match rule used to locate the corresponding queue in the signal map.
+     * @param _handler    The signal handler to remove from the queue associated with the match rule.
+     * @param _onEmpty    A callback to execute if the queue associated with the match rule becomes
+     *                    empty after removing the handler. Can be null.
+     * @throws DBusException If an error occurs during the execution of the callback when the queue
+     *                       is empty.
+     */
+    protected <H extends DBusSigHandler<?>> void removeFromSignalMap(
+        Map<DBusMatchRule, Queue<H>> _map,  DBusMatchRule _rule, H _handler, IThrowingRunnable<DBusException> _onEmpty) throws DBusException {
+
+        synchronized (_map) {
+            Queue<H> queue = _map.get(_rule);
+            if (queue != null) {
+                queue.remove(_handler);
+                if (queue.isEmpty()) {
+                    _map.remove(_rule);
+                    if (_onEmpty != null) {
+                        _onEmpty.run();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds a signal handler to the signal map for a given match rule. If the match rule
+     * is newly added to the map, an optional runnable action is executed.
+     *
+     * @param <H>        The type of the signal handler, extending {@link DBusSigHandler}.
+     * @param _map       The map storing the match rules and their corresponding handler queues.
+     * @param _rule      The match rule that defines the criteria for the signal.
+     * @param _handler   The signal handler to be added to the queue associated with the match rule.
+     * @param _onNew     An optional action to execute if the match rule is newly added to the map.
+     *                   This action may throw a {@link DBusException}.
+     * @throws DBusException If the optional action provided by _onNew encounters an exception.
+     */
+    protected <H extends DBusSigHandler<?>> void addToSignalMap(Map<DBusMatchRule, Queue<H>> _map, DBusMatchRule _rule, H _handler,
+        IThrowingRunnable<DBusException> _onNew) throws DBusException {
+
+        synchronized (_map) {
+            AtomicBoolean isNew = new AtomicBoolean(false);
+
+            Queue<H> queue = _map.computeIfAbsent(_rule, v -> {
+                isNew.set(true);
+                return new ConcurrentLinkedQueue<>();
+            });
+
+            queue.add(_handler);
+
+            if (_onNew != null && isNew.get()) {
+                try {
+                    _onNew.run();
+                } catch (DBusException _ex) {
+                    // rollback: drop the handler and remove the (now empty) rule so a later
+                    // addSigHandler retries the _onNew action (e.g. AddMatch) instead of assuming it succeeded
+                    queue.remove(_handler);
+                    if (queue.isEmpty()) {
+                        _map.remove(_rule);
+                    }
+                    throw _ex;
+                }
+            }
+        }
+    }
+
+    /**
      * If given type is null, will try to find suitable types by examining the given ifaces.
      * If a non-null type is given, returns the given type.
      *
@@ -167,6 +246,27 @@ public abstract non-sealed class AbstractConnection extends ConnectionMessageHan
                 getObjectTree().add(_objectPath, eo, eo.getIntrospectiondata());
             }
         });
+
+        // automatically announce the new object to an ObjectManager above it (unless manual handling)
+        emitInterfacesAdded(_objectPath);
+    }
+
+    @Override
+    public void unExportObject(String _objectpath) {
+        // collect the object's interfaces before removal so an InterfacesRemoved signal can be emitted
+        List<String> interfaceNames = null;
+        if (!getConnectionConfig().isManualObjectManager()) {
+            ExportedObject eo = doWithExportedObjectsAndReturn(RuntimeException.class, eos -> eos.get(_objectpath));
+            if (eo != null) {
+                interfaceNames = collectInterfaceNames(eo);
+            }
+        }
+
+        super.unExportObject(_objectpath);
+
+        if (interfaceNames != null) {
+            emitInterfacesRemoved(_objectpath, interfaceNames);
+        }
     }
 
     /**

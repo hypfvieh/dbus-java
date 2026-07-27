@@ -8,6 +8,7 @@ module org.freedesktop.dbus.utils {
 
     requires java.xml;
     requires java.desktop;
+    requires java.compiler;
 
     opens org.freedesktop.dbus.utils.generator;
     opens org.freedesktop.dbus.utils.generator.type;

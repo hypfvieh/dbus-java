@@ -30,6 +30,9 @@ public class ReceivingService {
 
     private final Map<ExecutorNames, ExecutorService> executors = new ConcurrentHashMap<>();
 
+    /** Marks the executor a worker thread is currently running a task for (used to detect reentrant shutdown). */
+    private final ThreadLocal<ExecutorNames> currentPool = new ThreadLocal<>();
+
     private final IThreadPoolRetryHandler retryHandler;
 
     /**
@@ -42,10 +45,8 @@ public class ReceivingService {
         ReceivingServiceConfig rsCfg = Optional.ofNullable(_rsCfg).orElse(ReceivingServiceConfigBuilder.getDefaultConfig());
 
         Arrays.stream(ExecutorNames.values())
-        .forEach(t -> {
-            executors.put(t,
-                Executors.newFixedThreadPool(rsCfg.getPoolSize(t), createFactory(prefix + t.getThreadName() + "-", _rsCfg.isVirtual(t), _rsCfg.getPriority(t))));
-        });
+        .forEach(t -> executors.put(t,
+            Executors.newFixedThreadPool(rsCfg.getPoolSize(t), createFactory(prefix + t.getThreadName() + "-", rsCfg.isVirtual(t), rsCfg.getPriority(t)))));
 
         retryHandler = rsCfg.getRetryHandler();
     }
@@ -129,6 +130,18 @@ public class ReceivingService {
             return -1;
         }
 
+        // wrap the runnable so the worker thread knows which pool it belongs to while running; this lets shutdown()
+        // detect a reentrant call (e.g. disconnect() invoked from within a signal handler) and skip awaiting its
+        // own still-running worker instead of blocking until the timeout expires
+        Runnable task = () -> {
+            currentPool.set(_executor);
+            try {
+                _r.run();
+            } finally {
+                currentPool.remove();
+            }
+        };
+
         int failCount = 0;
         while (failCount < MAX_RETRIES) {
             try {
@@ -138,7 +151,7 @@ public class ReceivingService {
                 } else if (closed || exec.isShutdown() || exec.isTerminated()) {
                     throw new IllegalThreadPoolStateException("Receiving service already closed");
                 }
-                exec.execute(_r);
+                exec.execute(task);
                 break; // execution done, no retry needed
             } catch (IllegalThreadPoolStateException _ex) { // just throw our exception
                 throw _ex;
@@ -180,12 +193,21 @@ public class ReceivingService {
      * @param _unit time unit
      */
     public synchronized void shutdown(int _timeout, TimeUnit _unit) {
+        // when shutdown is triggered from within one of our own worker threads (e.g. disconnect() called from a
+        // signal handler), that thread cannot terminate itself; awaiting its pool would block until the timeout
+        // expires. Skip awaiting that pool - it is force-stopped by the subsequent shutdownNow().
+        ExecutorNames selfPool = currentPool.get();
+
         for (Entry<ExecutorNames, ExecutorService> es : executors.entrySet()) {
             logger.debug("Shutting down executor: {}", es.getKey());
             es.getValue().shutdown();
         }
 
         for (Entry<ExecutorNames, ExecutorService> es : executors.entrySet()) {
+            if (es.getKey() == selfPool) {
+                logger.debug("Skipping awaitTermination for {}: shutdown triggered from within that pool", selfPool);
+                continue;
+            }
             try {
                 es.getValue().awaitTermination(_timeout, _unit);
             } catch (InterruptedException _ex) {

@@ -26,6 +26,8 @@ public final class Marshalling {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
 
+    private static final int MAXIMUM_RECURSION_DEPTH = 32;
+
     /** Used as initial and incremental size of StringBuffer array when resolving DBusTypes recursively. */
     private static final int INITIAL_BUFFER_SZ = 10;
 
@@ -188,6 +190,9 @@ public final class Marshalling {
 
     @SuppressWarnings("checkstyle:parameterassignment")
     private static String[] recursiveGetDBusType(StringBuffer[] _out, Type _dataType, boolean _basic, int _level) throws DBusException {
+        if (_level > MAXIMUM_RECURSION_DEPTH) {
+            throw new DBusException("Maximum recursion depth exceeded");
+        }
         if (_out.length <= _level) {
             StringBuffer[] newout = new StringBuffer[_level + INITIAL_BUFFER_SZ];
             System.arraycopy(_out, 0, newout, 0, _out.length);
@@ -368,95 +373,33 @@ public final class Marshalling {
     * @throws DBusException on error
     */
     public static int getJavaType(String _dbusType, List<Type> _resultValue, int _limit) throws DBusException {
+        return getJavaType(_dbusType, _resultValue, _limit, 0);
+    }
+
+    private static int getJavaType(String _dbusType, List<Type> _resultValue, int _limit, int _depth) throws DBusException {
         if (null == _dbusType || _dbusType.isEmpty() || 0 == _limit) {
             return 0;
+        }
+
+        if (_depth > MAXIMUM_RECURSION_DEPTH) {
+            throw new DBusException("Maximum recursion depth exceeded parsing DBus type signature: " + _dbusType);
         }
 
         try {
             int idx = 0;
             for (; idx < _dbusType.length() && (-1 == _limit || _limit > _resultValue.size()); idx++) {
-                switch (_dbusType.charAt(idx)) {
-                case ArgumentType.STRUCT1:
-                    int structIdx = idx + 1;
-                    for (int structLen = 1; structLen > 0; structIdx++) {
-                        if (ArgumentType.STRUCT2 == _dbusType.charAt(structIdx)) {
-                            structLen--;
-                        } else if (ArgumentType.STRUCT1 == _dbusType.charAt(structIdx)) {
-                            structLen++;
+                char sigChar = _dbusType.charAt(idx);
+                switch (sigChar) {
+                    case ArgumentType.STRUCT1     -> idx = parseStruct(_dbusType, idx, _resultValue, _depth);
+                    case ArgumentType.ARRAY       -> idx = parseArray(_dbusType, idx, _resultValue, _depth);
+                    case ArgumentType.DICT_ENTRY1 -> idx = parseDictEntry(_dbusType, idx, _resultValue, _depth);
+                    default -> {
+                        Type simpleType = simpleJavaType(sigChar);
+                        if (simpleType == null) {
+                            throw new DBusException(String.format("Failed to parse DBus type signature: %s (%s).", _dbusType, sigChar));
                         }
+                        _resultValue.add(simpleType);
                     }
-
-                    List<Type> contained = new ArrayList<>();
-                    getJavaType(_dbusType.substring(idx + 1, structIdx - 1), contained, -1);
-                    _resultValue.add(new DBusStructType(contained.toArray(EMPTY_TYPE_ARRAY)));
-                    idx = structIdx - 1; //-1 because j already points to the next signature char
-                    break;
-                case ArgumentType.ARRAY:
-                    if (ArgumentType.DICT_ENTRY1 == _dbusType.charAt(idx + 1)) {
-                        contained = new ArrayList<>();
-                        int javaType = getJavaType(_dbusType.substring(idx + 2), contained, 2);
-                        _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
-                        idx += javaType + 2;
-                    } else {
-                        contained = new ArrayList<>();
-                        int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 1);
-                        _resultValue.add(new DBusListType(contained.getFirst()));
-                        idx += javaType;
-                    }
-                    break;
-                case ArgumentType.VARIANT:
-                    _resultValue.add(Variant.class);
-                    break;
-                case ArgumentType.BOOLEAN:
-                    _resultValue.add(Boolean.class);
-                    break;
-                case ArgumentType.INT16:
-                    _resultValue.add(Short.class);
-                    break;
-                case ArgumentType.BYTE:
-                    _resultValue.add(Byte.class);
-                    break;
-                case ArgumentType.OBJECT_PATH:
-                    _resultValue.add(DBusPath.class);
-                    break;
-                case ArgumentType.UINT16:
-                    _resultValue.add(UInt16.class);
-                    break;
-                case ArgumentType.INT32:
-                    _resultValue.add(Integer.class);
-                    break;
-                case ArgumentType.UINT32:
-                    _resultValue.add(UInt32.class);
-                    break;
-                case ArgumentType.INT64:
-                    _resultValue.add(Long.class);
-                    break;
-                case ArgumentType.UINT64:
-                    _resultValue.add(UInt64.class);
-                    break;
-                case ArgumentType.DOUBLE:
-                    _resultValue.add(Double.class);
-                    break;
-                case ArgumentType.FLOAT:
-                    _resultValue.add(Float.class);
-                    break;
-                case ArgumentType.STRING:
-                    _resultValue.add(CharSequence.class);
-                    break;
-                case ArgumentType.FILEDESCRIPTOR:
-                    _resultValue.add(FileDescriptor.class);
-                    break;
-                case ArgumentType.SIGNATURE:
-                    _resultValue.add(Type[].class);
-                    break;
-                case ArgumentType.DICT_ENTRY1:
-                    contained = new ArrayList<>();
-                    int javaType = getJavaType(_dbusType.substring(idx + 1), contained, 2);
-                    _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
-                    idx += javaType + 1;
-                    break;
-                default:
-                    throw new DBusException(String.format("Failed to parse DBus type signature: %s (%s).", _dbusType, _dbusType.charAt(idx)));
                 }
             }
             return idx;
@@ -464,6 +407,84 @@ public final class Marshalling {
             LOGGER.debug("Failed to parse DBus type signature.", _ex);
             throw new DBusException("Failed to parse DBus type signature: " + _dbusType);
         }
+    }
+
+    /**
+     * Maps a scalar (non-container) DBus type signature character to its Java type.
+     *
+     * @param _sigChar signature character
+     * @return the Java type, or {@code null} if the character is not a scalar type
+     */
+    private static Type simpleJavaType(char _sigChar) {
+        return switch (_sigChar) {
+            case ArgumentType.VARIANT        -> Variant.class;
+            case ArgumentType.BOOLEAN        -> Boolean.class;
+            case ArgumentType.INT16          -> Short.class;
+            case ArgumentType.BYTE           -> Byte.class;
+            case ArgumentType.OBJECT_PATH    -> DBusPath.class;
+            case ArgumentType.UINT16         -> UInt16.class;
+            case ArgumentType.INT32          -> Integer.class;
+            case ArgumentType.UINT32         -> UInt32.class;
+            case ArgumentType.INT64          -> Long.class;
+            case ArgumentType.UINT64         -> UInt64.class;
+            case ArgumentType.DOUBLE         -> Double.class;
+            case ArgumentType.FLOAT          -> Float.class;
+            case ArgumentType.STRING         -> CharSequence.class;
+            case ArgumentType.FILEDESCRIPTOR -> FileDescriptor.class;
+            case ArgumentType.SIGNATURE      -> Type[].class;
+            default                          -> null;
+        };
+    }
+
+    /**
+     * Parses a struct ({@code (...)}) starting at {@code _idx} and appends a {@link DBusStructType}.
+     *
+     * @return the index of the last consumed signature character
+     */
+    private static int parseStruct(String _dbusType, int _idx, List<Type> _resultValue, int _depth) throws DBusException {
+        int structIdx = _idx + 1;
+        for (int structLen = 1; structLen > 0; structIdx++) {
+            if (ArgumentType.STRUCT2 == _dbusType.charAt(structIdx)) {
+                structLen--;
+            } else if (ArgumentType.STRUCT1 == _dbusType.charAt(structIdx)) {
+                structLen++;
+            }
+        }
+
+        List<Type> contained = new ArrayList<>();
+        getJavaType(_dbusType.substring(_idx + 1, structIdx - 1), contained, -1, _depth + 1);
+        _resultValue.add(new DBusStructType(contained.toArray(EMPTY_TYPE_ARRAY)));
+        return structIdx - 1; // -1 because structIdx already points to the next signature char
+    }
+
+    /**
+     * Parses an array ({@code a...}) starting at {@code _idx} and appends a {@link DBusListType} or, for a dict entry
+     * element, a {@link DBusMapType}.
+     *
+     * @return the index of the last consumed signature character
+     */
+    private static int parseArray(String _dbusType, int _idx, List<Type> _resultValue, int _depth) throws DBusException {
+        List<Type> contained = new ArrayList<>();
+        if (ArgumentType.DICT_ENTRY1 == _dbusType.charAt(_idx + 1)) {
+            int javaType = getJavaType(_dbusType.substring(_idx + 2), contained, 2, _depth + 1);
+            _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
+            return _idx + javaType + 2;
+        }
+        int javaType = getJavaType(_dbusType.substring(_idx + 1), contained, 1, _depth + 1);
+        _resultValue.add(new DBusListType(contained.getFirst()));
+        return _idx + javaType;
+    }
+
+    /**
+     * Parses a dict entry ({@code {...}}) starting at {@code _idx} and appends a {@link DBusMapType}.
+     *
+     * @return the index of the last consumed signature character
+     */
+    private static int parseDictEntry(String _dbusType, int _idx, List<Type> _resultValue, int _depth) throws DBusException {
+        List<Type> contained = new ArrayList<>();
+        int javaType = getJavaType(_dbusType.substring(_idx + 1), contained, 2, _depth + 1);
+        _resultValue.add(new DBusMapType(contained.getFirst(), contained.get(1)));
+        return _idx + javaType + 1;
     }
 
     /**
@@ -758,7 +779,12 @@ public final class Marshalling {
                 return new Object[] {o};
             } else if (!_methodCall && Struct.class.isAssignableFrom(clz)) {
                 LOGGER.trace("(4) Deserializing Struct return");
-                return deSerializeParameters(_parameters, types, _conn, true);
+                // Either a single struct value is returned (parameters.length == 1, the value itself is the
+                // struct) or several top-level return values make up the struct
+                Object struct = parameters.length == 1
+                    ? deSerializeParameter(parameters[0], clz, _conn)
+                    : deSerializeParameter(parameters, clz, _conn);
+                return new Object[] {struct};
             }
         }
 

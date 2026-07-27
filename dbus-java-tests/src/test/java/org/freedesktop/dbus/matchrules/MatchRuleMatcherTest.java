@@ -4,6 +4,7 @@ import org.freedesktop.dbus.Marshalling;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -62,11 +63,25 @@ class MatchRuleMatcherTest extends AbstractBaseTest {
         assertEquals(_matchResult, MatchRuleMatcher.matchArg0123(msg, _matcher));
     }
 
+    @Test
+    void testMatchPathNamespace() {
+        assertTrue(MatchRuleMatcher.matchPathNamespace("/com/example/foo", "/com/example"));
+        assertTrue(MatchRuleMatcher.matchPathNamespace("/com/example", "/com/example"));
+        assertFalse(MatchRuleMatcher.matchPathNamespace("/com/example/foobar", "/com/example/foo"));
+        // an input that is not a valid object path must never match (previously _input was not validated)
+        assertFalse(MatchRuleMatcher.matchPathNamespace("/com//example", "/com"));
+    }
+
     static Stream<Arguments> createArg0123TestData() {
         return Stream.of(
             Arguments.arguments(List.of("test"), Map.of(0, "test"), true),
             Arguments.arguments(List.of("test", 1), Map.of(0, "foo"), false),
-            Arguments.arguments(List.of("test"), Map.of(0, "te"), false)
+            Arguments.arguments(List.of("test"), Map.of(0, "te"), false),
+            // multiple arg constraints must all match (logical AND)
+            Arguments.arguments(List.of("test", "foo"), Map.of(0, "test", 1, "foo"), true),
+            Arguments.arguments(List.of("test", "foo"), Map.of(0, "test", 1, "nomatch"), false),
+            // arg index beyond the actual parameters must not match
+            Arguments.arguments(List.of("a"), Map.of(0, "a", 3, "b"), false)
             );
     }
 

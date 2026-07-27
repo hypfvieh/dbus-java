@@ -15,6 +15,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.exceptions.FatalDBusException;
 import org.freedesktop.dbus.exceptions.NotConnected;
+import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
@@ -34,6 +35,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class containing most parts required for a arbitrary connection.<br>
@@ -45,6 +47,9 @@ import java.util.concurrent.*;
 public abstract sealed class AbstractConnectionBase implements Closeable permits ConnectionMethodInvocation {
 
     private static final Map<Thread, DBusCallInfo> INFOMAP = new ConcurrentHashMap<>();
+
+    /** Upper bound for {@link #pendingErrorQueue} to avoid unbounded growth when {@link #getError()} is never called. */
+    private static final int                       MAX_PENDING_ERRORS = 1024;
 
     private final Logger                                                          logger;
 
@@ -66,15 +71,16 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     private final Map<Long, MethodCall>                                           pendingCalls;
 
     private final Queue<Error>                                                    pendingErrorQueue;
-
-    private final BusAddress                                                      busAddress;
+    private final AtomicInteger                                                   pendingErrorCount = new AtomicInteger(0);
 
     private final MessageFactory                                                  messageFactory;
     private final ConnectionConfig                                                connectionConfig;
 
-    private AbstractTransport                                                     transport;
+    private volatile AbstractTransport                                            transport;
 
     private volatile boolean                                                      disconnecting;
+
+    private BusAddress                                                            busAddress;
 
     protected AbstractConnectionBase(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
@@ -116,14 +122,15 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
         try {
             transport = transportBuilder.build();
+            // update to the address that was actually connected to (may differ from the primary when using fallback)
+            busAddress = transportBuilder.getAddress();
             messageFactory = Optional.ofNullable(transport)
                 .map(AbstractTransport::getMessageFactory)
                 .orElseThrow();
         } catch (IOException | DBusException _ex) {
             logger.debug("Error creating transport", _ex);
-            if (_ex instanceof IOException ioe) {
-                internalDisconnect(ioe);
-            }
+            senderService.shutdownNow();
+            receivingService.shutdownNow();
             throw new DBusException("Failed to connect to bus: " + _ex.getMessage(), _ex);
         }
     }
@@ -221,14 +228,28 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
         receivingService.shutdown(10, TimeUnit.SECONDS);
 
         // stop potentially waiting method-calls
-        getLogger().debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
         Exception interrupt = _connectionError == null ? new IOException("Disconnecting") : _connectionError;
-        for (MethodCall mthCall : getPendingCalls().values()) {
-            try {
-                mthCall.setReply(getMessageFactory().createError(mthCall, interrupt));
-            } catch (DBusException _ex) {
-                getLogger().debug("Cannot set method reply to error", _ex);
+
+        synchronized (getPendingCalls()) {
+            getLogger().debug("Notifying {} method call(s) to stop waiting for replies", getPendingCalls().size());
+            for (MethodCall mthCall : getPendingCalls().values()) {
+                try {
+                    Error errorReply = getMessageFactory().createError(mthCall, interrupt);
+                    mthCall.setReply(errorReply);
+                    // also fail any registered async callback so it learns about the disconnect (and is removed -> no leak)
+                    CallbackHandler<?> callback = getCallbackManager().removeCallback(mthCall);
+                    if (callback != null) {
+                        try {
+                            callback.handleError(errorReply.getException());
+                        } catch (Exception _ex) {
+                            getLogger().debug("Exception while running disconnect error callback", _ex);
+                        }
+                    }
+                } catch (DBusException _ex) {
+                    getLogger().debug("Cannot set method reply to error", _ex);
+                }
             }
+            getPendingCalls().clear();
         }
 
         // shutdown sender executor service, send all remaining messages in main thread when no exception caused disconnection
@@ -357,7 +378,8 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
      * @return true if connected
      */
     public boolean isConnected() {
-        return transport != null && transport.isConnected();
+        AbstractTransport t = transport; // read volatile field once to avoid a check-then-act race
+        return t != null && t.isConnected();
     }
 
     /**
@@ -474,9 +496,51 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     public DBusExecutionException getError() {
         Error poll = getPendingErrorQueue().poll();
         if (poll != null) {
+            pendingErrorCount.decrementAndGet();
             return poll.getException();
         }
         return null;
+    }
+
+    /**
+     * Adds an unhandled DBus error to the pending error queue in a bounded fashion.
+     * <p>
+     * The queue is only drained by callers of {@link #getError()}. Applications which never call {@code getError()}
+     * would otherwise let this queue grow without limit. To avoid that, the queue is capped at
+     * {@link #MAX_PENDING_ERRORS} entries; on overflow the oldest entry is dropped (the most recent errors, which are
+     * usually the more relevant ones for diagnostics, are kept).
+     * </p>
+     *
+     * @param _err error to enqueue
+     */
+    protected void addPendingError(Error _err) {
+        if (offerBounded(getPendingErrorQueue(), pendingErrorCount, MAX_PENDING_ERRORS, _err)) {
+            getLogger().debug("Pending error queue exceeded {} entries; dropped oldest unhandled error", MAX_PENDING_ERRORS);
+        }
+    }
+
+    /**
+     * Adds an element to a queue while keeping its size bounded, dropping the oldest element on overflow.
+     * <p>
+     * Uses the supplied {@link AtomicInteger} as an O(1) size counter instead of {@link Queue#size()} which is O(n) for
+     * {@link ConcurrentLinkedQueue}. The counter must be maintained (decremented) by every other consumer that removes
+     * elements from the same queue.
+     * </p>
+     *
+     * @param <T> element type
+     * @param _queue queue to add to
+     * @param _count size counter associated with the queue
+     * @param _max maximum number of elements to retain
+     * @param _element element to add
+     * @return {@code true} if an element was dropped to stay within the bound, {@code false} otherwise
+     */
+    static <T> boolean offerBounded(Queue<T> _queue, AtomicInteger _count, int _max, T _element) {
+        _queue.add(_element);
+        if (_count.incrementAndGet() > _max && _queue.poll() != null) {
+            _count.decrementAndGet();
+            return true;
+        }
+        return false;
     }
 
     /**

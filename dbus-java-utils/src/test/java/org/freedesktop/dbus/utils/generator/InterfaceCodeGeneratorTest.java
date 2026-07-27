@@ -24,6 +24,88 @@ class InterfaceCodeGeneratorTest {
         return loadDBusXmlFile(false, _inputFile, _objectPath, _busName);
     }
 
+    @Test
+    void testGeneratedWirelessInterfaceCompiles() throws Exception {
+        InterfaceCodeGenerator gen = loadDBusXmlFile(
+                new File("src/test/resources/CreateInterface/networkmanager/org.freedesktop.NetworkManager.Device.Wireless.xml"),
+                "/", "org.freedesktop.NetworkManager.Device.Wireless");
+        GeneratedCodeCompiler.assertCompiles("NetworkManager.Device.Wireless", gen.analyze(true));
+    }
+
+    @Test
+    void testGeneratedWritablePropertyCompiles() throws Exception {
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.example.PropIface">
+                <property name="SimpleProp" type="s" access="readwrite"/>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.example.PropIface", null, true, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String src = generated.values().iterator().next();
+
+        // setter must be a plain interface declaration: single argument, no body (old bug: duplicate arg + body)
+        assertTrue(src.contains("void setSimpleProp(String simpleProp);"),
+            "expected single-argument setter declaration, was:\n" + src);
+        assertFalse(src.contains("this."), "setter must not contain a method body, was:\n" + src);
+        GeneratedCodeCompiler.assertCompiles("writable property (--propertyMethods)", generated);
+    }
+
+    @Test
+    void testGeneratedDisableTuplesStructsCompile() throws Exception {
+        // --disable-tuples generates Struct classes for multi-value returns; these must carry their own imports
+        String xml = Util.readFileToString(new File("src/test/resources/CreateInterface/xdg-desktop/org.freedesktop.portal.Documents.xml"));
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.freedesktop.portal.Documents", null, false, null, true);
+        GeneratedCodeCompiler.assertCompiles("Documents (--disable-tuples)", gen.analyze(true));
+    }
+
+    @Test
+    void testForcedPackageEmitsSingleInterfaceNameAnnotation() throws Exception {
+        // forced package + mixed-case DBus namespace previously produced two @DBusInterfaceName annotations
+        // (one lower-cased) -> not repeatable -> compile error
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.freedesktop.NetworkManager.Device.Wireless">
+                <method name="Foo"/>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/",
+            "org.freedesktop.NetworkManager.Device.Wireless", "com.example.custom", false, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String src = generated.values().iterator().next();
+
+        int annotationCount = src.split("@DBusInterfaceName\\(", -1).length - 1;
+        assertEquals(1, annotationCount, "expected exactly one @DBusInterfaceName, was:\n" + src);
+        assertTrue(src.contains("@DBusInterfaceName(\"org.freedesktop.NetworkManager.Device.Wireless\")"),
+            "expected the original (mixed-case) interface name, was:\n" + src);
+        assertTrue(src.contains("package com.example.custom;"), "expected forced package, was:\n" + src);
+        GeneratedCodeCompiler.assertCompiles("forced package + mixed-case namespace", generated);
+    }
+
+    @Test
+    void testDictWithStructValueBecomesMap() throws Exception {
+        // a{s(ii)} must generate Map<String, GeneratedStruct>, not a plain Struct class
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <node name="/">
+              <interface name="org.example.DictStruct">
+                <method name="GetData">
+                  <arg type="a{s(ii)}" name="data" direction="out"/>
+                </method>
+              </interface>
+            </node>""";
+        InterfaceCodeGenerator gen = new InterfaceCodeGenerator(false, xml, "/", "org.example.DictStruct", null, false, null, false);
+        Map<File, String> generated = gen.analyze(true);
+        String iface = generated.entrySet().stream()
+            .filter(e -> e.getKey().getName().equals("DictStruct.java"))
+            .findFirst().orElseThrow().getValue();
+
+        assertTrue(iface.contains("Map<String,"), "dict-with-struct value must be a Map, was:\n" + iface);
+        GeneratedCodeCompiler.assertCompiles("dict with struct value a{s(ii)}", generated);
+    }
+
     static InterfaceCodeGenerator loadDBusXmlFile(boolean _createPropertyMethods, File _inputFile, String _objectPath, String _busName) {
         if (!Util.isBlank(_busName)) {
             String introspectionData = Util.readFileToString(_inputFile);
@@ -139,16 +221,18 @@ class InterfaceCodeGeneratorTest {
             .orElseThrow()
             .getValue();
 
-        assertLineEquals(99, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
+        assertLineEquals(100, primaryFile, "        private final List<ShortcutsChangedShortcutsStruct> shortcuts;");
 
-        assertLineEquals(101, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
-        assertLineEquals(102, primaryFile, "            super(path, sessionHandle, shortcuts);");
-        assertLineEquals(103, primaryFile, "            this.sessionHandle = sessionHandle;");
-        assertLineEquals(104, primaryFile, "            this.shortcuts = shortcuts;");
+        assertLineEquals(102, primaryFile, "        public ShortcutsChanged(String path, DBusPath sessionHandle, List<ShortcutsChangedShortcutsStruct> shortcuts) throws DBusException {");
+        assertLineEquals(103, primaryFile, "            super(path, sessionHandle, shortcuts);");
+        assertLineEquals(104, primaryFile, "            this.sessionHandle = sessionHandle;");
+        assertLineEquals(105, primaryFile, "            this.shortcuts = shortcuts;");
 
-        assertLineEquals(108, primaryFile, "            return sessionHandle;");
-        assertLineEquals(111, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
-        assertLineEquals(112, primaryFile, "            return shortcuts;");
+        assertLineEquals(109, primaryFile, "            return sessionHandle;");
+        assertLineEquals(112, primaryFile, "        public List<ShortcutsChangedShortcutsStruct> getShortcuts() {");
+        assertLineEquals(113, primaryFile, "            return shortcuts;");
+
+        GeneratedCodeCompiler.assertCompiles("GlobalShortcuts (struct signals)", analyze);
 
         String secondaryFile = analyze.entrySet().stream()
             .filter(e -> e.getKey().getName().equals("ShortcutsChangedShortcutsStruct.java"))

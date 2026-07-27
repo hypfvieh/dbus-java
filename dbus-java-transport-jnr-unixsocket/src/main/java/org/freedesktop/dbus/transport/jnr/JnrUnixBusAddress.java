@@ -1,38 +1,13 @@
 package org.freedesktop.dbus.transport.jnr;
 
 import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.transports.IFileBasedBusAddress;
-import org.freedesktop.dbus.utils.Util;
+import org.freedesktop.dbus.connections.transports.AbstractUnixBusAddress;
+import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Set;
+public class JnrUnixBusAddress extends AbstractUnixBusAddress {
 
-public class JnrUnixBusAddress extends BusAddress implements IFileBasedBusAddress {
-
-    public JnrUnixBusAddress(BusAddress _obj) {
-        super(_obj);
-    }
-
-    public boolean hasPath() {
-        return hasParameter("path");
-    }
-
-    public String getAbstract() {
-        return getParameterValue("abstract");
-    }
-
-    public boolean isAbstract() {
-        return hasParameter("abstract");
-    }
-
-    public String getPath() {
-        return getParameterValue("path");
-    }
-
-    @Override
-    public void updatePermissions(String _fileOwner, String _fileGroup, Set<PosixFilePermission> _fileUnixPermissions) {
-        Util.setFilePermissions(Path.of(getPath()), _fileOwner, _fileGroup, _fileUnixPermissions);
+    public JnrUnixBusAddress(BusAddress _obj) throws TransportConfigurationException {
+        super(_obj, true); // jnr-unixsocket supports abstract sockets
     }
 
 }

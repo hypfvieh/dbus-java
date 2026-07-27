@@ -5,6 +5,8 @@ import org.freedesktop.dbus.MethodTuple;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.DBusProperty.Access;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal;
+import org.freedesktop.dbus.annotations.PropertiesEmitsChangedSignal.EmitChangeSignal;
 import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
@@ -246,7 +248,12 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
                         }
                     }
                     _methodCall.setArgs(Marshalling.deSerializeParameters(new Object[] {myVal}, new Type[] {type}, this, true));
-                    invokeMethodAndReply(_methodCall, propMeth, object, 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED));
+                    boolean noReply = 1 == (_methodCall.getFlags() & Flags.NO_REPLY_EXPECTED);
+                    if (invokeSetterAndReply(_methodCall, propMeth, object, noReply)) {
+                        // property was changed successfully; optionally announce it via PropertiesChanged
+                        emitPropertiesChangedIfEnabled(_exportObject, _methodCall, propMeth,
+                            (String) _params[0], (String) _params[1], myVal);
+                    }
                 } catch (Exception _ex) {
                     getLogger().debug("Failed to invoke method call on Properties", _ex);
                     handleException(_methodCall, new UnknownMethod("Failure in de-serializing message: " + _ex));
@@ -256,6 +263,127 @@ public abstract sealed class DBusBoundPropertyHandler extends ConnectionMethodIn
         }
         return PropHandled.NOT_HANDLED;
 
+    }
+
+    /**
+     * Invokes a property setter and sends the (void) method reply, mirroring the error handling of
+     * {@link ConnectionMethodInvocation#invokeMethodAndReply(MethodCall, Method, Object, boolean)} but
+     * reporting whether the setter completed successfully so the caller can decide whether to emit a
+     * PropertiesChanged signal.
+     *
+     * @param _methodCall the Set method call
+     * @param _setter the setter method
+     * @param _object the exported object instance
+     * @param _noReply whether a reply is expected
+     *
+     * @return {@code true} if the setter was invoked without error, {@code false} otherwise
+     */
+    private boolean invokeSetterAndReply(MethodCall _methodCall, Method _setter, Object _object, boolean _noReply) {
+        try {
+            invokeMethod(_methodCall, _setter, _object);
+            if (!_noReply) {
+                invokedMethodReply(_methodCall, _setter, null);
+            }
+            return true;
+        } catch (DBusExecutionException _ex) {
+            getLogger().debug("Failed to invoke property setter", _ex);
+            handleException(_methodCall, _ex);
+        } catch (Throwable _ex) {
+            getLogger().debug("Error invoking property setter {}", _methodCall, _ex);
+            handleException(_methodCall, new DBusExecutionException(String.format("Error Executing Method %s.%s: %s",
+                _methodCall.getInterface(), _methodCall.getName(), _ex.getMessage()), _ex));
+        }
+        return false;
+    }
+
+    /**
+     * Emits an {@code org.freedesktop.DBus.Properties.PropertiesChanged} signal for a changed bound
+     * property, if enabled on the connection ({@link ConnectionConfig#isAutoEmitPropertiesChanged()})
+     * and permitted by the property's {@link EmitChangeSignal} value.
+     *
+     * @param _exportObject the exported object
+     * @param _methodCall the originating Set call (used for the object path)
+     * @param _setter the property setter method (source of the EmitChangeSignal annotation)
+     * @param _propertyInterface the interface name the property belongs to (from the Set arguments)
+     * @param _propertyName the property name
+     * @param _setValue the value that was set (fallback when no getter is available)
+     */
+    private void emitPropertiesChangedIfEnabled(ExportedObject _exportObject, MethodCall _methodCall, Method _setter,
+            String _propertyInterface, String _propertyName, Object _setValue) {
+        if (!getConnectionConfig().isAutoEmitPropertiesChanged()) {
+            return;
+        }
+        EmitChangeSignal emit = resolveEmitChangeSignal(_setter);
+        if (emit == EmitChangeSignal.CONST || emit == EmitChangeSignal.FALSE) {
+            return;
+        }
+
+        try {
+            Map<String, Variant<?>> changed = new HashMap<>();
+            List<String> invalidated = new ArrayList<>();
+
+            if (emit == EmitChangeSignal.INVALIDATES) {
+                invalidated.add(_propertyName);
+            } else { // TRUE - include the current value
+                Method getter = _exportObject.getPropertyMethods().get(new PropertyRef(_propertyName, null, Access.READ));
+                Object value;
+                Type valueType;
+                if (getter != null) {
+                    value = getter.invoke(_exportObject.getObject().get());
+                    valueType = getter.getGenericReturnType();
+                } else { // write-only property - fall back to the value that was set
+                    value = _setValue;
+                    valueType = _setter.getGenericParameterTypes()[0];
+                }
+                if (value == null) {
+                    getLogger().debug("Not emitting PropertiesChanged for {}.{}: value is null", _propertyInterface, _propertyName);
+                    return;
+                }
+                changed.put(_propertyName, toVariant(value, valueType));
+            }
+
+            sendMessage(new Properties.PropertiesChanged(_methodCall.getPath(), _propertyInterface, changed, invalidated));
+        } catch (Exception _ex) {
+            getLogger().warn("Failed to emit PropertiesChanged for property {}.{}", _propertyInterface, _propertyName, _ex);
+        }
+    }
+
+    /**
+     * Resolves the effective {@link EmitChangeSignal} for a bound property. A non-default value on the
+     * {@link DBusBoundProperty#emitChangeSignal()} method annotation takes precedence, followed by the
+     * interface-global {@link PropertiesEmitsChangedSignal} annotation, defaulting to {@link EmitChangeSignal#TRUE}.
+     *
+     * @param _setter setter method of the property
+     * @return effective EmitChangeSignal
+     */
+    private EmitChangeSignal resolveEmitChangeSignal(Method _setter) {
+        DBusBoundProperty boundProperty = _setter.getAnnotation(DBusBoundProperty.class);
+        if (boundProperty != null && boundProperty.emitChangeSignal() != EmitChangeSignal.TRUE) {
+            return boundProperty.emitChangeSignal();
+        }
+        PropertiesEmitsChangedSignal global = _setter.getDeclaringClass().getAnnotation(PropertiesEmitsChangedSignal.class);
+        if (global != null) {
+            return global.value();
+        }
+        return EmitChangeSignal.TRUE;
+    }
+
+    /**
+     * Wraps a property value in a {@link Variant}, computing the DBus signature for array/collection/map
+     * values from the given type (as {@code GetAll} does).
+     *
+     * @param _value value to wrap (must not be {@code null})
+     * @param _type generic type of the value (getter return type or setter parameter type)
+     * @return the wrapped variant
+     *
+     * @throws DBusException when the DBus type cannot be determined
+     */
+    protected Variant<?> toVariant(Object _value, Type _type) throws DBusException {
+        if (_value.getClass().isArray() || _value instanceof Collection || _value instanceof Map) {
+            String signature = String.join("", Marshalling.getDBusType(_type));
+            return new Variant<>(_value, signature);
+        }
+        return new Variant<>(_value);
     }
 
     enum PropHandled {

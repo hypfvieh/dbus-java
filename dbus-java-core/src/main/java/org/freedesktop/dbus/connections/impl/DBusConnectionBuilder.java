@@ -11,6 +11,9 @@ import org.freedesktop.dbus.exceptions.AddressResolvingException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * Builder to create a new DBusConnection.
  *
@@ -35,8 +38,11 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        BusAddress address = validateTransportAddress(AddressBuilder.getSessionConnection(_machineIdFileLocation));
-        return new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
+        List<BusAddress> addresses = AddressBuilder.getSessionConnectionAddresses(_machineIdFileLocation);
+        validateTransportAddress(addresses.getFirst());
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(_machineIdFileLocation));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
     }
 
     /**
@@ -94,7 +100,29 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return this
      */
     public static DBusConnectionBuilder forAddress(String _address) {
-        return new DBusConnectionBuilder(BusAddress.of(_address), getDbusMachineId(null));
+        List<BusAddress> addresses = BusAddress.parseAll(_address);
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(null));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
+    }
+
+    /**
+     * Use the given ordered list of addresses to create the connection. When connecting, the addresses are tried in
+     * order until one succeeds (connect-fallback).
+     *
+     * @param _addresses candidate addresses, at least one required
+     * @return this
+     *
+     * @since 6.0.0
+     */
+    public static DBusConnectionBuilder forAddresses(BusAddress... _addresses) {
+        if (_addresses == null || _addresses.length == 0) {
+            throw new IllegalArgumentException("At least one BusAddress is required");
+        }
+        List<BusAddress> addresses = List.of(_addresses);
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(null));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
     }
 
     /**
@@ -122,21 +150,23 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
         }
 
         // no unix transport but address wants to use a unix socket
-        if (!TransportBuilder.getRegisteredBusTypes().contains("UNIX")
-                && _address != null
-                && _address.isBusType("UNIX")) {
-            throw new AddressResolvingException("No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
-        }
+        validateTransportAvailable("UNIX", _address,
+            "No transports found to handle UNIX socket connections. Please add a unix-socket transport provider to your classpath");
 
         // no tcp transport but TCP address given
-        if (!TransportBuilder.getRegisteredBusTypes().contains("TCP")
-                && _address != null
-                && _address.isBusType("TCP")) {
-            throw new AddressResolvingException("No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
-        }
+        validateTransportAvailable("TCP", _address,
+            "No transports found to handle TCP connections. Please add a TCP transport provider to your classpath");
 
         return _address;
 
+    }
+
+    private static void validateTransportAvailable(String _type, BusAddress _address, String _errorMessage) {
+        if (!TransportBuilder.getRegisteredBusTypes().contains(_type)
+            && _address != null
+            && _address.isBusType(_type)) {
+            throw new AddressResolvingException(_errorMessage);
+        }
     }
 
     /**
@@ -176,10 +206,26 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
                 }
             }
         } else {
-            c = new DBusConnection(shared, machineId, connectionConfig, transportCfg, rcvSvcCfg);
+            c = new DBusConnection(false, machineId, connectionConfig, transportCfg, rcvSvcCfg);
         }
 
-        c.connectImpl();
+        try {
+            c.connectImpl();
+        } catch (DBusException _ex) {
+            if (shared) {
+                // remove shared connection if connection failed
+                synchronized (DBusConnection.CONNECTIONS) {
+                    DBusConnection removedConnection = DBusConnection.CONNECTIONS.remove(transportCfg.getBusAddress().toString());
+                    if (removedConnection != null) {
+                        removedConnection.close();
+                    }
+                }
+            } else {
+                // close the freshly created (but not registered) connection to avoid leaking its threads/transport
+                c.close();
+            }
+            throw _ex;
+        }
         return c;
     }
 
@@ -193,15 +239,12 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
     private DBusConnection getSharedConnection(String _busAddr) {
         synchronized (DBusConnection.CONNECTIONS) {
             DBusConnection c = DBusConnection.CONNECTIONS.get(_busAddr);
-            if (c != null) {
-                if (!c.isConnected()) {
-                    DBusConnection.CONNECTIONS.remove(_busAddr);
-                    return null;
-                } else {
-                    return c;
-                }
+            if (c != null && !c.isConnected()) {
+                Optional.ofNullable(DBusConnection.CONNECTIONS.remove(_busAddr))
+                    .ifPresent(DBusConnection::close);
+                return null;
             }
+            return c;
         }
-        return null;
     }
 }

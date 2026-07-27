@@ -20,7 +20,11 @@ public final class TransportConfig {
 
     private SaslConfig                  saslConfig;
 
+    /** Effective bus address (primary candidate, or the address that was actually connected to). */
     private BusAddress                  busAddress;
+
+    /** Ordered list of candidate bus addresses to try when connecting (connect-fallback). */
+    private List<BusAddress>            busAddresses = new ArrayList<>();
 
     private Consumer<AbstractTransport> preConnectCallback;
     private Consumer<AbstractTransport> afterBindCallback;
@@ -52,6 +56,9 @@ public final class TransportConfig {
 
     public TransportConfig(BusAddress _address) {
         busAddress = _address;
+        if (_address != null) {
+            busAddresses.add(_address);
+        }
     }
 
     public TransportConfig() {
@@ -62,8 +69,39 @@ public final class TransportConfig {
         return busAddress;
     }
 
+    /**
+     * Sets the effective bus address. Does not modify the candidate list (see {@link #setBusAddresses(List)}); it is
+     * used both to configure a single address and to record the address that was actually connected to.
+     *
+     * @param _busAddress address, never null
+     */
     public void setBusAddress(BusAddress _busAddress) {
         busAddress = Objects.requireNonNull(_busAddress, "BusAddress required");
+    }
+
+    /**
+     * Ordered list of candidate bus addresses. When more than one is present, connecting tries them in order until one
+     * succeeds (connect-fallback). Never null; may be empty if only a single {@link #getBusAddress()} was configured.
+     *
+     * @return ordered candidate list
+     */
+    public List<BusAddress> getBusAddresses() {
+        return busAddresses;
+    }
+
+    /**
+     * Sets the ordered list of candidate bus addresses and updates the effective {@link #getBusAddress()} to the first
+     * entry.
+     *
+     * @param _busAddresses candidate addresses, never null or empty
+     */
+    public void setBusAddresses(List<BusAddress> _busAddresses) {
+        Objects.requireNonNull(_busAddresses, "BusAddresses required");
+        if (_busAddresses.isEmpty()) {
+            throw new IllegalArgumentException("At least one BusAddress is required");
+        }
+        busAddresses = new ArrayList<>(_busAddresses);
+        busAddress = busAddresses.getFirst();
     }
 
     public void setListening(boolean _listen) {

@@ -11,6 +11,7 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.messages.Message;
 import org.freedesktop.dbus.messages.MessageFactory;
 import org.freedesktop.dbus.messages.constants.MessageTypes;
+import org.freedesktop.dbus.test.helper.structs.IntStruct;
 import org.freedesktop.dbus.test.helper.structs.MarkTuple;
 import org.freedesktop.dbus.test.helper.structs.SampleStruct;
 import org.freedesktop.dbus.test.helper.structs.SampleTuple;
@@ -128,6 +129,25 @@ class MarshallingTest extends AbstractBaseTest {
         MarkTuple mt = (MarkTuple) params[0];
         assertEquals("rootfs.1", mt.getSlotName(), "Slot name does not match after deSerialization");
         assertEquals("marked slot rootfs.1 as good", mt.getMessage(), "Message does not match after deSerialization");
+    }
+
+    @Test
+    void testDeserializeParametersWithStruct() throws Exception {
+        Type[] ts = new Type[] {IntStruct.class};
+
+        // case B: several top-level return values packed into one Struct (code generated with --disable-tuples)
+        Object[] multiValueParams = Marshalling.deSerializeParameters(new Object[] {5, 7}, ts, null);
+        assertTrue(multiValueParams[0] instanceof IntStruct, "Case B: expected an IntStruct");
+        IntStruct multiValueStruct = (IntStruct) multiValueParams[0];
+        assertEquals(5, multiValueStruct.getValue1(), "Case B: value1 does not match after deSerialization");
+        assertEquals(7, multiValueStruct.getValue2(), "Case B: value2 does not match after deSerialization");
+
+        // case A: a single struct value returned (e.g. a method returning '(ii)')
+        Object[] singleValueParams = Marshalling.deSerializeParameters(new Object[] {new Object[] {5, 7}}, ts, null);
+        assertTrue(singleValueParams[0] instanceof IntStruct, "Case A: expected an IntStruct");
+        IntStruct singleValueStruct = (IntStruct) singleValueParams[0];
+        assertEquals(5, singleValueStruct.getValue1(), "Case A: value1 does not match after deSerialization");
+        assertEquals(7, singleValueStruct.getValue2(), "Case A: value2 does not match after deSerialization");
     }
 
     @Test

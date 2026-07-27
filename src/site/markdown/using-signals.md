@@ -52,15 +52,15 @@ There are different `addSigHandler` methods depending on the use case.
 If you only want to listen for specific signals of a specific remote object, you should use something like:
 
 ```java
-MySignal remoteSignal connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
-connection.addSigHandler(MySignalClass.class, remoteSignal, new MySignalClassHandler());
+MySignal remoteSignal = connection.getRemoteObject("some.bus.name", "/some/object/path", MySignal.class);
+connection.addSigHandler(MySignal.MySignalClass.class, remoteSignal, new MySignalClassHandler());
 ```
 
 If you want to listen to all object paths of an exported object you can use:
-`connection.addSigHandler(MySignalClass.class, new MySignalClassHandler())`.
+`connection.addSigHandler(MySignal.MySignalClass.class, new MySignalClassHandler())`.
 
 It is also possible to express a signal handler as Lambda e.g.:
-`connection.addSigHandler(MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
+`connection.addSigHandler(MySignal.MySignalClass.class, signal -> System.out.println("Got signal: " + signal))`
 
 To remove a handler you can either call `close()` on the object returned by the `addSigHandler` calls or use the appropriate `removeSigHandler` call.
 You don't have to remove your signal handler when you want to close the connection anyway. 
@@ -91,6 +91,25 @@ For more information on MatchRules see [DBus-Specification](https://dbus.freedes
 
 Please note: dbus-java does not support the eavesdrop option. 
 Eavesdrop is deprecated according to specification, therefore there are no plans to add it.
+
+### Monitoring the bus (`BecomeMonitor`)
+
+If you need to observe traffic that is not addressed to your connection, use the specification-compliant
+monitor mechanism instead of eavesdropping. Calling `becomeMonitor(...)` on a `DBusConnection` turns it
+into a *monitor connection* which receives copies of the messages flowing over the bus:
+
+```java
+try (DBusConnection monitor = DBusConnectionBuilder.forSessionBus().withShared(false).build()) {
+    // empty rule list = monitor all messages; otherwise pass DBusMatchRule instances to filter
+    monitor.becomeMonitor(List.of(), msg ->
+        System.out.println("saw " + msg.getInterface() + "." + msg.getName() + " on " + msg.getPath()));
+    // ... keep the connection open while monitoring ...
+}
+```
+
+A monitor connection loses its bus names and match rules and **must not send messages** anymore, so use a
+dedicated (private) connection for it. Becoming a monitor usually requires elevated privileges on the bus.
+Note that the callback receives raw `org.freedesktop.dbus.messages.Message` objects.
 
 ## Signals and constructors
 
@@ -144,11 +163,11 @@ Example:
 ```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
     
     public MySignal(String _objPath, List<Integer> _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
 }
 ```
@@ -162,11 +181,11 @@ The example would then look like this:
 ```java
 class MySignal extends DBusSignal {
     public MySignal(String _objPath, int[] _arr, String _text) {
-       this(_objectPath, Arrays.asList(_arr), _text);
+       this(_objPath, Arrays.stream(_arr).boxed().toList(), _text);
     }
     
     public MySignal(String _objPath, List<Integer> _arr, String _text) {
-       super(_objectPath, _arr, _text);
+       super(_objPath, _arr, _text);
     }
 }
 ```

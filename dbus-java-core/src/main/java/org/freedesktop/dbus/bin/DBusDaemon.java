@@ -8,13 +8,21 @@ import org.freedesktop.dbus.connections.transports.TransportBuilder.SaslAuthMode
 import org.freedesktop.dbus.connections.transports.TransportConnection;
 import org.freedesktop.dbus.errors.AccessDenied;
 import org.freedesktop.dbus.errors.MatchRuleInvalid;
+import org.freedesktop.dbus.errors.PropertyReadOnly;
+import org.freedesktop.dbus.errors.ServiceUnknown;
+import org.freedesktop.dbus.errors.UnknownMethod;
+import org.freedesktop.dbus.errors.UnknownProperty;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
+import org.freedesktop.dbus.interfaces.Debug;
 import org.freedesktop.dbus.interfaces.FatalException;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.interfaces.Verbose;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.MatchRuleParser;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -77,9 +85,24 @@ public class DBusDaemon extends Thread implements Closeable {
 
     private final AbstractTransport                                             transport;
 
+    /** Whether the {@code org.freedesktop.DBus.Debug.Stats} interface is offered to clients. */
+    private final boolean                                                       debugFeaturesEnabled;
+
     public DBusDaemon(AbstractTransport _transport) {
+        this(_transport, false);
+    }
+
+    /**
+     * Creates a new daemon.
+     *
+     * @param _transport transport to listen on
+     * @param _debugFeaturesEnabled whether to offer the {@code org.freedesktop.DBus.Debug.Stats} interface; a default
+     *            daemon behaves like a production reference daemon and does not expose it
+     */
+    public DBusDaemon(AbstractTransport _transport, boolean _debugFeaturesEnabled) {
         setName(getClass().getSimpleName() + "-Thread");
         transport = _transport;
+        debugFeaturesEnabled = _debugFeaturesEnabled;
         names.put(DBUS_BUSNAME, null);
     }
 
@@ -141,6 +164,9 @@ public class DBusDaemon extends Thread implements Closeable {
                             send(connectionStruct, messageFactory.createError(DBUS_BUSNAME, null, "org.freedesktop.DBus.Error.GeneralError", m.getSerial(), "s", "Sending message failed"));
                         }
 
+                        // deliver a copy of every message flowing through the bus to monitor connections
+                        deliverToMonitors(m);
+
                         if (DBUS_BUSNAME.equals(m.getDestination())) {
                             dbusServer.handleMessage(connectionStruct, pollFirst.first);
                         } else {
@@ -192,6 +218,9 @@ public class DBusDaemon extends Thread implements Closeable {
             }
 
             CON_LOOP: for (Entry<ConnectionStruct, DBusDaemonReaderThread> cs : l.entrySet()) {
+                if (cs.getKey().monitor) {
+                    continue; // monitors are served separately via deliverToMonitors
+                }
                 for (DBusMatchRule rule : cs.getKey().rules) {
                     if (rule.matches(_msg)) {
                         LOGGER.debug("Cloning message for matchrule \"{}\" for connection {} (origin={})",
@@ -208,6 +237,40 @@ public class DBusDaemon extends Thread implements Closeable {
                 }
             }
         }
+    }
+
+    /**
+     * Delivers a copy of the given message to all monitor connections whose monitor match rules match
+     * (an empty rule set matches everything).
+     *
+     * @param _msg the message flowing through the bus
+     */
+    private void deliverToMonitors(Message _msg) {
+        Map<ConnectionStruct, DBusDaemonReaderThread> l;
+        synchronized (conns) {
+            l = new HashMap<>(conns);
+        }
+
+        for (ConnectionStruct cs : l.keySet()) {
+            if (!cs.monitor) {
+                continue;
+            }
+            if (cs.monitorRules.isEmpty() || monitorRulesMatch(cs, _msg)) {
+                LOGGER.trace("Delivering monitored message {} to monitor {}", _msg, cs.unique);
+                send(cs, _msg);
+            }
+        }
+    }
+
+    private static boolean monitorRulesMatch(ConnectionStruct _cs, Message _msg) {
+        synchronized (_cs.monitorRules) {
+            for (DBusMatchRule rule : _cs.monitorRules) {
+                if (rule.matches(_msg)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void logMessage(String _logStr, Message _m, String _connUniqueId) {
@@ -418,9 +481,15 @@ public class DBusDaemon extends Thread implements Closeable {
         private String                          unique;
         private Supplier<Thread>                threadSupplier;
 
+        /** Whether this connection became a monitor connection (via BecomeMonitor). */
+        private boolean                         monitor;
+        /** Match rules restricting the monitored messages (empty = match all). */
+        private final Set<DBusMatchRule>        monitorRules;
+
         ConnectionStruct(TransportConnection _c) {
             connection = _c;
             rules = Collections.synchronizedSet(new LinkedHashSet<>());
+            monitorRules = Collections.synchronizedSet(new LinkedHashSet<>());
         }
 
         @Override
@@ -442,10 +511,13 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer implements DBus, Introspectable, Peer {
+    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Properties, Debug.Stats, Verbose {
 
         private final String machineId;
         private ConnectionStruct connStruct;
+
+        /** Whether verbose output was enabled via the {@code org.freedesktop.DBus.Verbose} interface. */
+        private boolean verbose;
 
         public DBusServer() {
             machineId = AddressBuilder.createMachineId();
@@ -670,6 +742,24 @@ public class DBusDaemon extends Thread implements Closeable {
             Object rv = null;
             MessageFactory messageFactory = _connStruct.connection.getMessageFactory();
 
+            // BecomeMonitor takes an array argument; the reflective dispatch below matches on the runtime
+            // classes of the deserialized arguments (a D-Bus array deserializes to a List, not String[]),
+            // so it is handled explicitly here.
+            if ("BecomeMonitor".equals(_msg.getName())) {
+                this.connStruct = _connStruct;
+                BecomeMonitor(extractRuleStrings(args), new UInt32(0));
+                send(_connStruct, messageFactory.createMethodReturn(DBUS_BUSNAME, (MethodCall) _msg, null), true);
+                return;
+            }
+
+            // Properties.Get/GetAll/Set are handled explicitly: the reflective dispatch below cannot marshal the
+            // generic return type of Properties.Get (its wire signature is a VARIANT "v").
+            if ("Get".equals(_msg.getName()) || "GetAll".equals(_msg.getName()) || "Set".equals(_msg.getName())) {
+                this.connStruct = _connStruct;
+                handlePropertiesCall(_connStruct, (MethodCall) _msg, args, messageFactory);
+                return;
+            }
+
             try {
                 meth = DBusServer.class.getMethod(_msg.getName(), cs);
                 try {
@@ -699,6 +789,41 @@ public class DBusDaemon extends Thread implements Closeable {
 
         }
 
+        private static String[] extractRuleStrings(Object[] _args) {
+            if (_args.length == 0 || _args[0] == null) {
+                return new String[0];
+            }
+            Object first = _args[0];
+            if (first instanceof String[] sa) {
+                return sa;
+            } else if (first instanceof Collection<?> c) {
+                return c.stream().map(String::valueOf).toArray(String[]::new);
+            } else if (first instanceof Object[] oa) {
+                return Arrays.stream(oa).map(String::valueOf).toArray(String[]::new);
+            }
+            return new String[0];
+        }
+
+        @Override
+        public void BecomeMonitor(String[] _rule, UInt32 _flags) {
+            ConnectionStruct cs = connStruct;
+            if (cs == null) {
+                return;
+            }
+            cs.monitorRules.clear();
+            for (String ruleStr : _rule) {
+                try {
+                    cs.monitorRules.add(MatchRuleParser.convertMatchRule(ruleStr));
+                } catch (RuntimeException _ex) {
+                    LOGGER.warn("Ignoring invalid monitor match rule '{}'", ruleStr, _ex);
+                }
+            }
+            // a monitor connection loses its normal match rules and only receives monitored traffic
+            cs.rules.clear();
+            cs.monitor = true;
+            LOGGER.debug("Connection {} became a monitor ({} rule(s))", cs.unique, cs.monitorRules.size());
+        }
+
         @Override
         public String getObjectPath() {
             return null;
@@ -706,6 +831,27 @@ public class DBusDaemon extends Thread implements Closeable {
 
         @Override
         public String Introspect() {
+            String debugStatsInterface = !debugFeaturesEnabled ? "" : """
+                  <interface name="org.freedesktop.DBus.Debug.Stats">
+                    <method name="GetStats">
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="GetConnectionStats">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="GetAllMatchRules">
+                      <arg direction="out" type="a{sas}"/>
+                    </method>
+                  </interface>
+                  <interface name="org.freedesktop.DBus.Verbose">
+                    <method name="EnableVerbose">
+                    </method>
+                    <method name="DisableVerbose">
+                    </method>
+                  </interface>
+                """;
+
             return """
                 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
                 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -782,8 +928,33 @@ public class DBusDaemon extends Thread implements Closeable {
                     <signal name="NameAcquired">
                       <arg type="s"/>
                     </signal>
+                    <signal name="ActivatableServicesChanged">
+                    </signal>
+                    <property name="Features" type="as" access="read"/>
+                    <property name="Interfaces" type="as" access="read"/>
                   </interface>
-                </node>""";
+                  <interface name="org.freedesktop.DBus.Properties">
+                    <method name="Get">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="v"/>
+                    </method>
+                    <method name="GetAll">
+                      <arg direction="in" type="s"/>
+                      <arg direction="out" type="a{sv}"/>
+                    </method>
+                    <method name="Set">
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="s"/>
+                      <arg direction="in" type="v"/>
+                    </method>
+                    <signal name="PropertiesChanged">
+                      <arg type="s"/>
+                      <arg type="a{sv}"/>
+                      <arg type="as"/>
+                    </signal>
+                  </interface>
+                """ + debugStatsInterface + "</node>";
         }
 
         @Override
@@ -819,6 +990,185 @@ public class DBusDaemon extends Thread implements Closeable {
         @Override
         public String GetMachineId() {
             return machineId;
+        }
+
+        @Override
+        public void ReloadConfig() {
+            // the embedded daemon has no configuration file to reload
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <A> A Get(String _interfaceName, String _propertyName) {
+            return (A) getBusProperty(_interfaceName, _propertyName);
+        }
+
+        @Override
+        public <A> void Set(String _interfaceName, String _propertyName, A _value) {
+            throw new PropertyReadOnly("Property " + _propertyName + " is read only");
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetAll(String _interfaceName) {
+            Map<String, Variant<?>> result = new LinkedHashMap<>();
+            if (DBUS_BUSNAME.equals(_interfaceName)) {
+                result.put("Features", new Variant<>(busFeatures()));
+                result.put("Interfaces", new Variant<>(busInterfaces()));
+            }
+            return result;
+        }
+
+        /**
+         * Handles a {@code org.freedesktop.DBus.Properties} call against the bus object, marshalling the reply with the
+         * correct wire signatures ("v" for Get, "a{sv}" for GetAll).
+         */
+        private void handlePropertiesCall(ConnectionStruct _connStruct, MethodCall _msg, Object[] _args, MessageFactory _messageFactory) throws DBusException {
+            try {
+                switch (_msg.getName()) {
+                    case "Get" -> {
+                        Object value = getBusProperty((String) _args[0], (String) _args[1]);
+                        send(_connStruct, _messageFactory.createMethodReturn(DBUS_BUSNAME, _msg, "v", new Variant<>(value)), true);
+                    }
+                    case "GetAll" -> {
+                        Map<String, Variant<?>> all = GetAll((String) _args[0]);
+                        send(_connStruct, _messageFactory.createMethodReturn(DBUS_BUSNAME, _msg, "a{sv}", all), true);
+                    }
+                    case "Set" -> Set((String) _args[0], (String) _args[1], _args.length > 2 ? _args[2] : null);
+                    default -> throw new UnknownMethod("This service does not support " + _msg.getName());
+                }
+            } catch (DBusExecutionException _ex) {
+                LOGGER.debug("", _ex);
+                send(_connStruct, _messageFactory.createError(DBUS_BUSNAME, _msg, _ex));
+            }
+        }
+
+        /**
+         * Returns the value of a property of the bus object. Only the {@code org.freedesktop.DBus} interface exposes
+         * properties ({@code Features} and {@code Interfaces}).
+         */
+        private Object getBusProperty(String _interfaceName, String _propertyName) {
+            if (DBUS_BUSNAME.equals(_interfaceName)) {
+                switch (_propertyName) {
+                    case "Features":
+                        return busFeatures();
+                    case "Interfaces":
+                        return busInterfaces();
+                    default:
+                }
+            }
+            throw new UnknownProperty(String.format("No such property '%s' on interface '%s'", _propertyName, _interfaceName));
+        }
+
+        /**
+         * The bus features. The embedded daemon supports none of the reference features (header filtering, systemd
+         * activation, SELinux/AppArmor mediation), so an empty array is returned (which the specification permits).
+         */
+        private String[] busFeatures() {
+            return EMPTY_STRING_ARRAY;
+        }
+
+        /**
+         * The optional interfaces implemented by the bus object in addition to the core {@code org.freedesktop.DBus}
+         * interface (excluding Peer/Properties/Introspectable per specification).
+         */
+        private String[] busInterfaces() {
+            List<String> ifaces = new ArrayList<>();
+            ifaces.add("org.freedesktop.DBus.Monitoring");
+            if (debugFeaturesEnabled) {
+                ifaces.add("org.freedesktop.DBus.Debug.Stats");
+            }
+            return ifaces.toArray(EMPTY_STRING_ARRAY);
+        }
+
+        /**
+         * Guard for the {@code org.freedesktop.DBus.Debug.Stats} methods. On a daemon without debug features enabled
+         * the interface must appear as if it did not exist, mirroring a production reference daemon.
+         */
+        private void requireDebugEnabled() {
+            if (!debugFeaturesEnabled) {
+                throw new UnknownMethod("This service does not implement org.freedesktop.DBus.Debug.Stats");
+            }
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetStats() {
+            requireDebugEnabled();
+
+            int totalRules = 0;
+            for (ConnectionStruct cs : conns.keySet()) {
+                synchronized (cs.rules) {
+                    totalRules += cs.rules.size();
+                }
+            }
+
+            Map<String, Variant<?>> stats = new LinkedHashMap<>();
+            stats.put("ActiveConnections", new Variant<>(new UInt32(conns.size())));
+            stats.put("BusNames", new Variant<>(new UInt32(names.size())));
+            stats.put("MatchRules", new Variant<>(new UInt32(totalRules)));
+            stats.put("SerialNumber", new Variant<>(new UInt32(nextUnique.get())));
+            return stats;
+        }
+
+        @Override
+        public Map<String, Variant<?>> GetConnectionStats(String _busName) {
+            requireDebugEnabled();
+
+            ConnectionStruct cs = names.get(_busName);
+            if (cs == null) {
+                throw new ServiceUnknown(String.format("The name `%s' does not exist", _busName));
+            }
+
+            int busNames = 0;
+            synchronized (names) {
+                for (ConnectionStruct owner : names.values()) {
+                    if (owner == cs) {
+                        busNames++;
+                    }
+                }
+            }
+
+            int matchRules;
+            synchronized (cs.rules) {
+                matchRules = cs.rules.size();
+            }
+
+            Map<String, Variant<?>> stats = new LinkedHashMap<>();
+            stats.put("UniqueName", new Variant<>(cs.unique));
+            stats.put("MatchRules", new Variant<>(new UInt32(matchRules)));
+            stats.put("BusNames", new Variant<>(new UInt32(busNames)));
+            return stats;
+        }
+
+        @Override
+        public Map<String, String[]> GetAllMatchRules() {
+            requireDebugEnabled();
+
+            Map<String, String[]> result = new LinkedHashMap<>();
+            for (ConnectionStruct cs : conns.keySet()) {
+                if (cs.unique == null) {
+                    continue;
+                }
+                String[] rules;
+                synchronized (cs.rules) {
+                    rules = cs.rules.stream().map(DBusMatchRule::toString).toArray(String[]::new);
+                }
+                result.put(cs.unique, rules);
+            }
+            return result;
+        }
+
+        @Override
+        public void EnableVerbose() {
+            requireDebugEnabled();
+            verbose = true;
+            LOGGER.debug("org.freedesktop.DBus.Verbose: verbose output is now enabled={}", verbose);
+        }
+
+        @Override
+        public void DisableVerbose() {
+            requireDebugEnabled();
+            verbose = false;
+            LOGGER.debug("org.freedesktop.DBus.Verbose: verbose output is now enabled={}", verbose);
         }
 
     }

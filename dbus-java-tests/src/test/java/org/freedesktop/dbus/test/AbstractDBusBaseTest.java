@@ -37,20 +37,32 @@ public abstract class AbstractDBusBaseTest extends AbstractDBusDaemonBaseTest {
     @AfterEach
     public void tearDown() throws Exception {
         logger.debug("Checking for outstanding errors");
-        DBusExecutionException dbee = serverconn.getError();
-        if (null != dbee) {
-            throw dbee;
-        }
-        dbee = clientconn.getError();
-        if (null != dbee) {
-            throw dbee;
-        }
+        // capture any outstanding errors first, but report them only after both connections were cleaned up,
+        // so a pending error can never leave a connection connected / the bus name still owned
+        DBusExecutionException serverError = serverconn == null ? null : serverconn.getError();
+        DBusExecutionException clientError = clientconn == null ? null : clientconn.getError();
 
         logger.debug("Disconnecting");
-        /** Disconnect from the bus. */
-        clientconn.disconnect();
-        serverconn.releaseBusName(getTestBusName());
-        serverconn.disconnect();
+        try {
+            if (clientconn != null) {
+                clientconn.disconnect();
+            }
+        } finally {
+            if (serverconn != null) {
+                try {
+                    serverconn.releaseBusName(getTestBusName());
+                } finally {
+                    serverconn.disconnect();
+                }
+            }
+        }
+
+        if (serverError != null) {
+            throw serverError;
+        }
+        if (clientError != null) {
+            throw clientError;
+        }
     }
 
     protected String getTestObjectPath() {

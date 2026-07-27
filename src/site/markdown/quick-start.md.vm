@@ -39,21 +39,29 @@ For maven this would look like this:
         <version>${project.version}</version>
     </dependency>
 ```
+
+If your application needs to pass **unix file descriptors**, choose the `dbus-java-transport-junixsocket`
+transport - it supports file descriptor passing out of the box. The `native-unixsocket` transport does not
+support file descriptors, and `jnr-unixsocket` only does so via an additional, unmaintained third-party
+native library (see the [README](https://github.com/hypfvieh/dbus-java#how-to-use-file-descriptors)).
+File descriptors cannot be passed over TCP.
+
 2. (optional) Add in a logging framework of your choice to see the log messages.
   DBus-Java uses SLF4J internally for logging.
 ```
     <!-- Example of using log4j2 as the logging implementation with Maven -->
+    <!-- (check for the latest available version before using) -->
     <dependencies>
         <!-- ... other dependencies here ... -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.17.2</version>
+            <version>2.24.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.17.2</version>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>2.24.3</version>
         </dependency>
     </dependencies>
 ```
@@ -100,8 +108,8 @@ received messages. There are signals, methods and method returns.
 To prevent one message processing blocking other message processing, each of those message types are handled in different
 thread pools.
 
-The default settings is 1 thread per message type for signals, methods and errors. Method-Return messages have a thread pool
-size of 4. 
+The default is a thread pool size of 1 for signals, errors and method-returns. Method-Call messages use a thread pool
+size of 4 (a size greater than 1 is required to handle recursive/re-entrant incoming calls).
 
 To change those settings, use the `receivingThreadConfig()` method on the connection builders.
 Example:
@@ -119,6 +127,19 @@ Calling `connectionConfig()` will return the used connection builder (`DBusConne
 If you do not want to do additional configuration you can also call `.buildConnection()` on the `ReceivingServiceConfigBuilder` to create the connection directly.
 
 With this pattern you can also change the thread priority for each pool.
+
+#[[##]]## Using virtual threads
+Since dbus-java 6.0.0 the receiving thread pools can use virtual threads (JEP 444) instead of native threads.
+Virtual threads can be enabled per executor (`SIGNAL`, `ERROR`, `METHODCALL`, `METHODRETURN`) or for all of them at once.
+The default remains native threads on all executors.
+
+```java
+    DBusConnection conn = DBusConnectionBuilder.forSessionBus()
+        .receivingThreadConfig()
+            .withAllVirtualThreads(true)
+        .connectionConfig()
+        .build();
+```
 
 #[[##]]## IMPORTANT NOTE ABOUT SIGNAL THREADPOOL
 Increasing the signal thread pool will improve the speed the signals are handled.

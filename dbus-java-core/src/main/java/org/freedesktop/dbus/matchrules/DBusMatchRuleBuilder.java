@@ -372,20 +372,15 @@ public final class DBusMatchRuleBuilder {
         });
 
         if (!copy.isEmpty()) {
-            Pattern argPattern = Pattern.compile("^arg([0-9]{1,2})$");
-            Pattern argPathPattern = Pattern.compile("^arg([0-9]{1,2})path$");
+            Pattern argPattern = Pattern.compile("^arg([0-9]+)$");
+            Pattern argPathPattern = Pattern.compile("^arg([0-9]+)path$");
             for (Entry<String, String> e : copy.entrySet()) {
                 Matcher argMatcher = argPattern.matcher(e.getKey());
                 Matcher argPathMatcher = argPathPattern.matcher(e.getKey());
                 if (argMatcher.matches()) {
-                    multiValueFields
-                        .computeIfAbsent(MatchRuleField.ARG0123, x -> new LinkedHashMap<>())
-                        .putIfAbsent(Integer.valueOf(argMatcher.group(1)), e.getValue());
-                }
-                if (argPathMatcher.matches()) {
-                    multiValueFields
-                        .computeIfAbsent(MatchRuleField.ARG0123PATH, x -> new LinkedHashMap<>())
-                        .putIfAbsent(Integer.valueOf(argMatcher.group(1)), e.getValue());
+                    withArgX(MatchRuleField.ARG0123, Integer.parseInt(argMatcher.group(1)), e.getValue());
+                } else if (argPathMatcher.matches()) {
+                    withArgX(MatchRuleField.ARG0123PATH, Integer.parseInt(argPathMatcher.group(1)), e.getValue());
                 }
             }
         }

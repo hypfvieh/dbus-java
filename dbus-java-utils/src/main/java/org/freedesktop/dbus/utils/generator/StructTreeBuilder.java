@@ -67,9 +67,16 @@ public class StructTreeBuilder {
         List<StructTree> structTree = buildTree(_dbusSig);
 
         String parentType = null;
+        String mapKeyType = null;
         if (!structTree.isEmpty() && Collection.class.isAssignableFrom(structTree.getFirst().getDataType())) {
             parentType = structTree.getFirst().getDataType().getName();
             structTree = structTree.getFirst().getSubType();
+        } else if (!structTree.isEmpty() && Map.class.isAssignableFrom(structTree.getFirst().getDataType())) {
+            // dict with a struct value, e.g. a{s(ii)} -> Map<KeyType, GeneratedStruct>
+            List<StructTree> keyAndValue = structTree.getFirst().getSubType();
+            parentType = structTree.getFirst().getDataType().getName();
+            mapKeyType = keyAndValue.getFirst().getDataType().getName();
+            structTree = keyAndValue.subList(1, keyAndValue.size());
         }
 
         String rootStructName = findNextStructFqcn(_structBaseFqcn, generatedStructClassNames);
@@ -88,7 +95,9 @@ public class StructTreeBuilder {
             _generatedClasses.add(root);
 
             if (cnt == 0 && parentType != null) {
-                parentType += "<" + root.getClassName() + ">";
+                parentType += mapKeyType != null
+                    ? "<" + mapKeyType + ", " + root.getClassName() + ">"
+                    : "<" + root.getClassName() + ">";
                 cnt++;
             }
 

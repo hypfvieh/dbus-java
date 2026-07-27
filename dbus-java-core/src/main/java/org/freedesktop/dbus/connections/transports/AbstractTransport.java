@@ -22,6 +22,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -35,18 +40,25 @@ public abstract class AbstractTransport implements Closeable {
 
     private static final AtomicLong              TRANSPORT_ID_GENERATOR = new AtomicLong(0);
 
+    /** Watchdog to abort a stuck SASL handshake (e.g. a silent/slow TCP peer) by closing the socket. */
+    private static final ScheduledExecutorService AUTH_TIMEOUT_SCHEDULER = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "DBus-Auth-Timeout-Watchdog");
+        t.setDaemon(true);
+        return t;
+    });
+
     private final ServiceLoader<ISocketProvider> spiLoader              = ServiceLoader.load(ISocketProvider.class, AbstractTransport.class.getClassLoader());
 
     private final Logger                         logger                 = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;
 
-    private TransportConnection                  transportConnection;
-    private boolean                              fileDescriptorSupported;
-
     private final long                           transportId            = TRANSPORT_ID_GENERATOR.incrementAndGet();
 
     private final TransportConfig                config;
     private final MessageFactory                 messageFactory;
+
+    private TransportConnection                  transportConnection;
+    private boolean                              fileDescriptorSupported;
 
     protected AbstractTransport(BusAddress _address, TransportConfig _config) {
         address = Objects.requireNonNull(_address, "BusAddress required");
@@ -253,13 +265,31 @@ public abstract class AbstractTransport implements Closeable {
             throw new IOException("SocketChannel instance required");
         }
         SASL sasl = new SASL(config.getSaslConfig());
+
+        // guard the SASL handshake with a timeout: a silent/slow peer would otherwise block the (blocking) read
+        // in SASL.receive indefinitely. When it fires we close the socket, which unblocks the read.
+        int authTimeout = config.getTimeout();
+        AtomicBoolean timedOut = new AtomicBoolean(false);
+        ScheduledFuture<?> watchdog = authTimeout <= 0 ? null : AUTH_TIMEOUT_SCHEDULER.schedule(() -> {
+            timedOut.set(true);
+            try {
+                _sock.close();
+            } catch (IOException _ex) {
+                logger.debug("Error closing socket on authentication timeout", _ex);
+            }
+        }, authTimeout, TimeUnit.MILLISECONDS);
+
         try {
             if (!sasl.auth(_sock, this)) {
                 throw new AuthenticationException("Failed to authenticate");
             }
         } catch (IOException _ex) {
             _sock.close();
-            throw _ex;
+            throw timedOut.get() ? new AuthenticationException("Authentication timed out after " + authTimeout + "ms") : _ex;
+        } finally {
+            if (watchdog != null) {
+                watchdog.cancel(false);
+            }
         }
         fileDescriptorSupported = sasl.isFileDescriptorSupported(); // false if server does not support file descriptors
     }

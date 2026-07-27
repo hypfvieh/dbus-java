@@ -3,9 +3,9 @@ package org.freedesktop.dbus.interfaces;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.types.UInt32;
 
-@DBusInterfaceName("org.freedesktop.DBus.Monitoring.BecomeMonitor")
+@DBusInterfaceName("org.freedesktop.DBus.Monitoring")
 @SuppressWarnings({"checkstyle:methodname"})
-public interface Monitoring {
+public interface Monitoring extends DBusInterface {
     /**
      * Converts the connection into a <span class="emphasis"><em>monitor connection</em></span> which can be used as a
      * debugging/monitoring tool. Only a user who is privileged on this bus (by some implementation-specific definition)

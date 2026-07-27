@@ -9,12 +9,14 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
+import java.security.SecureRandom;
+import java.util.List;
 import java.util.Random;
 
 public class TcpTransportProvider implements ITransportProvider {
     public static final int     TCP_CONNECT_TIMEOUT = 100000;
 
-    private static final Random RANDOM              = new Random();
+    private static final Random RANDOM              = new SecureRandom();
 
     @Override
     public String getTransportName() {
@@ -38,6 +40,11 @@ public class TcpTransportProvider implements ITransportProvider {
     @Override
     public String getSupportedBusType() {
         return "TCP";
+    }
+
+    @Override
+    public List<String> getSupportedBusTypes() {
+        return List.of(getSupportedBusType(), "NONCE-TCP");
     }
 
     @Override

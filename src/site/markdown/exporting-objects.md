@@ -127,12 +127,12 @@ Next, we can go call the remote method using dbus-send and get the result of
 the addition back:
 
 ```
-$ dbus-send --print-reply=literal --type=method_call --dest=test.dbusjava.export / com.foo.IntInterface.add int32:5 int32:7
+$ dbus-send --print-reply=literal --type=method_call --dest=test.dbusjava.export / com.github.hypfvieh.dbus.examples.export.ISampleExport.add int32:5 int32:7
    int32 12
 ```
 
 Or we can use the `terminateApp()` method to stop our application:
 
 ```
-$ dbus-send --print-reply=literal --type=method_call --dest=test.dbusjava.export / com.foo.IntInterface.terminateApp
+$ dbus-send --print-reply=literal --type=method_call --dest=test.dbusjava.export / com.github.hypfvieh.dbus.examples.export.ISampleExport.terminateApp
 ```

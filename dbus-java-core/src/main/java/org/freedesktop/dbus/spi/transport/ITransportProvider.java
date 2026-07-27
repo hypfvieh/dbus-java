@@ -5,6 +5,8 @@ import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.connections.transports.AbstractTransport;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 
+import java.util.List;
+
 import javax.xml.transform.TransformerConfigurationException;
 
 /**
@@ -43,6 +45,22 @@ public interface ITransportProvider {
      * @return String, never null
      */
     String getSupportedBusType();
+
+    /**
+     * All bus types supported by this provider.
+     * <p>
+     * By default this returns the single type reported by {@link #getSupportedBusType()}. A provider that serves
+     * multiple related address schemes (for example {@code tcp} and {@code nonce-tcp}) can override this to register
+     * for all of them without requiring a separate provider per scheme.
+     * </p>
+     *
+     * @return list of supported bus types, never null or empty
+     *
+     * @since 6.0.0
+     */
+    default List<String> getSupportedBusTypes() {
+        return List.of(getSupportedBusType());
+    }
 
     /**
      * Creates a new (dynamic) session for this transport.

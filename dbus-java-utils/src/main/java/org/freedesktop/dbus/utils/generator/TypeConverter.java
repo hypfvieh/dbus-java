@@ -190,41 +190,38 @@ public final class TypeConverter {
     }
 
     /**
-     * Resolve java type recursively.
+     * Recursively builds the (possibly nested) java type string for the given {@link Type} and collects every
+     * encountered type name (raw container types and leaf types) into {@code _javaIncludes} so the required
+     * imports can be emitted.
      *
-     * @param _type Type object
-     * @return Map where key is parent classname (e.g. List) and value is a list of types used inside the generics
-     *
-     * @throws DBusException on error
+     * @param _type type to resolve
+     * @param _javaIncludes set collecting the encountered type names (imports)
+     * @return java type string, e.g. {@code java.util.Map<java.lang.String, java.util.List<java.lang.Integer>>}
      */
-    private static Map<String, List<String>> getTypeAdv(Type _type) throws DBusException {
-        Map<String, List<String>> result = new LinkedHashMap<>();
+    private static String buildJavaType(Type _type, Set<String> _javaIncludes) {
         if (_type instanceof ParameterizedType pType) {
-
-            List<String> generics = new ArrayList<>();
-            result.put(pType.getRawType().getTypeName(), generics);
-
-            for (Type t : pType.getActualTypeArguments()) {
-                if (t instanceof ParameterizedType) {
-                    result.putAll(getTypeAdv(t));
-                } else {
-                    generics.add(t.getTypeName());
-                }
-            }
-        } else {
-            result.put(_type.getTypeName(), new ArrayList<>());
+            String raw = pType.getRawType().getTypeName();
+            _javaIncludes.add(raw);
+            String args = Arrays.stream(pType.getActualTypeArguments())
+                .map(t -> buildJavaType(t, _javaIncludes))
+                .collect(Collectors.joining(", "));
+            return raw + "<" + args + ">";
         }
-        return result;
+
+        String name = _type.getTypeName();
+        _javaIncludes.add(name);
+        return name;
     }
 
     /**
-     * Special handling for {@link DBusMapType} and {@link DBusListType}.
+     * Special handling for {@link DBusMapType} and {@link DBusListType}. Produces the fully nested generic type
+     * string (arbitrary depth, distinct map key/value types) via {@link #buildJavaType(Type, Set)}.
      *
      * @param _dbusType DBus type string
      * @param _javaIncludes list where additional java imports are added to (if any)
      * @return class name of the parent type, maybe null if no suitable input provided
      *
-     * @throws DBusException
+     * @throws DBusException on DBus error
      */
     private static String getTypeAdv(String _dbusType, Set<String> _javaIncludes) throws DBusException {
 
@@ -235,43 +232,11 @@ public final class TypeConverter {
         List<Type> dataType = new ArrayList<>();
         Marshalling.getJavaType(_dbusType, dataType, 1);
 
-        if (dataType.getFirst() instanceof DBusListType || dataType.getFirst() instanceof DBusMapType) {
-            ParameterizedType dBusListType = (ParameterizedType) dataType.getFirst();
-            Type[] actualTypeArguments = dBusListType.getActualTypeArguments();
-
-            String retVal = dBusListType.getRawType().getTypeName();
-            List<String> internalTypes = new ArrayList<>();
-
-            if (actualTypeArguments.length > 0) {
-                Map<String, List<String>> allAdvTypes = new LinkedHashMap<>();
-
-                for (Type type : actualTypeArguments) {
-                    Map<String, List<String>> typeAdv = getTypeAdv(type);
-                    allAdvTypes.putAll(typeAdv);
-                }
-
-                for (Entry<String, List<String>> e : allAdvTypes.entrySet()) {
-                    if (!e.getValue().isEmpty()) {
-                        String actualArgTypeVal = e.getKey() + "<";
-                        actualArgTypeVal += String.join(", ", e.getValue());
-                        actualArgTypeVal += ">";
-                        internalTypes.add(actualArgTypeVal);
-                        _javaIncludes.addAll(e.getValue());
-                    } else {
-                        internalTypes.add(e.getKey());
-                        _javaIncludes.add(e.getKey());
-                    }
-                }
-            }
-
-            // if key and value of map is of same type:
-            if (dataType.getFirst() instanceof DBusMapType && internalTypes.size() == 1) {
-                internalTypes.add(internalTypes.getFirst());
-            }
-
-            return retVal + "<" + String.join(", ", internalTypes) + ">";
+        Type first = dataType.getFirst();
+        if (first instanceof DBusListType || first instanceof DBusMapType) {
+            return buildJavaType(first, _javaIncludes);
         }
 
-        return dataType.getFirst().getTypeName();
+        return first.getTypeName();
     }
 }

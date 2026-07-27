@@ -1,6 +1,14 @@
 package org.freedesktop.dbus.connections;
 
-import static org.freedesktop.dbus.connections.SASL.SaslCommand.*;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AGREE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.AUTH;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.BEGIN;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.CANCEL;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.DATA;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.ERROR;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.NEGOTIATE_UNIX_FD;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.OK;
+import static org.freedesktop.dbus.connections.SASL.SaslCommand.REJECTED;
 
 import com.sun.security.auth.module.UnixSystem;
 import org.freedesktop.dbus.config.DBusSysProps;
@@ -17,20 +25,31 @@ import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 public class SASL {
     public static final int       AUTH_NONE                   = 0;
@@ -75,9 +94,12 @@ public class SASL {
     private String cookie    = "";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Random secureRandom = new SecureRandom();
+
+    private final SaslConfig saslConfig;
+
     /** whether file descriptor passing is supported on the current connection. */
     private boolean fileDescriptorSupported;
-    private final SaslConfig saslConfig;
 
     /**
      * Create a new SASL auth handler.
@@ -117,6 +139,37 @@ public class SASL {
                 }
             }
             return lCookie;
+        }
+    }
+
+    /** Classification of a line read from the DBus cookie file. */
+    enum CookieLineState {
+        /** Well-formed and not yet expired - keep it. */
+        KEEP,
+        /** Well-formed but older than {@link #COOKIE_TIMEOUT} - drop silently. */
+        EXPIRED,
+        /** Not parseable (missing timestamp field or non-numeric timestamp) - drop and warn. */
+        MALFORMED
+    }
+
+    /**
+     * Classifies a single cookie file line. A line consists of {@code <id> <timestamp> <cookie>}; a line without a
+     * timestamp field (no space) or with a non-numeric timestamp is treated as malformed instead of throwing.
+     *
+     * @param _line raw line from the cookie file
+     * @param _timestamp current timestamp used to detect expired cookies
+     * @return classification of the line
+     */
+    static CookieLineState classifyCookieLine(String _line, long _timestamp) {
+        String[] parts = _line.split(" ");
+        if (parts.length < 2) {
+            return CookieLineState.MALFORMED;
+        }
+        try {
+            long time = Long.parseLong(parts[1]);
+            return (_timestamp - time) < COOKIE_TIMEOUT ? CookieLineState.KEEP : CookieLineState.EXPIRED;
+        } catch (NumberFormatException _ex) {
+            return CookieLineState.MALFORMED;
         }
     }
 
@@ -163,11 +216,10 @@ public class SASL {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)))) {
                 String s = null;
                 while (null != (s = r.readLine())) {
-                    String[] line = s.split(" ");
-                    long time = Long.parseLong(line[1]);
-                    // expire stale cookies
-                    if ((_timestamp - time) < COOKIE_TIMEOUT) {
-                        lines.add(s);
+                    switch (classifyCookieLine(s, _timestamp)) {
+                        case KEEP -> lines.add(s);
+                        case MALFORMED -> logger.warn("Ignoring malformed cookie line {}", s);
+                        case EXPIRED -> { /* silently drop stale (expired) cookie */ }
                     }
                 }
             }
@@ -181,14 +233,10 @@ public class SASL {
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
         // atomically move to old file
-        if (!temp.renameTo(cookiefile)) {
-            if (!cookiefile.delete()) {
-                logger.warn("Unable to delete cookie file {}", cookiefile);
-            } else {
-                if (!temp.renameTo(cookiefile)) {
-                    logger.warn("Unable to rename cookie file {} to {}", temp, cookiefile);
-                }
-            }
+        try {
+            Files.move(temp.toPath(), cookiefile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException _ex) {
+            logger.warn("Unable to atomically move cookie file {} to {}", temp, cookiefile);
         }
 
         // remove lock
@@ -313,7 +361,7 @@ public class SASL {
             byte[] buf = new byte[8];
 
             // ensure we get a (more or less unique) positive long
-            long seed = Optional.of(System.nanoTime()).map(t -> t < 0 ? t * -1 : t).get();
+            long seed = secureRandom.nextLong(0, Long.MAX_VALUE);
 
             Message.marshallintBig(seed, buf, 0, 8);
             String clientchallenge = stupidlyEncode(md.digest(buf));
@@ -324,6 +372,13 @@ public class SASL {
 
             while (lCookie == null && tm.getElapsed() < LOCK_TIMEOUT) {
                 lCookie = findCookie(context, id);
+                if (lCookie == null) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException _ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
 
             if (lCookie == null) {
@@ -405,7 +460,7 @@ public class SASL {
                 byte[] buf = md.digest(prehash.getBytes());
                 String posthash = stupidlyEncode(buf);
                 logger.debug("Authenticating Hash; data={} remote-hash={} local-hash={}", prehash, hash, posthash);
-                if (0 == COL.compare(posthash, hash)) {
+                if (MessageDigest.isEqual(posthash.getBytes(StandardCharsets.US_ASCII), hash.getBytes(StandardCharsets.US_ASCII))) {
                     return SaslResult.OK;
                 } else {
                     return SaslResult.ERROR;
@@ -506,22 +561,15 @@ public class SASL {
                             }
                             break;
                         case ERROR:
-                            // when asking for file descriptor support, ERROR means FD support is not supported
-                            if (state == SaslAuthState.NEGOTIATE_UNIX_FD) {
-                                state = SaslAuthState.FINISHED;
-                                logger.trace("File descriptors NOT supported by server");
-                                fileDescriptorSupported = false;
-                                send(_sock, BEGIN);
-                            } else {
-                                send(_sock, CANCEL);
-                                state = SaslAuthState.WAIT_REJECT;
-                            }
+                            // ERROR during the authentication exchange -> abort and wait for REJECTED
+                            send(_sock, CANCEL);
+                            state = SaslAuthState.WAIT_REJECT;
                             break;
                         case OK:
                             logger.trace("Authenticated");
 
                             if (saslConfig.isFileDescriptorSupport()) {
-                                state = SaslAuthState.WAIT_DATA;
+                                state = SaslAuthState.NEGOTIATE_UNIX_FD;
                                 logger.trace("Asking for file descriptor support");
                                 // if authentication was successful, ask remote end for file descriptor support
                                 send(_sock, NEGOTIATE_UNIX_FD);
@@ -530,18 +578,31 @@ public class SASL {
                                 send(_sock, BEGIN);
                             }
                             break;
-                        case AGREE_UNIX_FD:
-                            if (saslConfig.isFileDescriptorSupport()) {
-                                state = SaslAuthState.FINISHED;
-                                logger.trace("File descriptors supported by server");
-                                fileDescriptorSupported = true;
-                                send(_sock, BEGIN);
-                            }
-                            break;
                         default:
                             send(_sock, ERROR, INVALID_CMD_ERR);
                             break;
                         }
+                    break;
+                case NEGOTIATE_UNIX_FD:
+                    c = receive(_sock);
+                    switch (c.getCommand()) {
+                        case AGREE_UNIX_FD:
+                            logger.trace("File descriptors supported by server");
+                            fileDescriptorSupported = true;
+                            send(_sock, BEGIN);
+                            state = SaslAuthState.FINISHED;
+                            break;
+                        case ERROR:
+                            // server does not support unix fd passing -> continue gracefully without it
+                            logger.trace("File descriptors NOT supported by server");
+                            fileDescriptorSupported = false;
+                            send(_sock, BEGIN);
+                            state = SaslAuthState.FINISHED;
+                            break;
+                        default:
+                            send(_sock, ERROR, INVALID_CMD_ERR);
+                            break;
+                    }
                     break;
                 case WAIT_OK:
                     c = receive(_sock);
@@ -599,11 +660,12 @@ public class SASL {
                 switch (state) {
                     case INITIAL_STATE:
                         try {
-                            int kuid = -1;
                             if (_transport instanceof AbstractUnixTransport aut) {
-                                kuid = aut.getUid(_sock);
-                            }
-                            if (kuid >= 0) {
+                                int kuid = aut.getUid(_sock);
+                                if (kuid < 0) { // unix transport but peer UID could not be determined -> reject (no fail-open)
+                                    state = SaslAuthState.FAILED;
+                                    break;
+                                }
                                 kernelUid = stupidlyEncode("" + kuid);
                             }
                             state = SaslAuthState.WAIT_AUTH;
@@ -805,7 +867,7 @@ public class SASL {
             LoggingHelper.logIf(logger.isTraceEnabled(), () -> logger.trace("Creating command from: {}", Arrays.toString(ss)));
             if (0 == COL.compare(ss[0], "OK")) {
                 command = OK;
-                data = ss[1];
+                data = ss.length < 2 ? null : ss[1];
             } else if (0 == COL.compare(ss[0], "AUTH")) {
                 command = AUTH;
                 if (ss.length > 1) {
@@ -841,7 +903,8 @@ public class SASL {
                 command = CANCEL;
             } else if (0 == COL.compare(ss[0], "ERROR")) {
                 command = ERROR;
-                data = ss[1];
+                // the error message is optional per the D-Bus spec (e.g. a bare "ERROR")
+                data = ss.length < 2 ? null : ss[1];
             } else if (0 == COL.compare(ss[0], "NEGOTIATE_UNIX_FD")) {
                 command = NEGOTIATE_UNIX_FD;
             } else if (0 == COL.compare(ss[0], "AGREE_UNIX_FD")) {

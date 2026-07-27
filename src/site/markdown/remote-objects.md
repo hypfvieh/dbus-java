@@ -22,7 +22,7 @@ public class RemoteExample {
         m_conn = DBusConnectionBuilder.forSessionBus().build();
 
         /* Get the remote object */
-        IntInterface i = m_conn.getRemoteObject( "test.dbusjava.export", "/", IntInterface.class );
+        ISampleExport i = m_conn.getRemoteObject("test.dbusjava.export", "/", ISampleExport.class );
         System.out.println( i.add( 5, 7 ) );
     }
 
@@ -54,7 +54,9 @@ When calling remote D-Bus methods, you can influence how the call is handled by 
     @MethodNoReply
     int add(int _a, int _b);
     ```
-    Returns null even for the arguments from the example above.
+    The call returns immediately without waiting for a reply, so the return value carries no
+    result: for object return types it is `null`, for primitive types it is the default value
+    (e.g. `0` for `int`). Use this annotation only for methods whose result you do not need.
 
 *   **`@MethodAllowInteractiveAutorization`**
     This annotation signals the D-Bus daemon that the caller is ready to wait for interactive authorization (e.g., Polkit password prompts). It is useful when unprivileged code calls a privileged method, and an authorization framework that supports user interaction is in place.

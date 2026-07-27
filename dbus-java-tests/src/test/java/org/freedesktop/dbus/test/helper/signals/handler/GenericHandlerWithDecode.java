@@ -39,6 +39,15 @@ public class GenericHandlerWithDecode implements DBusSigHandler<DBusSignal> {
         return expectedStringResult;
     }
 
+    /**
+     * Whether a signal has already been received (i.e. its parameters were decoded).
+     *
+     * @return true once a signal was handled
+     */
+    public boolean hasReceived() {
+        return parameters != null;
+    }
+
     public Throwable getAssertionError() {
         return assertionError;
     }

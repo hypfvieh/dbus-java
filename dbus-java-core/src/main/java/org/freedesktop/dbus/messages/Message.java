@@ -41,11 +41,14 @@ public class Message {
     public static final int             MAXIMUM_MESSAGE_LENGTH = MAXIMUM_ARRAY_LENGTH * 2;
     public static final int             MAXIMUM_NUM_UNIX_FDS   = MAXIMUM_MESSAGE_LENGTH / 4;
 
+    /** Maximum container nesting depth honoured while demarshalling values (guards against deeply nested variants). */
+    public static final int             MAXIMUM_EXTRACT_DEPTH  = 64;
+
     /** The current protocol major version. */
     public static final byte            PROTOCOL               = 1;
 
     /** Default extraction options. */
-    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, List.of());
+    private static final ExtractOptions DEFAULT_OPTIONS        = new ExtractOptions(false, List.of(), 0);
 
     /** Position of data offset in int array. */
     private static final int            OFFSET_DATA            = 1;
@@ -190,7 +193,23 @@ public class Message {
         for (Object o : list) {
             Object[] objArr = (Object[]) o;
             byte idx = (byte) objArr[0];
+            if (idx < 0 || idx >= headers.length) {
+                // ignore unknown/invalid header fields
+                continue;
+            }
             this.headers[idx] = objArr[1];
+        }
+
+        // validate the declared number of unix file descriptors against what was actually received
+        if (this.headers[HeaderField.UNIX_FDS] instanceof UInt32 declaredFds) {
+            long declared = declaredFds.longValue();
+            if (declared > MAXIMUM_NUM_UNIX_FDS) {
+                throw new MarshallingException("Message declares too many unix file descriptors: " + declared);
+            }
+            if (declared != filedescriptors.size()) {
+                throw new MarshallingException("Message declares " + declared
+                    + " unix file descriptors but " + filedescriptors.size() + " were received");
+            }
         }
     }
 
@@ -454,7 +473,7 @@ public class Message {
      * @return The value of the field or null if unset.
      */
     protected Object getHeader(byte _type) {
-        return headers.length == 0 || headers.length < _type ? null : headers[_type];
+        return headers.length == 0 || headers.length <= _type ? null : headers[_type];
     }
 
     /**
@@ -832,6 +851,10 @@ public class Message {
     private Object extractOne(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options)
             throws DBusException {
 
+        if (_options.depth() > MAXIMUM_EXTRACT_DEPTH) {
+            throw new MarshallingException("Maximum container nesting depth (" + MAXIMUM_EXTRACT_DEPTH + ") exceeded");
+        }
+
         logger.trace("Extracting type: {} from offset {}", (char) _signatureBuf[_offsets[OFFSET_SIG]],
                 _offsets[OFFSET_DATA]);
 
@@ -920,24 +943,29 @@ public class Message {
                 });
                 break;
             case FILEDESCRIPTOR:
-                rv = filedescriptors.get((int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4));
+                int fdIndex = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
                 _offsets[OFFSET_DATA] += 4;
+                if (fdIndex < 0 || fdIndex >= filedescriptors.size()) {
+                    throw new MarshallingException("File descriptor index " + fdIndex
+                        + " out of bounds (received " + filedescriptors.size() + " file descriptors)");
+                }
+                rv = filedescriptors.get(fdIndex);
                 break;
             case STRING:
-                int length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                int length = validateLengthLimit(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4), _offsets[OFFSET_DATA] + 4, _dataBuf.length);
                 _offsets[OFFSET_DATA] += 4;
                 rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8);
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case OBJECT_PATH:
-                length = (int) demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
+                length = validateLengthLimit(demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4), _offsets[OFFSET_DATA] + 4, _dataBuf.length);
                 _offsets[OFFSET_DATA] += 4;
-                rv = new DBusPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length));
+                rv = new DBusPath(getSource(), new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8));
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             case SIGNATURE:
-                length = _dataBuf[_offsets[OFFSET_DATA]++] & 0xFF;
-                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length);
+                length = validateLengthLimit(_dataBuf[_offsets[OFFSET_DATA]++] & 0xFF, _offsets[OFFSET_DATA], _dataBuf.length);
+                rv = new String(_dataBuf, _offsets[OFFSET_DATA], length, StandardCharsets.UTF_8);
                 _offsets[OFFSET_DATA] += length + 1;
                 break;
             default:
@@ -953,6 +981,27 @@ public class Message {
         }
 
         return rv;
+    }
+
+    /**
+     * Validates that the provided length is non-negative and that the data region
+     * [{@code _dataStart}, {@code _dataStart + _length})] lies within the buffer.
+     *
+     * @param _length length to validate
+     * @param _dataStart offset where the data described by the length starts
+     * @param _bufferLen length of the buffer
+     * @return validated length as integer
+     * @throws MessageFormatException when the length is out of bounds
+     */
+    private int validateLengthLimit(long _length, int _dataStart, int _bufferLen) throws MessageFormatException {
+        if (_length > Integer.MAX_VALUE) {
+            throw new MessageFormatException("Length limit exceeded: " + _length);
+        } else if (_length < 0) {
+            throw new MessageFormatException("Invalid length: " + _length);
+        } else if (_dataStart + _length > _bufferLen) {
+            throw new MessageFormatException("Length of " + _length + " exceeds buffer size");
+        }
+        return (int) _length;
     }
 
     /**
@@ -1008,19 +1057,22 @@ public class Message {
      */
     private Object extractArray(byte[] _signatureBuf, byte[] _dataBuf, int[] _offsets, ExtractOptions _options, ExtractMethod _extractMethod)
             throws MarshallingException, DBusException {
-        Object rv;
         long size = demarshallint(_dataBuf, _offsets[OFFSET_DATA], 4);
 
         logger.trace("Reading array of size: {}", size);
         _offsets[OFFSET_DATA] += 4;
         byte algn = (byte) getAlignment(_signatureBuf[++_offsets[OFFSET_SIG]]);
         _offsets[OFFSET_DATA] = align(_offsets[OFFSET_DATA], _signatureBuf[_offsets[OFFSET_SIG]]);
-        int length = (int) (size / algn);
-        if (length > AbstractConnection.MAX_ARRAY_LENGTH) {
-            throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH);
+        // validate the raw byte size (unsigned) before casting to int to avoid overflow to a negative length
+        if (size > AbstractConnection.MAX_ARRAY_LENGTH) {
+            throw new MarshallingException("Arrays must not exceed " + AbstractConnection.MAX_ARRAY_LENGTH + " bytes");
         }
+        if (_offsets[OFFSET_DATA] + size > _dataBuf.length) {
+            throw new MarshallingException("Array length " + size + " exceeds remaining buffer size");
+        }
+        int length = (int) (size / algn);
 
-        rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
+        Object rv = optimizePrimitives(_signatureBuf, _dataBuf, _offsets, size, algn, length, _options, _extractMethod);
 
         if (_options.contained() && !(rv instanceof List) && !(rv instanceof Map)) {
             rv = ArrayFrob.listify(rv);
@@ -1047,7 +1099,8 @@ public class Message {
         };
         String sig = (String) extract(SIGNATURE_STRING, _dataBuf, newofs, _options)[0];
         newofs[OFFSET_SIG] = 0;
-        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs, _options)[0]);
+        // extract the variant content one nesting level deeper so nested variants are depth-limited
+        rv = _variantFactory.apply(sig, extract(sig, _dataBuf, newofs, ExtractOptions.copyWithContainedFlag(_options, true))[0]);
         _offsets[OFFSET_DATA] = newofs[OFFSET_DATA];
 
         return rv;
@@ -1354,7 +1407,7 @@ public class Message {
         if (_constructorArgs != null && !_constructorArgs.isEmpty()) {
             List<Type> dataType = new ArrayList<>();
             Marshalling.getJavaType(getSig(), dataType, -1);
-            options = new ExtractOptions(DEFAULT_OPTIONS.contained(), usesPrimitives(_constructorArgs, dataType));
+            options = new ExtractOptions(DEFAULT_OPTIONS.contained(), usesPrimitives(_constructorArgs, dataType), 0);
         }
 
         if (sig != null && body != null && body.length != 0) {
@@ -1735,11 +1788,12 @@ public class Message {
      */
     record ExtractOptions(
         boolean contained,
-        List<ConstructorArgType> arrayConvert
+        List<ConstructorArgType> arrayConvert,
+        int depth
         ) {
 
         static ExtractOptions copyWithContainedFlag(ExtractOptions _toCopy, boolean _containedFlag) {
-            return new ExtractOptions(_containedFlag, _toCopy.arrayConvert());
+            return new ExtractOptions(_containedFlag, _toCopy.arrayConvert(), _toCopy.depth() + 1);
         }
     }
 

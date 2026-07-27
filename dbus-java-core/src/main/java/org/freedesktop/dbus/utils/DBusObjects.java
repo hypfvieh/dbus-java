@@ -3,6 +3,10 @@ package org.freedesktop.dbus.utils;
 import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.exceptions.*;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.ObjectManager;
+import org.freedesktop.dbus.interfaces.Peer;
+import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.DBusSignal;
 
 import java.lang.reflect.Modifier;
@@ -435,4 +439,17 @@ public final class DBusObjects {
         }
 
     }
+
+    /**
+     * Checks if the given interface is a standard interface.
+     *
+     * @param _iface interface to check
+     * @return true if the given interface is a standard interface
+     */
+    public static boolean isStandardInterface(Class<?> _iface) {
+        return _iface == DBusInterface.class || _iface == Properties.class
+            || _iface == Introspectable.class || _iface == Peer.class
+            || _iface == ObjectManager.class;
+    }
+
 }

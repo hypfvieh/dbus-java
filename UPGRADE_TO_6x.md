@@ -10,3 +10,23 @@ This allows you to use shorter definitions when creating or generating code. Ins
 
 To instruct the InterfaceCodeGenerator to create `Struct` based return values instead of `Tuple`s, use the new `--disable-tuples` option.
 Please be aware, that the created code will only work with dbus-java 6.x and will fail during runtime when used with older versions!
+
+#### Behaviour change: automatic `ObjectManager` handling
+
+Starting with dbus-java 6.x, exported objects implementing `org.freedesktop.DBus.ObjectManager` are handled
+automatically by default: dbus-java answers `GetManagedObjects` itself (by enumerating the exported sub-tree
+and collecting each object's properties) and automatically emits `InterfacesAdded`/`InterfacesRemoved` when
+objects below an `ObjectManager` are exported/unexported.
+
+If you already provide your own server-side `ObjectManager` implementation and want to keep full manual
+control (your own `GetManagedObjects` and your own signal emission), build the connection with
+`withManualObjectManager(true)`:
+
+```java
+DBusConnection conn = DBusConnectionBuilder.forSessionBus()
+    .withManualObjectManager(true)
+    .build();
+```
+
+If you do not implement `ObjectManager` yourself, you can now export a ready-to-use one via
+`connection.exportObjectManager("/your/path")` without writing any class.

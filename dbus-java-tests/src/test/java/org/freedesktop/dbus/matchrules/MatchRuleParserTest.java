@@ -1,8 +1,11 @@
 package org.freedesktop.dbus.matchrules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.freedesktop.dbus.errors.MatchRuleInvalid;
 import org.freedesktop.dbus.messages.constants.MessageTypes;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,6 +14,19 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class MatchRuleParserTest {
+
+    @Test
+    void testConvertRuleWithArgPath() {
+        // parsing an argNpath key used to throw (wrong regex group was read) -> now yields the value
+        DBusMatchRule rule = MatchRuleParser.convertMatchRule("type='signal',arg0path='/org/example/Foo'");
+        assertEquals(Map.of(0, "/org/example/Foo"), rule.getArg0123Path());
+    }
+
+    @Test
+    void testConvertRuleRejectsTooLargeArgIndex() {
+        // spec allows arg indexes 0..63 only; larger indexes must be rejected instead of silently accepted
+        assertThrows(MatchRuleInvalid.class, () -> MatchRuleParser.convertMatchRule("type='signal',arg64='x'"));
+    }
 
     @ParameterizedTest
     @MethodSource("createDBusRuleTestData")

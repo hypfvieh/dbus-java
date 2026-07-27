@@ -203,11 +203,7 @@ public class ClassBuilderInfo {
             allImports.add(annotation.getAnnotationClass().getName());
             allImports.addAll(annotation.getAdditionalImports().stream().map(Class::getName).toList());
 
-            String annotationCode = classIndent + "@" + annotation.getAnnotationClass().getSimpleName();
-            if (annotation.getAnnotationParams() != null) {
-                annotationCode += "(" + annotation.getAnnotationParams() + ")";
-            }
-            content.add(annotationCode);
+            content.add(classIndent + annotation.getAnnotationString());
         }
 
         String bgn = classIndent + "public " + (_staticClass ? "static " : "") + (getClassType() == ClassType.INTERFACE ? "interface" : "class");

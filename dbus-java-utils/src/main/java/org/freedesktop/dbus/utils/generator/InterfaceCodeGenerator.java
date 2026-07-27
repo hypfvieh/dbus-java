@@ -4,7 +4,6 @@ import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusBoundProperty;
-import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.annotations.DBusProperty;
 import org.freedesktop.dbus.annotations.Position;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -187,13 +186,13 @@ public class InterfaceCodeGenerator {
         ClassBuilderInfo interfaceClass = new ClassBuilderInfo(argumentPrefix);
         interfaceClass.setClassType(ClassType.INTERFACE);
         interfaceClass.setPackageName(packageName);
-        interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
-        interfaceClass.setClassName(className);
         if (forcePackageName != null) {
-            interfaceClass.getAnnotations().add(new AnnotationInfo(DBusInterfaceName.class,
-                AnnotArgs.create().add(originalPackageName + "." + className)
-                ));
+            // generated package differs from the DBus namespace -> preserve the original interface name
+            interfaceClass.setDbusPackageName(interfaceName);
+        } else {
+            interfaceClass.setDbusPackageName(fqcn.get(DbusInterfaceToFqcn.DBUS_INTERFACE_NAME));
         }
+        interfaceClass.setClassName(className);
         interfaceClass.setExtendClass(DBusInterface.class.getName());
 
         List<ClassBuilderInfo> additionalClasses = new ArrayList<>();
@@ -229,7 +228,7 @@ public class InterfaceCodeGenerator {
 
         String className = _signalElement.getAttribute("name");
         if (className.contains(".")) {
-            className = className.substring(className.lastIndexOf('.'));
+            className = className.substring(className.lastIndexOf('.') + 1);
         }
 
         ClassBuilderInfo innerClass = new ClassBuilderInfo(argumentPrefix);
@@ -411,13 +410,13 @@ public class InterfaceCodeGenerator {
         String attrAccess = _propertyElement.getAttribute("access");
         String attrType = _propertyElement.getAttribute("type");
 
-        String access;
+        DBusProperty.Access access;
         if (DBusProperty.Access.READ.getAccessName().equals(attrAccess)) {
-            access = DBusProperty.Access.READ.name();
+            access = DBusProperty.Access.READ;
         } else if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)) {
-            access = DBusProperty.Access.WRITE.name();
+            access = DBusProperty.Access.WRITE;
         } else {
-            access = DBusProperty.Access.READ_WRITE.name();
+            access = DBusProperty.Access.READ_WRITE;
         }
         _clzBldr.getImports().add(DBusProperty.Access.class.getCanonicalName());
 
@@ -487,9 +486,7 @@ public class InterfaceCodeGenerator {
             if (DBusProperty.Access.WRITE.getAccessName().equals(attrAccess)
                 || DBusProperty.Access.READ_WRITE.getAccessName().equals(attrAccess)) {
 
-                ClassMethod classMethod = new SetterMethod(_clzBldr, 0, attrName, rtnType);
-                classMethod.getArguments().add(new MemberOrArgument(_clzBldr, attrName.substring(0, 1).toLowerCase()
-                    + attrName.substring(1), clzzName));
+                ClassMethod classMethod = new SetterMethod(_clzBldr, 0, attrName, rtnType, true);
                 _clzBldr.getMethods().add(classMethod);
 
                 classMethod.getAnnotations().add(new AnnotationInfo(DBusBoundProperty.class, null));
@@ -499,8 +496,8 @@ public class InterfaceCodeGenerator {
         } else {
             AnnotArgs annotArgs = AnnotArgs.create()
                 .add("name", attrName)
-                .add("type", clzzName)
-                .add("access", DBusProperty.Access.class.getSimpleName() + "." + access);
+                .add("type", AnnotClass.of(clzzName))
+                .add("access", access);
 
             AnnotationInfo annotationInfo = new AnnotationInfo(DBusProperty.class, annotArgs);
             _clzBldr.getAnnotations().add(annotationInfo);
@@ -609,7 +606,7 @@ public class InterfaceCodeGenerator {
         root.setExtendClass(Struct.class.getName());
         root.setClassType(ClassType.CLASS);
 
-        ClassConstructor classConstructor = new ClassConstructor(_clzBldr, 0, className);
+        ClassConstructor classConstructor = new ClassConstructor(root, 0, className);
         root.getConstructors().add(classConstructor);
 
         String structFqcn = _clzBldr.getPackageName() + "." + Util.upperCaseFirstChar(_structName);
@@ -628,11 +625,11 @@ public class InterfaceCodeGenerator {
                 root.getImports().addAll(addClasses);
             }
 
-            MemberOrArgument argument = new MemberOrArgument(_clzBldr, data.name(), structClassName, true);
+            MemberOrArgument argument = new MemberOrArgument(root, data.name(), structClassName, true);
             argument.getAnnotations().add(new AnnotationInfo(Position.class, AnnotArgs.create().add(i)));
             root.getMembers().add(argument);
 
-            classConstructor.getArguments().add(new MemberOrArgument(_clzBldr, data.name(), structClassName));
+            classConstructor.getArguments().add(new MemberOrArgument(root, data.name(), structClassName));
         }
 
         _structClasses.add(root);
@@ -679,60 +676,62 @@ public class InterfaceCodeGenerator {
 
         for (int i = 0; i < _args.length; i++) {
             String p = _args[i];
-            if ("--system".equals(p) || "-y".equals(p)) {
-                busType = DBusBusType.SYSTEM;
-            } else if ("--session".equals(p) || "-s".equals(p)) {
-                busType = DBusBusType.SESSION;
-            } else if ("--enable-dtd-validation".equals(p)) {
-                ignoreDtd = false;
-            } else if ("--help".equals(p) || "-h".equals(p)) {
-                printHelp();
-                System.exit(0);
-            } else if ("--all".equals(p) || "-a".equals(p)) {
-                noFilter = true;
-            } else if ("--argumentPrefix".equals(p)) {
-                if (_args.length > i) {
-                    argumentPrefix = _args[++i];
-                } else {
+            switch (p) {
+                case "--system", "-y" -> busType = DBusBusType.SYSTEM;
+                case "--session", "-s" -> busType = DBusBusType.SESSION;
+                case "--enable-dtd-validation" -> ignoreDtd = false;
+                case "--help", "-h" -> {
                     printHelp();
                     System.exit(0);
                 }
-            } else if ("--propertyMethods".equals(p) || "-m".equals(p)) {
-                propertyMethods = true;
-            } else if ("--disable-tuples".equals(p) || "-t".equals(p)) {
-                disableTuples = true;
-            } else if ("--package".equals(p) || "-p".equals(p)) {
-                if (_args.length > i) {
-                    forcePackageName = _args[++i];
-                } else {
-                    printHelp();
+                case "--all", "-a" -> noFilter = true;
+                case "--argumentPrefix" -> {
+                    if (_args.length > i + 1) {
+                        argumentPrefix = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
+                }
+                case "--propertyMethods", "-m" -> propertyMethods = true;
+                case "--disable-tuples", "-t" -> disableTuples = true;
+                case "--package", "-p" -> {
+                    if (_args.length > i + 1) {
+                        forcePackageName = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
+                }
+                case "--version", "-v" -> {
+                    version();
                     System.exit(0);
                 }
-            } else if ("--version".equals(p) || "-v".equals(p)) {
-                version();
-                System.exit(0);
-            } else if ("--outputDir".equals(p) || "-o".equals(p)) {
-                if (_args.length > i) {
-                    outputDir = _args[++i];
-                } else {
-                    printHelp();
-                    System.exit(0);
+                case "--outputDir", "-o" -> {
+                    if (_args.length > i + 1) {
+                        outputDir = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
                 }
-            } else if ("--inputFile".equals(p) || "-i".equals(p)) {
-                if (_args.length > i) {
-                    inputFile = _args[++i];
-                } else {
-                    printHelp();
-                    System.exit(0);
+                case "--inputFile", "-i" -> {
+                    if (_args.length > i + 1) {
+                        inputFile = _args[++i];
+                    } else {
+                        printHelp();
+                        System.exit(0);
+                    }
                 }
-            } else {
-                if (null == busName) {
-                    busName = p;
-                } else if (null == objectPath) {
-                    objectPath = p;
-                } else {
-                    printHelp();
-                    System.exit(1);
+                case null, default -> {
+                    if (null == busName) {
+                        busName = p;
+                    } else if (null == objectPath) {
+                        objectPath = p;
+                    } else {
+                        printHelp();
+                        System.exit(1);
+                    }
                 }
             }
         }
@@ -818,10 +817,10 @@ public class InterfaceCodeGenerator {
         System.out.println("        --system           | -y           Use SYSTEM DBus");
         System.out.println("        --session          | -s           Use SESSION DBus");
         System.out.println("        --outputDir <Dir>  | -o <Dir>     Use <Dir> as output directory for all generated files");
-        System.out.println("        --packageName <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
+        System.out.println("        --package     <Pkg>| -p <Pkg>     Use <Pkg> as the Java package instead of using the DBus namespace.");
         System.out.println("        --inputFile <File> | -i <File>    Use <File> as XML introspection input file instead of querying DBus");
         System.out.println("        --all              | -a           Create all classes for given bus name (do not filter)");
-        System.out.println("        --boundProperties  | -b           Generate setter/getter methods for properties");
+        System.out.println("        --propertyMethods  | -m           Generate setter/getter methods for properties");
         System.out.println();
         System.out.println("        --disable-tuples   | -t           Create Struct based classes for multi-value "
             + "return methods instead of creating Tuple classes (code will only work with dbus-java 5.2.0+)");

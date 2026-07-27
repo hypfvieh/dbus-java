@@ -1,7 +1,10 @@
 package org.freedesktop.dbus.connections.transports;
 
 import org.freedesktop.dbus.messages.MessageFactory;
-import org.freedesktop.dbus.spi.message.*;
+import org.freedesktop.dbus.spi.message.IMessageReader;
+import org.freedesktop.dbus.spi.message.IMessageWriter;
+import org.freedesktop.dbus.spi.message.ISocketProvider;
+import org.freedesktop.dbus.utils.Util;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -71,17 +74,7 @@ public class TransportConnection implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
-
-        if (writer != null) {
-            writer.close();
-        }
-
-        if (channel != null) {
-            channel.close();
-        }
+        Util.closeQuietly(reader, writer, channel);
     }
 
 }

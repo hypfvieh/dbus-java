@@ -49,7 +49,7 @@ public final class Hexdump {
         int j = _ofs + _len;
         for (int i = _ofs; i < j; i++) {
             if (i < _buf.length) {
-                if (20 <= _buf[i] && 126 >= _buf[i]) {
+                if (0x20 <= _buf[i] && 126 >= _buf[i]) {
                     sb.append((char) _buf[i]);
                 } else {
                     sb.append('.');

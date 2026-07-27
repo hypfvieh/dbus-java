@@ -1,6 +1,8 @@
 package org.freedesktop.dbus.connections.impl;
 
-import static org.freedesktop.dbus.utils.CommonRegexPattern.*;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.DBUS_IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.IFACE_PATTERN;
+import static org.freedesktop.dbus.utils.CommonRegexPattern.PROXY_SPLIT_PATTERN;
 
 import org.freedesktop.dbus.RemoteInvocationHandler;
 import org.freedesktop.dbus.RemoteObject;
@@ -8,11 +10,17 @@ import org.freedesktop.dbus.connections.AbstractConnection;
 import org.freedesktop.dbus.connections.IDisconnectAction;
 import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
-import org.freedesktop.dbus.exceptions.*;
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.exceptions.InvalidBusNameException;
+import org.freedesktop.dbus.exceptions.InvalidObjectPathException;
+import org.freedesktop.dbus.exceptions.NotConnected;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusMonitorHandler;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.Introspectable;
+import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.DBusMatchRuleBuilder;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -24,11 +32,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -289,6 +300,67 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
     }
 
     /**
+     * Turns this connection into a <em>monitor connection</em> by calling
+     * {@code org.freedesktop.DBus.Monitoring.BecomeMonitor} on the bus.
+     * <p>
+     * After this call, the connection receives copies of the messages flowing over the bus (as
+     * permitted by the given match rules) via the supplied {@link DBusMonitorHandler} instead of the
+     * connection's normal message handling. A monitor connection loses its bus names and its match
+     * rules and <strong>must not send messages</strong> anymore; use a dedicated (private) connection
+     * for monitoring.
+     * </p>
+     * <p>
+     * An empty (or {@code null}) rule list is a shorthand for matching all messages. Note that
+     * eavesdrop-style match rule keys are intentionally not supported by this library; {@code BecomeMonitor}
+     * is the specification-compliant replacement for eavesdropping.
+     * </p>
+     *
+     * @param _rules match rules limiting the monitored messages, empty/{@code null} matches everything
+     * @param _handler callback receiving the monitored messages
+     *
+     * @throws DBusException when the BecomeMonitor call fails (e.g. insufficient privileges)
+     */
+    public void becomeMonitor(List<DBusMatchRule> _rules, DBusMonitorHandler _handler) throws DBusException {
+        Objects.requireNonNull(_handler, "Monitor handler required");
+
+        String[] ruleStrings = _rules == null ? new String[0]
+            : _rules.stream().map(DBusMatchRule::toString).toArray(String[]::new);
+
+        // activate monitor mode before the call; replies to our own pending calls (the BecomeMonitor
+        // reply itself) are still processed normally, everything else is routed to the handler
+        setMonitorHandler(_handler);
+        try {
+            Monitoring monitoring = getRemoteObject("org.freedesktop.DBus", "/org/freedesktop/DBus", Monitoring.class);
+            monitoring.BecomeMonitor(ruleStrings, new UInt32(0));
+        } catch (RuntimeException _ex) {
+            setMonitorHandler(null);
+            throw _ex;
+        }
+    }
+
+    /**
+     * Exports a ready-to-use {@code org.freedesktop.DBus.ObjectManager} at the given object path.
+     * <p>
+     * The manager answers {@code GetManagedObjects} automatically (by enumerating the exported objects
+     * below {@code _path}) and, together with the automatic ObjectManager handling, emits
+     * {@code InterfacesAdded}/{@code InterfacesRemoved} when objects below it are exported/unexported.
+     * You do not need to implement {@link org.freedesktop.dbus.interfaces.ObjectManager} yourself.
+     * </p>
+     * <p>
+     * Has no automatic effect if the connection was configured with
+     * {@code withManualObjectManager(true)} - in that case the exported manager behaves like any other
+     * exported object.
+     * </p>
+     *
+     * @param _path object path for the ObjectManager (root of the managed sub-tree)
+     *
+     * @throws DBusException if the object path is already in use or invalid
+     */
+    public void exportObjectManager(String _path) throws DBusException {
+        exportObject(_path, new DBusObjectManager(_path));
+    }
+
+    /**
      * Returns the unique name of this connection.
      *
      * @return unique name
@@ -392,29 +464,20 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
         removeSigHandler(DBusMatchRuleBuilder.create().withType(_type).withSender(_source).withPath(objectPath).build(), _handler);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T extends DBusSignal> void removeSigHandler(DBusMatchRule _rule, DBusSigHandler<T> _handler)
             throws DBusException {
 
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList = getHandledSignals().get(_rule);
-
-        if (null != dbusSignalList) {
-            dbusSignalList.remove(_handler);
-            if (dbusSignalList.isEmpty()) {
-                getHandledSignals().remove(_rule);
-                try {
-                    dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected _ex) {
-                    logger.debug("No connection.", _ex);
-                } catch (DBusExecutionException _ex) {
-                    logger.debug("Error removing signal", _ex);
-                    throw new DBusException(_ex);
-                }
+        removeFromSignalMap(getHandledSignals(), _rule, _handler, () -> {
+            try {
+                dbus.RemoveMatch(_rule.toString());
+            } catch (NotConnected _ex) {
+                logger.debug("No connection", _ex);
+            } catch (DBusExecutionException _ex) {
+                logger.debug("Error removing signal", _ex);
+                throw new DBusException(_ex);
             }
-        }
+        });
     }
 
     /**
@@ -485,27 +548,15 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
         Objects.requireNonNull(_rule, "Match rule cannot be null");
         Objects.requireNonNull(_handler, "Handler cannot be null");
 
-        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
-
-        Queue<DBusSigHandler<? extends DBusSignal>> dbusSignalList =
-            getHandledSignals().computeIfAbsent(_rule, v -> {
-                Queue<DBusSigHandler<? extends DBusSignal>> signalList  = new ConcurrentLinkedQueue<>();
-                addMatch.set(true);
-                return signalList;
-            });
-
-        // add handler to signal list
-        dbusSignalList.add(_handler);
-
-        // add match rule if this rule is new
-        if (addMatch.get()) {
+        addToSignalMap(getHandledSignals(), _rule, _handler, () -> {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
                 logger.debug("Cannot add match rule: {}", _rule, _ex);
-                throw new DBusException("Cannot add match rule.", _ex);
+                throw new DBusException("Cannot add match rule", _ex);
             }
-        }
+        });
+
         return () -> removeSigHandler(_rule, _handler);
     }
 
@@ -592,45 +643,29 @@ public final class DBusConnection extends AbstractConnection implements IRemoteO
 
     @Override
     public void removeGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList = getGenericHandledSignals().get(_rule);
-        if (null != genericSignalsList) {
-            genericSignalsList.remove(_handler);
-            if (genericSignalsList.isEmpty()) {
-                getGenericHandledSignals().remove(_rule);
-                try {
-                    dbus.RemoveMatch(_rule.toString());
-                } catch (NotConnected _ex) {
-                    logger.debug("No connection.", _ex);
-                } catch (DBusExecutionException _ex) {
-                    logger.debug("Error removing generic signal", _ex);
-                    throw new DBusException(_ex);
-                }
+        removeFromSignalMap(getGenericHandledSignals(), _rule, _handler, () -> {
+            try {
+                dbus.RemoveMatch(_rule.toString());
+            } catch (NotConnected _ex) {
+                logger.debug("No connection", _ex);
+            } catch (DBusExecutionException _ex) {
+                logger.debug("Error removing generic signal", _ex);
+                throw new DBusException(_ex);
             }
-        }
+        });
     }
 
     @Override
     public AutoCloseable addGenericSigHandler(DBusMatchRule _rule, DBusSigHandler<DBusSignal> _handler) throws DBusException {
-        AtomicBoolean addMatch = new AtomicBoolean(false); // flag to perform action if this is a new signal key
-
-        Queue<DBusSigHandler<DBusSignal>> genericSignalsList =
-                getGenericHandledSignals().computeIfAbsent(_rule, v -> {
-                    Queue<DBusSigHandler<DBusSignal>> signalsList = new ConcurrentLinkedQueue<>();
-                    addMatch.set(true);
-
-                    return signalsList;
-                });
-
-        genericSignalsList.add(_handler);
-
-        if (addMatch.get()) {
+        addToSignalMap(getGenericHandledSignals(), _rule, _handler, () -> {
             try {
                 dbus.AddMatch(_rule.toString());
             } catch (DBusExecutionException _ex) {
                 logger.debug("Error adding signal handler", _ex);
                 throw new DBusException(_ex.getMessage());
             }
-        }
+        });
+
         return () -> removeGenericSigHandler(_rule, _handler);
     }
 
