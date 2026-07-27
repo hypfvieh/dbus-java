@@ -44,6 +44,27 @@ transport architecture, and the practical use cases are too rare to justify the 
 most common scenario - tunnelling D-Bus over SSH - a separate, third-party transport based on
 SSHj already exists.
 
+The `launchd:` transport (macOS-only) is not provided either. It merely looks up the actual
+session bus socket via macOS' `launchd`; dbus-java already supports this indirectly by honouring
+the `DBUS_LAUNCHD_SESSION_BUS_SOCKET` environment variable, so a dedicated transport would add
+little.
+
+### Session bus discovery and `autolaunch`
+
+When connecting to the session bus, dbus-java resolves the address from (in order) the
+`DBUS_SESSION_BUS_ADDRESS` system property, the `DBUS_SESSION_BUS_ADDRESS` environment variable
+(on macOS also `DBUS_LAUNCHD_SESSION_BUS_SOCKET`), and finally the classic
+`$HOME/.dbus/session-bus/<machine-id>-<display>` session file. If none of these yield an address,
+the connection fails.
+
+The reference implementations additionally support `autolaunch:`, which auto-starts a session bus
+daemon on demand (via the external `dbus-launch` helper and an X11 root-window property on Linux,
+or a platform-native mechanism on Windows). dbus-java intentionally does not do this: it would
+require external helpers / platform-native code outside the scope of a pure-Java library, and
+silently spawning a bus daemon is undesirable for a client library. If you need an in-process bus,
+start an [`EmbeddedDBusDaemon`](https://github.com/hypfvieh/dbus-java/tree/master/dbus-java-examples)
+explicitly.
+
 ## Where to go next
 
  * [Quickstart](./quick-start.html) - add the dependencies and open a connection

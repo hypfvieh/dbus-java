@@ -8,6 +8,7 @@ import org.freedesktop.dbus.errors.ServiceUnknown;
 import org.freedesktop.dbus.errors.UnknownMethod;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Debug;
+import org.freedesktop.dbus.interfaces.Verbose;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
@@ -60,6 +61,11 @@ class DebugStatsTest extends AbstractBaseTest {
 
                 // unknown connection name -> error
                 assertThrows(ServiceUnknown.class, () -> stats.GetConnectionStats("com.does.not.Exist"));
+
+                // org.freedesktop.DBus.Verbose is available too when debug features are enabled
+                Verbose verbose = conn.getRemoteObject(DBUS_BUSNAME, DBUS_BUSPATH, Verbose.class);
+                assertDoesNotThrow(verbose::EnableVerbose);
+                assertDoesNotThrow(verbose::DisableVerbose);
             }
         }
     }
@@ -76,8 +82,11 @@ class DebugStatsTest extends AbstractBaseTest {
 
             try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).withShared(false).build()) {
                 Debug.Stats stats = conn.getRemoteObject(DBUS_BUSNAME, DBUS_BUSPATH, Debug.Stats.class);
-                // a default daemon behaves like a production reference daemon: the interface does not exist
+                // a default daemon behaves like a production reference daemon: the interfaces do not exist
                 assertThrows(UnknownMethod.class, stats::GetStats);
+
+                Verbose verbose = conn.getRemoteObject(DBUS_BUSNAME, DBUS_BUSPATH, Verbose.class);
+                assertThrows(UnknownMethod.class, verbose::EnableVerbose);
             }
         }
     }

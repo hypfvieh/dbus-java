@@ -52,13 +52,13 @@ public abstract class AbstractTransport implements Closeable {
     private final Logger                         logger                 = LoggerFactory.getLogger(getClass());
     private final BusAddress                     address;
 
-    private TransportConnection                  transportConnection;
-    private boolean                              fileDescriptorSupported;
-
     private final long                           transportId            = TRANSPORT_ID_GENERATOR.incrementAndGet();
 
     private final TransportConfig                config;
     private final MessageFactory                 messageFactory;
+
+    private TransportConnection                  transportConnection;
+    private boolean                              fileDescriptorSupported;
 
     protected AbstractTransport(BusAddress _address, TransportConfig _config) {
         address = Objects.requireNonNull(_address, "BusAddress required");

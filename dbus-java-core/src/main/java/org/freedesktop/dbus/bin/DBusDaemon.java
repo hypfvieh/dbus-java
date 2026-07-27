@@ -22,6 +22,7 @@ import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Monitoring;
 import org.freedesktop.dbus.interfaces.Peer;
 import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.interfaces.Verbose;
 import org.freedesktop.dbus.matchrules.DBusMatchRule;
 import org.freedesktop.dbus.matchrules.MatchRuleParser;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -510,10 +511,13 @@ public class DBusDaemon extends Thread implements Closeable {
         }
     }
 
-    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Properties, Debug.Stats {
+    public class DBusServer implements DBus, Introspectable, Peer, Monitoring, Properties, Debug.Stats, Verbose {
 
         private final String machineId;
         private ConnectionStruct connStruct;
+
+        /** Whether verbose output was enabled via the {@code org.freedesktop.DBus.Verbose} interface. */
+        private boolean verbose;
 
         public DBusServer() {
             machineId = AddressBuilder.createMachineId();
@@ -840,6 +844,12 @@ public class DBusDaemon extends Thread implements Closeable {
                       <arg direction="out" type="a{sas}"/>
                     </method>
                   </interface>
+                  <interface name="org.freedesktop.DBus.Verbose">
+                    <method name="EnableVerbose">
+                    </method>
+                    <method name="DisableVerbose">
+                    </method>
+                  </interface>
                 """;
 
             return """
@@ -1145,6 +1155,20 @@ public class DBusDaemon extends Thread implements Closeable {
                 result.put(cs.unique, rules);
             }
             return result;
+        }
+
+        @Override
+        public void EnableVerbose() {
+            requireDebugEnabled();
+            verbose = true;
+            LOGGER.debug("org.freedesktop.DBus.Verbose: verbose output is now enabled={}", verbose);
+        }
+
+        @Override
+        public void DisableVerbose() {
+            requireDebugEnabled();
+            verbose = false;
+            LOGGER.debug("org.freedesktop.DBus.Verbose: verbose output is now enabled={}", verbose);
         }
 
     }
