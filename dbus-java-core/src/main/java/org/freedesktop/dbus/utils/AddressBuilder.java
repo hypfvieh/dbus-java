@@ -40,6 +40,38 @@ public final class AddressBuilder {
      * @throws AddressResolvingException when no suitable address can be found for any available transport
      */
     public static BusAddress getSessionConnection(String _dbusMachineIdFile) {
+        return BusAddress.of(resolveSessionAddress(_dbusMachineIdFile));
+    }
+
+    /**
+     * Like {@link #getSessionConnection(String)}, but returns all addresses found in the resolved session bus address.
+     * <p>
+     * The {@code DBUS_SESSION_BUS_ADDRESS} may contain several {@code ;}-separated addresses; the returned list keeps
+     * their order so callers can use them for connect-fallback.
+     * </p>
+     *
+     * @param _dbusMachineIdFile alternative location of dbus machine id file, use null if not needed
+     *
+     * @return ordered list of candidate addresses (never empty)
+     *
+     * @throws AddressResolvingException when no suitable address can be found
+     *
+     * @since 6.0.0
+     */
+    public static List<BusAddress> getSessionConnectionAddresses(String _dbusMachineIdFile) {
+        return BusAddress.parseAll(resolveSessionAddress(_dbusMachineIdFile));
+    }
+
+    /**
+     * Resolves the raw session bus address string from process properties, environment or the session properties file.
+     *
+     * @param _dbusMachineIdFile alternative location of dbus machine id file, use null if not needed
+     *
+     * @return raw address string (may contain a {@code ;}-separated list)
+     *
+     * @throws AddressResolvingException when no suitable address can be found
+     */
+    private static String resolveSessionAddress(String _dbusMachineIdFile) {
 
         // try to read session address from running process instance properties first
         String s = System.getProperty(DBusSysProps.DBUS_SESSION_BUS_ADDRESS);
@@ -91,10 +123,10 @@ public final class AddressBuilder {
                 sessionAddress = sessionAddress.replaceFirst("^'([^']+)'$", "$1");
             }
 
-            return BusAddress.of(sessionAddress);
+            return sessionAddress;
         }
 
-        return BusAddress.of(s);
+        return s;
     }
 
     /**

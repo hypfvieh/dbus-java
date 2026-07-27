@@ -11,6 +11,7 @@ import org.freedesktop.dbus.exceptions.AddressResolvingException;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.utils.AddressBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,8 +38,11 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return {@link DBusConnectionBuilder}
      */
     public static DBusConnectionBuilder forSessionBus(String _machineIdFileLocation) {
-        BusAddress address = validateTransportAddress(AddressBuilder.getSessionConnection(_machineIdFileLocation));
-        return new DBusConnectionBuilder(address, getDbusMachineId(_machineIdFileLocation));
+        List<BusAddress> addresses = AddressBuilder.getSessionConnectionAddresses(_machineIdFileLocation);
+        validateTransportAddress(addresses.getFirst());
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(_machineIdFileLocation));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
     }
 
     /**
@@ -96,7 +100,29 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
      * @return this
      */
     public static DBusConnectionBuilder forAddress(String _address) {
-        return new DBusConnectionBuilder(BusAddress.of(_address), getDbusMachineId(null));
+        List<BusAddress> addresses = BusAddress.parseAll(_address);
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(null));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
+    }
+
+    /**
+     * Use the given ordered list of addresses to create the connection. When connecting, the addresses are tried in
+     * order until one succeeds (connect-fallback).
+     *
+     * @param _addresses candidate addresses, at least one required
+     * @return this
+     *
+     * @since 6.0.0
+     */
+    public static DBusConnectionBuilder forAddresses(BusAddress... _addresses) {
+        if (_addresses == null || _addresses.length == 0) {
+            throw new IllegalArgumentException("At least one BusAddress is required");
+        }
+        List<BusAddress> addresses = List.of(_addresses);
+        DBusConnectionBuilder builder = new DBusConnectionBuilder(addresses.getFirst(), getDbusMachineId(null));
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
     }
 
     /**

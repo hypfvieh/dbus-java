@@ -73,14 +73,14 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
     private final Queue<Error>                                                    pendingErrorQueue;
     private final AtomicInteger                                                   pendingErrorCount = new AtomicInteger(0);
 
-    private final BusAddress                                                      busAddress;
-
     private final MessageFactory                                                  messageFactory;
     private final ConnectionConfig                                                connectionConfig;
 
     private volatile AbstractTransport                                            transport;
 
     private volatile boolean                                                      disconnecting;
+
+    private BusAddress                                                            busAddress;
 
     protected AbstractConnectionBase(ConnectionConfig _conCfg, TransportConfig _transportConfig, ReceivingServiceConfig _rsCfg) throws DBusException {
         logger = LoggerFactory.getLogger(getClass());
@@ -122,6 +122,8 @@ public abstract sealed class AbstractConnectionBase implements Closeable permits
 
         try {
             transport = transportBuilder.build();
+            // update to the address that was actually connected to (may differ from the primary when using fallback)
+            busAddress = transportBuilder.getAddress();
             messageFactory = Optional.ofNullable(transport)
                 .map(AbstractTransport::getMessageFactory)
                 .orElseThrow();

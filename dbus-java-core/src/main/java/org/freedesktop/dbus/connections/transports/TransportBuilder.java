@@ -9,6 +9,7 @@ import org.freedesktop.dbus.exceptions.InvalidBusAddressException;
 import org.freedesktop.dbus.exceptions.TransportConfigurationException;
 import org.freedesktop.dbus.exceptions.TransportRegistrationException;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
+import org.freedesktop.dbus.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,32 +179,73 @@ public final class TransportBuilder {
      *             failed
      */
     public AbstractTransport build() throws DBusException, IOException {
-        BusAddress myBusAddress = getAddress();
         TransportConfig config = transportConfigBuilder.build();
-        if (myBusAddress == null) {
+
+        List<BusAddress> candidates = new ArrayList<>(config.getBusAddresses());
+        if (candidates.isEmpty() && config.getBusAddress() != null) {
+            candidates.add(config.getBusAddress());
+        }
+        if (candidates.isEmpty()) {
             throw new DBusException("Transport requires a BusAddress, use withBusAddress() to configure before building");
         }
 
-        int configuredSaslAuthMode = config.getSaslConfig().getAuthMode();
+        // connect-fallback only applies to client connections; a listening (server) transport binds a single address
+        boolean clientConnect = config.isAutoConnect() && !candidates.getFirst().isListeningSocket();
+        if (!clientConnect || candidates.size() == 1) {
+            return buildSingle(candidates.getFirst(), config);
+        }
+
+        // try each candidate address in order, first successful connection wins
+        List<Exception> failures = new ArrayList<>();
+        for (BusAddress candidate : candidates) {
+            try {
+                return buildSingle(candidate, config);
+            } catch (IOException | DBusException _ex) {
+                LOGGER.debug("Could not connect to address {}, trying next candidate", candidate, _ex);
+                failures.add(_ex);
+            }
+        }
+
+        DBusException ex = new DBusException("Unable to connect to any of the configured addresses: " + candidates);
+        failures.forEach(ex::addSuppressed);
+        throw ex;
+    }
+
+    /**
+     * Creates (and, for client connections, connects) a transport for a single bus address. The given address becomes
+     * the effective address of the config (so {@link #getAddress()} reflects the address that was actually used).
+     *
+     * @param _busAddress address to build the transport for
+     * @param _config transport configuration
+     *
+     * @return connected/created transport
+     *
+     * @throws DBusException on configuration errors
+     * @throws IOException when connecting fails
+     */
+    private AbstractTransport buildSingle(BusAddress _busAddress, TransportConfig _config) throws DBusException, IOException {
+        _config.setBusAddress(_busAddress);
+
+        int configuredSaslAuthMode = _config.getSaslConfig().getAuthMode();
 
         AbstractTransport transport = null;
         ITransportProvider provider = PROVIDERS.values().stream()
-            .map(e -> e.get(config.getBusAddress().getBusType()))
+            .map(e -> e.get(_busAddress.getBusType()))
             .filter(Objects::nonNull)
             .findAny().orElse(null);
 
         if (provider == null) {
-            throw new DBusException("No transport provider found for bustype " + config.getBusAddress().getBusType());
+            throw new DBusException("No transport provider found for bustype " + _busAddress.getBusType());
         } else {
-            LOGGER.info("Using transport {} for address {}", provider.getTransportName(), config.getBusAddress());
+            LOGGER.info("Using transport {} for address {}", provider.getTransportName(), _busAddress);
         }
 
         try {
-            transport = provider.createTransport(myBusAddress, config);
+            transport = provider.createTransport(_busAddress, _config);
             Objects.requireNonNull(transport, "Transport required"); // in case the factory returns null, we cannot continue
 
             // another authentication algorithm was configured manually
-            if (configuredSaslAuthMode > 0 && config.getSaslConfig().getAuthMode() != configuredSaslAuthMode) {
+            if (configuredSaslAuthMode > 0 && _config.getSaslConfig().getAuthMode() != configuredSaslAuthMode) {
                 transport.getSaslConfig().setAuthMode(configuredSaslAuthMode);
             }
 
@@ -212,19 +254,19 @@ public final class TransportBuilder {
         }
 
         if (transport == null) {
-            throw new DBusException("Unknown address type " + myBusAddress.getType() + " or no transport provider found for bus type " + myBusAddress.getBusType());
+            throw new DBusException("Unknown address type " + _busAddress.getType() + " or no transport provider found for bus type " + _busAddress.getBusType());
         }
 
-        if (myBusAddress.isListeningSocket() && myBusAddress instanceof IFileBasedBusAddress fbba) {
-            fbba.updatePermissions(config.getFileOwner(), config.getFileGroup(), config.getFileUnixPermissions());
+        if (_busAddress.isListeningSocket() && _busAddress instanceof IFileBasedBusAddress fbba) {
+            fbba.updatePermissions(_config.getFileOwner(), _config.getFileGroup(), _config.getFileUnixPermissions());
         }
 
-        transport.setPreConnectCallback(config.getPreConnectCallback());
+        transport.setPreConnectCallback(_config.getPreConnectCallback());
 
-        if (config.isAutoConnect() && !config.isListening()) {
+        if (_config.isAutoConnect() && !_busAddress.isListeningSocket()) {
             SocketChannel c = null;
             // support multiple retries so concurrent server/client connection may work out of the box
-            int max = Math.max(500, config.getTimeout()) / 500;
+            int max = Math.max(500, _config.getTimeout()) / 500;
             int cnt = 0;
             do {
                 try {
@@ -232,21 +274,22 @@ public final class TransportBuilder {
                     c = transport.connect();
                 } catch (IOException _ex) { // jnr uses IOException when socket address not found, native unix sockets
                                             // use ConnectException
-                    LOGGER.debug("Connection to {} failed, reconnect attempt {} of {}", getAddress(), cnt, max);
+                    LOGGER.debug("Connection to {} failed, reconnect attempt {} of {}", _busAddress, cnt, max);
                     if (cnt >= max) {
+                        Util.closeQuietly(transport);
                         throw _ex;
                     }
 
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException _ex1) {
-                        LOGGER.debug("Interrupted while waiting for connection retry for address {}", getAddress());
+                        LOGGER.debug("Interrupted while waiting for connection retry for address {}", _busAddress);
                         Thread.currentThread().interrupt();
                     }
 
                 }
             } while (c == null);
-            LOGGER.debug("Connection to {} established after {} of {} attempts", getAddress(), cnt, max);
+            LOGGER.debug("Connection to {} established after {} of {} attempts", _busAddress, cnt, max);
         }
         return transport;
     }

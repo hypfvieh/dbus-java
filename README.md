@@ -110,6 +110,7 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Clean up sender/receiver executor services when the connection fails to establish
    - Added support for interactive authorization ([#PR313](https://github.com/hypfvieh/dbus-java/issues/313)), thanks to ([unfamiliarS](https://github.com/unfamiliarS)
    - Added interfaces `org.freedesktop.DBus.Verbose` and `org.freedesktop.DBus.Debug.Stats`
+   - Added support for address fallback. DBus Specification allow specifying of multiple addresses when connecting. These addresses should be tried in the given order until one is available or all fail. Previously dbus-java only used the first address, ignoring all others. This behavior is now fixed and behaves like the specification defines it
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 

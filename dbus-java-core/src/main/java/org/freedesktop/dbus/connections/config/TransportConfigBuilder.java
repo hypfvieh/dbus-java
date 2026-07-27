@@ -6,6 +6,7 @@ import org.freedesktop.dbus.messages.constants.Endian;
 import org.freedesktop.dbus.spi.transport.ITransportProvider;
 
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -56,7 +57,23 @@ public class TransportConfigBuilder<X extends TransportConfigBuilder<?, R>, R> {
      * @return this
      */
     public X withBusAddress(BusAddress _address) {
-        config.setBusAddress(Objects.requireNonNull(_address, "BusAddress required"));
+        config.setBusAddresses(List.of(Objects.requireNonNull(_address, "BusAddress required")));
+        return self();
+    }
+
+    /**
+     * Set an ordered list of candidate {@link BusAddress}es to use for the connection. When connecting, the addresses
+     * are tried in order until one succeeds (connect-fallback). The first address becomes the effective/primary
+     * address.
+     *
+     * @param _addresses candidate addresses, never null or empty
+     *
+     * @return this
+     *
+     * @since 6.0.0
+     */
+    public X withBusAddresses(List<BusAddress> _addresses) {
+        config.setBusAddresses(Objects.requireNonNull(_addresses, "BusAddresses required"));
         return self();
     }
 

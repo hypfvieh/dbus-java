@@ -5,6 +5,8 @@ import org.freedesktop.dbus.connections.config.ReceivingServiceConfig;
 import org.freedesktop.dbus.connections.config.TransportConfig;
 import org.freedesktop.dbus.exceptions.DBusException;
 
+import java.util.List;
+
 /**
  * Builder to create a new DirectConnection.
  *
@@ -24,7 +26,29 @@ public final class DirectConnectionBuilder extends BaseConnectionBuilder<DirectC
      * @return this
      */
     public static DirectConnectionBuilder forAddress(String _address) {
-        return new DirectConnectionBuilder(BusAddress.of(_address));
+        List<BusAddress> addresses = BusAddress.parseAll(_address);
+        DirectConnectionBuilder builder = new DirectConnectionBuilder(addresses.getFirst());
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
+    }
+
+    /**
+     * Use the given ordered list of addresses to create the connection. When connecting, the addresses are tried in
+     * order until one succeeds (connect-fallback).
+     *
+     * @param _addresses candidate addresses, at least one required
+     * @return this
+     *
+     * @since 6.0.0
+     */
+    public static DirectConnectionBuilder forAddresses(BusAddress... _addresses) {
+        if (_addresses == null || _addresses.length == 0) {
+            throw new IllegalArgumentException("At least one BusAddress is required");
+        }
+        List<BusAddress> addresses = List.of(_addresses);
+        DirectConnectionBuilder builder = new DirectConnectionBuilder(addresses.getFirst());
+        builder.transportConfig().withBusAddresses(addresses);
+        return builder;
     }
 
     /**
