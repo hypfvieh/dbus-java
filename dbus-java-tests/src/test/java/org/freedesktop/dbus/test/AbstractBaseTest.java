@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 /**
  * Base test class providing logger and common methods.
@@ -53,6 +54,26 @@ public abstract class AbstractBaseTest extends Assertions {
     @AfterEach
     public final void logTestEnd(TestInfo _testInfo) {
         logTestBeginEnd("END", _testInfo);
+    }
+
+    /**
+     * Waits until the given condition becomes {@code true} or the timeout elapses, polling frequently.
+     * <p>
+     * This is an event-driven replacement for a fixed {@code Thread.sleep(...)}: it returns as soon as the condition
+     * holds (fast on fast machines) but tolerates up to {@code _timeoutMillis} on slow systems / CI. It never shortens
+     * the effective wait compared to a fixed sleep — the timeout should be chosen generously (e.g. {@link #MAX_WAIT}).
+     * The condition is expected to be backed by state updated from another thread (signal/callback handlers).
+     *
+     * @param _condition condition to wait for
+     * @param _timeoutMillis maximum time to wait in milliseconds
+     *
+     * @throws InterruptedException if interrupted while waiting
+     */
+    protected static void waitForCondition(BooleanSupplier _condition, long _timeoutMillis) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + _timeoutMillis;
+        while (!_condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(20L);
+        }
     }
 
     protected void logTestBeginEnd(String _prefix, TestInfo _testInfo) {

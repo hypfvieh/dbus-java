@@ -5,6 +5,7 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -57,7 +58,8 @@ class NonceTcpTransportTest extends AbstractBaseTest {
                 // corrupt the nonce file so the client sends a nonce that does not match the server's
                 Files.write(nonceFile, new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 
-                assertThrows(Exception.class, () -> {
+                // a rejected nonce surfaces as a wrapped DBusException from the connection build
+                assertThrows(DBusException.class, () -> {
                     // use a short timeout to keep connection retries (and thus the test) brief
                     try (DBusConnection conn = DBusConnectionBuilder.forAddress(connectAddress)
                             .transportConfig().withTimeout(1000).back()

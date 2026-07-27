@@ -1,19 +1,14 @@
 package org.freedesktop.dbus.bin;
 
-import org.freedesktop.dbus.connections.BusAddress;
-import org.freedesktop.dbus.connections.impl.DBusConnection;
-import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
-import org.freedesktop.dbus.connections.transports.TransportBuilder;
 import org.freedesktop.dbus.errors.PropertyReadOnly;
 import org.freedesktop.dbus.errors.UnknownProperty;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.freedesktop.dbus.interfaces.Properties;
-import org.freedesktop.dbus.test.AbstractBaseTest;
+import org.freedesktop.dbus.test.AbstractEmbeddedDaemonTest;
 import org.freedesktop.dbus.types.Variant;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,14 +22,14 @@ import java.util.Map;
  *   <li>D5 - the bus properties {@code Features} and {@code Interfaces}</li>
  * </ul>
  */
-class BusInterfaceExtrasTest extends AbstractBaseTest {
+class BusInterfaceExtrasTest extends AbstractEmbeddedDaemonTest {
 
     private static final String DBUS_BUSNAME = "org.freedesktop.DBus";
     private static final String DBUS_BUSPATH = "/org/freedesktop/DBus";
 
     @Test
     void testBusInterfaceExtrasOnDefaultDaemon() throws Exception {
-        withDaemon(false, conn -> {
+        withEmbeddedConnection(conn -> {
             // D3 + D5: the introspection data declares the new signal, the Properties interface and the properties
             Introspectable intro = conn.getRemoteObject(DBUS_BUSNAME, DBUS_BUSPATH, Introspectable.class);
             String xml = intro.Introspect();
@@ -68,7 +63,7 @@ class BusInterfaceExtrasTest extends AbstractBaseTest {
 
     @Test
     void testInterfacesPropertyListsDebugStatsOnDebuggableDaemon() throws Exception {
-        withDaemon(true, conn -> {
+        withEmbeddedConnection(DebuggableEmbeddedDBusDaemon::new, conn -> {
             Properties props = conn.getRemoteObject(DBUS_BUSNAME, DBUS_BUSPATH, Properties.class);
             List<String> interfaces = asStringList(props.Get(DBUS_BUSNAME, "Interfaces"));
             assertTrue(interfaces.contains("org.freedesktop.DBus.Debug.Stats"),
@@ -93,29 +88,5 @@ class BusInterfaceExtrasTest extends AbstractBaseTest {
             }
         }
         return result;
-    }
-
-    private void withDaemon(boolean _debug, ConnectionConsumer _consumer) throws IOException {
-        String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
-        String newAddress = TransportBuilder.createDynamicSession(protocolType, false);
-        BusAddress busAddress = BusAddress.of(newAddress);
-        BusAddress listenBusAddress = BusAddress.of(newAddress + ",listen=true");
-
-        try (EmbeddedDBusDaemon daemon = _debug
-                ? new DebuggableEmbeddedDBusDaemon(listenBusAddress)
-                : new EmbeddedDBusDaemon(listenBusAddress)) {
-            daemon.startInBackgroundAndWait(MAX_WAIT);
-
-            try (DBusConnection conn = DBusConnectionBuilder.forAddress(busAddress).withShared(false).build()) {
-                _consumer.accept(conn);
-            } catch (Exception _ex) {
-                fail(_ex);
-            }
-        }
-    }
-
-    @FunctionalInterface
-    private interface ConnectionConsumer {
-        void accept(DBusConnection _conn) throws Exception;
     }
 }

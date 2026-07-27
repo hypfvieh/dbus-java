@@ -99,8 +99,11 @@ public class HandlerTest extends AbstractDBusBaseTest {
         logger.debug("Sending Enum Signal...");
         serverconn.sendMessage(new TestEnumSignal(getTestObjectPath(), TestEnum.TESTVAL1, Arrays.asList(TestEnum.TESTVAL2, TestEnum.TESTVAL3)));
 
-        // wait some time to receive signals
-        Thread.sleep(1000L);
+        // wait (up to a generous timeout) until all signals have been received
+        waitForCondition(() ->
+            sigh.getActualTestRuns() == 1 && esh.getActualTestRuns() == 1 && rsh.getActualTestRuns() == 1
+                && ash.getActualTestRuns() == 1 && ensh.getActualTestRuns() == 1
+                && psh.getActualTestRuns() == 1 && osh.getActualTestRuns() == 1, MAX_WAIT);
 
         // ensure callback has been fired at least once
         assertEquals(1, sigh.getActualTestRuns(), "SignalHandler should have been called");
@@ -146,8 +149,8 @@ public class HandlerTest extends AbstractDBusBaseTest {
 
         serverconn.sendMessage(signalToSend);
 
-        // wait some time to receive signals
-        Thread.sleep(1000L);
+        // wait (up to a generous timeout) until the signal has been received
+        waitForCondition(() -> genericHandler.getActualTestRuns() == 1, MAX_WAIT);
 
         // ensure callback has been fired at least once
         assertEquals(1, genericHandler.getActualTestRuns(), "GenericHandler should have been called");
@@ -171,8 +174,8 @@ public class HandlerTest extends AbstractDBusBaseTest {
 
         serverconn.sendMessage(signalToSend);
 
-        // wait some time to receive signals
-        Thread.sleep(1000L);
+        // wait (up to a generous timeout) until the signal has been received
+        waitForCondition(genericDecode::hasReceived, MAX_WAIT);
 
         assertDoesNotThrow(() -> {
             genericDecode.incomingSameAsExpected();
@@ -196,8 +199,8 @@ public class HandlerTest extends AbstractDBusBaseTest {
 
         serverconn.sendMessage(signalToSend);
 
-        // wait some time to receive signals
-        Thread.sleep(1000L);
+        // wait (up to a generous timeout) until the signal has been received
+        waitForCondition(genericDecode::hasReceived, MAX_WAIT);
 
         assertDoesNotThrow(() -> {
             genericDecode.incomingSameAsExpected();

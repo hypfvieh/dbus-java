@@ -60,7 +60,7 @@ public class MessageTest extends AbstractBaseTest {
     }
 
     @Test
-    void testPopulateIgnoresUnknownHeaderField() {
+    void testPopulateIgnoresUnknownHeaderField() throws Exception {
         byte[] msg = {108, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0};
 
         // valid header field array, but the first field code (index 8)
@@ -74,7 +74,15 @@ public class MessageTest extends AbstractBaseTest {
         };
         byte[] body = {};
 
-        assertDoesNotThrow(() -> new Message().populate(msg, headers, body, null));
+        Message m = new Message();
+        m.populate(msg, headers, body, null);
+
+        // the unknown field (code 10, originally DESTINATION) must be skipped ...
+        assertNull(m.getDestination(), "unknown header field must be ignored");
+        // ... while all remaining valid fields are still parsed (a regression dropping fields would fail here)
+        assertEquals(1L, m.getReplySerial(), "reply serial (field 5) should still be parsed");
+        assertEquals("s", m.getSig(), "signature (field 8) should still be parsed");
+        assertEquals("org.freedesktop.DBus", m.getSource(), "sender (field 7) should still be parsed");
     }
 
     @Test

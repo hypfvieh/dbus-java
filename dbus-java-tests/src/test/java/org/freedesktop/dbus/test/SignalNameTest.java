@@ -13,6 +13,10 @@ import org.freedesktop.dbus.messages.DBusSignal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class SignalNameTest extends AbstractBaseTest {
 
     /**
@@ -26,35 +30,40 @@ public class SignalNameTest extends AbstractBaseTest {
      * @throws Exception
      */
     @Test
-    void testSignalNameAlias() {
-        assertDoesNotThrow(() -> {
-            String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
-            BusAddress busAddress = TransportBuilder.
-                    createWithDynamicSession(protocolType)
-                    .configure().build().getBusAddress();
+    void testSignalNameAlias() throws Exception {
+        String protocolType = TransportBuilder.getRegisteredBusTypes().getFirst();
+        BusAddress busAddress = TransportBuilder.
+                createWithDynamicSession(protocolType)
+                .configure().build().getBusAddress();
 
-            BusAddress listenBusAddress = BusAddress.of(busAddress).getListenerAddress();
+        BusAddress listenBusAddress = BusAddress.of(busAddress).getListenerAddress();
 
-            try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
-                daemon.startInBackgroundAndWait(MAX_WAIT);
-                logger.debug("Started embedded bus on address {}", listenBusAddress);
+        try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenBusAddress)) {
+            daemon.startInBackgroundAndWait(MAX_WAIT);
+            logger.debug("Started embedded bus on address {}", listenBusAddress);
 
-                // connect to started daemon process
-                logger.info("Connecting to embedded DBus {}", busAddress);
+            // connect to started daemon process
+            logger.info("Connecting to embedded DBus {}", busAddress);
 
-                try (DBusConnection connection = DBusConnectionBuilder.forAddress(busAddress).build()) {
-                    connection.requestBusName("d.e.f.Service");
-                    connection.exportObject("/d/e/f/custom", new MyCustomImpl());
+            try (DBusConnection connection = DBusConnectionBuilder.forAddress(busAddress).build()) {
+                connection.requestBusName("d.e.f.Service");
+                connection.exportObject("/d/e/f/custom", new MyCustomImpl());
 
-                    connection.addSigHandler(CustomService.CustomSignal.class, s -> logger.debug("Received signal: {}", s.data));
+                AtomicReference<String> received = new AtomicReference<>();
+                CountDownLatch latch = new CountDownLatch(1);
+                connection.addSigHandler(CustomService.CustomSignal.class, s -> {
+                    received.set(s.data);
+                    latch.countDown();
+                });
 
-                    connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
-                    // wait to deliver message
-                    Thread.sleep(1000);
+                // creating the signal with the aliased (DBusMemberName/DBusInterfaceName) name must work ...
+                connection.sendMessage(new CustomService.CustomSignal("/a/b/c/custom", "hello world"));
 
-                }
+                // ... and it must actually be delivered with the correct payload
+                assertTrue(latch.await(MAX_WAIT, TimeUnit.MILLISECONDS), "aliased signal should have been received");
+                assertEquals("hello world", received.get(), "received signal data should match the sent data");
             }
-        });
+        }
     }
 
     @DBusInterfaceName("d.e.f.Custom")

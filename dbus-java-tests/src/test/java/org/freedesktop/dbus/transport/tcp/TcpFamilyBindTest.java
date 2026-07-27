@@ -5,6 +5,7 @@ import org.freedesktop.dbus.connections.BusAddress;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.connections.transports.TransportBuilder;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.test.AbstractBaseTest;
 import org.freedesktop.dbus.utils.Util;
 import org.junit.jupiter.api.Test;
@@ -88,7 +89,8 @@ class TcpFamilyBindTest extends AbstractBaseTest {
         try (EmbeddedDBusDaemon daemon = new EmbeddedDBusDaemon(listenAddress)) {
             daemon.startInBackgroundAndWait(MAX_WAIT);
 
-            assertThrows(Exception.class, () -> {
+            // the invalid family is rejected while resolving the address, surfaced as a wrapped DBusException
+            assertThrows(DBusException.class, () -> {
                 try (DBusConnection conn = DBusConnectionBuilder.forAddress(connectAddress)
                         .transportConfig().withTimeout(1000).back()
                         .withShared(false).build()) {
