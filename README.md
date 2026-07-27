@@ -97,21 +97,34 @@ The library will remain open source and MIT licensed and can still be used, fork
    - Fixed SASL authentication issue when running in server mode in combination with unix sockets ([#298](https://github.com/hypfvieh/dbus-java/issues/298))
    - Fixed various issues with `InterfaceCodeGenerator` ([#302](https://github.com/hypfvieh/dbus-java/issues/302), [#303](https://github.com/hypfvieh/dbus-java/issues/303), [#304], (https://github.com/hypfvieh/dbus-java/issues/304), [#306](https://github.com/hypfvieh/dbus-java/issues/306)
    - Refactoring and overhaul of `InterfaceCodeGenerator` to improve code, reduce duplications and allow easier fixing/extending
-   - Hardened message parsing against malformed or malicious wire data: unknown header field codes are now ignored instead of throwing, oversized arrays are rejected before the length is truncated by an `int` cast, and the data offset is included when validating string/signature lengths (previously an `ArrayIndexOutOfBoundsException`/`StringIndexOutOfBoundsException` could tear down the connection)
-   - Enforce an actual recursion-depth limit when converting wire types to Java types in `Marshalling` (the previous check accidentally used the type count instead of the nesting depth)
-   - Remove the empty match-rule queue when `AddMatch` fails, so a later `addSigHandler` re-sends `AddMatch` instead of silently never subscribing
-   - Disconnect the connection on an unexpected `RuntimeException` in the incoming-message thread instead of spinning in a busy-loop / flooding the log (`DBusException` still logs and continues)
-   - Notify and clean up pending async callbacks (`CallbackHandler`) on disconnect instead of leaking them
-   - Added a read-timeout watchdog for the SASL handshake to prevent connections from hanging indefinitely (e.g. Slowloris-style stalls over TCP)
-   - Fixed `disconnect()` stalling for the whole receiving-service shutdown timeout when called from within a signal handler
-   - Use constant-time comparison for `DBUS_COOKIE_SHA1` hash verification
-   - Fixed possible `ArrayIndexOutOfBoundsException` when parsing malformed cookie lines during SASL auth
-   - Bounded the pending-error queue to avoid unbounded memory growth for unhandled errors
-   - Clean up sender/receiver executor services when the connection fails to establish
    - Added support for interactive authorization ([#PR313](https://github.com/hypfvieh/dbus-java/issues/313)), thanks to ([unfamiliarS](https://github.com/unfamiliarS)
-   - Added interfaces `org.freedesktop.DBus.Verbose` and `org.freedesktop.DBus.Debug.Stats`
-   - Added support for address fallback. DBus Specification allow specifying of multiple addresses when connecting. These addresses should be tried in the given order until one is available or all fail. Previously dbus-java only used the first address, ignoring all others. This behavior is now fixed and behaves like the specification defines it
-   - Improved tests
+   - **AI assisted improvements** (the following changes were developed with AI assistance):
+      - Added `Monitoring`/`BecomeMonitor` as a runtime mode: `DBusConnection.becomeMonitor(List<DBusMatchRule>, DBusMonitorHandler)` delivers raw copies of the bus traffic; the `EmbeddedDBusDaemon` now mirrors traffic to monitor connections (eavesdropping intentionally omitted as it is deprecated by the specification)
+      - Added automatic server-side `ObjectManager` handling: `GetManagedObjects` is answered from the exported sub-tree and `InterfacesAdded`/`InterfacesRemoved` are emitted automatically; opt out with `withManualObjectManager(true)` or export a ready-made one via `exportObjectManager(path)`
+      - Optionally emit `PropertiesChanged` automatically when a `@DBusBoundProperty` setter is invoked (`withAutoEmitPropertiesChanged(true)`, disabled by default, honours `EmitsChangedSignal`)
+      - Added the debug/diagnostic interfaces `org.freedesktop.DBus.Debug.Stats` and `org.freedesktop.DBus.Verbose`, offered only by the new opt-in `DebuggableEmbeddedDBusDaemon` (a default daemon behaves like a production reference daemon and reports `UnknownMethod`)
+      - Declared the `ActivatableServicesChanged` signal, added `ReloadConfig` to the `org.freedesktop.DBus` interface and exposed the bus properties `Features`/`Interfaces` on the embedded daemon
+      - Fixed several D-Bus match-rule issues: multiple `argN`/`argNpath` constraints are now combined with logical AND, `argNpath` parsing was corrected, the argument index range is validated (0–63) and `path_namespace` now also validates the message path
+      - Added support for address fallback: the D-Bus specification allows specifying multiple addresses when connecting, which should be tried in order until one is available or all fail. Previously dbus-java only used the first address and ignored the rest; now all are tried as the specification defines (`DBusConnectionBuilder.forAddresses(...)` and `;`-separated address lists)
+      - `BusAddress` now parses `;`-separated address lists (`parseAll`) and correctly decodes/encodes `%HH` escape sequences
+      - Added the `nonce-tcp` transport (16-byte nonce handshake); extended the transport SPI with a backward-compatible `ITransportProvider.getSupportedBusTypes()` so a single provider can serve several address schemes
+      - The TCP transport now honours the `family` (`ipv4`/`ipv6`) and `bind` address parameters (including `bind=*` to bind all interfaces)
+      - The unix transports now honour the listen-side address parameters `dir`, `tmpdir` and `runtime` (resolved to a concrete socket path/abstract name); introduced a shared `AbstractUnixBusAddress` base for the unix transports
+      - Fixed file-descriptor negotiation during SASL (`NEGOTIATE_UNIX_FD`/`AGREE_UNIX_FD`), including handling of servers that reject file-descriptor passing
+      - Hardened message parsing against malformed or malicious wire data: unknown header field codes are now ignored instead of throwing, oversized arrays are rejected before the length is truncated by an `int` cast, and the data offset is included when validating string/signature lengths (previously an `ArrayIndexOutOfBoundsException`/`StringIndexOutOfBoundsException` could tear down the connection)
+      - Enforce an actual recursion-depth limit when converting wire types to Java types in `Marshalling` (the previous check accidentally used the type count instead of the nesting depth)
+      - Validate the received `UNIX_FDS` count against the actual number of descriptors, bounds-check file-descriptor indices and guard against excessively nested variants/containers during value extraction
+      - Remove the empty match-rule queue when `AddMatch` fails, so a later `addSigHandler` re-sends `AddMatch` instead of silently never subscribing
+      - Disconnect the connection on an unexpected `RuntimeException` in the incoming-message thread instead of spinning in a busy-loop / flooding the log (`DBusException` still logs and continues)
+      - Notify and clean up pending async callbacks (`CallbackHandler`) on disconnect instead of leaking them
+      - Added a read-timeout watchdog for the SASL handshake to prevent connections from hanging indefinitely (e.g. Slowloris-style stalls over TCP)
+      - Fixed `disconnect()` stalling for the whole receiving-service shutdown timeout when called from within a signal handler
+      - Use constant-time comparison for `DBUS_COOKIE_SHA1` hash verification
+      - Fixed possible `ArrayIndexOutOfBoundsException` when parsing malformed cookie lines during SASL auth
+      - Bounded the pending-error queue to avoid unbounded memory growth for unhandled errors
+      - Clean up sender/receiver executor services when the connection fails to establish
+      - Reworked and corrected the project documentation under `src/site` (types, quickstart, properties, signals, code generation, new landing page) and documented intentionally unsupported transports (`unixexec`, `launchd`, `autolaunch`)
+      - Improved and hardened the test suite (event-driven waits instead of fixed sleeps, safer test teardown and additional coverage for the features above)
 
 ##### Changes in 5.2.0 (2025-12-21):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
