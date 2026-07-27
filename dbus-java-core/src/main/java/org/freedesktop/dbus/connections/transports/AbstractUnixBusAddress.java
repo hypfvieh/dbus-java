@@ -26,6 +26,9 @@ public abstract class AbstractUnixBusAddress extends BusAddress implements IFile
     private static final SecureRandom RANDOM       = new SecureRandom();
     private static final int          RANDOM_CHARS = 10;
 
+    private static final String       PATH         = "path";
+    private static final String       ABSTRACT     = "abstract";
+
     /**
      * Creates a new unix bus address from the given (already parsed) address and resolves the listen-side
      * {@code dir}/{@code tmpdir}/{@code runtime} parameters.
@@ -41,19 +44,19 @@ public abstract class AbstractUnixBusAddress extends BusAddress implements IFile
     }
 
     public boolean hasPath() {
-        return hasParameter("path");
+        return hasParameter(PATH);
     }
 
     public String getPath() {
-        return getParameterValue("path");
+        return getParameterValue(PATH);
     }
 
     public boolean isAbstract() {
-        return hasParameter("abstract");
+        return hasParameter(ABSTRACT);
     }
 
     public String getAbstract() {
-        return getParameterValue("abstract");
+        return getParameterValue(ABSTRACT);
     }
 
     @Override
@@ -66,7 +69,7 @@ public abstract class AbstractUnixBusAddress extends BusAddress implements IFile
      * {@code abstract} parameter. Only applies to listening addresses that do not already carry a concrete socket.
      */
     private void resolveServerAddress(boolean _supportsAbstract) throws TransportConfigurationException {
-        if (!isListeningSocket() || hasParameter("path") || hasParameter("abstract")) {
+        if (!isListeningSocket() || hasParameter(PATH) || hasParameter(ABSTRACT)) {
             return;
         }
 
@@ -79,15 +82,15 @@ public abstract class AbstractUnixBusAddress extends BusAddress implements IFile
             if (xdgRuntimeDir == null || xdgRuntimeDir.isBlank()) {
                 throw new TransportConfigurationException("runtime=yes requires the XDG_RUNTIME_DIR environment variable to be set");
             }
-            addParameter("path", new File(xdgRuntimeDir, "bus").getAbsolutePath());
+            addParameter(PATH, new File(xdgRuntimeDir, "bus").getAbsolutePath());
         } else if (hasParameter("dir")) {
-            addParameter("path", randomSocketPath(getParameterValue("dir")));
+            addParameter(PATH, randomSocketPath(getParameterValue("dir")));
         } else if (hasParameter("tmpdir")) {
             String tmpDir = getParameterValue("tmpdir");
             if (_supportsAbstract) {
-                addParameter("abstract", randomSocketPath(tmpDir));
+                addParameter(ABSTRACT, randomSocketPath(tmpDir));
             } else {
-                addParameter("path", randomSocketPath(tmpDir));
+                addParameter(PATH, randomSocketPath(tmpDir));
             }
         }
         // no dir/tmpdir/runtime present: leave as-is, the transport will report the missing path/abstract

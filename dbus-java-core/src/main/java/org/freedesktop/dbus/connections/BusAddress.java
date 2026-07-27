@@ -186,13 +186,15 @@ public class BusAddress {
 
         byte[] raw = _value.getBytes(StandardCharsets.UTF_8);
         ByteArrayOutputStream out = new ByteArrayOutputStream(raw.length);
-        for (int i = 0; i < raw.length; i++) {
+        int i = 0;
+        while (i < raw.length) {
             byte b = raw[i];
             if (b == '%' && i + 2 < raw.length && isHex(raw[i + 1]) && isHex(raw[i + 2])) {
                 out.write((Character.digit(raw[i + 1], 16) << 4) | Character.digit(raw[i + 2], 16));
-                i += 2;
+                i += 3;
             } else {
                 out.write(b);
+                i++;
             }
         }
         return out.toString(StandardCharsets.UTF_8);

@@ -220,6 +220,9 @@ public final class DBusConnectionBuilder extends BaseConnectionBuilder<DBusConne
                         removedConnection.close();
                     }
                 }
+            } else {
+                // close the freshly created (but not registered) connection to avoid leaking its threads/transport
+                c.close();
             }
             throw _ex;
         }

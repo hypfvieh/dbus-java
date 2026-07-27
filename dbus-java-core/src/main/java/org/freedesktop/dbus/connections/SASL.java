@@ -219,7 +219,7 @@ public class SASL {
                     switch (classifyCookieLine(s, _timestamp)) {
                         case KEEP -> lines.add(s);
                         case MALFORMED -> logger.warn("Ignoring malformed cookie line {}", s);
-                        case EXPIRED -> { } // silently drop stale cookie
+                        case EXPIRED -> { /* silently drop stale (expired) cookie */ }
                     }
                 }
             }

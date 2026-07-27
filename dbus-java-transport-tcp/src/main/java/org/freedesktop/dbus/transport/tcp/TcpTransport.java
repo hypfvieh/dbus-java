@@ -31,7 +31,10 @@ import java.util.Set;
 public class TcpTransport extends AbstractTransport {
 
     /** Length of the nonce exchanged for the {@code nonce-tcp} transport (D-Bus specification). */
-    private static final int    NONCE_LENGTH = 16;
+    private static final int          NONCE_LENGTH  = 16;
+
+    /** Shared secure random source used to generate the server nonce (nonce-tcp). */
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final int           timeout;
 
@@ -208,7 +211,7 @@ public class TcpTransport extends AbstractTransport {
         }
 
         serverNonce = new byte[NONCE_LENGTH];
-        new SecureRandom().nextBytes(serverNonce);
+        SECURE_RANDOM.nextBytes(serverNonce);
 
         Path path = Path.of(nonceFile);
         Files.write(path, serverNonce);

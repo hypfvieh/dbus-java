@@ -491,19 +491,7 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
             Map<String, Variant<?>> props = new LinkedHashMap<>();
 
             // read bound properties declared on this interface
-            for (Entry<PropertyRef, Method> pe : _eo.getPropertyMethods().entrySet()) {
-                Method getter = pe.getValue();
-                if (pe.getKey().getAccess() == Access.READ && getter.getDeclaringClass() == iface) {
-                    try {
-                        Object value = getter.invoke(obj);
-                        if (value != null) {
-                            props.put(pe.getKey().getName(), toVariant(value, getter.getGenericReturnType()));
-                        }
-                    } catch (Exception _ex) {
-                        getLogger().debug("Failed to read bound property {} for managed objects", pe.getKey().getName(), _ex);
-                    }
-                }
-            }
+            collectBoundProperties(_eo, iface, obj, props);
 
             // objects implementing the Properties interface directly
             if (obj instanceof Properties p) {
@@ -520,6 +508,31 @@ public abstract sealed class ConnectionMessageHandler extends DBusBoundPropertyH
             byInterface.put(ifaceName, props);
         }
         return byInterface;
+    }
+
+    /**
+     * Reads the readable bound properties ({@code @DBusBoundProperty}) declared on the given interface via their
+     * getters and adds them to the property map.
+     *
+     * @param _eo exported object
+     * @param _iface interface whose bound properties should be read
+     * @param _obj the exported object instance
+     * @param _props target map to add the property values to
+     */
+    private void collectBoundProperties(ExportedObject _eo, Class<?> _iface, DBusInterface _obj, Map<String, Variant<?>> _props) {
+        for (Entry<PropertyRef, Method> pe : _eo.getPropertyMethods().entrySet()) {
+            Method getter = pe.getValue();
+            if (pe.getKey().getAccess() == Access.READ && getter.getDeclaringClass() == _iface) {
+                try {
+                    Object value = getter.invoke(_obj);
+                    if (value != null) {
+                        _props.put(pe.getKey().getName(), toVariant(value, getter.getGenericReturnType()));
+                    }
+                } catch (Exception _ex) {
+                    getLogger().debug("Failed to read bound property {} for managed objects", pe.getKey().getName(), _ex);
+                }
+            }
+        }
     }
 
     /**
