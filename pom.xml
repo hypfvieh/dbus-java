@@ -198,6 +198,7 @@
                                     <requireOS>
                                         <family>unix</family>
                                     </requireOS>
+                                    <banDuplicatePomDependencyVersions/>
                                 </rules>
                             </configuration>
                         </execution>
