@@ -541,6 +541,11 @@
         <tag>HEAD</tag>
     </scm>
 
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/hypfvieh/dbus-java/issues</url>
+    </issueManagement>
+
     <licenses>
         <license>
            <name>MIT License</name>
