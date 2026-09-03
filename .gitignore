@@ -6,7 +6,8 @@
 .project
 *.iml
 
-.idea
+.idea/*
+!.idea/icon.svg
 build
 
 dbus-java-osgi/META-INF
