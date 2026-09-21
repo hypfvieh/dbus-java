@@ -288,6 +288,18 @@ public class SASL {
         _sock.write(ByteBuffer.wrap(sb.toString().getBytes()));
     }
 
+    /**
+     * Sends a DATA command, omitting the argument entirely (bare {@code DATA\r\n}) when
+     * {@code _response} is {@code null} instead of sending the literal string "null".
+     */
+    private void sendData(SocketChannel _sock, String _response) throws IOException {
+        if (_response == null) {
+            send(_sock, DATA);
+        } else {
+            send(_sock, DATA, _response);
+        }
+    }
+
     SaslResult doChallenge(int _auth, SASL.Command _c) throws IOException {
         switch (_auth) {
         case AUTH_SHA:
@@ -366,12 +378,16 @@ public class SASL {
                 case AUTH_ANON:
                     return SaslResult.OK;
                 case AUTH_EXTERNAL:
-                    if ((_c.getData() != null && COL.compare(_uid, _c.getData()) == 0)
-                        && (_kernelUid == null || COL.compare(_uid, _kernelUid) == 0)) {
-                        return SaslResult.OK;
-                    } else {
-                        return SaslResult.REJECT;
+                    if (_c.getData() == null) {
+                        // EXTERNAL has no initial challenge; per the D-Bus spec the server should
+                        // ask for the identity via an empty DATA exchange instead of rejecting
+                        // outright. Reference dbus-daemon and clients such as godbus rely on this
+                        // round-trip when they omit the initial response and expect the kernel-
+                        // verified socket credentials to establish the identity instead.
+                        _c.setResponse(null);
+                        return SaslResult.CONTINUE;
                     }
+                    return checkExternalIdentity(_c.getData(), _uid, _kernelUid);
                 case AUTH_SHA:
                     String context = COOKIE_CONTEXT;
                     long id = System.currentTimeMillis();
@@ -411,9 +427,29 @@ public class SASL {
                 } else {
                     return SaslResult.ERROR;
                 }
+            case AUTH_EXTERNAL:
+                // client is replying to our poke for the identity (see doResponse/AUTH_NONE above)
+                return checkExternalIdentity(_c.getData(), _uid, _kernelUid);
             default:
                 return SaslResult.ERROR;
             }
+    }
+
+    /**
+     * Validates the identity presented by an EXTERNAL SASL authentication attempt. A missing
+     * identity (client relies solely on the transport's out-of-band credentials) is accepted as
+     * long as the kernel-verified peer UID matches; an explicitly claimed identity must match too.
+     *
+     * @param _data identity claimed by the client, {@code null} if none was given
+     * @param _uid identity this SASL instance is willing to accept
+     * @param _kernelUid identity established via the transport (e.g. SO_PEERCRED), {@code null} if unavailable
+     *
+     * @return {@link SaslResult#OK} if the identity is accepted, {@link SaslResult#REJECT} otherwise
+     */
+    private SaslResult checkExternalIdentity(String _data, String _uid, String _kernelUid) {
+        boolean claimedUidMatches = _data == null || COL.compare(_uid, _data) == 0;
+        boolean kernelUidMatches = _kernelUid == null || COL.compare(_uid, _kernelUid) == 0;
+        return claimedUidMatches && kernelUidMatches ? SaslResult.OK : SaslResult.REJECT;
     }
 
     public String[] convertAuthTypes(int _types) {
@@ -625,7 +661,7 @@ public class SASL {
                             case AUTH:
                                 switch (doResponse(current, luid, kernelUid, c)) {
                                     case CONTINUE:
-                                        send(_sock, DATA, c.getResponse());
+                                        sendData(_sock, c.getResponse());
                                         current = c.getMechs();
                                         state = SaslAuthState.WAIT_DATA;
                                         break;
@@ -658,7 +694,7 @@ public class SASL {
                     case DATA:
                         switch (doResponse(current, luid, kernelUid, c)) {
                             case CONTINUE:
-                                send(_sock, DATA, c.getResponse());
+                                sendData(_sock, c.getResponse());
                                 state = SaslAuthState.WAIT_DATA;
                                 break;
                             case OK:
