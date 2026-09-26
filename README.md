@@ -126,6 +126,12 @@ The library will remain open source and MIT licensed and can still be used, fork
 
 [Planned changes for next major version](PLANNING.md)
 
+##### Changes in 5.2.2 (2026-09-26):
+   - fixed issue when using AUTH_EXTERNAL without sending DATA message
+
+##### Changes in 5.2.1 (2026-09-12):
+   - fixed NPE in SASL auth ([#294](https://github.com/hypfvieh/dbus-java/issues/294)
+
 ##### Changes in 5.2.0 (not yet released):
    - removed properties from dbus-java.version which causes issues with reproducable builds ([PR#279](https://github.com/hypfvieh/dbus-java/issues/279)) 
    - Re-Implemented `DBusMatchRule`
